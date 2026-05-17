@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Http\Controllers\AuthController;
+use Modules\Auth\Http\Controllers\GoogleController;
 
 /*
  *--------------------------------------------------------------------------
@@ -23,4 +24,4 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     // DELETE /api/v1/auth/{id}   -> destroy
     Route::apiResource('auth', AuthController::class)->names('auth');
 });
- Route::get('/', [AuthController::class, 'connect'])->name('auth.connect');
+Route::get('/', [AuthController::class, 'connect'])->name('auth.connect');

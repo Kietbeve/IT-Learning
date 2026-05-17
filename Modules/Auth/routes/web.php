@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Http\Controllers\AuthController;
+use Modules\Auth\Http\Controllers\GoogleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,4 +18,8 @@ use Modules\Auth\Http\Controllers\AuthController;
 Route::group([], function () {
     Route::resource('auth', AuthController::class)->names('auth');
 });
-Route::get("/login",[AuthController::class,'UserLogin']);
+Route::get("/login", [AuthController::class, 'UserLogin'])->name('login');
+Route::get('/dashboard', [AuthController::class, 'dashboard'])->middleware('auth')->name('auth.dashboard');
+Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+Route::get('/google', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
+Route::get('/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
