@@ -75,4 +75,8 @@ class AuthController extends Controller
     {
         //
     }
+    function UserLogin()
+    {
+        return view('auth::Login');
+    }
 }
