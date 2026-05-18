@@ -7,6 +7,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Modules\Auth\Models\User;
+use Modules\Auth\Services\AuthService;
 
 class AuthController extends Controller
 {
@@ -97,5 +99,39 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+    //admin function
+    public function adminDashboard()
+    {
+        return view('auth::admin.dashboard');
+    }
+    public function adminLogin()
+    {
+        $user = User::find(Auth::id());
+        if (Auth::check() && $user?->hasRole('admin')) {
+            return redirect()->route('auth.admin.dashboard');
+        }
+        return view('auth::admin.login');
+    }
+    public function adminLogout(Request $request): RedirectResponse
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('auth.admin.login');
+    }
+    public function checkAdminLogin()
+    {
+        $authService = new AuthService();
+
+        $result = $authService->checkAdminLogin(request()->only('name', 'password'));
+
+        if (! $result['success']) {
+            return redirect()->back()->withErrors(['login_error' => $result['message']])->withInput();
+        }
+
+        return redirect()->route('auth.admin.dashboard');
     }
 }
