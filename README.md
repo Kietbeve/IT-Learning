@@ -52,13 +52,32 @@ DB_PORT=3306
 DB_DATABASE=it_learning
 DB_USERNAME=root
 DB_PASSWORD=
+
+DB_CHARSET=utf8mb3 # Tùy chỉnh database trên máy
+DB_COLLATION=utf8mb3_unicode_ci # Tùy chỉnh database trên máy
 ```
 
-### 6. Chạy database migration
+### 6. Chạy database migration và seeder
+
+Chạy lệnh sau để tạo cấu trúc bảng:
 
 ```bash
 php artisan migrate
 ```
+
+Chạy lệnh sau để nạp dữ liệu mẫu (seeders):
+
+```bash
+php artisan db:seed
+```
+
+Hoặc bạn có thể chạy đồng thời cả hai lệnh bằng:
+
+```bash
+php artisan migrate --seed
+```
+
+_(Lưu ý: Đối với các module riêng lẻ, bạn cũng có thể chạy seeder của riêng module đó bằng lệnh `php artisan module:seed <ModuleName>`)_
 
 ### 7. Cài đặt các dependency Node.js
 
@@ -111,25 +130,25 @@ Database
 ### Giải thích từng thành phần
 
 - `routes/api.php`:
-  - định nghĩa endpoint API, nhận request từ client, và ánh xạ đến controller.
+    - định nghĩa endpoint API, nhận request từ client, và ánh xạ đến controller.
 
 - `Http/Requests`:
-  - validate dữ liệu đầu vào trước khi xử lý, đảm bảo request hợp lệ.
+    - validate dữ liệu đầu vào trước khi xử lý, đảm bảo request hợp lệ.
 
 - `Http/Controllers`:
-  - nhận request, gọi service xử lý nghiệp vụ, và trả response về client.
+    - nhận request, gọi service xử lý nghiệp vụ, và trả response về client.
 
 - `Policies`:
-  - kiểm tra quyền người dùng trước khi thực hiện hành động, chỉ dùng khi cần phân quyền.
+    - kiểm tra quyền người dùng trước khi thực hiện hành động, chỉ dùng khi cần phân quyền.
 
 - `Services`:
-  - xử lý logic nghiệp vụ chính, tách riêng phần business logic khỏi controller.
+    - xử lý logic nghiệp vụ chính, tách riêng phần business logic khỏi controller.
 
 - `Models`:
-  - làm việc với database qua Eloquent, truy vấn và lưu dữ liệu.
+    - làm việc với database qua Eloquent, truy vấn và lưu dữ liệu.
 
 - `database`:
-  - nơi lưu dữ liệu thật, bao gồm migration và seeder nếu cần.
+    - nơi lưu dữ liệu thật, bao gồm migration và seeder nếu cần.
 
 ### Ví dụ thực tế với module Auth
 
@@ -145,25 +164,25 @@ Trong module `Auth`, luồng xử lý thường như sau:
 ### Vai trò các thư mục/thành phần trong module
 
 - `routes/api.php`:
-  - nơi định nghĩa endpoint API và nhóm route cho module.
+    - nơi định nghĩa endpoint API và nhóm route cho module.
 
 - `Http/Requests`:
-  - chứa các lớp validate dữ liệu đầu vào, giúp controller chỉ nhận một request đã kiểm tra.
+    - chứa các lớp validate dữ liệu đầu vào, giúp controller chỉ nhận một request đã kiểm tra.
 
 - `Http/Controllers`:
-  - chứa controller receive request và điều phối sang service.
+    - chứa controller receive request và điều phối sang service.
 
 - `Policies`:
-  - chứa các lớp kiểm tra quyền truy cập, áp dụng trước khi thực hiện hành động.
+    - chứa các lớp kiểm tra quyền truy cập, áp dụng trước khi thực hiện hành động.
 
 - `Services`:
-  - chứa business logic chính của module, làm nhiệm vụ xử lý nghiệp vụ.
+    - chứa business logic chính của module, làm nhiệm vụ xử lý nghiệp vụ.
 
 - `Models`:
-  - định nghĩa các thực thể Eloquent, xử lý query database.
+    - định nghĩa các thực thể Eloquent, xử lý query database.
 
 - `database`:
-  - chứa migration, seed hoặc dữ liệu liên quan đến module, thực thi lưu trữ dữ liệu.
+    - chứa migration, seed hoặc dữ liệu liên quan đến module, thực thi lưu trữ dữ liệu.
 
 ## Nguyên tắc code
 
