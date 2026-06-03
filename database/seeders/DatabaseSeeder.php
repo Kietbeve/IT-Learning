@@ -19,6 +19,12 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'test',
         //     'email' => 'test@example.com',
         // ]);
-        $this->call(\Modules\Auth\Database\Seeders\AuthDatabaseSeeder::class);
+        $this->call([
+            //seeder từ module
+            \Modules\Auth\Database\Seeders\AuthDatabaseSeeder::class,
+            //seeder ngoài module
+            CategorySeeder::class,
+            TagSeeder::class,
+        ]);
     }
 }
