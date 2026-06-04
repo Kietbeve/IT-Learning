@@ -30,7 +30,8 @@ return new class extends Migration
             $table->timestamp('submitted_at')
                 ->nullable();
 
-            $table->timestamp('expires_at');
+            $table->timestamp('expires_at')
+                ->nullable();
 
             $table->unsignedInteger('total_questions')
                 ->default(0);
