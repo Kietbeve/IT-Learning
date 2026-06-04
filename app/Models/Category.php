@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\Exam;
+use Modules\Learning\Models\Roadmap;
+
 class Category extends Model
 {
      use SoftDeletes;
@@ -57,6 +59,14 @@ class Category extends Model
     {
         return $this->hasMany(
             Exam::class,
+            'category_id'
+        );
+    }
+
+    public function roadmaps(): HasMany
+    {
+        return $this->hasMany(
+            Roadmap::class,
             'category_id'
         );
     }
