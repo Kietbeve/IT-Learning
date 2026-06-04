@@ -20,11 +20,12 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            //seeder từ module
-            \Modules\Auth\Database\Seeders\AuthDatabaseSeeder::class,
             //seeder ngoài module
             CategorySeeder::class,
             TagSeeder::class,
+            //seeder từ module
+            \Modules\Auth\Database\Seeders\AuthDatabaseSeeder::class,
+            \Modules\Exam\database\seeders\QuestionSeeder::class,
         ]);
     }
 }

@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Exam\Models\Question;
+use Modules\Exam\Models\Exam;
+use Modules\Exam\Models\ExamAttempt;
 /**
  * Bảng users: quản lý toàn bộ tài khoản trong hệ thống.
  *
@@ -60,4 +65,42 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+    public function questions()
+    {
+        return $this->hasMany(
+            Question::class,
+            'author_id'
+        );
+    }
+
+    public function reviewedQuestions()
+    {
+        return $this->hasMany(
+            Question::class,
+            'reviewed_by'
+        );
+    }
+        public function exams()
+    {
+        return $this->hasMany(
+            Exam::class,
+            'author_id'
+        );
+    }
+
+    public function reviewedExams()
+    {
+        return $this->hasMany(
+            Exam::class,
+            'reviewed_by'
+        );
+    }
+
+    public function examAttempts()
+    {
+        return $this->hasMany(
+            ExamAttempt::class,
+            'user_id'
+        );
+    }
 }

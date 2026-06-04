@@ -12,30 +12,40 @@ use Modules\Auth\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
 
-class Question extends Model
+class Exam extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'questions';
+    protected $table = 'exams';
 
     protected $fillable = [
+        'public_id',
         'author_id',
         'category_id',
-        'content',
-        'explanation',
-        'difficulty',
-        'status',
+        'title',
+        'slug',
+        'short_description',
+        'description',
         'type',
+        'mode',
+        'duration_minutes',
+        'pass_percent',
+        'visibility',
+        'status',
         'rejected_reason',
         'reviewed_by',
         'reviewed_at',
+        'publish_at',
+        'attempt_count',
     ];
 
     protected function casts(): array
     {
         return [
+            'pass_percent' => 'decimal:2',
             'reviewed_at' => 'datetime',
-            'deleted_at'  => 'datetime',
+            'publish_at' => 'datetime',
+            'deleted_at' => 'datetime',
         ];
     }
 
@@ -47,12 +57,18 @@ class Question extends Model
 
     public function author(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'author_id');
+        return $this->belongsTo(
+            User::class,
+            'author_id'
+        );
     }
 
     public function reviewer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'reviewed_by');
+        return $this->belongsTo(
+            User::class,
+            'reviewed_by'
+        );
     }
 
     public function category(): BelongsTo
@@ -63,21 +79,13 @@ class Question extends Model
         );
     }
 
-    public function options(): HasMany
-    {
-        return $this->hasMany(
-            QuestionOption::class,
-            'question_id'
-        )->orderBy('sort_order');
-    }
-
-    public function exams(): BelongsToMany//tuong duong exam_questions
+    public function questions(): BelongsToMany
     {
         return $this->belongsToMany(
-            Exam::class,
+            Question::class,
             'exam_questions',
-            'question_id',
-            'exam_id'
+            'exam_id',
+            'question_id'
         )
         ->withPivot([
             'sort_order',
@@ -90,17 +98,17 @@ class Question extends Model
     {
         return $this->belongsToMany(
             Tag::class,
-            'question_tag_maps',
-            'question_id',
+            'exam_tag_maps',
+            'exam_id',
             'tag_id'
         );
     }
 
-    public function attemptAnswers(): HasMany
+    public function attempts(): HasMany
     {
         return $this->hasMany(
-            AttemptAnswer::class,
-            'question_id'
+            ExamAttempt::class,
+            'exam_id'
         );
     }
 }

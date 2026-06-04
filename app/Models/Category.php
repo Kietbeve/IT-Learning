@@ -4,7 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Modules\Exam\Models\Question;
+use Modules\Exam\Models\Exam;
 class Category extends Model
 {
      use SoftDeletes;
@@ -40,5 +43,21 @@ class Category extends Model
     public function children()
     {
         return $this->hasMany(Category::class, 'parent_id');
+    }
+
+    public function questions(): HasMany
+    {
+        return $this->hasMany(
+            Question::class,
+            'category_id'
+        );
+    }
+
+    public function exams(): HasMany
+    {
+        return $this->hasMany(
+            Exam::class,
+            'category_id'
+        );
     }
 }
