@@ -19,21 +19,23 @@
 
     {{-- Vite CSS & JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 
 <body>
     <div class="flex flex-col min-h-screen font-sans text-gray-800">
         <!-- User Header -->
-        @include('exam::component.header')
+        @include('layouts.patials.user_header')
 
         <main class="flex-1 p-8 bg-gray-50">
             @yield('content')
         </main>
 
         <!-- User Footer -->
-        @include('exam::component.footer')
+        @include('layouts.patials.user_footer')
     </div>
-
+    @livewireScripts
+    @wireUiScripts
 </body>
 
 </html>
