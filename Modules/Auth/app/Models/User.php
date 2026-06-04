@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\Exam;
 use Modules\Exam\Models\ExamAttempt;
+use Modules\Learning\Models\Roadmap;
+use Modules\Learning\Models\ProjectSubmission;
 /**
  * Bảng users: quản lý toàn bộ tài khoản trong hệ thống.
  *
@@ -101,6 +103,38 @@ class User extends Authenticatable
         return $this->hasMany(
             ExamAttempt::class,
             'user_id'
+        );
+    }
+
+    public function roadmaps(): HasMany
+    {
+        return $this->hasMany(
+            Roadmap::class,
+            'author_id'
+        );
+    }
+
+    public function reviewedRoadmaps(): HasMany
+    {
+        return $this->hasMany(
+            Roadmap::class,
+            'reviewed_by'
+        );
+    }
+
+    public function projectSubmissions(): HasMany
+    {
+        return $this->hasMany(
+            ProjectSubmission::class,
+            'user_id'
+        );
+    }
+
+    public function reviewedProjectSubmissions(): HasMany
+    {
+        return $this->hasMany(
+            ProjectSubmission::class,
+            'reviewed_by'
         );
     }
 }

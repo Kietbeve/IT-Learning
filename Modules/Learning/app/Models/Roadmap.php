@@ -3,20 +3,70 @@
 namespace Modules\Learning\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Learning\Database\factories\RoadmapFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+use App\Models\Category;
+use Modules\Auth\Models\User;
 
 class Roadmap extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     */
-    protected $fillable = [];
-    
-    protected static function newFactory(): RoadmapFactory
+    protected $fillable = [
+        'public_id',
+        'author_id',
+        'category_id',
+        'title',
+        'slug',
+        'short_description',
+        'description',
+        'objective',
+        'thumbnail',
+        'visibility',
+        'status',
+        'rejected_reason',
+        'reviewed_by',
+        'reviewed_at',
+        'published_at',
+    ];
+
+    protected function casts(): array
     {
-        //return RoadmapFactory::new();
+        return [
+            'reviewed_at' => 'datetime',
+            'published_at' => 'datetime',
+        ];
+    }
+
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function sections(): HasMany
+    {
+        return $this->hasMany(RoadmapSection::class);
+    }
+
+    public function lessons(): HasMany
+    {
+        return $this->hasMany(RoadmapLesson::class);
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
     }
 }

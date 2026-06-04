@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Auth\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
+use Modules\Learning\Models\RoadmapLesson;
 
 class Exam extends Model
 {
@@ -108,6 +109,14 @@ class Exam extends Model
     {
         return $this->hasMany(
             ExamAttempt::class,
+            'exam_id'
+        );
+    }
+
+    public function roadmapLessons(): HasMany
+    {
+        return $this->hasMany(
+            RoadmapLesson::class,
             'exam_id'
         );
     }
