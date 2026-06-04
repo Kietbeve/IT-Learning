@@ -11,14 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('document_favorites', function (Blueprint $table) {
+           Schema::create('document_reviews', function (Blueprint $table) {
             $table->id();
             $table->foreignId('document_id')->constrained('documents')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->timestamp('created_at')->useCurrent();
+            $table->tinyInteger('rating'); // 1..5
+            $table->text('review')->nullable();
+            $table->string('status')->default('visible'); // visible | hidden
+            $table->timestamps();
 
             $table->unique(['document_id', 'user_id']);
             $table->index('user_id');
+            $table->index('status');
             $table->index('created_at');
         });
     }
