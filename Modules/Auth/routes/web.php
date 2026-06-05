@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Http\Controllers\AuthController;
 use Modules\Auth\Http\Controllers\GoogleController;
+//
+use Modules\Auth\Livewire\UserProfile;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +23,7 @@ Route::group([], function () {
 Route::get("/login", [AuthController::class, 'UserLogin'])->name('login');
 Route::get('/dashboard', [AuthController::class, 'dashboard'])->middleware('auth')->name('auth.dashboard');
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+Route::get('/profile', UserProfile::class)->middleware('auth')->name('auth.profile');
 Route::get('/google', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
 Route::get('/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 //admin route
