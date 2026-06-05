@@ -30,6 +30,7 @@ class GoogleService
 
         Auth::login($user);
 
-        return redirect('/dashboard');
+       // return redirect('/dashboard');
+        return redirect('/exam');
     }
 }

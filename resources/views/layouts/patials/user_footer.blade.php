@@ -1,5 +1,5 @@
-<footer class="bg-gray-900 dark:bg-gray-950 text-gray-50 pt-12 pb-6 px-4 md:px-8 mt-auto font-sans">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<footer class="bg-gray-900 dark:bg-gray-950 text-gray-50 pt-4 pb-6 px-4 md:px-8 mt-auto font-sans">
+    <!-- <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div>
             <h3 class="text-xl font-semibold mb-4 text-white">ITLearning</h3>
             <p class="text-gray-400 dark:text-gray-500 leading-relaxed text-sm">
@@ -30,7 +30,7 @@
                 Address: HCMC, Vietnam
             </p>
         </div>
-    </div>
+    </div> -->
     <div class="max-w-7xl mx-auto mt-10 pt-6 border-t border-gray-800 dark:border-gray-900 text-center text-gray-500 text-sm">
         &copy; {{ date('Y') }} ITLearning. All rights reserved.
     </div>
