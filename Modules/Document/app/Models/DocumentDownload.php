@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Document\Database\factories\DocumentDownloadFactory;
 use App\Models\User;
-// use Modules\Payment\Models\OrderItem;
+use Modules\Payment\Models\OrderItem;
 use Modules\Document\Models\Document;
 class DocumentDownload extends Model
 {
@@ -26,5 +26,5 @@ class DocumentDownload extends Model
     public function document() { return $this->belongsTo(Document::class); }
     public function user() { return $this->belongsTo(\App\Models\User::class); }
     // Cross-Module
-    // public function orderItem() { return $this->belongsTo(\Modules\Payment\Models\OrderItem::class); }
+    public function orderItem() { return $this->belongsTo(\Modules\Payment\Models\OrderItem::class); }
 }
