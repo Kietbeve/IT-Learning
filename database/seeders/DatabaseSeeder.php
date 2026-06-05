@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
             TagSeeder::class,
             //seeder từ module
             \Modules\Auth\Database\Seeders\AuthDatabaseSeeder::class,
-            \Modules\Exam\database\seeders\QuestionSeeder::class,
+            \Modules\Exam\Database\Seeders\QuestionSeeder::class,
         ]);
     }
 }

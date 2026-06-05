@@ -59,7 +59,7 @@ return new class extends Migration
         $table->longText('feedback')
             ->nullable();
 
-        $table->timestamp('submitted_at');
+        $table->timestamp('submitted_at')->nullable();
 
         $table->timestamps();
 
