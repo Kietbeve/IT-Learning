@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <title>User Exam - {{ config('app.name', 'Laravel') }}</title>
+    <title>ITLearning</title>
 
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('Image/Logo.png') }}" type="image/png">
