@@ -18,18 +18,29 @@ class GoogleService
     {
         $googleUser = Socialite::driver('google')->user();
 
-        $user = User::updateOrCreate(
-            ['email' => $googleUser->email],
-            [
-                'name' => $googleUser->name,
+        // Kiểm tra tài khoản đã tồn tại chưa
+        $existingUser = User::where('email', $googleUser->email)->first();
+
+        if ($existingUser) {
+            // Tài khoản đã tồn tại: chỉ cập nhật thông tin Google
+            $existingUser->update([
                 'google_id' => $googleUser->id,
-                'avatar' => $googleUser->avatar,
-                // 'provider' => 'google', ko co luu provoider
-            ]
-        );
+                'avatar'    => $googleUser->avatar,
+            ]);
+            $user = $existingUser;
+        } else {
+            // Tài khoản chưa tồn tại: tạo mới và gán role student
+            $user = User::create([
+                'name'      => $googleUser->name,
+                'email'     => $googleUser->email,
+                'google_id' => $googleUser->id,
+                'avatar'    => $googleUser->avatar,
+            ]);
+            $user->assignRole('student');
+        }
 
         Auth::login($user);
 
-        return redirect('/dashboard');
+        return redirect('/exam');
     }
 }

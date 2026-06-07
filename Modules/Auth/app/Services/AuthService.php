@@ -53,4 +53,20 @@ class AuthService
             'user' => $user,
         ];
     }
+
+    /**
+     * Update a user's public profile fields.
+     *
+     * @param  array{name?:string,phone?:string|null,bio?:string|null}  $data
+     */
+    public function updateProfile(User $user, array $data): User
+    {
+        $user->update([
+            'name' => $data['name'],
+            'phone' => $data['phone'] ?? null,
+            'bio' => $data['bio'] ?? null,
+        ]);
+
+        return $user->fresh();
+    }
 }
