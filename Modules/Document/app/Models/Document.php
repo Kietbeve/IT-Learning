@@ -10,6 +10,8 @@ use Modules\Document\Models\Tag;
 use Modules\Document\Models\DocumentFavorite;
 use Modules\Document\Models\DocumentReview;
 use Modules\Document\Models\DocumentDownload;
+use App\Models\User;
+use Modules\Payment\Models\Product;
 class Document extends Model
 {
     use SoftDeletes;
@@ -27,8 +29,8 @@ class Document extends Model
         'published_at' => 'datetime',
     ];
 
-    // public function author() { return $this->belongsTo(\App\Models\User::class, 'author_id'); }
-    // public function reviewer() { return $this->belongsTo(\App\Models\User::class, 'reviewed_by'); }
+    public function author() { return $this->belongsTo(\App\Models\User::class, 'author_id'); }
+    public function reviewer() { return $this->belongsTo(\App\Models\User::class, 'reviewed_by'); }
     public function category() { return $this->belongsTo(Category::class); }
     public function tags() { return $this->belongsToMany(Tag::class, 'document_tag_maps'); }
     public function favorites() { return $this->hasMany(DocumentFavorite::class); }

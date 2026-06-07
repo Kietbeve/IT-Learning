@@ -2,5 +2,6 @@
     "Auth": true,
     "Exam": true,
     "Document": true,
-    "Learning": true
+    "Learning": true,
+    "Payment": true
 }
