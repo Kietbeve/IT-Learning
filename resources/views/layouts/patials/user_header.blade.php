@@ -1,10 +1,10 @@
 <header
-    class="bg-surface dark:bg-gray-800 shadow-md px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50">
+    class="bg-slate-900 shadow-md px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50">
     <div class="logo">
         <a href="#"
-            class="flex items-center gap-1 text-gray-900 dark:text-white text-2xl font-bold font-sans hover:opacity-80 transition-opacity whitespace-nowrap">
+            class="flex items-center gap-1 text-white text-2xl font-bold font-sans hover:opacity-80 transition-opacity whitespace-nowrap">
             <img src="{{ asset('Image/logo.png') }}" alt="Logo" class="h-12 w-auto object-contain">
-            <span class="tracking-tight">IT<span class="text-primary-600 dark:text-primary-500">Learning</span></span>
+            <span class="tracking-tight">IT<span class="text-blue-500">Learning</span></span>
         </a>
     </div>
 
@@ -13,10 +13,10 @@
             <x-dropdown>
                 <x-slot name="trigger">
                     <button
-                        class="flex items-center gap-2 text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-500 transition-colors duration-300 focus:outline-none">
+                        class="flex items-center gap-2 text-white hover:text-blue-400 transition-colors duration-300 focus:outline-none">
                         <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=2563eb&color=fff' }}"
                             alt="User Avatar"
-                            class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
+                            class="w-10 h-10 rounded-full border border-slate-700 shadow-sm">
                         <span class="font-medium font-sans hidden sm:block">{{ Auth::user()->name }}</span>
                         <x-icon name="chevron-down" class="w-4 h-4" />
                     </button>
@@ -43,7 +43,7 @@
             </x-dropdown>
         @else
             <a href="{{ route('auth.google.redirect') }}"
-                class="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-sm">
+                class="flex items-center gap-2 px-4 py-2 border border-slate-700 rounded-lg text-sm font-medium text-white bg-slate-800 hover:bg-slate-700 transition-colors duration-300 focus:outline-none shadow-sm">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

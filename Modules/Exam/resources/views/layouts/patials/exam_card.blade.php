@@ -6,7 +6,7 @@
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
     <!-- Header/Cover -->
-    <div class="h-32 bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center text-white relative">
+    <div class="h-32 bg-blue-800 flex items-center justify-center text-white relative">
         <x-icon name="document-text" class="w-12 h-12 opacity-75" />
 
         {{-- Badge danh mục --}}
@@ -64,12 +64,10 @@
                 </span>
             </div>
 
-            <x-button
-                primary
-                right-icon="arrow-right"
-                label="Xem chi tiết"
-                href="#"
-            />
+            <a href="#" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-800 rounded-lg hover:bg-blue-900 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                Xem chi tiết
+                <x-icon name="arrow-right" class="w-4 h-4" />
+            </a>
         </div>
     </div>
 </div>
