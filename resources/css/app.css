@@ -1,3 +1,5 @@
 @import "tailwindcss";
 @import '../../vendor/wireui/wireui/ts/global.css';
 @source '../../vendor/wireui/wireui';
+@import '../../vendor/power-components/livewire-powergrid/resources/css/tailwind4.css';
+@source '../../vendor/power-components/livewire-powergrid/resources/views';

@@ -13,7 +13,18 @@ use Modules\Exam\Http\Controllers\ExamController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+//route guest
+Route::group(["prefix"=> "exam"], function () {
+    // Route::resource('exam', ExamController::class)->names('exam');
+    Route::get("", [ExamController::class, 'index'])->name('exam.index');
+});
 
-Route::group([], function () {
-    Route::resource('exam', ExamController::class)->names('exam');
+//route auth
+Route::group(["prefix"=> "exam","middleware"=> "auth"], function () {
+
+});
+
+//route auth + contributor
+Route::group(["prefix"=> "contributor","middleware"=> ["auth",]], function () {
+    Route::get('questions',[ExamController::class,"questionManager"])->name('contributor.questions');
 });

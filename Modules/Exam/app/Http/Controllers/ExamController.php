@@ -64,4 +64,10 @@ class ExamController extends Controller
     {
         //
     }
+    //view contributor/questions
+    public function questionManager()
+    {
+        return view("exam::livewire.question-table");
+    }
+    
 }
