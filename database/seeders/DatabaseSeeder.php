@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             //seeder ngoài module
             CategorySeeder::class,
             TagSeeder::class,
+            SettingSeeder::class,
             //seeder từ module
             \Modules\Auth\Database\Seeders\AuthDatabaseSeeder::class,
             \Modules\Exam\Database\Seeders\QuestionSeeder::class,
