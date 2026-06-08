@@ -16,7 +16,7 @@
     <div class="flex min-h-screen">
         @include('layouts.patials.sidebar')
 
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col min-w-0">
             @include('layouts.patials.header')
 
             <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
@@ -26,11 +26,6 @@
                             <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
                                 {{ $pageTitle ?? 'Dashboard' }}
                             </h1>
-                            @if(!empty($breadcrumb))
-                                <nav class="mt-2 text-sm text-slate-500" aria-label="Breadcrumb">
-                                    {{ $breadcrumb }}
-                                </nav>
-                            @endif
                         </div>
                     </div>
 
@@ -46,6 +41,7 @@
                     @endif
 
                     @yield('content')
+                    {{ $slot ?? '' }}
                 </div>
             </main>
 
