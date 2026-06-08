@@ -428,32 +428,8 @@
                         <span class="text-slate-900 font-semibold">{{ number_format($doc->file_size / 1024 / 1024, 2) }} MB</span>
                     </div>
                     <div class="flex items-center justify-between text-sm">
-                        <span class="text-slate-500 font-medium">Năm đăng tải:</span>
-                        <span class="text-slate-900 font-semibold">{{ $doc->published_at ? $doc->published_at->year : ($doc->created_at ? $doc->created_at->year : 'N/A') }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-slate-500 font-medium">Bản quyền:</span>
-                        @if($doc->watermark_status === 'success')
-                            <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                                Đã bảo vệ
-                            </span>
-                        @elseif($doc->watermark_status === 'processing')
-                            <span class="inline-flex items-center gap-1 text-amber-600 font-semibold">
-                                <svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                                Đang xử lý
-                            </span>
-                        @elseif($doc->watermark_status === 'failed')
-                            <span class="inline-flex items-center gap-1 text-rose-500 font-semibold">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                Lỗi xử lý
-                            </span>
-                        @else
-                            <span class="inline-flex items-center gap-1 text-slate-400 font-semibold">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                Chờ xử lý
-                            </span>
-                        @endif
+                        <span class="text-slate-500 font-medium">Ngày đăng:</span>
+                        <span class="text-slate-900 font-semibold">{{ $doc->published_at ? $doc->published_at->format('d/m/Y') : ($doc->created_at ? $doc->created_at->format('d/m/Y') : 'N/A') }}</span>
                     </div>
                     @if(!$doc->is_downloadable)
                         <div class="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-700">
