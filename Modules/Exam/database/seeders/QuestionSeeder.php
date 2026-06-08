@@ -3,8 +3,10 @@
 namespace Modules\Exam\database\seeders;
 
 use Illuminate\Database\Seeder;
+use Str;
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\QuestionOption;
+use Modules\Exam\Models\Exam;
 
 class QuestionSeeder extends Seeder
 {
@@ -141,5 +143,40 @@ class QuestionSeeder extends Seeder
             'reviewed_by'     => null,
             'reviewed_at'     => null,
         ]);
+        //Exam
+        $exam = Exam::create([
+        'public_id'         => Str::uuid(),
+        'author_id'         => 1,
+        'category_id'       => 1,
+        'title'             => 'Đề thi Laravel cơ bản',
+        'slug'              => 'de-thi-laravel-co-ban',
+        'short_description' => 'Đề thi demo',
+        'description'       => 'Đề thi dùng để test giao diện làm bài.',
+        'type'              => 'hybrid',
+        'mode'              => 'practice',
+        'duration_minutes'  => 30,
+        'pass_percent'      => 50,
+        'visibility'        => 'public',
+        'status'            => 'approved',
+        'reviewed_by'       => 1,
+        'reviewed_at'       => now(),
+        'publish_at'        => now(),
+        ]);
+        //ExamQuestion
+        $exam->questions()->sync([
+            1 => [
+                'sort_order' => 1,
+                'score'      => 1,
+            ],
+            2 => [
+                'sort_order' => 2,
+                'score'      => 1,
+            ],
+            3 => [
+                'sort_order' => 3,
+                'score'      => 2,
+            ],
+        ]);
+        
     }
 }
