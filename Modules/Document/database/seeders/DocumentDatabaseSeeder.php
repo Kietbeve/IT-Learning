@@ -5,7 +5,7 @@ namespace Modules\Document\database\seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
+use Modules\Auth\Models\User;
 use App\Models\Category;
 use Modules\Document\Models\Document;
 use Modules\Document\Models\DocumentReview;
