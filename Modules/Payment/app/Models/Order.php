@@ -5,7 +5,9 @@ namespace Modules\Payment\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Payment\Database\factories\OrderFactory;
-
+use App\Models\User;
+use Modules\Payment\Models\OrderItem;
+use Modules\Payment\Models\Payment;
 class Order extends Model
 {
     use HasFactory;

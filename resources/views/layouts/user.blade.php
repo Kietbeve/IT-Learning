@@ -29,6 +29,7 @@
 
         <main class="flex-1 p-8 bg-gray-50">
             @yield('content')
+            {{ $slot ?? '' }}
         </main>
 
         <!-- User Footer -->

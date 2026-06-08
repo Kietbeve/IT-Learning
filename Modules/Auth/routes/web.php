@@ -20,6 +20,7 @@ Route::group([], function () {
 });
 Route::get("/login", [AuthController::class, 'UserLogin'])->name('login');
 Route::get('/dashboard', [AuthController::class, 'dashboard'])->middleware('auth')->name('auth.dashboard');
+Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth')->name('auth.profile');
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 Route::get('/google', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
 Route::get('/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');

@@ -5,13 +5,15 @@ namespace Modules\Document\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Document\Database\factories\DocumentFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Category;
-use Modules\Document\Models\Tag;
+use App\Models\Tag;
 use Modules\Document\Models\DocumentFavorite;
 use Modules\Document\Models\DocumentReview;
 use Modules\Document\Models\DocumentDownload;
 use App\Models\User;
 use Modules\Payment\Models\Product;
+
 class Document extends Model
 {
     use SoftDeletes;
