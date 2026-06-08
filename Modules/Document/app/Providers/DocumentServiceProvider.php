@@ -16,12 +16,29 @@ class DocumentServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Log::info('DocumentServiceProvider booting...');
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'database/migrations'));
+
+        // Đăng ký Livewire components
+        if (class_exists(\Livewire\Livewire::class)) {
+            \Illuminate\Support\Facades\Log::info('Livewire class exists, registering components...');
+            \Livewire\Livewire::component('user-document-list', \Modules\Document\Http\Livewire\User\DocumentList::class);
+            \Livewire\Livewire::component('user-document-detail', \Modules\Document\Http\Livewire\User\DocumentDetail::class);
+            \Livewire\Livewire::component('user-bookmarked-documents', \Modules\Document\Http\Livewire\User\BookmarkedDocuments::class);
+            \Livewire\Livewire::component('user-purchased-documents', \Modules\Document\Http\Livewire\User\PurchasedDocuments::class);
+
+            \Livewire\Livewire::component('admin-document-moderation', \Modules\Document\Http\Livewire\Admin\DocumentModeration::class);
+            \Livewire\Livewire::component('admin-document-detail', \Modules\Document\Http\Livewire\Admin\DocumentDetail::class);
+            \Livewire\Livewire::component('admin-document-list', \Modules\Document\Http\Livewire\Admin\DocumentList::class);
+            \Livewire\Livewire::component('admin-category-list', \Modules\Document\Http\Livewire\Admin\CategoryList::class);
+        } else {
+            \Illuminate\Support\Facades\Log::warning('Livewire class NOT found!');
+        }
     }
 
     /**

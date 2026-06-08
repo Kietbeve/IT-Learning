@@ -16,7 +16,7 @@ class DocumentReview extends Model
      */
     const UPDATED_AT = null; // Bảng này theo DBML chỉ có created_at
 
-    protected $fillable = ['document_id', 'user_id'];
+    protected $fillable = ['document_id', 'user_id', 'rating', 'review', 'status'];
 
     public function document() { return $this->belongsTo(Document::class); }
     public function user() { return $this->belongsTo(\App\Models\User::class); }
