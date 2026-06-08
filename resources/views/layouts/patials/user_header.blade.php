@@ -8,6 +8,26 @@
         </a>
     </div>
 
+    <!-- Navigation Menu -->
+    <nav class="hidden md:flex items-center gap-8 font-sans font-semibold text-sm">
+        <a href="/" 
+           class="{{ request()->is('/') ? 'text-blue-500 font-bold' : 'text-slate-300 hover:text-white' }} transition-colors duration-200">
+            Trang chủ
+        </a>
+        <a href="{{ route('documents.index') }}" 
+           class="{{ request()->is('documents*') ? 'text-blue-500 font-bold' : 'text-slate-300 hover:text-white' }} transition-colors duration-200">
+            Kho tài liệu
+        </a>
+        <a href="/exam" 
+           class="{{ request()->is('exam*') ? 'text-blue-500 font-bold' : 'text-slate-300 hover:text-white' }} transition-colors duration-200">
+            Đề thi
+        </a>
+        <a href="/learning" 
+           class="{{ request()->is('learning*') ? 'text-blue-500 font-bold' : 'text-slate-300 hover:text-white' }} transition-colors duration-200">
+            Lộ trình học tập
+        </a>
+    </nav>
+
     <div class="user-profile flex items-center">
         @auth
             <x-dropdown>
@@ -30,6 +50,24 @@
                     </div>
                 </x-dropdown.item>
 
+                @if(Route::has('purchases.index'))
+                    <x-dropdown.item href="{{ route('purchases.index') }}">
+                        <div class="flex items-center">
+                            <x-icon name="shopping-bag" class="w-4 h-4 mr-2" />
+                            <span>Tài liệu đã mua</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+
+                @if(Route::has('student.bookmarks'))
+                    <x-dropdown.item href="{{ route('student.bookmarks') }}">
+                        <div class="flex items-center">
+                            <x-icon name="heart" class="w-4 h-4 mr-2" />
+                            <span>Tài liệu yêu thích</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+
                 <form method="POST" action="{{ route('auth.logout') }}">
                     @csrf
                     <x-dropdown.item label="Đăng xuất" onclick="event.preventDefault(); this.closest('form').submit();">
@@ -38,7 +76,6 @@
                         </x-slot>
                     </x-dropdown.item>
                 </form>
-
 
             </x-dropdown>
         @else
