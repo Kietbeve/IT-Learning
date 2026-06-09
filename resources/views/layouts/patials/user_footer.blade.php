@@ -1,4 +1,4 @@
-<footer class="bg-gray-900 dark:bg-gray-950 text-gray-50 pt-4 pb-6 px-4 md:px-8 mt-auto font-sans">
+<footer class="bg-gray-900 dark:bg-gray-950 text-gray-50 pt-1 pb-2 px-4 md:px-8 mt-auto font-sans">
     <!-- <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div>
             <h3 class="text-xl font-semibold mb-4 text-white">ITLearning</h3>
@@ -31,7 +31,7 @@
             </p>
         </div>
     </div> -->
-    <div class="max-w-7xl mx-auto mt-10 pt-6 border-t border-gray-800 dark:border-gray-900 text-center text-gray-500 text-sm">
+    <div class="max-w-7xl mx-auto pt-4 border-t border-gray-800 dark:border-gray-900 text-center text-gray-500 text-sm">
         &copy; {{ date('Y') }} ITLearning. All rights reserved.
     </div>
 </footer>
