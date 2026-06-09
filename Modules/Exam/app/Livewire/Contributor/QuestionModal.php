@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Exam\Livewire;
+namespace Modules\Exam\Livewire\Contributor;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -223,6 +223,6 @@ class QuestionModal extends Component
 
     public function render()
     {
-        return view('exam::livewire.partials.question-modals');
+        return view('exam::contributor.livewire.question-modals');
     }
 }

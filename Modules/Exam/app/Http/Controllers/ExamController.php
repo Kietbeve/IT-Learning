@@ -68,11 +68,11 @@ class ExamController extends Controller
     //view contributor/questions
     public function questionManager()
     {
-        return view("exam::livewire.question-table");
+        return view("exam::contributor.question-table");
     }
     public function examManager()
     {
-        return view("exam::livewire.exam-table");
+        return view("exam::contributor.exam-table");
     }
     public function examDetail($examId)
     {
@@ -80,7 +80,7 @@ class ExamController extends Controller
         $questionCount = $exam->questions()->count();
         $attemptCount = $exam->attempts()->count();
         //return view ExamDetail with data
-        return view('exam::livewire.exam-detail', 
+        return view('exam::contributor.exam-detail', 
             compact('exam','questionCount','attemptCount'));
     }
     

@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Exam\Livewire;
+namespace Modules\Exam\Livewire\Contributor;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
@@ -62,6 +62,6 @@ class ExamModal extends Component
 
     public function render()
     {
-        return view('exam::livewire.partials.exam-modals');
+        return view('exam::contributor.livewire.exam-modals');
     }
 }

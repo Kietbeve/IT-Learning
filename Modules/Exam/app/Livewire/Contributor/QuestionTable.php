@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Exam\Livewire;
+namespace Modules\Exam\Livewire\Contributor;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
