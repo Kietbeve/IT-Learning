@@ -18,6 +18,9 @@ use Modules\Exam\Livewire\ExamDetail;
 Route::group(["prefix"=> "exam"], function () {
     // Route::resource('exam', ExamController::class)->names('exam');
     Route::get("", [ExamController::class, 'index'])->name('exam.index');
+
+    // Route test giao diện trang chi tiết bài thi từ module Payment
+    Route::get("detail", [ExamController::class, 'viewDetail'])->name('exam.detail');
 });
 
 //route auth

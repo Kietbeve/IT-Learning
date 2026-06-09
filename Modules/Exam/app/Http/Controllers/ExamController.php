@@ -19,6 +19,14 @@ class ExamController extends Controller
     }
 
     /**
+     * Hàm dùng để test giao diện trang chi tiết bài thi
+     */
+    public function viewDetail()
+    {
+        return view('exam::detail');
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

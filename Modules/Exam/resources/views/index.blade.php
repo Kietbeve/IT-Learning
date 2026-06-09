@@ -8,7 +8,7 @@
                 <div class="flex-1">
                     <x-input icon="magnifying-glass" placeholder="Nhập tên bài thi, danh mục để tìm kiếm..." />
                 </div>
-                <x-button label="Tìm kiếm" icon="magnifying-glass" class="hidden sm:flex bg-blue-800! hover:bg-blue-900! text-white! border-none!" />
+                <x-button indigo label="Tìm kiếm" icon="magnifying-glass" class="hidden sm:flex" />
             </div>
         </div>
 
