@@ -68,6 +68,23 @@
                     </x-dropdown.item>
                 @endif
 
+                @if(auth()->user()->hasRole('contributor'))
+                    <x-dropdown.item href="{{ route('contributor.dashboard') }}">
+                        <div class="flex items-center text-blue-600 font-semibold">
+                            <x-icon name="cloud-arrow-up" class="w-4 h-4 mr-2" />
+                            <span>Kênh người đăng tải</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+                @if(auth()->user()->hasRole('admin'))
+                    <x-dropdown.item href="{{ route('auth.admin.dashboard') }}">
+                        <div class="flex items-center text-amber-600 font-semibold">
+                            <x-icon name="shield-check" class="w-4 h-4 mr-2" />
+                            <span>Trang quản trị</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+
                 <form method="POST" action="{{ route('auth.logout') }}">
                     @csrf
                     <x-dropdown.item label="Đăng xuất" onclick="event.preventDefault(); this.closest('form').submit();">

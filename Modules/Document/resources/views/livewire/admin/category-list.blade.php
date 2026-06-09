@@ -1,4 +1,5 @@
-<div x-data="{ notification: null, showFormModal: @entangle('isFormOpen') }" 
+<div id="admin-category-list"
+     x-data="{ notification: null, showFormModal: @entangle('isFormOpen') }" 
      @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      @open-modal.window="if ($event.detail === 'category-form-modal') showFormModal = true"
      @close-modal.window="if ($event.detail === 'category-form-modal') showFormModal = false"
@@ -95,8 +96,10 @@
             </div>
         </div>
 
-        <!-- Mobile Card View (hidden on md and up) -->
-        <div class="block md:hidden divide-y divide-slate-100">
+        <!-- Table Content with Loading State -->
+        <div wire:loading.class="opacity-60 transition-opacity duration-200" class="transition-opacity duration-200">
+            <!-- Mobile Card View (hidden on md and up) -->
+            <div class="block md:hidden divide-y divide-slate-100">
             @forelse($categories as $cat)
                 <div class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-4">
@@ -207,11 +210,12 @@
                 </tbody>
             </table>
         </div>
+        </div>
 
         <!-- Pagination -->
         @if($categories->hasPages())
             <div class="p-6 border-t border-slate-200 bg-slate-50/50">
-                {{ $categories->links() }}
+                {{ $categories->links(data: ['scrollTo' => '#admin-category-list']) }}
             </div>
         @endif
     </section>

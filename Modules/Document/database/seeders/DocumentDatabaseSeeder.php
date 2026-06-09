@@ -29,6 +29,20 @@ class DocumentDatabaseSeeder extends Seeder
         // Tạo file PDF preview (2 trang để giả lập giới hạn xem thử)
         $pdfPreviewContent = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources << >> /MediaBox [0 0 612 792] /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 72 >>\nstream\nBT /F1 12 Tf 50 700 Td (BAN XEM TRUOC GIOI HAN - VUI LONG TAI XUONG DE XEM TOAN BO) Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000220 00000 n \ntrailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n341\n%%EOF";
         \Illuminate\Support\Facades\Storage::disk('public')->put('documents/giao-trinh-laravel-11-preview.pdf', $pdfPreviewContent);
+        
+        // Tạo file PDF watermarked
+        $pdfWatermarkedContent = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources << >> /MediaBox [0 0 612 792] /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 64 >>\nstream\nBT /F1 12 Tf 50 700 Td (BAN CO DONG DAU - IT-LEARNING COPYRIGHT WATERMARK) Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000220 00000 n \ntrailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n333\n%%EOF";
+        \Illuminate\Support\Facades\Storage::disk('public')->put('documents/giao-trinh-laravel-11-watermarked.pdf', $pdfWatermarkedContent);
+
+        // Tạo file PDF preview cho Tin học đại cương
+        \Illuminate\Support\Facades\Storage::disk('public')->put('documents/tin-hoc-dai-cuong-preview.pdf', $pdfPreviewContent);
+
+        // Tạo file PDF watermarked cho Tin học đại cương
+        \Illuminate\Support\Facades\Storage::disk('public')->put('documents/tin-hoc-dai-cuong-watermarked.pdf', $pdfWatermarkedContent);
+
+        // Tạo file PDF original cho Tin học đại cương
+        \Illuminate\Support\Facades\Storage::disk('public')->put('documents/tin-hoc-dai-cuong.pdf', $pdfContent);
+
 
         // Tạo file ZIP thật bằng ZipArchive
         $zipPath = storage_path('app/public/documents/source-code-php-web.zip');
@@ -117,6 +131,8 @@ class DocumentDatabaseSeeder extends Seeder
                 'short_description' => 'Tài liệu hướng dẫn học Laravel 11 chi tiết nhất phù hợp cho người mới bắt đầu.',
                 'description' => "Cuốn giáo trình này giúp bạn làm chủ Laravel 11 thông qua các bài học thực tế.\nNội dung chính:\n- Cài đặt và cấu hình môi trường\n- Routing, Controller và View\n- Database & Migrations, Eloquent ORM\n- Xây dựng ứng dụng CRUD hoàn chỉnh.",
                 'preview_file_path' => 'documents/giao-trinh-laravel-11-preview.pdf',
+                'file_watermarked_path' => 'documents/giao-trinh-laravel-11-watermarked.pdf',
+                'watermark_status' => 'success',
                 'file_original_path' => 'documents/giao-trinh-laravel-11.pdf',
                 'file_type' => 'pdf',
                 'file_size' => 1024 * 1024 * 5, // 5MB
@@ -255,9 +271,13 @@ class DocumentDatabaseSeeder extends Seeder
                     'author_id' => $contributorUser->id,
                     'category_id' => ($i % 2 === 0) ? $catLaravel->id : $catPHP->id,
                     'title' => "Tài liệu Tin học đại cương - Phần {$i}",
+                    'thumbnail' => ($i === 1) ? 'documents/cs_thumbnail.png' : null,
                     'short_description' => "Tài liệu tự học Tin học đại cương phần thứ {$i} dành cho sinh viên năm nhất.",
                     'description' => "Nội dung chi tiết của tài liệu ôn thi Tin học đại cương phần {$i}.\nBao gồm lý thuyết và bài tập thực hành mẫu.",
-                    'file_original_path' => "documents/tin-hoc-dai-cuong-{$i}.pdf",
+                    'preview_file_path' => 'documents/tin-hoc-dai-cuong-preview.pdf',
+                    'file_watermarked_path' => 'documents/tin-hoc-dai-cuong-watermarked.pdf',
+                    'watermark_status' => 'success',
+                    'file_original_path' => 'documents/tin-hoc-dai-cuong.pdf',
                     'file_type' => 'pdf',
                     'file_size' => 1024 * 100 * $i,
                     'visibility' => 'public',

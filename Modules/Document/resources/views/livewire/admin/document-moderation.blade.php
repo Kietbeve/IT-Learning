@@ -1,4 +1,5 @@
-<div x-data="{ notification: null, showRejectModal: false }" 
+<div id="admin-document-moderation"
+     x-data="{ notification: null, showRejectModal: false }" 
      @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      @open-modal.window="let d = $event.detail; if (d === 'reject-modal' || d?.[0] === 'reject-modal' || d?.id === 'reject-modal') showRejectModal = true"
      @close-modal.window="let d = $event.detail; if (d === 'reject-modal' || d?.[0] === 'reject-modal' || d?.id === 'reject-modal') showRejectModal = false"
@@ -27,23 +28,26 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid gap-6 xl:grid-cols-3 lg:grid-cols-2">
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Chờ kiểm duyệt</p>
-            <p class="mt-4 text-3xl font-semibold text-slate-900">{{ number_format($pendingCount) }}</p>
-            <p class="mt-2 text-sm text-slate-500">Tài liệu cần được xử lý</p>
+    <div class="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
+        <!-- Pending -->
+        <article class="rounded-3xl border border-amber-200 bg-amber-50/50 p-4 sm:p-6 shadow-sm">
+            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-amber-600 font-bold">Chờ kiểm duyệt</p>
+            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-amber-700">{{ number_format($pendingCount) }}</p>
+            <p class="mt-2 text-xs text-amber-500">Tài liệu cần được xử lý</p>
         </article>
 
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Đã duyệt hôm nay</p>
-            <p class="mt-4 text-3xl font-semibold text-slate-900">{{ number_format($approvedTodayCount) }}</p>
-            <p class="mt-2 text-sm text-slate-500">Tài liệu xuất bản thành công</p>
+        <!-- Approved Today -->
+        <article class="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-4 sm:p-6 shadow-sm">
+            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-emerald-600 font-bold">Đã duyệt hôm nay</p>
+            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-emerald-700">{{ number_format($approvedTodayCount) }}</p>
+            <p class="mt-2 text-xs text-emerald-500">Tài liệu xuất bản thành công</p>
         </article>
 
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Đã từ chối hôm nay</p>
-            <p class="mt-4 text-3xl font-semibold text-slate-900">{{ number_format($rejectedTodayCount) }}</p>
-            <p class="mt-2 text-sm text-slate-500">Tài liệu lỗi hoặc vi phạm</p>
+        <!-- Rejected Today -->
+        <article class="rounded-3xl border border-rose-200 bg-rose-50/50 p-4 sm:p-6 shadow-sm">
+            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-rose-600 font-bold">Đã từ chối hôm nay</p>
+            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-rose-700">{{ number_format($rejectedTodayCount) }}</p>
+            <p class="mt-2 text-xs text-rose-500">Tài liệu lỗi hoặc vi phạm</p>
         </article>
     </div>
 
@@ -66,14 +70,16 @@
             </div>
         </div>
 
-        <!-- Mobile Card View (hidden on md and up) -->
-        <div class="block md:hidden divide-y divide-slate-100">
+        <!-- Table Content with Loading State -->
+        <div wire:loading.class="opacity-60 transition-opacity duration-200" class="transition-opacity duration-200">
+            <!-- Mobile Card View (hidden on md and up) -->
+            <div class="block md:hidden divide-y divide-slate-100">
             @forelse($documents as $doc)
                 <div class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-4">
                         <div class="space-y-1.5 flex-1 min-w-0">
                             <a href="{{ route('admin.moderation.documents.show', $doc->id) }}" class="hover:text-blue-600 font-bold text-slate-900 block leading-tight text-base truncate" title="{{ $doc->title }}">
-                                {{ $doc->title }}
+                                {{ \Illuminate\Support\Str::limit($doc->title, 45) }}
                             </a>
                             
                             <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
@@ -143,9 +149,9 @@
                     @forelse($documents as $doc)
                         <tr class="hover:bg-slate-50/50 transition-colors">
                             <td class="px-4 py-4">
-                                <div class="space-y-1.5 max-w-[280px] sm:max-w-xs md:max-w-md lg:max-w-lg">
+                                <div class="space-y-1.5 max-w-[180px] sm:max-w-[200px] md:max-w-[220px] lg:max-w-[260px]">
                                     <a href="{{ route('admin.moderation.documents.show', $doc->id) }}" class="hover:text-blue-600 font-bold text-slate-900 block leading-tight truncate" title="{{ $doc->title }}">
-                                        {{ $doc->title }}
+                                        {{ \Illuminate\Support\Str::limit($doc->title, 45) }}
                                     </a>
                                     
                                     <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
@@ -165,7 +171,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-4 hidden md:table-cell whitespace-nowrap">
+                            <td class="px-4 py-4 hidden md:table-cell">
                                 <div class="flex items-center gap-2">
                                     <div class="h-6 w-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
                                         {{ substr($doc->author?->name ?? 'A', 0, 1) }}
@@ -202,11 +208,12 @@
                 </tbody>
             </table>
         </div>
+        </div>
 
         <!-- Pagination -->
         @if($documents->hasPages())
             <div class="p-6 border-t border-slate-200 bg-slate-50/50">
-                {{ $documents->links() }}
+                {{ $documents->links(data: ['scrollTo' => '#admin-document-moderation']) }}
             </div>
         @endif
     </section>

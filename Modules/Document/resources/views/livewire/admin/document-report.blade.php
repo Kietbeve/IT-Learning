@@ -1,4 +1,5 @@
-<div x-data="{ notification: null, showReportDismissModal: false }" 
+<div id="admin-document-report"
+     x-data="{ notification: null, showReportDismissModal: false }" 
      @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      @open-modal.window="let d = $event.detail; if (d === 'report-dismiss-modal' || d?.[0] === 'report-dismiss-modal' || d?.id === 'report-dismiss-modal') showReportDismissModal = true"
      @close-modal.window="let d = $event.detail; if (d === 'report-dismiss-modal' || d?.[0] === 'report-dismiss-modal' || d?.id === 'report-dismiss-modal') showReportDismissModal = false"
@@ -122,7 +123,9 @@
             </div>
         </div>
 
-        <!-- Cards Layout List -->
+        <!-- Table Content with Loading State -->
+        <div wire:loading.class="opacity-60 transition-opacity duration-200" class="transition-opacity duration-200">
+            <!-- Cards Layout List -->
         <div class="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
             @forelse($reports as $rep)
                 <article class="group relative rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-4">
@@ -247,7 +250,7 @@
         <!-- Pagination -->
         @if($reports && $reports->hasPages())
             <div class="p-4 border-t border-slate-200 bg-white rounded-3xl">
-                {{ $reports->links() }}
+                {{ $reports->links(data: ['scrollTo' => '#admin-document-report']) }}
             </div>
         @endif
     @endif

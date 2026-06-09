@@ -16,7 +16,7 @@ class GoogleService
 
     public function callback()
     {
-        $googleUser = Socialite::driver('google')->user();
+        $googleUser = Socialite::driver('google')->stateless()->user();
 
         // Kiểm tra tài khoản đã tồn tại chưa
         $existingUser = User::where('email', $googleUser->email)->first();
