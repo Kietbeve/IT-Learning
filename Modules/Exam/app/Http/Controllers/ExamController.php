@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Modules\Exam\Models\Exam;
 
 class ExamController extends Controller
 {
@@ -68,6 +69,19 @@ class ExamController extends Controller
     public function questionManager()
     {
         return view("exam::livewire.question-table");
+    }
+    public function examManager()
+    {
+        return view("exam::livewire.exam-table");
+    }
+    public function examDetail($examId)
+    {
+        $exam = Exam::findOrFail($examId);
+        $questionCount = $exam->questions()->count();
+        $attemptCount = $exam->attempts()->count();
+        //return view ExamDetail with data
+        return view('exam::livewire.exam-detail', 
+            compact('exam','questionCount','attemptCount'));
     }
     
 }
