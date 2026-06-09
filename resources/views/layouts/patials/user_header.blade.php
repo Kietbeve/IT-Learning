@@ -1,11 +1,43 @@
-<header
-    class="bg-slate-900 shadow-md px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50">
-    <div class="logo">
-        <a href="#"
-            class="flex items-center gap-1 text-white text-2xl font-bold font-sans hover:opacity-80 transition-opacity whitespace-nowrap">
-            <img src="{{ asset('Image/logo.png') }}" alt="Logo" class="h-12 w-auto object-contain">
-            <span class="tracking-tight">IT<span class="text-blue-500">Learning</span></span>
-        </a>
+<header class="bg-slate-900 shadow-md px-4 md:px-8 py-1 flex justify-between items-center sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+        <!-- Mobile Menu -->
+        <div x-data="{ open: false }" class="relative md:hidden">
+            <button @click="open = !open" @click.outside="open = false" class="text-slate-300 hover:text-white focus:outline-none transition-colors" aria-label="Menu">
+                <x-icon name="bars-3" class="w-7 h-7" />
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div x-show="open" 
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 x-cloak
+                 class="absolute left-0 mt-4 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                <a href="/" class="block px-4 py-2.5 text-sm {{ request()->is('/') ? 'text-blue-600 font-bold bg-blue-50' : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' }} transition-colors">
+                    Trang chủ
+                </a>
+                <a href="{{ route('documents.index') }}" class="block px-4 py-2.5 text-sm {{ request()->is('documents*') ? 'text-blue-600 font-bold bg-blue-50' : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' }} transition-colors">
+                    Kho tài liệu
+                </a>
+                <a href="/exam" class="block px-4 py-2.5 text-sm {{ request()->is('exam*') ? 'text-blue-600 font-bold bg-blue-50' : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' }} transition-colors">
+                    Đề thi
+                </a>
+                <a href="/learning" class="block px-4 py-2.5 text-sm {{ request()->is('learning*') ? 'text-blue-600 font-bold bg-blue-50' : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' }} transition-colors">
+                    Lộ trình học tập
+                </a>
+            </div>
+        </div>
+
+        <div class="logo">
+            <a href="#"
+                class="flex items-center gap-1 text-white text-2xl font-bold font-sans hover:opacity-80 transition-opacity whitespace-nowrap">
+                <img src="{{ asset('Image/logo.png') }}" alt="Logo" class="h-12 w-auto object-contain">
+                <span class="tracking-tight">IT<span class="text-blue-500">Learning</span></span>
+            </a>
+        </div>
     </div>
 
     <!-- Navigation Menu -->
