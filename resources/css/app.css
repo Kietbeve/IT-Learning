@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import '../../vendor/wireui/wireui/ts/global.css';
 @source '../../vendor/wireui/wireui';
+@source '../views';
+@source '../../Modules';
 
 @theme {
   --color-primary-50: var(--color-blue-50);
