@@ -34,4 +34,5 @@ Route::group(["prefix"=> "contributor","middleware"=> ["auth",]], function () {
     Route::get('exams',[ExamController::class,"examManager"])->name('contributor.exams');
     // Route::get('exams/{examId}/detail', [ExamController::class, 'examDetail'])->name('contributor.exams.detail');
     Route::get('exams/{examId}/detail', [ExamController::class,'examDetail'])->name('contributor.exams.detail');
+    route::get('exams/{examId}/questions',[ExamController::class,"examQuestionManager"])->name('contributor.exams.questions');
 });

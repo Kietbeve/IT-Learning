@@ -91,5 +91,30 @@ class ExamController extends Controller
         return view('exam::contributor.exam-detail', 
             compact('exam','questionCount','attemptCount'));
     }
-    
+    public function examQuestionManager($examId)
+    {
+        $exam = Exam::findOrFail($examId);
+
+        $questions = $exam->questions();
+
+        $stats = [
+            'total_questions' => (clone $questions)->count(),
+
+            'multiple_choice' => (clone $questions)
+                ->where('type', 'multiple_choice')
+                ->count(),
+            
+            'single_choice' => (clone $questions)
+            ->where('type', 'single_choice')
+            ->count(), 
+
+            'essay' => (clone $questions)
+                ->where('type', 'essay')
+                ->count(),
+
+            'total_score' => (clone $questions)
+                ->sum('exam_questions.score'),
+        ];
+        return view("exam::contributor.exam-question-table", compact('exam', 'stats'));
+    }
 }

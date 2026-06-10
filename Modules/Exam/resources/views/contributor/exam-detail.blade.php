@@ -74,8 +74,8 @@
         {{-- Quick Actions --}}
         <div class="grid gap-4 md:grid-cols-2">
 
-            {{-- <a href="{{ route('contributor.exams.questions', $exam) }}" --}}
-              <a href="#"
+            <a href="{{ route('contributor.exams.questions', $exam->id) }}"
+              {{-- <a href="#" --}}
                 class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-blue-500">
                 <div class="font-semibold">
                     Manage Questions
