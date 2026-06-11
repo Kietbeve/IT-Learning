@@ -21,6 +21,9 @@ Route::group(["prefix"=> "exam"], function () {
 
     // Route test giao diện trang chi tiết bài thi từ module Payment
     Route::get("detail", [ExamController::class, 'viewDetail'])->name('exam.detail');
+
+    //Route test giao diện trang bai thi
+    Route::get("exam_attempt", [ExamController::class, 'attempt'])->name('exam.detail');
 });
 
 //route auth
