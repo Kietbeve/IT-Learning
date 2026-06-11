@@ -18,7 +18,7 @@ Route::get('/roadmaps', function () {
 })->name('learning.roadmaps.index');
 
 Route::get('/roadmaps', function () {
-    return view('learning::layouts.route-list');
+    return view('learning::layouts.roadmap-list');
 });
 // Trang chi tiết lộ trình (Chính là file roadmap-detail của bạn)
 // Thay vì dùng Route::view, nên truyền tham số {id} động theo chuẩn sitemap
