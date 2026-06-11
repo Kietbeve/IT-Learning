@@ -90,7 +90,8 @@ final class QuestionTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Question::query();
+        return Question::query()
+        ->where('author_id', auth()->id());//Chỉ quản lí câu hỏi cá nhân
     }
 
     /*

@@ -11,6 +11,9 @@ use Modules\Exam\Models\Question;
 use Modules\Exam\Models\Question as QuestionModel;
 use App\Models\Category;
 use WireUi\Traits\WireUiActions;
+use Illuminate\Validation\ValidationException;
+use Modules\Exam\Http\Requests\StoreQuestionRequest;
+use Modules\Exam\Services\ExamService;
 
 class QuestionModal extends Component
 {
@@ -27,12 +30,19 @@ class QuestionModal extends Component
 
     // Form Edit
     public string $content = '';
+    public ?string $explanation = null;
     public ?string $difficulty = null;
     public ?string $type = null;
     public ?int $category_id = null;
 
     public array $options = [];
     public array $categories = [];
+    protected ExamService $examService;
+
+    public function boot(ExamService $examService): void
+    {
+        $this->examService = $examService;
+    }
 
     public function mount(): void
     {
@@ -46,6 +56,7 @@ class QuestionModal extends Component
             ->all();
     }
 
+    //Nhóm hàm nhận event mở model
     #[On('question-create')]
     public function create(): void
     {
@@ -82,14 +93,31 @@ class QuestionModal extends Component
     {
         $this->resetModal();
 
-        $this->question = Question::findOrFail($id);
+        $this->question = Question::with('options')->findOrFail($id);
 
+        $this->category_id = $this->question->category_id;
         $this->content = $this->question->content;
+        $this->explanation = $this->question->explanation;
         $this->difficulty = $this->question->difficulty;
         $this->type = $this->question->type;
 
+        // Load existing options
+        $existingOptions = $this->question->options->map(function ($option) {
+            return [
+                'content' => $option->content,
+                'is_correct' => $option->is_correct,
+            ];
+        })->toArray();
+
+        // Ensure at least 4 option slots
+        $this->options = array_pad($existingOptions, 4, [
+            'content' => '',
+            'is_correct' => false,
+        ]);
+
         $this->showEditModal = true;
     }
+
     #[On('question-delete-confirm')]
     public function deleteConfirm(int $id): void
     {
@@ -97,6 +125,7 @@ class QuestionModal extends Component
         $this->question = Question::findOrFail($id);
         $this->showDeleteModal = true;
     }
+
     #[On('question-bulk-delete-confirm')]
     public function bulkDeleteConfirm(array $ids): void
     {
@@ -104,8 +133,10 @@ class QuestionModal extends Component
         $this->questionIds = $ids;
         $this->showBulkDeleteModal = true;
     }
-    public function bulk_delete(): void
-        {
+
+    //Nhóm hàm xủ lí 
+    public function bulk_delete(): void//Hàm xóa ko cần tách sang service
+    {
         if (empty($this->questionIds)) {
             return;
         }
@@ -122,8 +153,10 @@ class QuestionModal extends Component
         );
 
         $this->dispatch('question-deleted');
+        $this->dispatch('pg:eventRefresh-question-table');
     }
-    public function delete_one(): void
+
+    public function delete_one(): void//Hàm xóa ko cần tách sang service
     {
         if (! $this->question) {
             return;
@@ -133,7 +166,44 @@ class QuestionModal extends Component
 
         $this->showDeleteModal = false;
 
+        $this->notification()->success(
+            title: 'Thành công!',
+            description: "Đã xóa 1 câu hỏi."
+        );
+
         $this->dispatch('question-deleted');
+        $this->dispatch('pg:eventRefresh-question-table');
+    }
+
+    protected function validateOptions(): void//hàm check option
+    {
+        if ($this->type === 'essay') {
+            return;
+        }
+
+        $options = collect($this->options)
+            ->filter(fn ($option) => filled($option['content'] ?? null))
+            ->values();
+
+        $correctCount = $options->where('is_correct', true)->count();
+
+        if ($options->count() < 2) {
+            throw ValidationException::withMessages([
+                'options' => 'Cần ít nhất 2 đáp án.',
+            ]);
+        }
+
+        if ($this->type === 'single_choice' && $correctCount !== 1) {
+            throw ValidationException::withMessages([
+                'options' => 'Phải có đúng 1 đáp án đúng.',
+            ]);
+        }
+
+        if ($this->type === 'multiple_choice' && $correctCount < 1) {
+            throw ValidationException::withMessages([
+                'options' => 'Phải có ít nhất 1 đáp án đúng.',
+            ]);
+        }
     }
     
     public function update(): void
@@ -143,23 +213,9 @@ class QuestionModal extends Component
         }
 
         $validated = $this->validate([
-            'content' => ['required'],
-            'difficulty' => ['required'],
-            'type' => ['required'],
-        ]);
-
-        $this->question->update($validated);
-
-        $this->showEditModal = false;
-
-        $this->dispatch('question-updated');
-    }
-
-    public function createQuestion(): void
-    {
-        $validated = $this->validate([
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'content' => ['required', 'string'],
+            'explanation' => ['nullable', 'string'],
             'difficulty' => ['required', 'in:easy,medium,hard'],
             'type' => ['required', 'in:single_choice,multiple_choice,essay'],
             'options' => ['array'],
@@ -167,36 +223,47 @@ class QuestionModal extends Component
             'options.*.is_correct' => ['nullable', 'boolean'],
         ]);
 
-        $userId = Auth::id();
+        // Validate options for choice questions
+        if (in_array($this->type, ['single_choice', 'multiple_choice'])) {
+            $this->validateOptions();
+        }
 
-        DB::transaction(function () use ($validated, $userId) {
-            $question = Question::create([
-                'author_id' => $userId,
-                'category_id' => $validated['category_id'],
-                'content' => $validated['content'],
-                'difficulty' => $validated['difficulty'],
-                'status' => 'pending',
-                'type' => $validated['type'],
-            ]);
+        // Use service layer to update
+        $this->examService->updateQuestion($this->question, $validated);
 
-            if (in_array($validated['type'], ['single_choice', 'multiple_choice'], true)) {
-                collect($validated['options'] ?? [])
-                    ->filter(fn ($option) => filled($option['content'] ?? null))
-                    ->values()
-                    ->each(function (array $option, int $index) use ($question): void {
-                        QuestionOption::create([
-                            'question_id' => $question->id,
-                            'option_key' => chr(65 + $index),
-                            'content' => $option['content'],
-                            'is_correct' => (bool) ($option['is_correct'] ?? false),
-                            'sort_order' => $index + 1,
-                        ]);
-                    });
-            }
-        });
+        $this->showEditModal = false;
+
+        $this->notification()->success(
+            title: 'Thành công!',
+            description: 'Đã cập nhật câu hỏi.'
+        );
+
+        $this->dispatch('question-updated');
+        $this->dispatch('pg:eventRefresh-question-table');
+    }
+
+    public function createQuestion(): void
+    {
+        $validated = $this->validate([
+            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'content' => ['required', 'string'],
+            'explanation' => ['nullable', 'string'],
+            'difficulty' => ['required', 'in:easy,medium,hard'],
+            'type' => ['required', 'in:single_choice,multiple_choice,essay'],
+            'options' => ['array'],
+            'options.*.content' => ['nullable', 'string'],
+            'options.*.is_correct' => ['nullable', 'boolean'],
+        ]);
+
+        // Validate options for choice questions
+        if (in_array($this->type, ['single_choice', 'multiple_choice'])) {
+            $this->validateOptions();
+        }
+
+        $this->examService->createQuestion($validated, Auth::id());
 
         $this->showCreateModal = false;
-        $this->reset(['category_id', 'content', 'difficulty', 'type', 'options']);
+        $this->reset(['category_id', 'content', 'explanation', 'difficulty', 'type', 'options']);
 
         $this->notification()->success(
             title: 'Thành công!',
@@ -204,6 +271,7 @@ class QuestionModal extends Component
         );
 
         $this->dispatch('question-created');
+        $this->dispatch('pg:eventRefresh-question-table');
     }
 
     public function resetModal(): void
