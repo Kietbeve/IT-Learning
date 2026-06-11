@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Modules\Exam\Models\Exam;
+use Modules\Exam\Models\AttemptAnswer;
 
 class ExamController extends Controller
 {
@@ -116,5 +117,44 @@ class ExamController extends Controller
                 ->sum('exam_questions.score'),
         ];
         return view("exam::contributor.exam-question-table", compact('exam', 'stats'));
+    }
+
+    public function examAttemptManager($examId)
+    {
+        $exam = Exam::findOrFail($examId);
+
+        $attempts = $exam->attempts();
+
+        $stats = [
+            'total_attempts' => (clone $attempts)->count(),
+
+            'submitted_attempts' => (clone $attempts)
+                ->where('status', 'submitted')
+                ->count(),
+            
+            'pass_rate' => (clone $attempts)
+            ->where('status', 'pass')
+            ->count(), 
+
+            'average_score' => (clone $attempts)
+                ->avg('score'),
+        ];
+        return view("exam::contributor.exam-attempt-table", compact('exam', 'stats'));
+    }
+    public function attemptAnswerDetail($attemptId)
+    {
+        $attemptAnswer = AttemptAnswer::query()
+            ->with([
+                'attempt.exam',
+                'attempt.user',
+                'question',
+            ])
+            ->where('attempt_id', $attemptId)
+            ->firstOrFail();
+
+        return view(
+            'exam::contributor.attempt-answer-table',
+            compact('attemptAnswer')
+        );
     }
 }

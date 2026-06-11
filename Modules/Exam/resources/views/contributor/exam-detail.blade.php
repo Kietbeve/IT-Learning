@@ -86,8 +86,8 @@
                 </div>
             </a>
 
-            {{-- <a href="{{ route('contributor.exams.attempts', $exam) }}" --}}
-              <a href="#"
+            <a href="{{ route('contributor.exams.attempts', $exam->id) }}"
+              {{-- <a href="#" --}}
                 class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-blue-500">
                 <div class="font-semibold">
                     Manage Attempts

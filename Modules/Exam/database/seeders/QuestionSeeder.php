@@ -7,6 +7,8 @@ use Str;
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\QuestionOption;
 use Modules\Exam\Models\Exam;
+use Modules\Exam\Models\ExamAttempt;
+use Modules\Exam\Models\AttemptAnswer;
 
 class QuestionSeeder extends Seeder
 {
@@ -177,6 +179,75 @@ class QuestionSeeder extends Seeder
                 'score'      => 2,
             ],
         ]);
-        
+        /*
+        |--------------------------------------------------------------------------
+        | Exam Attempt
+        |--------------------------------------------------------------------------
+        */
+
+        $attempt = ExamAttempt::create([
+            'exam_id'           => $exam->id,
+            'user_id'           => 1,
+            'session_id'        => Str::uuid(),
+
+            'started_at'        => now()->subMinutes(15),
+            'submitted_at'      => now(),
+
+            'expires_at'        => now()->addMinutes(15),
+
+            'total_questions'   => 3,
+
+            'correct_answers'   => 2,
+            'wrong_answers'     => 1,
+            'skipped_answers'   => 0,
+
+            'score'             => 2.00,
+            'percent_score'     => 50.00,
+
+            'is_passed'         => true,
+
+            'status'            => 'submitted',
+
+            'violation_count'   => 0,
+        ]);
+        // cau dung
+        AttemptAnswer::create([
+            'attempt_id'         => $attempt->id,
+            'question_id'        => $singleChoice->id,
+
+            'selected_option_ids'=> [2],
+
+            'answer_text'        => null,
+
+            'is_correct'         => true,
+
+            'answered_at'        => now()->subMinutes(10),
+        ]);
+        //cau sai
+        AttemptAnswer::create([
+            'attempt_id'         => $attempt->id,
+            'question_id'        => $multipleChoice->id,
+
+            'selected_option_ids'=> [5, 6],
+
+            'answer_text'        => null,
+
+            'is_correct'         => false,
+
+            'answered_at'        => now()->subMinutes(5),
+        ]);
+        //cau tu luan
+        AttemptAnswer::create([
+            'attempt_id'         => $attempt->id,
+            'question_id'        => 3,
+
+            'selected_option_ids'=> null,
+
+            'answer_text'        => 'Service Container giúp quản lý dependency và hỗ trợ Dependency Injection.',
+
+            'is_correct'         => true,
+
+            'answered_at'        => now()->subMinute(),
+        ]);
     }
 }
