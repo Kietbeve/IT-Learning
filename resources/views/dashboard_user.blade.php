@@ -3,112 +3,354 @@
 @section('content')
     <div class="max-w-7xl mx-auto pb-8 pt-4 px-4 sm:px-6 lg:px-8 space-y-10">
         
-        {{-- Welcome Section --}}
-        <div class="bg-linear-to-r from-blue-50 to-indigo-50 rounded-2xl border border-indigo-100 shadow-sm p-6 sm:p-8 flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Chào mừng trở lại, {{ auth()->user()->name ?? 'Người dùng' }}! 👋</h1>
-                <p class="text-gray-600 text-sm sm:text-base">Hôm nay bạn muốn học gì nào? Tiếp tục hành trình chinh phục kiến thức nhé.</p>
-            </div>
-            <div class="hidden md:flex items-center justify-center bg-white w-24 h-24 rounded-full shadow-sm border border-indigo-100 shrink-0">
-                <x-icon name="academic-cap" class="w-12 h-12 text-indigo-500" />
-            </div>
-        </div>
-
-        {{-- Quick Access (QA1 - QA4) --}}
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <a href="#" class="rounded-2xl p-5 sm:p-6 bg-linear-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/20 hover:-translate-y-1 hover:shadow-blue-500/40 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 text-center group">
-                <x-icon name="document-text" class="w-8 h-8 sm:w-10 sm:h-10 text-white opacity-90 group-hover:scale-110 transition-transform" />
-                <div class="font-bold text-white text-sm sm:text-base">Kho tài liệu</div>
-            </a>
-            <a href="#" class="rounded-2xl p-5 sm:p-6 bg-linear-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 hover:-translate-y-1 hover:shadow-green-500/40 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 text-center group">
-                <x-icon name="pencil-square" class="w-8 h-8 sm:w-10 sm:h-10 text-white opacity-90 group-hover:scale-110 transition-transform" />
-                <div class="font-bold text-white text-sm sm:text-base">Luyện thi</div>
-            </a>
-            <a href="#" class="rounded-2xl p-5 sm:p-6 bg-linear-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/20 hover:-translate-y-1 hover:shadow-purple-500/40 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 text-center group">
-                <x-icon name="map" class="w-8 h-8 sm:w-10 sm:h-10 text-white opacity-90 group-hover:scale-110 transition-transform" />
-                <div class="font-bold text-white text-sm sm:text-base">Lộ trình</div>
-            </a>
-            <a href="#" class="rounded-2xl p-5 sm:p-6 bg-linear-to-br from-amber-400 to-amber-500 shadow-lg shadow-amber-500/20 hover:-translate-y-1 hover:shadow-amber-500/40 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 text-center group">
-                <x-icon name="bookmark" class="w-8 h-8 sm:w-10 sm:h-10 text-white opacity-90 group-hover:scale-110 transition-transform" />
-                <div class="font-bold text-white text-sm sm:text-base">Đã lưu</div>
-            </a>
-        </div>
-
-        {{-- Notify --}}
-        <div>
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Thông báo mới</h2>
-                <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Xem tất cả &rarr;</a>
-            </div>
-            <x-card padding="none" class="overflow-hidden">
-                <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-                    <div class="flex gap-4 p-5 hover:bg-gray-50 transition-colors cursor-pointer">
-                        <div class="shrink-0 mt-1">
-                            <div class="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50"></div>
-                        </div>
-                        <div>
-                            <p class="text-sm sm:text-base font-semibold text-gray-800 leading-snug">Cập nhật đề thi mới</p>
-                            <p class="text-sm text-gray-500 mt-1 line-clamp-2">Hệ thống đã cập nhật thêm 50 câu hỏi cho bài Đánh giá năng lực.</p>
-                            <p class="text-xs font-medium text-blue-600 mt-2">2 giờ trước</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 p-5 hover:bg-gray-50 transition-colors cursor-pointer">
-                        <div class="shrink-0 mt-1">
-                            <div class="w-3 h-3 rounded-full bg-green-500 shadow-sm shadow-green-500/50"></div>
-                        </div>
-                        <div>
-                            <p class="text-sm sm:text-base font-semibold text-gray-800 leading-snug">Hoàn thành Lộ trình</p>
-                            <p class="text-sm text-gray-500 mt-1 line-clamp-2">Chúc mừng bạn đã hoàn thành xuất sắc Lộ trình PHP Cơ bản.</p>
-                            <p class="text-xs font-medium text-green-600 mt-2">Hôm qua</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 p-5 hover:bg-gray-50 transition-colors cursor-pointer">
-                        <div class="shrink-0 mt-1">
-                            <div class="w-3 h-3 rounded-full bg-purple-500 shadow-sm shadow-purple-500/50"></div>
-                        </div>
-                        <div>
-                            <p class="text-sm sm:text-base font-semibold text-gray-800 leading-snug">Sự kiện tháng 6</p>
-                            <p class="text-sm text-gray-500 mt-1 line-clamp-2">Tham gia đóng góp tài liệu để nhận các badge độc quyền.</p>
-                            <p class="text-xs font-medium text-purple-600 mt-2">3 ngày trước</p>
-                        </div>
-                    </div>
+        {{-- Welcome Bar --}}
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-indigo-100 shadow-sm p-4 sm:p-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex items-center justify-center bg-indigo-100 w-12 h-12 rounded-full">
+                    <x-icon name="hand-raised" class="w-6 h-6 text-indigo-600" />
                 </div>
-            </x-card>
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-900">
+                        Chào mừng trở lại, {{ auth()->user()->name ?? 'Người dùng' }}! 👋
+                    </h2>
+                    <p class="text-sm text-gray-600 mt-0.5">Hôm nay bạn muốn học gì?</p>
+                </div>
+            </div>
         </div>
 
-        {{-- Documents (4 cards) --}}
+        {{-- 1. Hero Section --}}
+        <div class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl shadow-xl p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden">
+            {{-- Decorative elements --}}
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            
+            <div class="relative z-10">
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+                    Khám phá kho tài liệu IT hàng đầu
+                </h1>
+                <p class="text-base sm:text-lg lg:text-xl text-indigo-50 mb-6 sm:mb-8 max-w-3xl mx-auto">
+                    Truy cập hàng nghìn tài liệu chất lượng cao, đề thi thực tế và lộ trình học tập được xây dựng bởi các chuyên gia trong ngành. Bắt đầu hành trình chinh phục kiến thức IT của bạn ngay hôm nay.
+                </p>
+                <x-button primary xl label="Khám phá tài liệu" right-icon="arrow-right" class="shadow-lg shadow-indigo-900/30 font-semibold" />
+            </div>
+        </div>
+
+        {{-- 2. Danh mục nổi bật --}}
         <div>
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Tài liệu mới nổi bật</h2>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Danh mục nổi bật</h2>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+                {{-- Category Card 1: Lập trình Web --}}
+                <a href="#" class="group">
+                    <x-card padding="p-5 sm:p-6" class="hover:shadow-lg hover:border-indigo-300 transition-all cursor-pointer border-2 border-transparent h-full">
+                        <div class="flex flex-col items-center text-center gap-3">
+                            <div class="p-3 bg-blue-50 rounded-xl text-blue-600 group-hover:bg-blue-100 transition-colors">
+                                <x-icon name="code-bracket" class="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">Lập trình Web</h3>
+                                <p class="text-xs text-gray-500">156 tài liệu</p>
+                            </div>
+                        </div>
+                    </x-card>
+                </a>
+
+                {{-- Category Card 2: Mobile App --}}
+                <a href="#" class="group">
+                    <x-card padding="p-5 sm:p-6" class="hover:shadow-lg hover:border-green-300 transition-all cursor-pointer border-2 border-transparent h-full">
+                        <div class="flex flex-col items-center text-center gap-3">
+                            <div class="p-3 bg-green-50 rounded-xl text-green-600 group-hover:bg-green-100 transition-colors">
+                                <x-icon name="device-phone-mobile" class="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">Mobile App</h3>
+                                <p class="text-xs text-gray-500">98 tài liệu</p>
+                            </div>
+                        </div>
+                    </x-card>
+                </a>
+
+                {{-- Category Card 3: Database --}}
+                <a href="#" class="group">
+                    <x-card padding="p-5 sm:p-6" class="hover:shadow-lg hover:border-purple-300 transition-all cursor-pointer border-2 border-transparent h-full">
+                        <div class="flex flex-col items-center text-center gap-3">
+                            <div class="p-3 bg-purple-50 rounded-xl text-purple-600 group-hover:bg-purple-100 transition-colors">
+                                <x-icon name="circle-stack" class="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">Database</h3>
+                                <p class="text-xs text-gray-500">124 tài liệu</p>
+                            </div>
+                        </div>
+                    </x-card>
+                </a>
+
+                {{-- Category Card 4: DevOps --}}
+                <a href="#" class="group">
+                    <x-card padding="p-5 sm:p-6" class="hover:shadow-lg hover:border-orange-300 transition-all cursor-pointer border-2 border-transparent h-full">
+                        <div class="flex flex-col items-center text-center gap-3">
+                            <div class="p-3 bg-orange-50 rounded-xl text-orange-600 group-hover:bg-orange-100 transition-colors">
+                                <x-icon name="server" class="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">DevOps</h3>
+                                <p class="text-xs text-gray-500">87 tài liệu</p>
+                            </div>
+                        </div>
+                    </x-card>
+                </a>
+
+                {{-- Category Card 5: AI & ML --}}
+                <a href="#" class="group">
+                    <x-card padding="p-5 sm:p-6" class="hover:shadow-lg hover:border-pink-300 transition-all cursor-pointer border-2 border-transparent h-full">
+                        <div class="flex flex-col items-center text-center gap-3">
+                            <div class="p-3 bg-pink-50 rounded-xl text-pink-600 group-hover:bg-pink-100 transition-colors">
+                                <x-icon name="cpu-chip" class="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">AI & ML</h3>
+                                <p class="text-xs text-gray-500">143 tài liệu</p>
+                            </div>
+                        </div>
+                    </x-card>
+                </a>
+
+                {{-- Category Card 6: Security --}}
+                <a href="#" class="group">
+                    <x-card padding="p-5 sm:p-6" class="hover:shadow-lg hover:border-red-300 transition-all cursor-pointer border-2 border-transparent h-full">
+                        <div class="flex flex-col items-center text-center gap-3">
+                            <div class="p-3 bg-red-50 rounded-xl text-red-600 group-hover:bg-red-100 transition-colors">
+                                <x-icon name="shield-check" class="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">Security</h3>
+                                <p class="text-xs text-gray-500">76 tài liệu</p>
+                            </div>
+                        </div>
+                    </x-card>
+                </a>
+
+                {{-- Category Card 7: Cloud Computing --}}
+                <a href="#" class="group">
+                    <x-card padding="p-5 sm:p-6" class="hover:shadow-lg hover:border-cyan-300 transition-all cursor-pointer border-2 border-transparent h-full">
+                        <div class="flex flex-col items-center text-center gap-3">
+                            <div class="p-3 bg-cyan-50 rounded-xl text-cyan-600 group-hover:bg-cyan-100 transition-colors">
+                                <x-icon name="cloud" class="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">Cloud Computing</h3>
+                                <p class="text-xs text-gray-500">112 tài liệu</p>
+                            </div>
+                        </div>
+                    </x-card>
+                </a>
+
+                {{-- Category Card 8: UI/UX Design --}}
+                <a href="#" class="group">
+                    <x-card padding="p-5 sm:p-6" class="hover:shadow-lg hover:border-amber-300 transition-all cursor-pointer border-2 border-transparent h-full">
+                        <div class="flex flex-col items-center text-center gap-3">
+                            <div class="p-3 bg-amber-50 rounded-xl text-amber-600 group-hover:bg-amber-100 transition-colors">
+                                <x-icon name="sparkles" class="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">UI/UX Design</h3>
+                                <p class="text-xs text-gray-500">91 tài liệu</p>
+                            </div>
+                        </div>
+                    </x-card>
+                </a>
+            </div>
+        </div>
+
+        {{-- 3. Top tài liệu (8 cards) --}}
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Top tài liệu tải nhiều nhất</h2>
                 <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Xem thêm &rarr;</a>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-                {{-- Mocking 4 Document Cards --}}
-                @for ($i = 0; $i < 4; $i++)
-                <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100">
-                    <div class="h-40 bg-gray-50 flex items-center justify-center border-b border-gray-100">
-                        <x-icon name="document" class="w-12 h-12 text-gray-300" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+                {{-- Document Card 1 --}}
+                <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
+                    <div class="h-40 bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center border-b border-gray-100">
+                        <x-icon name="document-text" class="w-16 h-16 text-indigo-400 group-hover:scale-110 transition-transform" />
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
                         <div class="flex items-center gap-2 mb-2">
-                            <x-badge flat gray label="Ebook" />
+                            <x-badge flat primary label="PDF" />
                             <span class="text-[11px] text-gray-500">Vừa cập nhật</span>
                         </div>
-                        <h3 class="text-base font-semibold text-gray-900 line-clamp-2 mb-2">Tài liệu Lập trình Laravel 11 toàn tập từ A-Z cho người mới</h3>
+                        <h3 class="text-base font-semibold text-gray-900 line-clamp-2 mb-2">Laravel 11 - Hướng dẫn toàn tập từ cơ bản đến nâng cao</h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                            <x-icon name="arrow-down-tray" class="w-4 h-4" />
+                            <span class="font-medium">2,847 lượt tải</span>
+                        </div>
                         <div class="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
                             <span class="text-sm font-bold text-green-600">Miễn phí</span>
                             <x-button outline indigo sm label="Xem chi tiết" />
                         </div>
                     </div>
                 </x-card>
-                @endfor
+
+                {{-- Document Card 2 --}}
+                <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
+                    <div class="h-40 bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center border-b border-gray-100">
+                        <x-icon name="document-text" class="w-16 h-16 text-green-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex items-center gap-2 mb-2">
+                            <x-badge flat positive label="Ebook" />
+                            <span class="text-[11px] text-gray-500">2 ngày trước</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-gray-900 line-clamp-2 mb-2">ReactJS & NextJS 14 - Xây dựng ứng dụng web hiện đại</h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                            <x-icon name="arrow-down-tray" class="w-4 h-4" />
+                            <span class="font-medium">2,456 lượt tải</span>
+                        </div>
+                        <div class="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
+                            <span class="text-sm font-bold text-green-600">Miễn phí</span>
+                            <x-button outline indigo sm label="Xem chi tiết" />
+                        </div>
+                    </div>
+                </x-card>
+
+                {{-- Document Card 3 --}}
+                <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
+                    <div class="h-40 bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center border-b border-gray-100">
+                        <x-icon name="document-text" class="w-16 h-16 text-purple-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex items-center gap-2 mb-2">
+                            <x-badge flat secondary label="Video" />
+                            <span class="text-[11px] text-gray-500">3 ngày trước</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-gray-900 line-clamp-2 mb-2">Python cho Data Science - Khóa học thực hành</h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                            <x-icon name="arrow-down-tray" class="w-4 h-4" />
+                            <span class="font-medium">2,189 lượt tải</span>
+                        </div>
+                        <div class="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
+                            <span class="text-sm font-bold text-indigo-600">299,000đ</span>
+                            <x-button outline indigo sm label="Xem chi tiết" />
+                        </div>
+                    </div>
+                </x-card>
+
+                {{-- Document Card 4 --}}
+                <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
+                    <div class="h-40 bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center border-b border-gray-100">
+                        <x-icon name="document-text" class="w-16 h-16 text-orange-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex items-center gap-2 mb-2">
+                            <x-badge flat warning label="PDF" />
+                            <span class="text-[11px] text-gray-500">1 tuần trước</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-gray-900 line-clamp-2 mb-2">Docker & Kubernetes - DevOps từ A đến Z</h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                            <x-icon name="arrow-down-tray" class="w-4 h-4" />
+                            <span class="font-medium">1,976 lượt tải</span>
+                        </div>
+                        <div class="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
+                            <span class="text-sm font-bold text-green-600">Miễn phí</span>
+                            <x-button outline indigo sm label="Xem chi tiết" />
+                        </div>
+                    </div>
+                </x-card>
+
+                {{-- Document Card 5 --}}
+                <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
+                    <div class="h-40 bg-gradient-to-br from-cyan-50 to-blue-50 flex items-center justify-center border-b border-gray-100">
+                        <x-icon name="document-text" class="w-16 h-16 text-cyan-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex items-center gap-2 mb-2">
+                            <x-badge flat info label="Ebook" />
+                            <span class="text-[11px] text-gray-500">5 ngày trước</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-gray-900 line-clamp-2 mb-2">AWS Cloud Architecture - Thiết kế hệ thống cloud</h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                            <x-icon name="arrow-down-tray" class="w-4 h-4" />
+                            <span class="font-medium">1,834 lượt tải</span>
+                        </div>
+                        <div class="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
+                            <span class="text-sm font-bold text-indigo-600">399,000đ</span>
+                            <x-button outline indigo sm label="Xem chi tiết" />
+                        </div>
+                    </div>
+                </x-card>
+
+                {{-- Document Card 6 --}}
+                <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
+                    <div class="h-40 bg-gradient-to-br from-amber-50 to-yellow-50 flex items-center justify-center border-b border-gray-100">
+                        <x-icon name="document-text" class="w-16 h-16 text-amber-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex items-center gap-2 mb-2">
+                            <x-badge flat warning label="PDF" />
+                            <span class="text-[11px] text-gray-500">1 tuần trước</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-gray-900 line-clamp-2 mb-2">Thiết kế UI/UX chuyên nghiệp với Figma</h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                            <x-icon name="arrow-down-tray" class="w-4 h-4" />
+                            <span class="font-medium">1,723 lượt tải</span>
+                        </div>
+                        <div class="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
+                            <span class="text-sm font-bold text-green-600">Miễn phí</span>
+                            <x-button outline indigo sm label="Xem chi tiết" />
+                        </div>
+                    </div>
+                </x-card>
+
+                {{-- Document Card 7 --}}
+                <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
+                    <div class="h-40 bg-gradient-to-br from-rose-50 to-pink-50 flex items-center justify-center border-b border-gray-100">
+                        <x-icon name="document-text" class="w-16 h-16 text-rose-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex items-center gap-2 mb-2">
+                            <x-badge flat negative label="Video" />
+                            <span class="text-[11px] text-gray-500">4 ngày trước</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-gray-900 line-clamp-2 mb-2">Flutter - Xây dựng app mobile đa nền tảng</h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                            <x-icon name="arrow-down-tray" class="w-4 h-4" />
+                            <span class="font-medium">1,645 lượt tải</span>
+                        </div>
+                        <div class="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
+                            <span class="text-sm font-bold text-indigo-600">249,000đ</span>
+                            <x-button outline indigo sm label="Xem chi tiết" />
+                        </div>
+                    </div>
+                </x-card>
+
+                {{-- Document Card 8 --}}
+                <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
+                    <div class="h-40 bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center border-b border-gray-100">
+                        <x-icon name="document-text" class="w-16 h-16 text-teal-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex items-center gap-2 mb-2">
+                            <x-badge flat positive label="Ebook" />
+                            <span class="text-[11px] text-gray-500">6 ngày trước</span>
+                        </div>
+                        <h3 class="text-base font-semibold text-gray-900 line-clamp-2 mb-2">Cybersecurity Fundamentals - Bảo mật cơ bản</h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                            <x-icon name="arrow-down-tray" class="w-4 h-4" />
+                            <span class="font-medium">1,512 lượt tải</span>
+                        </div>
+                        <div class="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
+                            <span class="text-sm font-bold text-green-600">Miễn phí</span>
+                            <x-button outline indigo sm label="Xem chi tiết" />
+                        </div>
+                    </div>
+                </x-card>
             </div>
         </div>
 
-        {{-- Exams (3 cards) --}}
+        {{-- 4. Đề thi mới nhất (4 cards) --}}
         <div>
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Đề thi khuyên dùng</h2>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Đề thi mới nhất</h2>
                 <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Xem thêm &rarr;</a>
             </div>
             <div class="grid grid-cols-1 gap-4 sm:gap-5">
@@ -116,10 +358,11 @@
                 @include('exam::patials.exam_card')
                 @include('exam::patials.exam_card')
                 @include('exam::patials.exam_card')
+                @include('exam::patials.exam_card')
             </div>
         </div>
 
-        {{-- Roadmaps (3 cards) --}}
+        {{-- 5. Lộ trình học (3 cards - GIỮ NGUYÊN) --}}
         <div>
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Lộ trình học tập</h2>
@@ -146,26 +389,31 @@
             </div>
         </div>
 
-        {{-- Become Contributor --}}
-        <div class="bg-slate-900 rounded-3xl shadow-xl p-8 sm:p-10 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 mt-12">
-            <div class="relative z-10 md:w-2/3 text-center md:text-left">
-                <x-badge flat white label="Cộng đồng" class="mb-4" />
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Trở thành Người đóng góp</h2>
-                <p class="text-slate-300 mb-8 max-w-xl text-base sm:text-lg mx-auto md:mx-0">
-                    Chia sẻ kiến thức của bạn với cộng đồng. Đóng góp tài liệu, đề thi hoặc lộ trình học tập để giúp đỡ những người khác và nhận được nhiều quyền lợi đặc biệt.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-                    <x-button primary xl label="Tham gia ngay" right-icon="arrow-right" class="font-semibold shadow-lg shadow-indigo-500/30" />
-                    <x-button outline white xl label="Tìm hiểu quyền lợi" />
+        {{-- 6. CTA Đăng nhập Google --}}
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl shadow-xl p-8 sm:p-10 lg:p-12 text-white relative overflow-hidden">
+            {{-- Decorative pattern --}}
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div class="text-center md:text-left md:w-2/3">
+                    <x-badge flat white label="Thành viên" class="mb-4" />
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+                        Đăng nhập để mở khóa toàn bộ tính năng
+                    </h2>
+                    <p class="text-blue-50 mb-6 sm:mb-8 max-w-2xl text-base sm:text-lg mx-auto md:mx-0">
+                        Lưu tài liệu yêu thích, theo dõi tiến độ học tập, tham gia cộng đồng và nhận thông báo về tài liệu mới. Đăng nhập ngay để trải nghiệm đầy đủ các tính năng của nền tảng.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                        <x-button white xl label="Đăng nhập với Google" class="font-semibold shadow-lg" />
+                        <x-button outline white xl label="Tìm hiểu thêm" />
+                    </div>
+                </div>
+                <div class="shrink-0 hidden md:flex items-center justify-center">
+                    <div class="w-40 h-40 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <x-icon name="user-circle" class="w-24 h-24 text-white drop-shadow-lg" />
+                    </div>
                 </div>
             </div>
-            <div class="relative z-10 shrink-0 hidden md:flex items-center justify-center p-6">
-                <div class="w-48 h-48 bg-linear-to-tr from-indigo-500 to-purple-500 rounded-full opacity-20 blur-3xl absolute"></div>
-                <x-icon name="globe-asia-australia" class="w-40 h-40 text-indigo-400 opacity-90 drop-shadow-2xl" />
-            </div>
-            
-            {{-- Decorative pattern --}}
-            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
         </div>
 
     </div>
