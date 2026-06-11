@@ -2,7 +2,7 @@
 
 <div>
     <x-notifications z-index="z-50" />
-
+    {{-- Modal: Xem chi tiết câu hỏi --}}
     <x-modal-card title="Chi tiết câu hỏi" blur wire:model="showViewModal" max-width="2xl">
         @if ($question)
             <div class="space-y-4">
@@ -42,7 +42,7 @@
                         <div class="space-y-2">
                             @foreach ($question->options as $option)
                                     <div class="flex items-center justify-between rounded-lg border p-3
-                                                                                                                {{ $option->is_correct
+                                                                                                                                {{ $option->is_correct
                                 ? 'border-green-300 bg-green-50'
                                 : 'border-slate-200 bg-white' }}">
                                         <div>
@@ -60,6 +60,19 @@
                                         @endif
                                     </div>
                             @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Explanation --}}
+                @if (!empty($question->explanation))
+                    <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                        <h3 class="mb-2 font-semibold text-blue-700">
+                            Giải thích
+                        </h3>
+
+                        <div class="text-sm text-slate-700">
+                            {!! $question->explanation !!}
                         </div>
                     </div>
                 @endif
@@ -85,6 +98,12 @@
             </x-native-select>
 
             <x-textarea label="Nội dung" wire:model="content" />
+
+            <x-textarea
+                label="Giải thích"
+                wire:model="explanation"
+                placeholder="Giải thích đáp án hoặc kiến thức liên quan (không bắt buộc)"
+            />
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <x-native-select label="Độ khó" wire:model="difficulty">
@@ -117,6 +136,12 @@
                             </label>
                         </div>
                     @endforeach
+
+                    @error('options')
+                        <p class="text-sm text-red-500">
+                            {{ $message }}
+                        </p>
+                    @enderror
                 </div>
             @endif
         </div>
@@ -134,27 +159,60 @@
         @if ($question)
             <div class="space-y-4">
 
+                <x-native-select label="Danh mục" wire:model="category_id">
+                    <option value="">-- Chọn danh mục --</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
+                    @endforeach
+                </x-native-select>
+
                 <x-textarea label="Nội dung" wire:model="content" />
 
-                <x-native-select label="Độ khó" wire:model="difficulty">
-                    <option value="easy">Dễ</option>
-                    <option value="medium">Trung bình</option>
-                    <option value="hard">Khó</option>
-                </x-native-select>
+                <x-textarea
+                    label="Giải thích"
+                    wire:model="explanation"
+                    placeholder="Giải thích đáp án hoặc kiến thức liên quan (không bắt buộc)"
+                />
 
-                <x-native-select label="Loại câu hỏi" wire:model="type">
-                    <option value="single_choice">
-                        Trắc nghiệm một đáp án
-                    </option>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <x-native-select label="Độ khó" wire:model="difficulty">
+                        <option value="easy">Dễ</option>
+                        <option value="medium">Trung bình</option>
+                        <option value="hard">Khó</option>
+                    </x-native-select>
 
-                    <option value="multiple_choice">
-                        Trắc nghiệm nhiều đáp án
-                    </option>
+                    <x-native-select label="Loại câu hỏi" wire:model="type">
+                        <option value="single_choice">Trắc nghiệm một đáp án</option>
+                        <option value="multiple_choice">Trắc nghiệm nhiều đáp án</option>
+                        <option value="essay">Tự luận</option>
+                    </x-native-select>
+                </div>
 
-                    <option value="essay">
-                        Tự luận
-                    </option>
-                </x-native-select>
+                @if (in_array($type, ['single_choice', 'multiple_choice'], true))
+                    <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <div class="text-sm font-semibold text-slate-700">Đáp án</div>
+
+                        @foreach ($options as $index => $option)
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                                <x-input label="Đáp án {{ chr(65 + $index) }}" wire:model="options.{{ $index }}.content"
+                                    placeholder="Nhập đáp án {{ chr(65 + $index) }}" />
+
+                                <label
+                                    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                                    <input type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                        wire:model="options.{{ $index }}.is_correct">
+                                    Đúng
+                                </label>
+                            </div>
+                        @endforeach
+
+                        @error('options')
+                            <p class="text-sm text-red-500">
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+                @endif
 
             </div>
 
