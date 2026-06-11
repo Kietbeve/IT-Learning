@@ -23,7 +23,10 @@ Route::group(["prefix"=> "exam"], function () {
     Route::get("detail", [ExamController::class, 'viewDetail'])->name('exam.detail');
 
     //Route test giao diện trang bai thi
-    Route::get("exam_attempt", [ExamController::class, 'attempt'])->name('exam.detail');
+    Route::get("exam_attempt", [ExamController::class, 'examAttempt'])->name('exam.attempt');
+    
+    //Route test giao diện trang ket qua bai thi
+    Route::get("exam_result", [ExamController::class, 'examResult'])->name('exam.result');
 });
 
 //route auth
