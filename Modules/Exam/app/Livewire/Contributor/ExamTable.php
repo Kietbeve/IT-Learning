@@ -71,7 +71,8 @@ final class ExamTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Exam::query()->with('category');
+        return Exam::query()->with('category')
+            ->where('author_id', auth()->id());
     }
 
     /*
@@ -202,6 +203,11 @@ final class ExamTable extends PowerGridComponent
                 ->slot('Chi tiết')
                 ->class('text-blue-600 hover:text-blue-800')
                 ->route('contributor.exams.detail', ['examId' => $row->id]),
+
+            Button::add('delete')
+                ->slot('Xóa')
+                ->class('inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700')
+                ->dispatch('open-delete-confirm', ['examId' => $row->id]),
         ];
     }
 
@@ -229,6 +235,13 @@ final class ExamTable extends PowerGridComponent
     public function openCreateModal(): void
     {
         $this->dispatch('exam-create')
+            ->to(ExamModal::class);
+    }
+
+    #[On('open-delete-confirm')]
+    public function openDeleteConfirm(int $examId): void
+    {
+        $this->dispatch('exam-delete', id: $examId)
             ->to(ExamModal::class);
     }
 
