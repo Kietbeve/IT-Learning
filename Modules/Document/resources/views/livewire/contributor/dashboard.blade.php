@@ -27,7 +27,7 @@
                             {{ number_format($balance, 0, ',', '.') }}đ
                         </p>
                     </div>
-                    <a href="#" class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors" title="Rút tiền">
+                    <a href="{{ route('contributor.payout-request') }}" class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors" title="Rút tiền">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
                 </div>
@@ -35,106 +35,53 @@
         </div>
     </div>
 
-    <!-- Stats Section - Light Glassmorphic Design -->
-    <div class="grid gap-6 grid-cols-2 lg:grid-cols-4">
-        <!-- Approved -->
-        <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
-            <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-emerald-500/10 blur-xl"></div>
-            <div class="flex items-center justify-between">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Đã duyệt</p>
-                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </span>
-            </div>
-            <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($approvedDocs) }}</p>
-            <p class="mt-1.5 text-[10px] text-emerald-700 font-bold bg-emerald-50/50 border border-emerald-100 px-2 py-0.5 rounded-lg inline-block">Xuất bản công khai</p>
-        </article>
-
-        <!-- Pending -->
-        <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
-            <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-amber-500/10 blur-xl"></div>
-            <div class="flex items-center justify-between">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Chờ duyệt</p>
-                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </span>
-            </div>
-            <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($pendingDocs) }}</p>
-            <p class="mt-1.5 text-[10px] text-amber-700 font-bold bg-amber-50/50 border border-amber-100 px-2 py-0.5 rounded-lg inline-block animate-pulse">Đang kiểm duyệt</p>
-        </article>
-
-        <!-- Downloads -->
-        <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
-            <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-blue-500/10 blur-xl"></div>
-            <div class="flex items-center justify-between">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Lượt tải</p>
-                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                </span>
-            </div>
-            <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($totalDownloads) }}</p>
-            <p class="mt-1.5 text-[10px] text-indigo-700 font-bold bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg inline-block">Học viên đã nhận</p>
-        </article>
-
-        <!-- Views -->
-        <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
-            <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-purple-500/10 blur-xl"></div>
-            <div class="flex items-center justify-between">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Lượt xem</p>
-                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                </span>
-            </div>
-            <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($totalViews) }}</p>
-            <p class="mt-1.5 text-[10px] text-purple-700 font-bold bg-purple-50/50 border border-purple-100 px-2 py-0.5 rounded-lg inline-block">Đọc thử tài nguyên</p>
-        </article>
-    </div>
-
-    <!-- Quick Action / Interactive Grid -->
+    <!-- Revenue Stats Section -->
     <div class="space-y-4">
-        <h3 class="text-lg font-extrabold text-slate-800 tracking-tight px-1">Lối Tắt Tính Năng</h3>
-        <div class="grid gap-6 grid-cols-2 md:grid-cols-4">
-            <!-- Upload Doc -->
-            <a href="{{ route('contributor.documents.create') }}" class="group relative overflow-hidden rounded-[2rem] border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-indigo-200">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-650 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <div class="flex items-center justify-between px-1">
+            <h3 class="text-lg font-extrabold text-slate-800 tracking-tight">Thống Kê Doanh Thu</h3>
+            <a href="{{ route('contributor.payout-request') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-550 transition-colors uppercase tracking-wider">Ví & Giao dịch →</a>
+        </div>
+        <div class="grid gap-6 grid-cols-2 lg:grid-cols-3">
+            <!-- Today's Earnings - FIRST -->
+            <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-teal-500/10 blur-xl"></div>
+                <div class="flex items-center justify-between">
+                    <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Hôm nay</p>
+                    <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
                 </div>
-                <h4 class="mt-4 text-base font-extrabold text-slate-800 group-hover:text-indigo-600 transition-colors">Tải tài liệu</h4>
-                <p class="mt-1 text-xs text-slate-400">PDF, DOCX, ZIP học thuật</p>
-            </a>
+                <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($todayEarnings) }}đ</p>
+                <p class="mt-1.5 text-[10px] text-teal-700 font-bold bg-teal-50/50 border border-teal-100 px-2 py-0.5 rounded-lg inline-block">Doanh thu hôm nay</p>
+            </article>
 
-            <!-- Manage Docs -->
-            <a href="{{ route('contributor.documents.index') }}" class="group relative overflow-hidden rounded-[2rem] border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-indigo-200">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+            <!-- This Month -->
+            <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-green-500/10 blur-xl"></div>
+                <div class="flex items-center justify-between">
+                    <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Tháng này</p>
+                    <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-green-50 text-green-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
                 </div>
-                <h4 class="mt-4 text-base font-extrabold text-slate-800 group-hover:text-indigo-600 transition-colors">Kho tài liệu</h4>
-                <p class="mt-1 text-xs text-slate-400">Danh sách & trạng thái duyệt</p>
-            </a>
+                <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($earningsThisMonth) }}đ</p>
+                <p class="text-xs {{ $changePercent >= 0 ? 'text-green-700 bg-green-50/50 border-green-100' : 'text-red-700 bg-red-50/50 border-red-100' }} font-bold border px-2 py-0.5 rounded-lg inline-block mt-1.5">
+                    {{ $changePercent >= 0 ? '↑' : '↓' }} {{ abs($changePercent) }}% vs tháng trước
+                </p>
+            </article>
 
-            <!-- Manage Questions (Placeholder) -->
-            <a href="#" class="group relative overflow-hidden rounded-[2rem] border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-purple-200">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-650 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <!-- Last Month -->
+            <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-blue-500/10 blur-xl"></div>
+                <div class="flex items-center justify-between">
+                    <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Tháng trước</p>
+                    <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
                 </div>
-                <h4 class="mt-4 text-base font-extrabold text-slate-800 group-hover:text-purple-600 transition-colors flex items-center gap-1.5">
-                    Soạn câu hỏi
-                    <span class="inline-block h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse"></span>
-                </h4>
-                <p class="mt-1 text-xs text-slate-400">Hệ thống trắc nghiệm</p>
-            </a>
-
-            <!-- Wallet/Earnings (Placeholder) -->
-            <a href="#" class="group relative overflow-hidden rounded-[2rem] border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-emerald-200">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-650 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                </div>
-                <h4 class="mt-4 text-base font-extrabold text-slate-800 group-hover:text-emerald-600 transition-colors flex items-center gap-1.5">
-                    Ví & Doanh thu
-                    <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                </h4>
-                <p class="mt-1 text-xs text-slate-400">Hệ thống ví tài chính</p>
-            </a>
+                <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($earningsLastMonth) }}đ</p>
+                <p class="mt-1.5 text-[10px] text-slate-500 font-bold bg-slate-50/50 border border-slate-100 px-2 py-0.5 rounded-lg inline-block">So sánh với tháng trước</p>
+            </article>
         </div>
     </div>
 
@@ -142,8 +89,8 @@
     <section class="overflow-hidden rounded-[2rem] border border-white bg-white/70 shadow-xl shadow-slate-100/50 backdrop-blur-md">
         <div class="p-6 border-b border-indigo-50/50 bg-indigo-50/10 flex items-center justify-between">
             <div>
-                <h3 class="text-base font-extrabold text-slate-800">Tài liệu đăng gần đây</h3>
-                <p class="text-xs text-slate-450 mt-0.5">Top 5 tài nguyên học thuật bạn đã đẩy lên hệ thống.</p>
+                <h3 class="text-base font-extrabold text-slate-800">Tài liệu bán chạy</h3>
+                <p class="text-xs text-slate-450 mt-0.5">Top 5 tài nguyên có doanh thu cao nhất.</p>
             </div>
             <a href="{{ route('contributor.documents.index') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-550 transition-colors uppercase tracking-wider">Tất cả tài liệu →</a>
         </div>

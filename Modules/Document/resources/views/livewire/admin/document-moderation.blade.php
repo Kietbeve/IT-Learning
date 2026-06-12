@@ -1,6 +1,6 @@
 <div id="admin-document-moderation"
      x-data="{ notification: null, showRejectModal: false }" 
-     @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
+     x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      @open-modal.window="let d = $event.detail; if (d === 'reject-modal' || d?.[0] === 'reject-modal' || d?.id === 'reject-modal') showRejectModal = true"
      @close-modal.window="let d = $event.detail; if (d === 'reject-modal' || d?.[0] === 'reject-modal' || d?.id === 'reject-modal') showRejectModal = false"
      class="space-y-6">
@@ -30,25 +30,46 @@
     <!-- Statistics Cards -->
     <div class="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
         <!-- Pending -->
-        <article class="rounded-3xl border border-amber-200 bg-amber-50/50 p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-amber-600 font-bold">Chờ kiểm duyệt</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-amber-700">{{ number_format($pendingCount) }}</p>
-            <p class="mt-2 text-xs text-amber-500">Tài liệu cần được xử lý</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Chờ kiểm duyệt</p>
+                <span class="rounded-xl bg-amber-50 p-2">
+                    <svg class="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($pendingCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tài liệu cần được xử lý</p>
+        </div>
 
         <!-- Approved Today -->
-        <article class="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-emerald-600 font-bold">Đã duyệt hôm nay</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-emerald-700">{{ number_format($approvedTodayCount) }}</p>
-            <p class="mt-2 text-xs text-emerald-500">Tài liệu xuất bản thành công</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Đã duyệt hôm nay</p>
+                <span class="rounded-xl bg-green-50 p-2">
+                    <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($approvedTodayCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tài liệu xuất bản thành công</p>
+        </div>
 
         <!-- Rejected Today -->
-        <article class="rounded-3xl border border-rose-200 bg-rose-50/50 p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-rose-600 font-bold">Đã từ chối hôm nay</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-rose-700">{{ number_format($rejectedTodayCount) }}</p>
-            <p class="mt-2 text-xs text-rose-500">Tài liệu lỗi hoặc vi phạm</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Đã từ chối hôm nay</p>
+                <span class="rounded-xl bg-rose-50 p-2">
+                    <svg class="h-5 w-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($rejectedTodayCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tài liệu lỗi hoặc vi phạm</p>
+        </div>
     </div>
 
     <!-- Main List Card -->

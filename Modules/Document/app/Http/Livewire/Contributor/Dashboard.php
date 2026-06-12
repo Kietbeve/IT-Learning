@@ -4,7 +4,9 @@ namespace Modules\Document\Http\Livewire\Contributor;
 
 use Livewire\Component;
 use Modules\Document\Models\Document;
+use Modules\Payment\Models\WalletTransaction;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class Dashboard extends Component
 {
@@ -14,30 +16,97 @@ class Dashboard extends Component
             $q->where('name', 'contributor');
         })->first() ?? \Modules\Auth\Models\User::first();
         
-        // Count stats for the logged-in contributor
+        // Document stats (only total count, moved detail stats to DocumentList)
         $totalDocs = Document::where('author_id', $user->id)->count();
-        $approvedDocs = Document::where('author_id', $user->id)->where('status', 'approved')->count();
-        $pendingDocs = Document::where('author_id', $user->id)->where('status', 'pending')->count();
-        
-        $totalViews = Document::where('author_id', $user->id)->sum('view_count');
-        $totalDownloads = Document::where('author_id', $user->id)->sum('download_count');
         $balance = $user->contributor_balance ?? 0;
 
-        // Fetch 5 latest documents uploaded
+        // Top 5 best-selling documents
         $latestDocs = Document::where('author_id', $user->id)
+            ->select('documents.*')
+            ->selectSub(function($query) {
+                $query->selectRaw('COALESCE(COUNT(*), 0)')
+                    ->from('order_items')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->whereColumn('order_items.document_id', 'documents.id')
+                    ->where('orders.payment_status', 'paid');
+            }, 'total_sales')
             ->with(['category', 'product'])
-            ->orderBy('created_at', 'desc')
+            ->orderByDesc('total_sales')
+            ->limit(5)
+            ->get();
+
+        // ===== EARNINGS REPORT DATA =====
+        
+        // Earnings this month
+        $earningsThisMonth = WalletTransaction::where('user_id', $user->id)
+            ->where('type', 'earning')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('amount');
+        
+        // Earnings last month
+        $earningsLastMonth = WalletTransaction::where('user_id', $user->id)
+            ->where('type', 'earning')
+            ->whereMonth('created_at', now()->subMonth()->month)
+            ->whereYear('created_at', now()->subMonth()->year)
+            ->sum('amount');
+        
+        // Change percent
+        $changePercent = $earningsLastMonth > 0 
+            ? (($earningsThisMonth - $earningsLastMonth) / $earningsLastMonth) * 100 
+            : 0;
+        
+        // Today's earnings
+        $todayEarnings = WalletTransaction::where('user_id', $user->id)
+            ->where('type', 'earning')
+            ->whereDate('created_at', now()->toDateString())
+            ->sum('amount');
+        
+        // Chart data (last 30 days)
+        $chartData = WalletTransaction::where('user_id', $user->id)
+            ->where('type', 'earning')
+            ->whereBetween('created_at', [now()->subDays(30), now()])
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(amount) as total')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+        
+        // Top documents by revenue
+        $topDocuments = Document::where('author_id', $user->id)
+            ->select('documents.*')
+            ->selectSub(function($query) {
+                $query->selectRaw('COALESCE(SUM(order_items.contributor_amount), 0)')
+                    ->from('order_items')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->whereColumn('order_items.document_id', 'documents.id')
+                    ->where('orders.payment_status', 'paid');
+            }, 'total_revenue')
+            ->selectSub(function($query) {
+                $query->selectRaw('COUNT(*)')
+                    ->from('order_items')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->whereColumn('order_items.document_id', 'documents.id')
+                    ->where('orders.payment_status', 'paid');
+            }, 'total_sales')
+            ->orderByDesc('total_revenue')
             ->limit(5)
             ->get();
 
         return view('document::livewire.contributor.dashboard', [
             'totalDocs' => $totalDocs,
-            'approvedDocs' => $approvedDocs,
-            'pendingDocs' => $pendingDocs,
-            'totalViews' => $totalViews,
-            'totalDownloads' => $totalDownloads,
             'balance' => $balance,
             'latestDocs' => $latestDocs,
+            
+            // Earnings stats
+            'earningsThisMonth' => $earningsThisMonth,
+            'earningsLastMonth' => $earningsLastMonth,
+            'changePercent' => round($changePercent, 1),
+            'todayEarnings' => $todayEarnings,
+            'chartData' => $chartData,
+            'topDocuments' => $topDocuments,
         ])->layout('layouts.contributor', [
             'pageTitle' => 'Kênh Người Đăng Tải',
             'breadcrumb' => new \Illuminate\Support\HtmlString('<span class="mx-2">/</span> Contributor <span class="mx-2">/</span> Dashboard')

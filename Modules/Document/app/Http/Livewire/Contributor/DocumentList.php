@@ -113,6 +113,7 @@ class DocumentList extends Component
         $approvedCount = Document::where('author_id', $authorId)->where('status', 'approved')->count();
         $pendingCount = Document::where('author_id', $authorId)->where('status', 'pending')->count();
         $totalDownloads = Document::where('author_id', $authorId)->sum('download_count');
+        $totalViews = Document::where('author_id', $authorId)->sum('view_count');
 
         return view('document::livewire.contributor.document-list', [
             'documents' => $documents,
@@ -121,6 +122,7 @@ class DocumentList extends Component
             'approvedCount' => $approvedCount,
             'pendingCount' => $pendingCount,
             'totalDownloads' => $totalDownloads,
+            'totalViews' => $totalViews,
         ])->layout('layouts.contributor', [
             'pageTitle' => 'Quản lý tài liệu của tôi',
             'breadcrumb' => new \Illuminate\Support\HtmlString('<span class="mx-2">/</span> Contributor <span class="mx-2">/</span> Tài liệu')

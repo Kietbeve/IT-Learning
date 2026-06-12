@@ -1,4 +1,4 @@
-<div id="purchased-documents-list" class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
+<div id="purchased-documents-list" class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
     <!-- Notification Toast -->
     <div x-show="notification" 
          x-transition:enter="transition ease-out duration-300"

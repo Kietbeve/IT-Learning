@@ -1,6 +1,6 @@
 <div id="admin-document-list"
      x-data="{ notification: null }" 
-     @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
+     x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      class="space-y-6">
 
     <!-- Notification Toast -->
@@ -28,32 +28,60 @@
     <!-- Statistics Cards -->
     <div class="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
         <!-- Total -->
-        <article class="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-slate-500 font-bold">Tổng số tài liệu</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">{{ number_format($totalCount) }}</p>
-            <p class="mt-2 text-xs text-slate-500">Tất cả tài liệu trong hệ thống</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Tổng tài liệu</p>
+                <span class="rounded-xl bg-slate-50 p-2">
+                    <svg class="h-5 w-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($totalCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tất cả tài liệu</p>
+        </div>
 
         <!-- Approved -->
-        <article class="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-emerald-600 font-bold">Đã phê duyệt</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-emerald-700">{{ number_format($approvedCount) }}</p>
-            <p class="mt-2 text-xs text-emerald-500">Tài liệu đang hiển thị công khai</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Đã duyệt</p>
+                <span class="rounded-xl bg-green-50 p-2">
+                    <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($approvedCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tài liệu đã phê duyệt</p>
+        </div>
 
         <!-- Pending -->
-        <article class="rounded-3xl border border-amber-200 bg-amber-50/50 p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-amber-600 font-bold">Chờ duyệt</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-amber-700">{{ number_format($pendingCount) }}</p>
-            <p class="mt-2 text-xs text-amber-500">Tài liệu cần kiểm duyệt</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Chờ duyệt</p>
+                <span class="rounded-xl bg-amber-50 p-2">
+                    <svg class="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($pendingCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Cần kiểm duyệt</p>
+        </div>
 
         <!-- Downloads -->
-        <article class="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-slate-500 font-bold">Tổng lượt tải xuống</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">{{ number_format($totalDownloads) }}</p>
-            <p class="mt-2 text-xs text-slate-500">Số lượt học viên tải tài nguyên</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Lượt tải</p>
+                <span class="rounded-xl bg-blue-50 p-2">
+                    <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($totalDownloads) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tổng lượt tải</p>
+        </div>
     </div>
 
     <!-- Main List Card -->

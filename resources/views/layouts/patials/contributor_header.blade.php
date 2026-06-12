@@ -10,8 +10,7 @@
                 <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
             <div>
-                <p class="text-[10px] font-extrabold uppercase tracking-[0.24em] text-indigo-600">Không Gia Sáng Tạo</p>
-                <h2 class="text-xl font-bold text-slate-850 tracking-tight">{{ $title ?? 'Kênh Contributor' }}</h2>
+                <h2 class="text-2xl font-bold text-slate-850 tracking-tight">Contributor</h2>
             </div>
         </div>
 
@@ -27,6 +26,20 @@
                         <x-icon name="chevron-down" class="w-4 h-4 text-slate-450 shrink-0" />
                     </button>
                 </x-slot>
+
+                <x-dropdown.item href="{{ route('contributor.transactions') }}" label="Lịch sử giao dịch">
+                    <x-slot name="prepend">
+                        <x-icon name="document-text" class="w-4 h-4 mr-2" />
+                    </x-slot>
+                </x-dropdown.item>
+
+                <x-dropdown.item href="{{ route('contributor.payout-request') }}" label="Ví">
+                    <x-slot name="prepend">
+                        <x-icon name="banknotes" class="w-4 h-4 mr-2" />
+                    </x-slot>
+                </x-dropdown.item>
+
+                <div class="border-t border-slate-100 my-1"></div>
 
                 @if(auth()->user() && auth()->user()->hasRole('admin'))
                     <x-dropdown.item href="{{ route('auth.admin.dashboard') }}">
