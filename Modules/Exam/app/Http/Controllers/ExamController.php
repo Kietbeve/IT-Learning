@@ -28,6 +28,22 @@ class ExamController extends Controller
     }
 
     /**
+     * Hàm dùng để test giao diện trang bai thi
+     */
+    public function examAttempt()
+    {
+        return view('exam::exam_attempt');
+    }
+
+    /**
+     * Hàm dùng để test giao diện trang kết quả bài thi
+     */
+    public function examResult()
+    {
+        return view('exam::exam_result');
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
