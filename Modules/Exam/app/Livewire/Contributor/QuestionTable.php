@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Exam\Livewire;
+namespace Modules\Exam\Livewire\Contributor;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -90,7 +90,8 @@ final class QuestionTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Question::query();
+        return Question::query()
+        ->where('author_id', auth()->id());//Chỉ quản lí câu hỏi cá nhân
     }
 
     /*

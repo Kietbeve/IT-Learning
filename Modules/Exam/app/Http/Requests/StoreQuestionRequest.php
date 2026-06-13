@@ -12,7 +12,14 @@ class StoreQuestionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'content' => ['required', 'string'],
+            'explanation' => ['nullable', 'string'],
+            'difficulty' => ['required', 'in:easy,medium,hard'],
+            'type' => ['required', 'in:single_choice,multiple_choice,essay'],
+            'options' => ['array'],
+            'options.*.content' => ['nullable', 'string'],
+            'options.*.is_correct' => ['boolean'],
         ];
     }
 

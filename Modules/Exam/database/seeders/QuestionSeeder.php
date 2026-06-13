@@ -3,8 +3,12 @@
 namespace Modules\Exam\database\seeders;
 
 use Illuminate\Database\Seeder;
+use Str;
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\QuestionOption;
+use Modules\Exam\Models\Exam;
+use Modules\Exam\Models\ExamAttempt;
+use Modules\Exam\Models\AttemptAnswer;
 
 class QuestionSeeder extends Seeder
 {
@@ -140,6 +144,110 @@ class QuestionSeeder extends Seeder
             'type'            => 'essay',
             'reviewed_by'     => null,
             'reviewed_at'     => null,
+        ]);
+        //Exam
+        $exam = Exam::create([
+        'public_id'         => Str::uuid(),
+        'author_id'         => 1,
+        'category_id'       => 1,
+        'title'             => 'Đề thi Laravel cơ bản',
+        'slug'              => 'de-thi-laravel-co-ban',
+        'short_description' => 'Đề thi demo',
+        'description'       => 'Đề thi dùng để test giao diện làm bài.',
+        'type'              => 'hybrid',
+        'mode'              => 'practice',
+        'duration_minutes'  => 30,
+        'pass_percent'      => 50,
+        'visibility'        => 'public',
+        'status'            => 'approved',
+        'reviewed_by'       => 1,
+        'reviewed_at'       => now(),
+        'publish_at'        => now(),
+        ]);
+        //ExamQuestion
+        $exam->questions()->sync([
+            1 => [
+                'sort_order' => 1,
+                'score'      => 1,
+            ],
+            2 => [
+                'sort_order' => 2,
+                'score'      => 1,
+            ],
+            3 => [
+                'sort_order' => 3,
+                'score'      => 2,
+            ],
+        ]);
+        /*
+        |--------------------------------------------------------------------------
+        | Exam Attempt
+        |--------------------------------------------------------------------------
+        */
+
+        $attempt = ExamAttempt::create([
+            'exam_id'           => $exam->id,
+            'user_id'           => 1,
+            'session_id'        => Str::uuid(),
+
+            'started_at'        => now()->subMinutes(15),
+            'submitted_at'      => now(),
+
+            'expires_at'        => now()->addMinutes(15),
+
+            'total_questions'   => 3,
+
+            'correct_answers'   => 2,
+            'wrong_answers'     => 1,
+            'skipped_answers'   => 0,
+
+            'score'             => 2.00,
+            'percent_score'     => 50.00,
+
+            'is_passed'         => true,
+
+            'status'            => 'submitted',
+
+            'violation_count'   => 0,
+        ]);
+        // cau dung
+        AttemptAnswer::create([
+            'attempt_id'         => $attempt->id,
+            'question_id'        => $singleChoice->id,
+
+            'selected_option_ids'=> [2],
+
+            'answer_text'        => null,
+
+            'is_correct'         => true,
+
+            'answered_at'        => now()->subMinutes(10),
+        ]);
+        //cau sai
+        AttemptAnswer::create([
+            'attempt_id'         => $attempt->id,
+            'question_id'        => $multipleChoice->id,
+
+            'selected_option_ids'=> [5, 6],
+
+            'answer_text'        => null,
+
+            'is_correct'         => false,
+
+            'answered_at'        => now()->subMinutes(5),
+        ]);
+        //cau tu luan
+        AttemptAnswer::create([
+            'attempt_id'         => $attempt->id,
+            'question_id'        => 3,
+
+            'selected_option_ids'=> null,
+
+            'answer_text'        => 'Service Container giúp quản lý dependency và hỗ trợ Dependency Injection.',
+
+            'is_correct'         => true,
+
+            'answered_at'        => now()->subMinute(),
         ]);
     }
 }
