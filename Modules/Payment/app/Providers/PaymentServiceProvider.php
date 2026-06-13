@@ -29,6 +29,7 @@ class PaymentServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->register(\Modules\Payment\Providers\RouteServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
     }
 
