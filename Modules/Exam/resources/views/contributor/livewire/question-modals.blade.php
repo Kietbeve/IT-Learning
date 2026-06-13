@@ -125,8 +125,8 @@
 
                     @foreach ($options as $index => $option)
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                            <x-input label="Đáp án {{ chr(65 + $index) }}" wire:model="options.{{ $index }}.content"
-                                placeholder="Nhập đáp án {{ chr(65 + $index) }}" />
+                            <x-input :label="'Đáp án ' . chr(65 + $index)" wire:model="options.{{ $index }}.content"
+                                :placeholder="'Nhập đáp án ' . chr(65 + $index)" />
 
                             <label
                                 class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">

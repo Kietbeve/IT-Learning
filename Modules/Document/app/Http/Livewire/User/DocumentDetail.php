@@ -8,9 +8,13 @@ use Modules\Document\Models\DocumentFavorite;
 use Modules\Document\Models\DocumentReview;
 use Modules\Document\Models\DocumentDownload;
 use Modules\Payment\Models\DocumentAccess;
+use Modules\Payment\Models\Order;
+use Modules\Payment\Models\OrderItem;
+use Modules\Payment\Services\SubscriptionService;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class DocumentDetail extends Component
 {
@@ -141,13 +145,62 @@ class DocumentDetail extends Component
                 ->where('document_id', $doc->id)
                 ->first();
 
-            if ($access) {
-                $hasAccess = true;
-                $orderItemId = $access->order_item_id;
+        if ($access) {
+            $hasAccess = true;
+            $orderItemId = $access->order_item_id;
+        } else {
+            $subscriptionService = app(SubscriptionService::class);
+            if ($subscriptionService->canDownloadPremium(Auth::user())) {
+                try {
+                    DB::beginTransaction();
+                    
+                    $orderCode = now()->timestamp . rand(1000, 9999);
+                    $order = Order::create([
+                        'order_code' => (string) $orderCode,
+                        'order_type' => 'document',
+                        'user_id' => $userId,
+                        'total_amount' => 0,
+                        'payment_status' => 'paid',
+                        'order_status' => 'completed',
+                        'paid_at' => now(),
+                        'download_token' => \Illuminate\Support\Str::random(64),
+                    ]);
+                    
+                    $orderItem = OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $doc->product->id,
+                        'document_id' => $doc->id,
+                        'document_title_snapshot' => $doc->title,
+                        'unit_price' => 0,
+                        'quantity' => 1,
+                        'subtotal' => 0,
+                        'contributor_amount' => 0,
+                        'platform_amount' => 0,
+                    ]);
+                    
+                    DocumentAccess::create([
+                        'user_id' => $userId,
+                        'document_id' => $doc->id,
+                        'order_item_id' => $orderItem->id,
+                        'access_type' => 'vip',
+                    ]);
+                    
+                    $subscriptionService->decreaseQuota(Auth::user());
+                    
+                    DB::commit();
+                    
+                    $hasAccess = true;
+                    $orderItemId = $orderItem->id;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $this->dispatch('notify', ['type' => 'error', 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+                    return;
+                }
             } else {
                 $this->dispatch('notify', ['type' => 'info', 'message' => 'Bạn cần mua tài liệu này trước khi tải xuống.']);
                 return;
             }
+        }
         } else {
             // Free document
             $hasAccess = true;
@@ -222,7 +275,6 @@ class DocumentDetail extends Component
 
     public function buyDocument()
     {
-        // Simulate purchase for the sake of demo/testing, creating the DocumentAccess record
         if (!Auth::check()) {
             return redirect()->route('login');
         }
@@ -230,13 +282,7 @@ class DocumentDetail extends Component
         $doc = Document::find($this->documentId);
         if (!$doc || !$doc->product) return;
 
-        // Create document access directly (Mocking successful Payment)
-        DocumentAccess::updateOrCreate(
-            ['user_id' => Auth::id(), 'document_id' => $doc->id],
-            ['access_type' => 'purchased']
-        );
-
-        $this->dispatch('notify', ['type' => 'success', 'message' => 'Thanh toán thành công! Bạn hiện đã có quyền truy cập tài liệu này.']);
+        $this->dispatch('openCheckoutModal', documentId: $this->documentId);
     }
 
     public function openReportModal()
@@ -286,7 +332,10 @@ class DocumentDetail extends Component
         $isBookmarked = Auth::check() && $doc->favorites->isNotEmpty();
 
         $hasAccess = false;
+        $isVip = false;
         if (Auth::check()) {
+            $user = Auth::user();
+            $isVip = $user->vip_expires_at && $user->vip_expires_at->isFuture();
             if (!$doc->product) {
                 $hasAccess = true;
             } else {
@@ -321,6 +370,7 @@ class DocumentDetail extends Component
             'doc' => $doc,
             'isBookmarked' => $isBookmarked,
             'hasAccess' => $hasAccess,
+            'isVip' => $isVip,
             'hasDownloaded' => $hasDownloaded,
             'hasReviewed' => $hasReviewed,
             'avgRating' => round($avgRating, 1),

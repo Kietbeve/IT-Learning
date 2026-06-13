@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
+<div class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
     <!-- Notification Toast -->
     <div x-show="notification" 
          x-transition:enter="transition ease-out duration-300"
@@ -267,7 +267,7 @@
                 @elseif($doc->file_type === 'zip')
                     <!-- ZIP File Explorer Simulator/Real Reader -->
                     <div x-data="{ 
-                        selectedFile: '{{ !empty($zipFiles) ? array_key_first($zipFiles) : 'README.md' }}',
+                        selectedFile: @js(!empty($zipFiles) ? array_key_first($zipFiles) : 'README.md'),
                         files: @js($zipFiles)
                     }" class="rounded-2xl border border-slate-200 bg-slate-900 text-slate-300 overflow-hidden flex flex-col h-[500px] font-mono text-xs relative">
                         <!-- Watermark Overlay (translucent, repeating text) -->
@@ -442,48 +442,101 @@
                 <div class="space-y-3">
                     @guest
                         @if($doc->product)
-                            <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-500 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/10 flex items-center justify-center gap-2 transition-all">
+                            <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
                                 Mua tài nguyên ngay
                             </button>
                         @else
-                            <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/10 flex items-center justify-center gap-2 transition-all">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l-4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3 3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                            <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                 Đăng nhập để tải xuống
                             </button>
                         @endif
                     @else
-                        @if($hasAccess)
-                            @if($doc->is_downloadable)
-                                <button wire:click="download" class="w-full rounded-2xl bg-slate-900 hover:bg-slate-800 text-white py-4 text-sm font-semibold shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2 transition-all">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                    Tải xuống tài nguyên
+                        @if(!$doc->product)
+                            <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Tải xuống
+                            </button>
+                        @elseif($isVip)
+                            <div class="space-y-3">
+                                <button wire:click="download" class="w-full rounded-2xl bg-amber-600 hover:bg-amber-700 text-white py-4 text-sm font-semibold shadow-lg shadow-amber-600/20 hover:shadow-amber-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                                    Tải xuống với gói VIP
                                 </button>
-                            @endif
+                                <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
+                                    Mua tài nguyên ngay
+                                </button>
+                            </div>
                         @else
-                            <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-500 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/10 flex items-center justify-center gap-2 transition-all">
+                            <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
                                 Mua tài nguyên ngay
                             </button>
                         @endif
                     @endguest
 
-                    <button wire:click="toggleFavorite" class="w-full rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 py-3.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all">
+                    <button wire:click="toggleFavorite" class="w-full rounded-2xl border-2 border-slate-200 bg-white hover:border-rose-200 hover:bg-rose-50 text-slate-700 hover:text-rose-600 py-3.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                         @if($isBookmarked)
-                            <svg class="w-4 h-4 fill-red-500 text-red-500" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                            Đã lưu tài liệu
+                            <svg class="w-4 h-4 fill-rose-500 text-rose-500" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            <span>Đã lưu tài liệu</span>
                         @else
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                            Lưu vào yêu thích
+                            <span>Lưu vào yêu thích</span>
                         @endif
                     </button>
 
-                    <button wire:click="openReportModal" class="w-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 py-3 text-xs font-bold flex items-center justify-center gap-2 transition-all">
-                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
-                        Báo cáo tài liệu vi phạm
+                    <button wire:click="openReportModal" class="w-full rounded-2xl border-2 border-dashed border-slate-200 bg-white hover:border-red-200 hover:bg-red-50 text-slate-500 hover:text-red-600 py-3.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                        Báo cáo vi phạm
                     </button>
                 </div>
             </div>
+
+            {{-- VIP Suggestion Card (for Premium documents, non-VIP users) --}}
+            @auth
+                @php
+                    $isVip = Auth::user()->vip_expires_at && Auth::user()->vip_expires_at->isFuture();
+                    $isPremium = $doc->product && $doc->product->price > 0;
+                @endphp
+                
+                @if($isPremium && !$isVip && !$hasAccess)
+                    <div class="rounded-3xl border-2 border-amber-400 bg-gradient-to-br from-amber-50 to-yellow-50 p-6 shadow-lg">
+                        <div class="flex items-start gap-3 mb-4">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-md">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-1">Nâng cấp VIP Premium</h3>
+                                <p class="text-sm text-gray-600">Tiết kiệm hơn với gói VIP</p>
+                            </div>
+                        </div>
+                        
+                        <ul class="space-y-2 mb-4">
+                            <li class="flex items-start gap-2 text-sm text-gray-700">
+                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                <span>Gói <strong>1 tháng:</strong> Tải <strong>5 tài liệu</strong> Premium</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-sm text-gray-700">
+                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                <span>Gói <strong>3 tháng:</strong> Tải <strong>20 tài liệu</strong> - Tiết kiệm <strong>40%</strong></span>
+                            </li>
+                            <li class="flex items-start gap-2 text-sm text-gray-700">
+                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                <span>Gói <strong>6 tháng:</strong> Tải <strong>50 tài liệu</strong> - Tiết kiệm <strong>60%</strong></span>
+                            </li>
+                        </ul>
+                        
+                        <a href="{{ route('student.subscription') }}" 
+                           class="block w-full text-center rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3 text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300">
+                            ⚡ Xem các gói VIP
+                        </a>
+                    </div>
+                @endif
+            @endauth
 
             <!-- Author Card -->
             <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -542,6 +595,9 @@
             </div>
         </div>
     </div>
+
+    {{-- Checkout Modal --}}
+    @livewire('payment-checkout-modal')
 
     <!-- Report Abuse Modal -->
     <div x-data="{ show: $wire.entangle('showReportModal') }"
