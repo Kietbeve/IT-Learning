@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
+<div id="purchased-documents-list" class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
     <!-- Notification Toast -->
     <div x-show="notification" 
          x-transition:enter="transition ease-out duration-300"
@@ -39,8 +39,10 @@
         </div>
     </div>
 
-    <!-- Purchased Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <!-- Table Content with Loading State -->
+    <div wire:loading.class="opacity-60 transition-opacity duration-200" class="transition-opacity duration-200">
+        <!-- Purchased Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         @forelse($accesses as $access)
             @if($access->document)
                 <article class="flex flex-col rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 relative group">
@@ -98,9 +100,10 @@
             </div>
         @endforelse
     </div>
+    </div>
 
     <!-- Pagination -->
     <div class="mt-8">
-        {{ $accesses->links() }}
+        {{ $accesses->links(data: ['scrollTo' => '#purchased-documents-list']) }}
     </div>
 </div>

@@ -1,5 +1,6 @@
-<div x-data="{ notification: null, showFormModal: @entangle('isFormOpen') }" 
-     @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
+<div id="admin-category-list"
+     x-data="{ notification: null, showFormModal: @entangle('isFormOpen') }" 
+     x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      @open-modal.window="if ($event.detail === 'category-form-modal') showFormModal = true"
      @close-modal.window="if ($event.detail === 'category-form-modal') showFormModal = false"
      class="space-y-6">
@@ -34,25 +35,46 @@
     <!-- Statistics Cards -->
     <div class="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
         <!-- Total -->
-        <article class="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-slate-500 font-semibold">Tổng số danh mục</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">{{ number_format($totalCount) }}</p>
-            <p class="mt-2 text-xs text-slate-400">Danh mục tệp tài nguyên</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Tổng danh mục</p>
+                <span class="rounded-xl bg-slate-50 p-2">
+                    <svg class="h-5 w-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($totalCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Danh mục tài nguyên</p>
+        </div>
 
         <!-- Active -->
-        <article class="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-emerald-600 font-semibold">Đang hoạt động</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-emerald-700">{{ number_format($activeCount) }}</p>
-            <p class="mt-2 text-xs text-emerald-500">Khả dụng cho đăng tải</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Đang hoạt động</p>
+                <span class="rounded-xl bg-green-50 p-2">
+                    <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($activeCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Khả dụng đăng tải</p>
+        </div>
 
         <!-- Inactive -->
-        <article class="rounded-3xl border border-amber-200 bg-amber-50/50 p-4 sm:p-6 shadow-sm">
-            <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-amber-600 font-semibold">Đang tạm khóa</p>
-            <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-amber-700">{{ number_format($inactiveCount) }}</p>
-            <p class="mt-2 text-xs text-amber-500">Bị ẩn trên bộ lọc uploader</p>
-        </article>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Tạm khóa</p>
+                <span class="rounded-xl bg-amber-50 p-2">
+                    <svg class="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($inactiveCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Ẩn trên bộ lọc</p>
+        </div>
     </div>
 
     <!-- Main List Card -->
@@ -95,8 +117,10 @@
             </div>
         </div>
 
-        <!-- Mobile Card View (hidden on md and up) -->
-        <div class="block md:hidden divide-y divide-slate-100">
+        <!-- Table Content with Loading State -->
+        <div wire:loading.class="opacity-60 transition-opacity duration-200" class="transition-opacity duration-200">
+            <!-- Mobile Card View (hidden on md and up) -->
+            <div class="block md:hidden divide-y divide-slate-100">
             @forelse($categories as $cat)
                 <div class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-4">
@@ -207,11 +231,12 @@
                 </tbody>
             </table>
         </div>
+        </div>
 
         <!-- Pagination -->
         @if($categories->hasPages())
             <div class="p-6 border-t border-slate-200 bg-slate-50/50">
-                {{ $categories->links() }}
+                {{ $categories->links(data: ['scrollTo' => '#admin-category-list']) }}
             </div>
         @endif
     </section>

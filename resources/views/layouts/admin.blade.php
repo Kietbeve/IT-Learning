@@ -12,9 +12,13 @@
     @livewireStyles
 </head>
 
-<body class="min-h-screen bg-slate-100 text-slate-900">
+<body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
     <div class="flex min-h-screen">
-        @include('layouts.patials.sidebar')
+        @if(request()->is('contributor*') || request()->is('contributor'))
+            @include('layouts.patials.contributor_sidebar')
+        @else
+            @include('layouts.patials.sidebar')
+        @endif
 
         <div class="flex-1 flex flex-col min-w-0">
             @include('layouts.patials.header')

@@ -60,8 +60,31 @@
         </a>
     </nav>
 
-    <div class="user-profile flex items-center">
+    <div class="user-profile flex items-center gap-3">
         @auth
+            {{-- VIP Button/Badge --}}
+            @php
+                $isVip = Auth::user()->vip_expires_at && Auth::user()->vip_expires_at->isFuture();
+            @endphp
+            
+            @if($isVip)
+                <a href="{{ route('student.subscription') }}" 
+                   class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 border border-amber-400 text-white rounded-lg text-xs font-bold shadow transition-colors duration-200"
+                   title="Bạn đang là thành viên VIP">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                    <span>Thành viên VIP</span>
+                </a>
+            @else
+                {{-- Upgrade CTA for non-VIP users --}}
+                <a href="{{ route('student.subscription') }}" 
+                   class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-gray-900 rounded-lg text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse">
+                    <x-icon name="sparkles" class="w-4 h-4" />
+                    <span class="hidden sm:block">Nâng cấp VIP</span>
+                </a>
+            @endif
+
             <x-dropdown>
                 <x-slot name="trigger">
                     <button
@@ -82,11 +105,20 @@
                     </div>
                 </x-dropdown.item>
 
-                @if(Route::has('purchases.index'))
-                    <x-dropdown.item href="{{ route('purchases.index') }}">
+                @if(Route::has('student.purchases'))
+                    <x-dropdown.item href="{{ route('student.purchases') }}">
                         <div class="flex items-center">
                             <x-icon name="shopping-bag" class="w-4 h-4 mr-2" />
                             <span>Tài liệu đã mua</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+
+                @if(Route::has('student.transactions'))
+                    <x-dropdown.item href="{{ route('student.transactions') }}">
+                        <div class="flex items-center">
+                            <x-icon name="receipt-percent" class="w-4 h-4 mr-2" />
+                            <span>Lịch sử giao dịch</span>
                         </div>
                     </x-dropdown.item>
                 @endif
@@ -96,6 +128,23 @@
                         <div class="flex items-center">
                             <x-icon name="heart" class="w-4 h-4 mr-2" />
                             <span>Tài liệu yêu thích</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+
+                @if(auth()->user()->hasRole('contributor'))
+                    <x-dropdown.item href="{{ route('contributor.dashboard') }}">
+                        <div class="flex items-center text-blue-600 font-semibold">
+                            <x-icon name="cloud-arrow-up" class="w-4 h-4 mr-2" />
+                            <span>Kênh người đăng tải</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+                @if(auth()->user()->hasRole('admin'))
+                    <x-dropdown.item href="{{ route('auth.admin.dashboard') }}">
+                        <div class="flex items-center text-amber-600 font-semibold">
+                            <x-icon name="shield-check" class="w-4 h-4 mr-2" />
+                            <span>Trang quản trị</span>
                         </div>
                     </x-dropdown.item>
                 @endif
