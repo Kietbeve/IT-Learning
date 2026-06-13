@@ -111,7 +111,7 @@
                     primary
                     :href="route('student.purchases')"
                     label="Tải tài nguyên ngay"
-                    icon="download"
+                    icon="arrow-down-tray"
                     class="w-full"
                 />
                 <x-button

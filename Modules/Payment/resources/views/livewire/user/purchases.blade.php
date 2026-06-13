@@ -36,21 +36,18 @@
                                 {{ $access->document->title ?? 'Tài liệu này không còn tồn tại' }}
                             </h4>
 
-                            <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                                <span class="text-xs text-slate-500">
-                                    Đã mua: {{ $access->created_at->format('d/m/Y') }}
-                                </span>
+                            <div class="mt-auto pt-4 border-t border-slate-100">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-xs text-slate-500">
+                                        Đã mua: {{ $access->created_at->format('d/m/Y') }}
+                                    </span>
+                                </div>
 
                                 @if($access->document)
-                                    <x-button
-                                        primary
-                                        sm
-                                        icon="download"
-                                        label="Tải xuống"
-                                        wire:click="downloadDocument({{ $access->document->id }})"
-                                        wire:target="downloadDocument({{ $access->document->id }})"
-                                        wire:loading.attr="disabled"
-                                    />
+                                    <a href="{{ route('documents.show', $access->document->id) }}" 
+                                       class="block w-full text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                        Xem chi tiết
+                                    </a>
                                 @endif
                             </div>
                         </div>
