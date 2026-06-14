@@ -22,8 +22,8 @@
            class="{{ request()->is('exam*') ? 'text-blue-500 font-bold' : 'text-slate-300 hover:text-white' }} transition-colors duration-200">
             Đề thi
         </a>
-        <a href="/learning" 
-           class="{{ request()->is('learning*') ? 'text-blue-500 font-bold' : 'text-slate-300 hover:text-white' }} transition-colors duration-200">
+        <a href="{{ route('learning.roadmaps.index') }}" 
+            class="{{ request()->is('roadmaps*') ? 'text-blue-500 font-bold' : 'text-slate-300 hover:text-white' }} transition-colors duration-200">
             Lộ trình học tập
         </a>
     </nav>

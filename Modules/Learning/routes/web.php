@@ -3,39 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Learning\Http\Controllers\LearningController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes - Phân hệ Learning (Học tập)
-|--------------------------------------------------------------------------
-*/
+// Trang danh sách và chi tiết
+Route::get('/roadmaps', [LearningController::class, 'index'])->name('learning.roadmaps.index');
+Route::get('/roadmaps/{id}', [LearningController::class, 'show'])->name('learning.roadmaps.show');
 
-// ==========================================
-// 1. NHÓM PUBLIC (Không cần đăng nhập)
-// ==========================================
-// Trang danh sách lộ trình
-Route::get('/roadmaps', function () {
-    return 'Trang danh sách lộ trình'; 
-})->name('learning.roadmaps.index');
-
-Route::get('/roadmaps', function () {
-    return view('learning::layouts.route-list');
-});
-// Trang chi tiết lộ trình (Chính là file roadmap-detail của bạn)
-// Thay vì dùng Route::view, nên truyền tham số {id} động theo chuẩn sitemap
-Route::get('/roadmaps/{id}', function ($id) {
-    return view('learning::layouts.roadmap-detail', compact('id'));
-})->name('learning.roadmaps.show');
-
-
-// ==========================================
-// 2. NHÓM STUDENT (Bắt buộc phải đăng nhập)
-// ==========================================
-// Sử dụng middleware 'auth' (hoặc middleware chặn quyền student của dự án bạn)
+// Nhóm yêu cầu đăng nhập (Nơi chứa route learn bị lỗi)
 Route::middleware(['auth'])->group(function () {
+    // CHÍNH LÀ DÒNG NÀY ĐÂY:
+    Route::get('/roadmaps/{id}/learn/{lesson_id?}', [LearningController::class, 'learn'])->name('learning.roadmaps.learn');
     
-    // Không gian học tập, làm bài học theo lộ trình (Chính là file lesson-view của bạn)
-    Route::get('/roadmaps/{id}/learn', function ($id) {
-        return view('learning::layouts.lesson-view', compact('id'));
-    })->name('learning.roadmaps.learn');
-
+    Route::post('/lessons/{lesson_id}/complete', [LearningController::class, 'completeLesson'])->name('learning.lessons.complete');
 });
