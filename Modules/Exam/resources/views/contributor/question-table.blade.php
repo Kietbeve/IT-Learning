@@ -10,8 +10,8 @@
                 </div>
             </div>
 
-            <livewire:modules.exam.livewire.question-table />
-            <livewire:modules.exam.livewire.question-modal />
+            <livewire:modules.exam.livewire.contributor.question-table />
+            <livewire:modules.exam.livewire.contributor.question-modal />
         </div>
     </div>
 @endsection

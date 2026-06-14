@@ -33,3 +33,12 @@ Route::prefix('admin')->group(function () {
     Route::get('/categories/documents', \Modules\Document\Http\Livewire\Admin\CategoryList::class)->name('admin.categories.documents.index');
 });
 
+// Contributor Routes
+Route::group(['prefix' => 'contributor'], function () {
+    Route::get('/dashboard', \Modules\Document\Http\Livewire\Contributor\Dashboard::class)->name('contributor.dashboard');
+    Route::get('/documents', \Modules\Document\Http\Livewire\Contributor\DocumentList::class)->name('contributor.documents.index');
+    Route::get('/documents/create', \Modules\Document\Http\Livewire\Contributor\DocumentUpload::class)->name('contributor.documents.create');
+    Route::get('/documents/{id}/edit', \Modules\Document\Http\Livewire\Contributor\DocumentEdit::class)->name('contributor.documents.edit');
+});
+
+

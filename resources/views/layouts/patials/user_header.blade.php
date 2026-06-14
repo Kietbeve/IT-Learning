@@ -1,11 +1,43 @@
-<header
-    class="bg-slate-900 shadow-md px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50">
-    <div class="logo">
-        <a href="#"
-            class="flex items-center gap-1 text-white text-2xl font-bold font-sans hover:opacity-80 transition-opacity whitespace-nowrap">
-            <img src="{{ asset('Image/logo.png') }}" alt="Logo" class="h-12 w-auto object-contain">
-            <span class="tracking-tight">IT<span class="text-blue-500">Learning</span></span>
-        </a>
+<header class="bg-slate-900 shadow-md px-4 md:px-8 py-1 flex justify-between items-center sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+        <!-- Mobile Menu -->
+        <div x-data="{ open: false }" class="relative md:hidden">
+            <button @click="open = !open" @click.outside="open = false" class="text-slate-300 hover:text-white focus:outline-none transition-colors" aria-label="Menu">
+                <x-icon name="bars-3" class="w-7 h-7" />
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div x-show="open" 
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 x-cloak
+                 class="absolute left-0 mt-4 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                <a href="/" class="block px-4 py-2.5 text-sm {{ request()->is('/') ? 'text-blue-600 font-bold bg-blue-50' : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' }} transition-colors">
+                    Trang chủ
+                </a>
+                <a href="{{ route('documents.index') }}" class="block px-4 py-2.5 text-sm {{ request()->is('documents*') ? 'text-blue-600 font-bold bg-blue-50' : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' }} transition-colors">
+                    Kho tài liệu
+                </a>
+                <a href="/exam" class="block px-4 py-2.5 text-sm {{ request()->is('exam*') ? 'text-blue-600 font-bold bg-blue-50' : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' }} transition-colors">
+                    Đề thi
+                </a>
+                <a href="/learning" class="block px-4 py-2.5 text-sm {{ request()->is('learning*') ? 'text-blue-600 font-bold bg-blue-50' : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' }} transition-colors">
+                    Lộ trình học tập
+                </a>
+            </div>
+        </div>
+
+        <div class="logo">
+            <a href="#"
+                class="flex items-center gap-1 text-white text-2xl font-bold font-sans hover:opacity-80 transition-opacity whitespace-nowrap">
+                <img src="{{ asset('Image/logo.png') }}" alt="Logo" class="h-12 w-auto object-contain">
+                <span class="tracking-tight">IT<span class="text-blue-500">Learning</span></span>
+            </a>
+        </div>
     </div>
 
     <!-- Navigation Menu -->
@@ -28,8 +60,31 @@
         </a>
     </nav>
 
-    <div class="user-profile flex items-center">
+    <div class="user-profile flex items-center gap-3">
         @auth
+            {{-- VIP Button/Badge --}}
+            @php
+                $isVip = Auth::user()->vip_expires_at && Auth::user()->vip_expires_at->isFuture();
+            @endphp
+            
+            @if($isVip)
+                <a href="{{ route('student.subscription') }}" 
+                   class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 border border-amber-400 text-white rounded-lg text-xs font-bold shadow transition-colors duration-200"
+                   title="Bạn đang là thành viên VIP">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                    <span>Thành viên VIP</span>
+                </a>
+            @else
+                {{-- Upgrade CTA for non-VIP users --}}
+                <a href="{{ route('student.subscription') }}" 
+                   class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-gray-900 rounded-lg text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse">
+                    <x-icon name="sparkles" class="w-4 h-4" />
+                    <span class="hidden sm:block">Nâng cấp VIP</span>
+                </a>
+            @endif
+
             <x-dropdown>
                 <x-slot name="trigger">
                     <button
@@ -50,11 +105,20 @@
                     </div>
                 </x-dropdown.item>
 
-                @if(Route::has('purchases.index'))
-                    <x-dropdown.item href="{{ route('purchases.index') }}">
+                @if(Route::has('student.purchases'))
+                    <x-dropdown.item href="{{ route('student.purchases') }}">
                         <div class="flex items-center">
                             <x-icon name="shopping-bag" class="w-4 h-4 mr-2" />
                             <span>Tài liệu đã mua</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+
+                @if(Route::has('student.transactions'))
+                    <x-dropdown.item href="{{ route('student.transactions') }}">
+                        <div class="flex items-center">
+                            <x-icon name="receipt-percent" class="w-4 h-4 mr-2" />
+                            <span>Lịch sử giao dịch</span>
                         </div>
                     </x-dropdown.item>
                 @endif
@@ -64,6 +128,23 @@
                         <div class="flex items-center">
                             <x-icon name="heart" class="w-4 h-4 mr-2" />
                             <span>Tài liệu yêu thích</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+
+                @if(auth()->user()->hasRole('contributor'))
+                    <x-dropdown.item href="{{ route('contributor.dashboard') }}">
+                        <div class="flex items-center text-blue-600 font-semibold">
+                            <x-icon name="cloud-arrow-up" class="w-4 h-4 mr-2" />
+                            <span>Kênh người đăng tải</span>
+                        </div>
+                    </x-dropdown.item>
+                @endif
+                @if(auth()->user()->hasRole('admin'))
+                    <x-dropdown.item href="{{ route('auth.admin.dashboard') }}">
+                        <div class="flex items-center text-amber-600 font-semibold">
+                            <x-icon name="shield-check" class="w-4 h-4 mr-2" />
+                            <span>Trang quản trị</span>
                         </div>
                     </x-dropdown.item>
                 @endif
