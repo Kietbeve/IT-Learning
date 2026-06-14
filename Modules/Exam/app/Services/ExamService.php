@@ -103,9 +103,9 @@ class ExamService
     /*
     Hàm lấy danh sách bài kiểm tra
     */
-    public function getExamList()
-    {
-    return Exam::query()
+    public function getExamList(?int $limit = null)
+{
+    $query = Exam::query()
         ->select([
             'id',
             'title',
@@ -113,14 +113,21 @@ class ExamService
             'duration_minutes',
             'author_id',
             'category_id',
+            'created_at',
         ])
         ->with([
             'author:id,name',
-            'category:id,name'
+            'category:id,name',
         ])
         ->withCount('questions')
-        ->get();
+        ->latest(); // orderByDesc('created_at')
+
+    if ($limit !== null) {
+        $query->limit($limit);
     }
+
+    return $query->get();
+}
     /*
     Ket qua tra ve co dang: 
     [

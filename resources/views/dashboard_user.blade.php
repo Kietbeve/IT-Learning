@@ -355,6 +355,9 @@
             </div>
             <div class="grid grid-cols-1 gap-4 sm:gap-5">
                 {{-- Include Exam Card Partial --}}
+                @foreach ($exams as $exam)
+                  @include('exam::partials.exam_card',['exam => $exam'])
+                @endforeach
                 
         </div>
 
