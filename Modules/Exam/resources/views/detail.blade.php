@@ -133,8 +133,9 @@
 
                     <div class="space-y-3">
                         {{-- Nút thanh toán / Vào thi --}}
+                        
                         <x-button indigo xl right-icon="arrow-right" class="w-full flex justify-center" label="Bắt đầu thi ngay" />
-
+                        
                         <x-button outline gray xl icon="bookmark" class="w-full flex justify-center" label="Lưu bài thi" />
                     </div>
                 </div>

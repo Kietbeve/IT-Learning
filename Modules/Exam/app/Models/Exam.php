@@ -40,6 +40,7 @@ class Exam extends Model
         'publish_at',
         'attempt_count',
     ];
+    
 
     protected function casts(): array
     {

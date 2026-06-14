@@ -7,16 +7,31 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Modules\Exam\Models\Exam;
+use Modules\Exam\Services\ExamService;
 use Modules\Exam\Models\AttemptAnswer;
 
 class ExamController extends Controller
 {
-    /**
-     * Display a listing of the resource.
+    /*
+     * Khoi tao ExamControler
+     */
+    public function __construct(
+      private ExamService $examService
+    )
+    {
+      // throw new \Exception('Not implemented');
+    }
+
+    /*
+     * Trang danh sách bài thi của exam
      */
     public function index()
     {
-        return view('exam::index');
+        // Goi du lieu tu Sevice
+        $exams = $this->examService->getExamList();
+
+        // Truyen du lieu vao view
+        return view('exam::index',compact('exams'));
     }
 
     /**
