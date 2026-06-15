@@ -3,8 +3,10 @@
 namespace Modules\Exam\Services;
 
 use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Collection;
+
 
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\QuestionOption;
@@ -240,4 +242,52 @@ class ExamService
         ]);
     }
     
+    //Hàm lấy danh sách bài kiểm tra
+    public function getExamList(?int $limit = null)
+    {
+        $query = Exam::query()
+            ->select([
+                'id',
+                'title',
+                'short_description',
+                'duration_minutes',
+                'author_id',
+                'category_id',
+                'created_at',
+            ])
+            ->with([
+                'author:id,name',
+                'category:id,name',
+            ])
+            ->withCount('questions')
+            ->latest(); // orderByDesc('created_at')
+
+        if ($limit !== null) {
+            $query->limit($limit);
+        }
+
+        return $query->get();
+    }
+    /*
+    Ket qua tra ve co dang: 
+    [
+      Modules\Exam\Models\Exam {#8983
+        id: 1,
+        title: "Đề thi Laravel cơ bản",
+        short_description: "Đề thi demo",
+        duration_minutes: 30,
+        author_id: 1,
+        category_id: 1,
+        questions_count: 3,
+        author: Modules\Auth\Models\User {#9016
+          id: 1,
+          name: "admin",
+        },
+        category: App\Models\Category {#9019
+          id: 1,
+          name: "PHP",
+        },
+      },
+    ],...
+    */
 }

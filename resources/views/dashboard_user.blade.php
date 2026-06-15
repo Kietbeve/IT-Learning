@@ -355,11 +355,10 @@
             </div>
             <div class="grid grid-cols-1 gap-4 sm:gap-5">
                 {{-- Include Exam Card Partial --}}
-                @include('exam::patials.exam_card')
-                @include('exam::patials.exam_card')
-                @include('exam::patials.exam_card')
-                @include('exam::patials.exam_card')
-            </div>
+                @foreach ($exams as $exam)
+                  @include('exam::partials.exam_card',['exam => $exam'])
+                @endforeach
+                
         </div>
 
         {{-- 5. Lộ trình học (3 cards - GIỮ NGUYÊN) --}}
