@@ -24,7 +24,7 @@
         @foreach($navItems as $item)
             @php 
                 $active = request()->routeIs($item['route']);
-                if ($item['route'] === 'auth.admin.dashboard' && $item['label'] !== 'Dashboard') {
+                if ($item['route'] === 'admin.dashboard' && $item['label'] !== 'Dashboard') {
                     $active = false;
                 }
             @endphp
