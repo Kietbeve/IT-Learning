@@ -31,7 +31,9 @@ Route::group(["prefix"=> "exam"], function () {
 
 //route auth
 Route::group(["prefix"=> "exam","middleware"=> "auth"], function () {
-
+    // Exam attempt page - làm bài thi
+    Route::get('attempts/{attempt:session_id}', \Modules\Exam\Livewire\ExamAttemptPage::class)
+        ->name('exam.attempt.take');
 });
 
 //route auth + contributor

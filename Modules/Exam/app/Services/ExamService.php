@@ -3,9 +3,15 @@
 namespace Modules\Exam\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Collection;
 
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\QuestionOption;
+use Modules\Exam\Models\ExamAttempt;
+use Modules\Exam\Models\AttemptAnswer;
+use Modules\Exam\Models\Exam;
+use Modules\Auth\Models\User;
 
 
 class ExamService
@@ -98,6 +104,140 @@ class ExamService
 
             return $question->fresh(['options']);
         });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Exam Attempt Methods
+    |--------------------------------------------------------------------------
+    */
+
+    public function validateAttemptAccess(ExamAttempt $attempt, User $user): void
+    {
+        // Check ownership
+        if ($attempt->user_id !== $user->id) {
+            abort(403, 'Bạn không có quyền truy cập bài thi này');
+        }
+
+        // Check if already submitted
+        // if ($attempt->status === 'submitted') {
+        //     throw new \Exception('Bài thi đã được nộp. Bạn không thể chỉnh sửa.');
+        // }
+
+        // Check expiration
+        if ($attempt->isExpired()) {
+            $attempt->update(['status' => 'expired']);
+            throw new \Exception('Bài thi đã hết hạn.');
+        }
+    }
+
+    public function checkAttemptExpiration(ExamAttempt $attempt): bool
+    {
+        return $attempt->isExpired();
+    }
+
+    public function loadQuestionsForAttempt(ExamAttempt $attempt): Collection
+    {
+        $exam = $attempt->exam;
+        
+        // Check if question order was persisted (for consistency on refresh)
+        $persistedOrder = $this->getPersistedQuestionOrder($attempt);
+        
+        if ($persistedOrder) {
+            // Load questions in persisted order
+            return Question::whereIn('id', $persistedOrder)
+                ->with('options')
+                ->get()
+                ->sortBy(function ($question) use ($persistedOrder) {
+                    return array_search($question->id, $persistedOrder);
+                })
+                ->values();
+        }
+        
+        // Load fresh questions
+        $questions = $exam->questions()
+            ->with('options')
+            ->orderBy('exam_questions.sort_order')
+            ->get();
+        
+        // Shuffle if official exam type
+        if ($exam->type === 'official') {
+            $questions = $questions->shuffle();
+        }
+        
+        // Persist order for consistency
+        $this->persistQuestionOrder(
+            $attempt, 
+            $questions->pluck('id')->toArray()
+        );
+        
+        return $questions;
+    }
+
+    public function getShuffledQuestions(Exam $exam): Collection
+    {
+        return $exam->questions()
+            ->with('options')
+            ->get()
+            ->shuffle();
+    }
+
+    public function persistQuestionOrder(ExamAttempt $attempt, array $questionIds): void
+    {
+        // Store in cache for 24 hours (longer than any exam duration)
+        Cache::put(
+            "attempt_{$attempt->id}_question_order",
+            $questionIds,
+            now()->addHours(24)
+        );
+    }
+
+    public function getPersistedQuestionOrder(ExamAttempt $attempt): ?array
+    {
+        return Cache::get("attempt_{$attempt->id}_question_order");
+    }
+
+    public function saveAttemptAnswer(ExamAttempt $attempt, int $questionId, $answer): AttemptAnswer
+    {
+        // Determine if answer is array (choice questions) or text (essay)
+        $data = [
+            'attempt_id' => $attempt->id,
+            'question_id' => $questionId,
+            'answered_at' => now(),
+        ];
+
+        if (is_array($answer)) {
+            // Single or multiple choice
+            $data['selected_option_ids'] = $answer;
+            $data['answer_text'] = null;
+        } else {
+            // Essay question
+            $data['selected_option_ids'] = null;
+            $data['answer_text'] = $answer;
+        }
+
+        return AttemptAnswer::updateOrCreate(
+            [
+                'attempt_id' => $attempt->id,
+                'question_id' => $questionId,
+            ],
+            $data
+        );
+    }
+
+    public function loadExistingAnswers(ExamAttempt $attempt): Collection
+    {
+        return $attempt->answers()
+            ->get()
+            ->keyBy('question_id');
+    }
+
+    public function submitAttempt(ExamAttempt $attempt): void
+    {
+        $attempt->update([
+            'status' => 'submitted',
+            'submitted_at' => now(),
+        ]);
     }
     
 }

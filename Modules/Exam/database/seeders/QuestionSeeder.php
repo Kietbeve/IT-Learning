@@ -188,25 +188,25 @@ class QuestionSeeder extends Seeder
         $attempt = ExamAttempt::create([
             'exam_id'           => $exam->id,
             'user_id'           => 1,
-            'session_id'        => Str::uuid(),
+            'session_id'        => "test",
 
             'started_at'        => now()->subMinutes(15),
-            'submitted_at'      => now(),
+            // 'submitted_at'      => null,
 
-            'expires_at'        => now()->addMinutes(15),
+            // 'expires_at'        => now()->addMinutes(15),
 
-            'total_questions'   => 3,
+            'total_questions'   => 0,
 
-            'correct_answers'   => 2,
-            'wrong_answers'     => 1,
+            'correct_answers'   => 0,
+            'wrong_answers'     => 0,
             'skipped_answers'   => 0,
 
-            'score'             => 2.00,
-            'percent_score'     => 50.00,
+            'score'             => 0,
+            'percent_score'     => 0,
 
-            'is_passed'         => true,
+            'is_passed'         => false,
 
-            'status'            => 'submitted',
+            'status'            => 'in_progress',
 
             'violation_count'   => 0,
         ]);
