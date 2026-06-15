@@ -13,28 +13,12 @@
     }"
     class="min-h-screen bg-gray-50">
 
-    {{-- Fixed Header - Mobile First --}}
-    <header class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 shadow-sm z-40">
-        <div class="px-4 py-3 max-w-4xl mx-auto">
-            <div class="flex items-center justify-between gap-3">
-                {{-- Title (hidden on mobile, show on md+) --}}
-                <div class="hidden md:block">
-                    <h1 class="text-lg font-bold text-gray-900">{{ $attempt->exam->title }}</h1>
-                    <p class="text-xs text-gray-500">
-                        Câu {{ $currentQuestionIndex + 1 }}/{{ count($questionIds) }}
-                    </p>
-                </div>
-
-                {{-- Question nav button (mobile only) --}}
-                <x-button 
-                    xs 
-                    outline
-                    gray
-                    label="Câu {{ $currentQuestionIndex + 1 }}/{{ count($questionIds) }}"
-                    wire:click="$set('showQuestionModal', true)"
-                    class="md:hidden" />
-
-                {{-- Timer Component --}}
+    {{-- Fixed Header - Ultra Compact Design --}}
+    <header class="bg-white border-b border-gray-200 z-[60]">
+        <div class="max-w-7xl mx-auto">
+            {{-- Main content row --}}
+            <div class="flex items-center justify-between gap-2 px-3 py-2 md:py-2.5">
+                {{-- Timer --}}
                 <div 
                     x-data="{
                         startedAt: new Date('{{ $attempt->started_at }}'),
@@ -62,24 +46,55 @@
                                    String(seconds).padStart(2, '0');
                         }
                     }"
-                    class="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-2 rounded-lg border border-red-200">
-                    <x-icon name="clock" class="w-4 h-4" />
-                    <span class="font-mono text-sm font-bold" x-text="formatTime()"></span>
+                    class="flex items-center gap-1.5 text-red-600 shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="font-mono text-sm font-semibold" x-text="formatTime()">00:00:00</span>
                 </div>
 
-                {{-- Submit button --}}
-                <x-button 
-                    primary 
-                    xs
-                    label="Nộp bài"
-                    wire:click="$set('showSubmitModal', true)"
-                    x-bind:disabled="examSubmitted" />
+                {{-- Progress text --}}
+                <div class="flex items-center gap-1.5 text-gray-700 shrink-0">
+                    <span class="text-sm font-medium">
+                        <span class="font-semibold text-indigo-600">{{ $this->getAnsweredCount() }}</span>/<span class="text-gray-500">{{ count($questionIds) }}</span>
+                    </span>
+                    <span class="hidden md:inline text-xs text-gray-500">câu</span>
+                    <span class="hidden sm:inline text-xs text-gray-400">({{ $this->getProgress() }}%)</span>
+                </div>
+
+                {{-- Progress bar (desktop only) --}}
+                <div class="hidden md:flex flex-1 items-center gap-2 max-w-xs">
+                    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                            class="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-300"
+                            style="width: {{ $this->getProgress() }}%">
+                        </div>
+                    </div>
+                    <span class="text-xs font-medium text-gray-600 w-8 text-right">{{ $this->getProgress() }}%</span>
+                </div>
+
+                {{-- Menu button --}}
+                <button 
+                    wire:click="$set('showQuestionModal', true)"
+                    class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors shrink-0">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Progress bar (mobile only - full width) --}}
+            <div class="md:hidden h-1.5 bg-gray-200">
+                <div 
+                    class="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 transition-all duration-300"
+                    style="width: {{ $this->getProgress() }}%">
+                </div>
             </div>
         </div>
     </header>
 
     {{-- Main Content --}}
-    <main class="pt-20 pb-8 px-4">
+    <main class="pt-14 md:pt-12 pb-8 px-4">
         <div class="max-w-4xl mx-auto">
             <x-card>
                 {{-- Submitted Notice --}}
@@ -99,6 +114,9 @@
                         $question = $this->getCurrentQuestion();
                         $isAnswered = $this->isQuestionAnswered($currentQuestionIndex);
                     @endphp
+
+                    {{-- Question Container with unique wire:key for proper DOM tracking --}}
+                    <div wire:key="question-{{ $question->id }}-{{ $currentQuestionIndex }}">
 
                     {{-- Question Header --}}
                     <div class="flex items-start justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
@@ -124,6 +142,7 @@
                             <div class="space-y-3">
                                 @foreach($question->options as $option)
                                     <label 
+                                        wire:key="option-{{ $question->id }}-{{ $option->id }}"
                                         class="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition
                                                {{ isset($userAnswers[$question->id]) && in_array($option->id, $userAnswers[$question->id]) 
                                                   ? 'border-indigo-500 bg-indigo-50' 
@@ -149,6 +168,7 @@
                             <div class="space-y-3">
                                 @foreach($question->options as $option)
                                     <label 
+                                        wire:key="option-{{ $question->id }}-{{ $option->id }}"
                                         class="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition
                                                {{ isset($userAnswers[$question->id]) && in_array($option->id, $userAnswers[$question->id]) 
                                                   ? 'border-indigo-500 bg-indigo-50' 
@@ -172,7 +192,7 @@
                             {{-- Essay: Textarea with character counter --}}
                             <div>
                                 <x-textarea 
-                                    wire:model.blur="userAnswers.{{ $question->id }}"
+                                    wire:model.live.debounce.2000ms="userAnswers.{{ $question->id }}"
                                     placeholder="Nhập câu trả lời của bạn (tối đa 100 ký tự)..."
                                     rows="6"
                                     maxlength="100" />
@@ -261,6 +281,8 @@
                             :disabled="$currentQuestionIndex === count($questionIds) - 1"
                             class="flex-1 sm:flex-none" />
                     </div>
+
+                    </div>{{-- End Question Container --}}
                 @else
                     {{-- No questions state --}}
                     <div class="text-center py-10">
