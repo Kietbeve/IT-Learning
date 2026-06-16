@@ -72,6 +72,20 @@ class ExamAttemptPage extends Component
                 }
             }
             
+            // Initialize all unanswered questions to ensure Livewire tracking
+            // This fixes the bug where first edit doesn't trigger updatedUserAnswers hook
+            foreach ($this->questions() as $question) {
+                if (!isset($this->userAnswers[$question->id])) {
+                    // Initialize based on question type
+                    if ($question->type === 'essay') {
+                        $this->userAnswers[$question->id] = '';
+                    } else {
+                        // single_choice or multiple_choice
+                        $this->userAnswers[$question->id] = [];
+                    }
+                }
+            }
+            
             // Load existing violation count
             $this->tabSwitchCount = $this->attempt->violation_count ?? 0;
             

@@ -1,13 +1,7 @@
 {{-- CHUNK 1: Main structure, header, timer, question area (lines 1-300) --}}
 <div 
     x-data="{
-        examSubmitted: false,
-
         init() {
-            this.$wire.on('exam-submitted', () => {
-                this.examSubmitted = true;
-            });
-
             this.$wire.on('scroll-to-top', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
@@ -222,8 +216,8 @@
     <main class="pt-14 md:pt-12 pb-8 px-4">
         <div class="max-w-4xl mx-auto">
             <x-card>
-                {{-- Submitted Notice --}}
-                <div x-show="examSubmitted" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                @if ($attempt->status=='submitted')
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                     <div class="flex items-center gap-3">
                         <x-icon name="check-circle" class="w-6 h-6 text-green-600" />
                         <div>
@@ -232,7 +226,8 @@
                         </div>
                     </div>
                 </div>
-
+                @endif
+                
                 {{-- Question Display --}}
                 @if($this->getCurrentQuestion())
                     @php
@@ -261,7 +256,7 @@
                     </div>
 
                     {{-- Answer Area based on Type --}}
-                    <div class="mb-6" x-bind:class="{ 'opacity-50 pointer-events-none': examSubmitted }">
+                    <div class="mb-6" x-bind:class="{ 'opacity-50 pointer-events-none':{{$attempt->status=='submitted'}} }">
                         @if($question->type === 'single_choice')
                             {{-- Single Choice: Radio buttons --}}
                             <div class="space-y-3">

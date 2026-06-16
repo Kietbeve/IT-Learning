@@ -116,10 +116,10 @@ class ExamService
 
     public function validateAttemptAccess(ExamAttempt $attempt, User $user): void
     {
-        // Check ownership
-        if ($attempt->user_id !== $user->id) {
-            abort(403, 'Bạn không có quyền truy cập bài thi này');
-        }
+        // // Check ownership
+        // if ($attempt->user_id !== $user->id) {
+        //     abort(403, 'Bạn không có quyền truy cập bài thi này');
+        // }
 
         // Check if already submitted
         // if ($attempt->status === 'submitted') {
