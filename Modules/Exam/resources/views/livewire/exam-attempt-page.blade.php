@@ -2,18 +2,140 @@
 <div 
     x-data="{
         examSubmitted: false,
+
         init() {
             this.$wire.on('exam-submitted', () => {
                 this.examSubmitted = true;
             });
+
             this.$wire.on('scroll-to-top', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
+
+            document.addEventListener(
+                'visibilitychange',
+                () => {
+
+                    if (document.hidden) {
+                        $wire.recordTabSwitch();
+                    }
+
+                }
+            );
+
+            document.addEventListener(
+                'fullscreenchange',
+                () => {
+                    if (!document.fullscreenElement) {
+                        $wire.handleFullscreenExit();
+                    }
+                }
+            );
+
+            this.$wire.on('enter-fullscreen', () => {
+                document.documentElement.requestFullscreen?.();
+            });
         }
     }"
+    x-init="
+        document.documentElement.requestFullscreen?.()
+    "
     class="min-h-screen bg-gray-50">
+    {{-- Modal cảnh báo chuyển tab --}}
+    @if($showWarningModal)
+        <div class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
 
-    {{-- Fixed Header - Ultra Compact Design --}}
+            <div class="w-full max-w-md rounded-xl bg-white shadow-xl">
+
+                {{-- Header --}}
+                <div class="border-b px-6 py-4">
+                    <h2 class="text-lg font-semibold text-red-600">
+                        Cảnh báo
+                    </h2>
+                </div>
+
+                {{-- Body --}}
+                <div class="px-6 py-4 space-y-3">
+                    <p>
+                        Bạn đã rời khỏi màn hình thi
+                        <strong>{{ $tabSwitchCount }}</strong>
+                        lần.
+                    </p>
+
+                    <p class="text-sm text-gray-600">
+                        Hệ thống đang ghi nhận các lần rời khỏi màn hình thi.
+                        Việc chuyển tab nhiều lần có thể bị xem là hành vi không phù hợp.
+                    </p>
+                </div>
+
+                {{-- Footer --}}
+                <div class="flex justify-end gap-2 border-t px-6 py-4">
+                    <button
+                        type="button"
+                        wire:click="$set('showWarningModal', false)"
+                        class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                    >
+                        Tôi hiểu
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    @endif
+
+    {{-- Modal yêu cầu fullscreen cho Official exam --}}
+    @if($showFullscreenModal)
+        <div class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
+
+            <div class="w-full max-w-md rounded-xl bg-white shadow-xl">
+
+                {{-- Header --}}
+                <div class="border-b px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                        </svg>
+                        <h2 class="text-lg font-semibold text-orange-600">
+                            Yêu cầu toàn màn hình
+                        </h2>
+                    </div>
+                </div>
+
+                {{-- Body --}}
+                <div class="px-6 py-4 space-y-3">
+                    <p class="text-gray-700">
+                        Bài thi <strong class="text-orange-600">chính thức</strong> yêu cầu chế độ toàn màn hình để đảm bảo tính công bằng.
+                    </p>
+
+                    <p class="text-sm text-gray-600">
+                        Vui lòng quay lại chế độ toàn màn hình để tiếp tục làm bài.
+                    </p>
+
+                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <p class="text-sm text-orange-800">
+                            ⚠️ Việc thoát chế độ toàn màn hình có thể bị ghi nhận là vi phạm.
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Footer --}}
+                <div class="flex justify-end gap-2 border-t px-6 py-4">
+                    <button
+                        type="button"
+                        wire:click="requestFullscreen"
+                        class="rounded-lg bg-orange-600 px-6 py-2.5 text-white hover:bg-orange-700 transition font-medium"
+                    >
+                        🖥️ Quay lại toàn màn hình
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    @endif
+
+    {{-- Header --}}
     <header class="bg-white border-b border-gray-200 z-[60]">
         <div class="max-w-7xl mx-auto">
             {{-- Main content row --}}
@@ -51,6 +173,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span class="font-mono text-sm font-semibold" x-text="formatTime()">00:00:00</span>
+                    <div class="text-xs text-amber-600">
+                        ⚠ Rời màn hình: {{ $tabSwitchCount }}
+                    </div>
                 </div>
 
                 {{-- Progress text --}}
@@ -192,7 +317,7 @@
                             {{-- Essay: Textarea with character counter --}}
                             <div>
                                 <x-textarea 
-                                    wire:model.live.debounce.2000ms="userAnswers.{{ $question->id }}"
+                                    wire:model.live.debounce.500ms="userAnswers.{{ $question->id }}"
                                     placeholder="Nhập câu trả lời của bạn (tối đa 100 ký tự)..."
                                     rows="6"
                                     maxlength="100" />
@@ -393,7 +518,8 @@
         x-cloak
         @click="$wire.set('showSubmitModal', false)"
         class="fixed inset-0 z-50 overflow-y-auto"
-        style="display: none;">
+        style="display: none;"
+        x-data="{ confirmUnanswered: false }">
         
         {{-- Modal Container --}}
         <div class="flex min-h-full items-center justify-center p-4">
@@ -416,6 +542,48 @@
                     <p class="text-base text-gray-600 mb-4">
                         Bạn đã hoàn thành <strong>{{ $this->getAnsweredCount() }}</strong>/<strong>{{ count($questionIds) }}</strong> câu hỏi.
                     </p>
+                    
+                    {{-- Unanswered questions warning --}}
+                    @php
+                        $unansweredNumbers = $this->getUnansweredQuestionNumbers();
+                        $hasUnanswered = count($unansweredNumbers) > 0;
+                    @endphp
+                    
+                    @if($hasUnanswered)
+                        <div class="bg-red-50 border-2 border-red-300 rounded-lg p-4 mb-4 text-left">
+                            <div class="flex items-start gap-2 mb-3">
+                                <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-red-800 mb-2">
+                                        Còn {{ count($unansweredNumbers) }} câu chưa làm
+                                    </h4>
+                                    <p class="text-sm text-red-700 mb-3">
+                                        Các câu chưa trả lời:
+                                    </p>
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach($unansweredNumbers as $num)
+                                            <span class="inline-block bg-red-200 text-red-800 px-2.5 py-1 rounded-md text-xs font-bold">
+                                                Câu {{ $num }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {{-- Confirmation checkbox --}}
+                            <label class="flex items-start gap-2 mt-3 pt-3 border-t border-red-200 cursor-pointer">
+                                <input 
+                                    type="checkbox" 
+                                    x-model="confirmUnanswered"
+                                    class="mt-1 w-4 h-4 text-red-600 rounded focus:ring-red-500">
+                                <span class="text-sm text-red-800 font-medium">
+                                    Tôi xác nhận muốn nộp bài dù chưa hoàn thành tất cả câu hỏi
+                                </span>
+                            </label>
+                        </div>
+                    @endif
                     
                     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                         <p class="text-sm text-yellow-800">
@@ -472,7 +640,11 @@
                     <button
                         wire:click="submitExam"
                         wire:loading.attr="disabled"
-                        class="px-4 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition w-full sm:w-auto disabled:opacity-50">
+                        @if($hasUnanswered)
+                            x-bind:disabled="!confirmUnanswered"
+                            x-bind:class="{ 'opacity-50 cursor-not-allowed': !confirmUnanswered }"
+                        @endif
+                        class="px-4 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
                         <span wire:loading.remove wire:target="submitExam">Nộp bài ngay</span>
                         <span wire:loading wire:target="submitExam">Đang xử lý...</span>
                     </button>

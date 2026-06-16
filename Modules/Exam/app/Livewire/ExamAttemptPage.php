@@ -26,6 +26,9 @@ class ExamAttemptPage extends Component
     // UI state
     public bool $showQuestionModal = false;
     public bool $showSubmitModal = false;
+    public int $tabSwitchCount = 0;
+    public bool $showWarningModal = false;
+    public bool $showFullscreenModal = true;
     
     // User answers - keyed by question_id
     public array $userAnswers = [];
@@ -68,6 +71,9 @@ class ExamAttemptPage extends Component
                     $this->userAnswers[$answer->question_id] = $answer->answer_text ?? '';
                 }
             }
+            
+            // Load existing violation count
+            $this->tabSwitchCount = $this->attempt->violation_count ?? 0;
             
         } catch (\Exception $e) {
             $this->notification()->error(
@@ -189,6 +195,19 @@ class ExamAttemptPage extends Component
         return !empty(trim($answer));
     }
 
+    public function getUnansweredQuestionNumbers(): array
+    {
+        $unanswered = [];
+        
+        foreach ($this->questions() as $index => $question) {
+            if (!$this->isQuestionAnswered($index)) {
+                $unanswered[] = $index + 1; // 1-indexed for display
+            }
+        }
+        
+        return $unanswered;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Navigation Actions
@@ -208,7 +227,7 @@ class ExamAttemptPage extends Component
 
     public function nextQuestion()
     {
-        if ($this->currentQuestionIndex < count($this->questionIds) - 1) {
+        if ($this->currentQuestionIndex < count($this->questionIds) - 1) { 
             $this->currentQuestionIndex++;
             $this->dispatch('scroll-to-top');
         }
@@ -329,6 +348,46 @@ class ExamAttemptPage extends Component
                 description: $e->getMessage()
             );
         }
+    }
+
+    #[On('tab-switched')]
+    public function recordTabSwitch(): void
+    {
+        // Only count violations if exam is still in progress
+        if ($this->attempt->status !== 'in_progress') {
+            return;
+        }
+        
+        $this->tabSwitchCount++;
+        
+        // Save to database immediately
+        $this->attempt->update([
+            'violation_count' => $this->tabSwitchCount
+        ]);
+        
+        $this->showWarningModal = true;
+    }
+
+    #[On('fullscreen-exited')]
+    public function handleFullscreenExit(): void
+    {
+        // Only require fullscreen for official exams
+        if ($this->attempt->exam->mode !== 'official') {
+            return;
+        }
+        
+        // Only show modal if exam is still in progress
+        if ($this->attempt->status !== 'in_progress') {
+            return;
+        }
+        
+        $this->showFullscreenModal = true;
+    }
+    
+    public function requestFullscreen(): void
+    {
+        $this->showFullscreenModal = false;
+        $this->dispatch('enter-fullscreen');
     }
 
     public function render()

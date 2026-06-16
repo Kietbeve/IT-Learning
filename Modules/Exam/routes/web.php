@@ -27,13 +27,15 @@ Route::group(["prefix"=> "exam"], function () {
     
     //Route test giao diện trang ket qua bai thi
     Route::get("exam_result", [ExamController::class, 'examResult'])->name('exam.result');
+
+    // Exam attempt page - làm bài thi
+    Route::get('attempts/{attempt:session_id}', \Modules\Exam\Livewire\ExamAttemptPage::class)
+        ->name('exam.attempt.take');
 });
 
 //route auth
 Route::group(["prefix"=> "exam","middleware"=> "auth"], function () {
-    // Exam attempt page - làm bài thi
-    Route::get('attempts/{attempt:session_id}', \Modules\Exam\Livewire\ExamAttemptPage::class)
-        ->name('exam.attempt.take');
+
 });
 
 //route auth + contributor
