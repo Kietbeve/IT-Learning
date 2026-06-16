@@ -31,6 +31,10 @@ Route::group(["prefix"=> "exam"], function () {
     // Exam attempt page - làm bài thi
     Route::get('attempts/{attempt:session_id}', \Modules\Exam\Livewire\ExamAttemptPage::class)
         ->name('exam.attempt.take');
+    
+    // Exam result page - xem kết quả bài thi
+    Route::get('attempts/{attempt:session_id}/result', \Modules\Exam\Livewire\ExamResultPage::class)
+        ->name('exam.attempt.result');
 });
 
 //route auth
