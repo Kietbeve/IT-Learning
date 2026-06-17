@@ -15,6 +15,8 @@ class AttemptAnswer extends Model
         'selected_option_ids',
         'answer_text',
         'is_correct',
+        'status',
+        'score',
         'answered_at',
     ];
 

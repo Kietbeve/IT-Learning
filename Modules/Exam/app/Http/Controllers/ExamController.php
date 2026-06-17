@@ -9,6 +9,7 @@ use Illuminate\Http\Response;
 use Modules\Exam\Models\Exam;
 use Modules\Exam\Services\ExamService;
 use Modules\Exam\Models\AttemptAnswer;
+use Modules\Exam\Models\ExamAttempt;
 
 class ExamController extends Controller
 {
@@ -174,18 +175,17 @@ class ExamController extends Controller
     }
     public function attemptAnswerDetail($attemptId)
     {
-        $attemptAnswer = AttemptAnswer::query()
-            ->with([
-                'attempt.exam',
-                'attempt.user',
-                'question',
-            ])
-            ->where('attempt_id', $attemptId)
-            ->firstOrFail();
+    $examAttempt = ExamAttempt::query()
+        ->with([
+            'exam',
+            'user',
+            'answers.question',
+        ])
+        ->findOrFail($attemptId);
 
         return view(
             'exam::contributor.attempt-answer-table',
-            compact('attemptAnswer')
+            compact('examAttempt')
         );
     }
 }

@@ -27,6 +27,15 @@ return new class extends Migration
 
             $table->longText('answer_text')
                 ->nullable();
+            //chuyển đổi sang sử dụng status thay cho is_correct
+            $table->enum('status', [
+                'pending',
+                'correct',
+                'incorrect',
+            ])->default('pending');
+
+            $table->decimal('score', 8, 2)
+                ->default(0);
 
             $table->boolean('is_correct')
                 ->nullable();
@@ -38,6 +47,7 @@ return new class extends Migration
 
             $table->index('attempt_id');
             $table->index('question_id');
+            $table->index('status');
             $table->index('is_correct');
             $table->index('answered_at');
         });
