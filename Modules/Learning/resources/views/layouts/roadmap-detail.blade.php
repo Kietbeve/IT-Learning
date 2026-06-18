@@ -1,86 +1,89 @@
-@extends('learning::layouts.master')
+@extends('layouts.user')
 
 @section('content')
-<div class="min-h-screen bg-slate-50 text-slate-800 font-sans">
-<div class="min-h-screen bg-slate-50 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
-    <div class="bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-12 px-6 shadow-md">
-        <div class="max-w-5xl mx-auto">
-            <span class="bg-blue-800 text-blue-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                Phân hệ Học Tập
-            </span>
-            <h1 class="text-3xl font-extrabold mt-3 tracking-tight">Lộ trình học: Trở thành Lập trình viên Full-stack</h1>
-            <p class="text-blue-100 mt-2 max-w-2xl">Bắt đầu hành trình chinh phục kiến thức công nghệ từ con số 0 cùng IT-Learning.</p>
-            
-            <div class="mt-8 bg-blue-900/40 p-5 rounded-2xl backdrop-blur-sm border border-blue-400/20 max-w-xl">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-semibold text-blue-100 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        Tiến độ lộ trình của bạn
-                    </span>
-                    <span class="text-lg font-bold text-cyan-300">45.00%</span>
-                </div>
-                <div class="w-full bg-blue-950 rounded-full h-3 overflow-hidden">
-                    <div class="bg-gradient-to-r from-cyan-400 to-blue-400 h-3 rounded-full transition-all duration-500" style="width: 45%"></div>
-                </div>
-                <div class="flex justify-between items-center mt-3 text-xs text-blue-200">
-                    <p>Trạng thái: <span class="text-cyan-300 font-medium">Đang học (learning)</span></p>
-                    <p>Bắt đầu từ: 06/06/2026</p>
-                </div>
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center border-b border-blue-100 pb-6 mb-8 gap-4">
+        <div>
+            <a href="{{ route('learning.roadmaps.index') }}" class="text-sm text-blue-600 hover:underline flex items-center gap-1 mb-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                Quay lại danh sách
+            </a>
+            <h1 class="text-3xl font-bold text-blue-600">
+                Chi tiết Lộ trình Học tập
+            </h1>
+            <p class="text-gray-500 text-sm mt-1">Mã lộ trình của bạn: #{{ $id }}</p>
+        </div>
+
+        <div class="bg-white border border-blue-100 rounded-xl p-4 shadow-sm min-w-[280px]">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-semibold text-gray-700">Tiến độ học tập</span>
+                <span class="text-sm font-bold text-blue-600">40%</span>
             </div>
+            <div class="w-full bg-gray-100 rounded-full h-2.5">
+                <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 40%"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5 text-right">Đã hoàn thành 2/5 bài học</p>
         </div>
     </div>
 
-    <div class="max-w-5xl mx-auto px-6 py-10">
-        <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            Danh sách bài học trong lộ trình
-        </h2>
+    <div class="space-y-4">
+        @if(isset($lessons) && count($lessons) > 0)
+            @foreach($lessons as $index => $lesson)
+                @php
+                    // Giả lập trạng thái cho bài học để bạn xem trước giao diện:
+                    // Bài 1, 2: Hoàn thành | Bài 3, 4, 5: Chưa học
+                    $isCompleted = ($index < 2); 
+                @endphp
 
-        <div class="space-y-4">
-            <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm hover:border-blue-300 transition flex items-center justify-between">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-green-50 text-green-600 rounded-lg font-bold mt-1 shadow-inner">01</div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-lg hover:text-blue-600 cursor-pointer">Tổng quan về Kiến trúc Web & HTTP</h3>
-                        <p class="text-sm text-slate-500 mt-1 flex items-center gap-3">
-                            <span>⏱ Thời gian hoàn thành: 05/06/2026</span>
-                        </p>
+                <div class="bg-white border border-blue-50 hover:border-blue-300 rounded-xl p-5 shadow-sm hover:shadow-md transition duration-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 bg-blue-50 text-blue-600 font-bold rounded-lg flex items-center justify-center text-sm border border-blue-100">
+                            {{ $index + 1 }}
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 hover:text-blue-600 transition">
+                                {{ $lesson['title'] }}
+                            </h3>
+                            <p class="text-gray-400 text-xs mt-1 flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Thời lượng ước tính: 45 phút
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-3 sm:pt-0">
+                        
+                        <div>
+                            @if($isCompleted)
+                                <span class="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium border border-green-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                    Hoàn thành
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-xs font-medium border border-amber-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                    Chưa học
+                                </span>
+                            @endif
+                        </div>
+
+                        <a href="{{ route('learning.lessons.show', ['roadmap_id' => $id, 'lesson_id' => $lesson['id']]) }}" 
+                           class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition duration-150">
+                            {{ $isCompleted ? 'Học lại' : 'Vào học' }}
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+
                     </div>
                 </div>
-                <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-md border border-green-200 uppercase">
-                    Đã xong (completed)
-                </span>
+            @endforeach
+        @else
+            <div class="bg-white border border-blue-50 rounded-xl p-8 text-center text-gray-400 shadow-sm">
+                Không tìm thấy bài học nào cho lộ trình này.
             </div>
-
-            <div class="bg-white border-2 border-blue-500 p-5 rounded-xl shadow-sm hover:shadow-md transition flex items-center justify-between">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-blue-50 text-blue-600 rounded-lg font-bold mt-1 shadow-inner">02</div>
-                    <div>
-                        <h3 class="font-bold text-blue-600 text-lg">Xây dựng giao diện cơ bản với HTML5 và CSS3</h3>
-                        <p class="text-sm text-slate-500 mt-1 flex items-center gap-3">
-                            <span class="text-blue-500 font-medium animate-pulse">● Đang học dở dang...</span>
-                        </p>
-                    </div>
-                </div>
-                <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-sm shadow-blue-200">
-                    Học tiếp
-                </a>
-            </div>
-
-            <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm opacity-75 hover:opacity-100 transition flex items-center justify-between">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-slate-100 text-slate-500 rounded-lg font-bold mt-1">03</div>
-                    <div>
-                        <h3 class="font-bold text-slate-700 text-lg">Lập trình Javascript cơ bản và xử lý mảng</h3>
-                        <p class="text-sm text-slate-400 mt-1">Chưa bắt đầu học</p>
-                    </div>
-                </div>
-                <span class="bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1.5 rounded-md uppercase">
-                    Chưa học
-                </span>
-            </div>
-        </div>
+        @endif
     </div>
+
 </div>
 @endsection

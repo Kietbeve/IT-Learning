@@ -55,18 +55,19 @@ class Roadmap extends Model
         return $this->belongsTo(Category::class);
     }
 
+    // SỬA TẠI ĐÂY: Trỏ trực tiếp chuỗi Class Name có kèm đầy đủ namespace để Laravel tự tìm kiếm
     public function sections(): HasMany
     {
-        return $this->hasMany(RoadmapSection::class);
+        return $this->hasMany('Modules\Learning\app\Models\RoadmapSection');
     }
 
     public function lessons(): HasMany
     {
-        return $this->hasMany(RoadmapLesson::class);
+        return $this->hasMany('Modules\Learning\app\Models\RoadmapLesson');
     }
 
     public function projects(): HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany('Modules\Learning\app\Models\Project');
     }
 }

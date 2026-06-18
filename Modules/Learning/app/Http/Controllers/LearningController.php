@@ -3,65 +3,48 @@
 namespace Modules\Learning\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Contracts\View\View;
+use Modules\Learning\Services\RoadmapService; 
 
 class LearningController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected RoadmapService $roadmapService;
+
+    public function __construct(RoadmapService $roadmapService)
     {
-        return view('learning::index');
+        $this->roadmapService = $roadmapService;
     }
 
     /**
-     * Show the form for creating a new resource.
+     * TRANG 1: Danh sách lộ trình
      */
-    public function create()
+    public function index(Request $request): View
     {
-        return view('learning::create');
+        return view('learning::layouts.roadmap-list', [
+            'roadmaps' => $this->roadmapService->getFilteredRoadmaps($request->all(), 6)
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * TRANG 2: Chi tiết lộ trình
      */
-    public function store(Request $request): RedirectResponse
+    public function show(mixed $id): View
     {
-        //
+        return view('learning::layouts.roadmap-detail', array_merge(
+            ['id' => $id], 
+            $this->roadmapService->getRoadmapDetail($id)
+        ));
     }
 
     /**
-     * Show the specified resource.
+     * TRANG 3: Nội dung chi tiết bài học
      */
-    public function show($id)
+    public function showLesson(mixed $roadmapId, mixed $lessonId): View
     {
-        return view('learning::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('learning::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id): RedirectResponse
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
+        return view('learning::layouts.lesson-show', array_merge(
+            ['roadmapId' => $roadmapId, 'lessonId' => $lessonId],
+            $this->roadmapService->getLessonDetail($roadmapId, $lessonId)
+        ));
     }
 }
