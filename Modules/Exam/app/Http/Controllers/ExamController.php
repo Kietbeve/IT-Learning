@@ -113,7 +113,18 @@ class ExamController extends Controller
     }
     public function examManager()
     {
-        return view("exam::contributor.exam-table");
+        $stats = Exam::query()
+        ->selectRaw('COUNT(*) as total')
+        ->selectRaw("SUM(status = 'approved') as approved")
+        ->selectRaw("SUM(status = 'pending') as pending")
+        ->selectRaw("SUM(status = 'rejected') as rejected")
+        // ->selectRaw("SUM(status = 'published') as published")
+        ->selectRaw("SUM(status = 'draft') as draft")
+        ->first();
+
+        $stats->no_questions = Exam::doesntHave('questions')->count();
+
+        return view("exam::contributor.exam-table", compact('stats'));
     }
     public function examDetail($examId)
     {
