@@ -14,6 +14,7 @@ use Modules\Exam\Models\ExamAttempt;
 use Modules\Exam\Models\AttemptAnswer;
 use Modules\Exam\Models\Exam;
 use Modules\Auth\Models\User;
+use Modules\Exam\Jobs\GradeExamAttemptJob;
 
 
 class ExamService
@@ -236,37 +237,42 @@ class ExamService
 
     public function submitAttempt(ExamAttempt $attempt): void
     {
-        // Step 1: Get all question IDs from this exam
-        $allQuestionIds = $attempt->exam
-            ->questions()
-            ->pluck('questions.id')
-            ->toArray();
-        
-        // Step 2: Get question IDs that already have answers
-        $answeredQuestionIds = $attempt->answers()
-            ->pluck('question_id')
-            ->toArray();
-        
-        // Step 3: Find unanswered questions
-        $unansweredQuestionIds = array_diff($allQuestionIds, $answeredQuestionIds);
-        
-        // Step 4: Create empty answer records for unanswered questions
-        foreach ($unansweredQuestionIds as $questionId) {
-            AttemptAnswer::create([
-                'attempt_id' => $attempt->id,
-                'question_id' => $questionId,
-                'selected_option_ids' => null,
-                'answer_text' => null,
-                'is_correct' => null,
-                'answered_at' => null,
+        DB::transaction(function () use ($attempt) {
+            // Step 1: Get all question IDs from this exam
+            $allQuestionIds = $attempt->exam
+                ->questions()
+                ->pluck('questions.id')
+                ->toArray();
+            
+            // Step 2: Get question IDs that already have answers
+            $answeredQuestionIds = $attempt->answers()
+                ->pluck('question_id')
+                ->toArray();
+            
+            // Step 3: Find unanswered questions
+            $unansweredQuestionIds = array_diff($allQuestionIds, $answeredQuestionIds);
+            
+            // Step 4: Create empty answer records for unanswered questions
+            foreach ($unansweredQuestionIds as $questionId) {
+                AttemptAnswer::create([
+                    'attempt_id' => $attempt->id,
+                    'question_id' => $questionId,
+                    'selected_option_ids' => null,
+                    'answer_text' => null,
+                    'is_correct' => null,
+                    'answered_at' => null,
+                ]);
+            }
+            
+            // Step 5: Update attempt status
+            $attempt->update([
+                'status' => 'submitted',
+                'submitted_at' => now(),
             ]);
-        }
+        });
         
-        // Step 5: Update attempt status
-        $attempt->update([
-            'status' => 'submitted',
-            'submitted_at' => now(),
-        ]);
+        // Step 6: Dispatch background grading job (outside transaction)
+        GradeExamAttemptJob::dispatch($attempt->id);
     }
     
     //Hàm lấy danh sách bài kiểm tra
