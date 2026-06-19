@@ -325,7 +325,7 @@
 
                 {{-- Document Card 8 --}}
                 <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
-                    <div class="h-40 bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center border-b border-gray-100">
+                    <div class="h-40 bg-linear-to-br from-teal-50 to-emerald-50 flex items-center justify-center border-b border-gray-100">
                         <x-icon name="document-text" class="w-16 h-16 text-teal-400 group-hover:scale-110 transition-transform" />
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
