@@ -199,4 +199,9 @@ class ExamController extends Controller
             compact('examAttempt')
         );
     }
+
+    public function examReviewTable()
+    {
+        return view("exam::admin.exam-review-table");
+    }
 }

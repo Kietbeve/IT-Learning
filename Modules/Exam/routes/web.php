@@ -55,5 +55,6 @@ Route::group(["prefix"=> "contributor","middleware"=> ["auth",]], function () {
 });
 
 Route::group(["prefix"=> "admin","middleware"=> ["auth","role:admin"] ], function () {//test role
-    Route::get('exams/{exam}/review', \Modules\Exam\Livewire\Admin\ExamReviewPage::class)->name('admin.review.exam');
+    Route::get('exams/{exam}/review', \Modules\Exam\Livewire\Admin\ExamReviewPage::class)->name('admin.review.exam.detail');
+    Route::get('exams',[ExamController::class,'examReviewTable'])->name('admin.review.exam');
 });
