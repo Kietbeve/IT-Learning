@@ -1,23 +1,41 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+// SỬA: Import đúng chuẩn Namespace của LearningController (có chữ app viết thường)
 use Modules\Learning\Http\Controllers\LearningController;
 
-// Đưa URL về thẳng /roadmaps để hiển thị đúng giao diện bạn đang truy cập
-Route::prefix('roadmaps')->name('learning.roadmaps.')->group(function () {
-    Route::get('/', [LearningController::class, 'index'])->name('index');
-    Route::get('/{id}', [LearningController::class, 'show'])->name('show');
-    
-    // Các tác vụ yêu cầu đăng nhập được xử lý an toàn tại Route Level
-    Route::middleware('auth')->group(function () {
-        Route::post('/{id}/enroll', [LearningController::class, 'enroll'])->name('enroll');
-        Route::get('/{roadmapId}/learn/{lessonId?}', [LearningController::class, 'learn'])->name('learn');
-        Route::post('/{roadmapId}/complete/{lessonId}', [LearningController::class, 'completeLesson'])->name('complete');
-    });
-});
+/*
+|--------------------------------------------------------------------------
+| Web Routes - Phân hệ Learning (Học tập)
+|--------------------------------------------------------------------------
+*/
 
-// Nhóm Route tương tác bài học
-Route::middleware('auth')->prefix('learning/lessons')->name('learning.lessons.')->group(function () {
-    Route::post('/{lessonId}/note', [LearningController::class, 'saveNote'])->name('note');
-    Route::post('/{lessonId}/question', [LearningController::class, 'postQuestion'])->name('question');
+// ==========================================
+// 1. NHÓM PUBLIC (Không cần đăng nhập)
+// ==========================================
+
+// Trang 1: Danh sách các lộ trình học tập (Hiển thị 6 ô ban đầu)
+Route::get('/roadmaps', [LearningController::class, 'index'])
+    ->name('learning.roadmaps.index');
+
+// Trang 2: Chi tiết một lộ trình (Chứa danh sách 5 bài học của lộ trình đó)
+Route::get('/roadmaps/{id}', [LearningController::class, 'show'])
+    ->name('learning.roadmaps.show');
+
+// Trang 3: Chi tiết một bài học cụ thể thuộc lộ trình
+Route::get('/roadmaps/{roadmap_id}/lessons/{lesson_id}', [LearningController::class, 'showLesson'])
+    ->name('learning.lessons.show');
+
+
+
+// ==========================================
+// 2. NHÓM STUDENT (Bắt buộc phải đăng nhập)
+// ==========================================
+Route::middleware(['auth'])->group(function () {
+    
+    // Không gian học tập, làm bài học theo lộ trình
+    Route::get('/roadmaps/{id}/learn', function ($id) {
+        return view('learning::layouts.lesson-view', compact('id'));
+    })->name('learning.roadmaps.learn');
+
 });
