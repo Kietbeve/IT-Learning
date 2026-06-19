@@ -3,70 +3,24 @@
 namespace Modules\Learning\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-use App\Models\Category;
-use Modules\Auth\Models\User;
 
 class Roadmap extends Model
 {
-    use SoftDeletes;
+    protected $table = 'roadmaps';
 
-    protected $fillable = [
-        'public_id',
-        'author_id',
-        'category_id',
-        'title',
-        'slug',
-        'short_description',
-        'description',
-        'objective',
-        'thumbnail',
-        'visibility',
-        'status',
-        'rejected_reason',
-        'reviewed_by',
-        'reviewed_at',
-        'published_at',
-    ];
-
-    protected function casts(): array
+    /**
+     * Liên kết tới các Chặng học (Bảng roadmap_sections)
+     */
+    public function sections()
     {
-        return [
-            'reviewed_at' => 'datetime',
-            'published_at' => 'datetime',
-        ];
+        return $this->hasMany(RoadmapSection::class, 'roadmap_id');
     }
 
-    public function author(): BelongsTo
+    /**
+     * Liên kết trực tiếp tới Bài học (Bảng roadmap_lessons) để phục vụ việc tính toán đếm số bài
+     */
+    public function lessons()
     {
-        return $this->belongsTo(User::class, 'author_id');
-    }
-
-    public function reviewer(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'reviewed_by');
-    }
-
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
-    }
-
-    public function sections(): HasMany
-    {
-        return $this->hasMany(RoadmapSection::class);
-    }
-
-    public function lessons(): HasMany
-    {
-        return $this->hasMany(RoadmapLesson::class);
-    }
-
-    public function projects(): HasMany
-    {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(RoadmapLesson::class, 'roadmap_id');
     }
 }

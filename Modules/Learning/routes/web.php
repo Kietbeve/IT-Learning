@@ -3,17 +3,21 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Learning\Http\Controllers\LearningController;
 
-// ==========================================
-// 1. NHÓM PUBLIC (Không cần đăng nhập)
-// ==========================================
-// Trang danh sách và chi tiết lộ trình (Đã nối với Controller chuẩn)
-Route::get('/roadmaps', [LearningController::class, 'index'])->name('learning.roadmaps.index');
-Route::get('/roadmaps/{id}', [LearningController::class, 'show'])->name('learning.roadmaps.show');
+// Đưa URL về thẳng /roadmaps để hiển thị đúng giao diện bạn đang truy cập
+Route::prefix('roadmaps')->name('learning.roadmaps.')->group(function () {
+    Route::get('/', [LearningController::class, 'index'])->name('index');
+    Route::get('/{id}', [LearningController::class, 'show'])->name('show');
+    
+    // Các tác vụ yêu cầu đăng nhập được xử lý an toàn tại Route Level
+    Route::middleware('auth')->group(function () {
+        Route::post('/{id}/enroll', [LearningController::class, 'enroll'])->name('enroll');
+        Route::get('/{roadmapId}/learn/{lessonId?}', [LearningController::class, 'learn'])->name('learn');
+        Route::post('/{roadmapId}/complete/{lessonId}', [LearningController::class, 'completeLesson'])->name('complete');
+    });
+});
 
-// ==========================================
-// 2. NHÓM STUDENT (Bắt buộc phải đăng nhập)
-// ==========================================
-Route::middleware(['auth'])->group(function () {
-    Route::get('/roadmaps/{id}/learn/{lesson_id?}', [LearningController::class, 'learn'])->name('learning.roadmaps.learn');
-    Route::post('/lessons/{lesson_id}/complete', [LearningController::class, 'completeLesson'])->name('learning.lessons.complete');
+// Nhóm Route tương tác bài học
+Route::middleware('auth')->prefix('learning/lessons')->name('learning.lessons.')->group(function () {
+    Route::post('/{lessonId}/note', [LearningController::class, 'saveNote'])->name('note');
+    Route::post('/{lessonId}/question', [LearningController::class, 'postQuestion'])->name('question');
 });
