@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+// SỬA: Import đúng chuẩn Namespace của LearningController (có chữ app viết thường)
 use Modules\Learning\Http\Controllers\LearningController;
 
 /*
@@ -12,25 +13,27 @@ use Modules\Learning\Http\Controllers\LearningController;
 // ==========================================
 // 1. NHÓM PUBLIC (Không cần đăng nhập)
 // ==========================================
-// Trang danh sách lộ trình
-Route::get('/roadmaps', function () {
-    return 'Trang danh sách lộ trình'; 
-})->name('learning.roadmaps.index');
 
-// Trang chi tiết lộ trình (Chính là file roadmap-detail của bạn)
-// Thay vì dùng Route::view, nên truyền tham số {id} động theo chuẩn sitemap
-Route::get('/roadmaps/{id}', function ($id) {
-    return view('learning::layouts.roadmap-detail', compact('id'));
-})->name('learning.roadmaps.show');
+// Trang 1: Danh sách các lộ trình học tập (Hiển thị 6 ô ban đầu)
+Route::get('/roadmaps', [LearningController::class, 'index'])
+    ->name('learning.roadmaps.index');
+
+// Trang 2: Chi tiết một lộ trình (Chứa danh sách 5 bài học của lộ trình đó)
+Route::get('/roadmaps/{id}', [LearningController::class, 'show'])
+    ->name('learning.roadmaps.show');
+
+// Trang 3: Chi tiết một bài học cụ thể thuộc lộ trình
+Route::get('/roadmaps/{roadmap_id}/lessons/{lesson_id}', [LearningController::class, 'showLesson'])
+    ->name('learning.lessons.show');
+
 
 
 // ==========================================
 // 2. NHÓM STUDENT (Bắt buộc phải đăng nhập)
 // ==========================================
-// Sử dụng middleware 'auth' (hoặc middleware chặn quyền student của dự án bạn)
 Route::middleware(['auth'])->group(function () {
     
-    // Không gian học tập, làm bài học theo lộ trình (Chính là file lesson-view của bạn)
+    // Không gian học tập, làm bài học theo lộ trình
     Route::get('/roadmaps/{id}/learn', function ($id) {
         return view('learning::layouts.lesson-view', compact('id'));
     })->name('learning.roadmaps.learn');

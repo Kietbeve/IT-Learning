@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Exam\Http\Controllers\ExamController;
+use Modules\Exam\Livewire\ExamDetail;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +18,15 @@ use Modules\Exam\Http\Controllers\ExamController;
 Route::group(["prefix"=> "exam"], function () {
     // Route::resource('exam', ExamController::class)->names('exam');
     Route::get("", [ExamController::class, 'index'])->name('exam.index');
+
+    // Route test giao diện trang chi tiết bài thi từ module Payment
+    Route::get("detail", [ExamController::class, 'viewDetail'])->name('exam.detail');
+
+    //Route test giao diện trang bai thi
+    Route::get("exam_attempt", [ExamController::class, 'examAttempt'])->name('exam.attempt');
+    
+    //Route test giao diện trang ket qua bai thi
+    Route::get("exam_result", [ExamController::class, 'examResult'])->name('exam.result');
 });
 
 //route auth
@@ -26,5 +36,12 @@ Route::group(["prefix"=> "exam","middleware"=> "auth"], function () {
 
 //route auth + contributor
 Route::group(["prefix"=> "contributor","middleware"=> ["auth",]], function () {
+//Route::group(["prefix"=> "contributor","middleware"=> ["auth","role:admin|contributor"] ], function () {//test role
     Route::get('questions',[ExamController::class,"questionManager"])->name('contributor.questions');
+    Route::get('exams',[ExamController::class,"examManager"])->name('contributor.exams');
+    // Route::get('exams/{examId}/detail', [ExamController::class, 'examDetail'])->name('contributor.exams.detail');
+    Route::get('exams/{examId}/detail', [ExamController::class,'examDetail'])->name('contributor.exams.detail');
+    route::get('exams/{examId}/questions',[ExamController::class,"examQuestionManager"])->name('contributor.exams.questions');
+    Route::get('exams/{examId}/attempts',[ExamController::class,"examAttemptManager"])->name('contributor.exams.attempts');
+    Route::get('exams/attempts/{attemptId}/answers',[ExamController::class,"attemptAnswerDetail"])->name('contributor.exams.attempts.answer');
 });

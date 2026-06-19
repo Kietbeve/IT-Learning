@@ -37,11 +37,17 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
 
-      - name: Copy environment file
-        run: cp .env.example .env
+      - name: Copy environment file and configure for testing
+        run: |
+          cp .env.example .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=:memory:" >> .env
 
       - name: Generate app key
         run: php artisan key:generate
+        
+      - name: Run migrations
+        run: php artisan migrate --env=testing --force
 
       - name: Execute tests
         run: vendor/bin/phpunit
