@@ -19,19 +19,16 @@ Route::group(["prefix"=> "exam"], function () {
     // Route::resource('exam', ExamController::class)->names('exam');
     Route::get("", [ExamController::class, 'index'])->name('exam.index');
 
-    // Route giao diện Exam Detail bằng slug 
-    Route::get('{examSlug}', [ExamController::class, 'showExamDetail'])->name('exam.examDetail');
-
     //Route test giao diện trang bai thi
     Route::get("exam_attempt", [ExamController::class, 'examAttempt'])->name('exam.attempt');
-    
+
     //Route test giao diện trang ket qua bai thi
     Route::get("exam_result", [ExamController::class, 'examResult'])->name('exam.result');
 
     // Exam attempt page - làm bài thi
     Route::get('attempts/{attempt:session_id}', \Modules\Exam\Livewire\ExamAttemptPage::class)
         ->name('exam.attempt.take');
-    
+
     // Exam result page - xem kết quả bài thi
     Route::get('attempts/{attempt:session_id}/result', \Modules\Exam\Livewire\ExamResultPage::class)
         ->name('exam.attempt.result');
@@ -39,7 +36,7 @@ Route::group(["prefix"=> "exam"], function () {
 
 //route auth
 Route::group(["prefix"=> "exam","middleware"=> "auth"], function () {
-
+    Route::get('results',Modules\Exam\Livewire\ResultList::class)->name('exam.results');
 });
 
 //route auth + contributor
@@ -58,3 +55,6 @@ Route::group(["prefix"=> "admin","middleware"=> ["auth","role:admin"] ], functio
     Route::get('exams/{exam}/review', \Modules\Exam\Livewire\Admin\ExamReviewPage::class)->name('admin.review.exam.detail');
     Route::get('exams',[ExamController::class,'examReviewTable'])->name('admin.review.exam');
 });
+
+// Route giao diện Exam Detail bằng slug | Đặt ở cuối vì bị sung đột với các route khác- gõ exam/bất kì đều vào route này
+Route::get('exam/{examSlug}', [ExamController::class, 'showExamDetail'])->name('exam.examDetail');

@@ -352,7 +352,7 @@
                     lg:xl
                     label="Làm lại bài thi" 
                     icon="arrow-path" 
-                    href="{{ route('exam.detail') }}?exam={{ $attempt->exam->slug }}" />
+                    href="#" />{{--route('exam.detail') }}?exam={{ $attempt->exam->slug --}}
             @endif
         </div>
 
