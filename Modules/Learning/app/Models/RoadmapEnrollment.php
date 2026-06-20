@@ -16,9 +16,22 @@ class RoadmapEnrollment extends Model
         'completed_at'
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
+        ];
+    }
+
     // Định nghĩa mối quan hệ với bảng Roadmap
     public function roadmap()
     {
         return $this->belongsTo(Roadmap::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(\Modules\Auth\Models\User::class);
     }
 }

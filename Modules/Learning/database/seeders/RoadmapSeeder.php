@@ -158,6 +158,301 @@ class RoadmapSeeder extends Seeder
             'sort_order' => 2,
         ]);
 
-        $this->command->info('✅ Seeded: 2 roadmaps, 4 sections, 8 lessons!');
+        // Roadmap 3: Fullstack Developer
+        $fullstack = Roadmap::create([
+            'public_id' => Str::uuid()->toString(),
+            'author_id' => $author->id,
+            'title' => 'Lộ trình Fullstack Developer',
+            'slug' => 'lo-trinh-fullstack-developer',
+            'description' => 'Kết hợp kỹ năng Frontend và Backend để trở thành Fullstack Developer toàn diện.',
+            'objective' => 'HTML, CSS, JavaScript, React, Node.js, Database',
+            'category' => 'fullstack',
+            'level' => 'advanced',
+            'status' => 'approved',
+            'published_at' => now(),
+        ]);
+
+        $fullstackStage1 = RoadmapSection::create([
+            'roadmap_id' => $fullstack->id,
+            'title' => 'Fullstack Foundation',
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $fullstack->id,
+            'section_id' => $fullstackStage1->id,
+            'title' => 'Kiến trúc hệ thống Fullstack',
+            'slug' => 'kien-truc-fullstack-' . (time() + 7),
+            'lesson_type' => 'text',
+            'content' => '<p>Tìm hiểu kiến trúc tổng thể của ứng dụng Fullstack.</p>',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        // Roadmap 4: Mobile Development
+        $mobile = Roadmap::create([
+            'public_id' => Str::uuid()->toString(),
+            'author_id' => $author->id,
+            'title' => 'Lộ trình Mobile Development',
+            'slug' => 'lo-trinh-mobile-development',
+            'description' => 'Xây dựng ứng dụng di động đa nền tảng với Flutter hoặc React Native.',
+            'objective' => 'Flutter, React Native, Mobile UI/UX',
+            'category' => 'mobile',
+            'level' => 'intermediate',
+            'status' => 'approved',
+            'published_at' => now(),
+        ]);
+
+        $mobileStage1 = RoadmapSection::create([
+            'roadmap_id' => $mobile->id,
+            'title' => 'Mobile Basics',
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $mobile->id,
+            'section_id' => $mobileStage1->id,
+            'title' => 'Giới thiệu Flutter/React Native',
+            'slug' => 'mobile-intro-' . (time() + 8),
+            'lesson_type' => 'video',
+            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'content' => '<p>Lựa chọn framework phù hợp cho Mobile Development.</p>',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        // Roadmap 5: DevOps Engineer
+        $devops = Roadmap::create([
+            'public_id' => Str::uuid()->toString(),
+            'author_id' => $author->id,
+            'title' => 'Lộ trình DevOps Engineer',
+            'slug' => 'lo-trinh-devops-engineer',
+            'description' => 'Làm chủ CI/CD, Docker, Kubernetes và quản lý hạ tầng Cloud.',
+            'objective' => 'Docker, Kubernetes, CI/CD, AWS, Linux',
+            'category' => 'devops',
+            'level' => 'advanced',
+            'status' => 'approved',
+            'published_at' => now(),
+        ]);
+
+        $devopsStage1 = RoadmapSection::create([
+            'roadmap_id' => $devops->id,
+            'title' => 'DevOps Fundamentals',
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $devops->id,
+            'section_id' => $devopsStage1->id,
+            'title' => 'Linux và Shell Scripting',
+            'slug' => 'linux-shell-' . (time() + 9),
+            'lesson_type' => 'text',
+            'content' => '<p>Nền tảng Linux cho DevOps Engineers.</p>',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $devops->id,
+            'section_id' => $devopsStage1->id,
+            'title' => 'Docker Container cơ bản',
+            'slug' => 'docker-basics-' . (time() + 10),
+            'lesson_type' => 'video',
+            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'content' => '<p>Containerize ứng dụng với Docker.</p>',
+            'is_published' => true,
+            'sort_order' => 2,
+        ]);
+
+        // Roadmap 6: Data Science & AI
+        $dataScience = Roadmap::create([
+            'public_id' => Str::uuid()->toString(),
+            'author_id' => $author->id,
+            'title' => 'Lộ trình Data Science & AI',
+            'slug' => 'lo-trinh-data-science-ai',
+            'description' => 'Phân tích dữ liệu, xây dựng mô hình Machine Learning và Deep Learning với Python.',
+            'objective' => 'Python, Pandas, NumPy, Scikit-learn, TensorFlow',
+            'category' => 'data-science',
+            'level' => 'advanced',
+            'status' => 'approved',
+            'published_at' => now(),
+        ]);
+
+        $dsStage1 = RoadmapSection::create([
+            'roadmap_id' => $dataScience->id,
+            'title' => 'Python for Data Science',
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $dataScience->id,
+            'section_id' => $dsStage1->id,
+            'title' => 'Python cơ bản cho Data Science',
+            'slug' => 'python-data-science-' . (time() + 11),
+            'lesson_type' => 'video',
+            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'content' => '<p>Làm quen với Python, Pandas và NumPy.</p>',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        // Roadmap 7: Cybersecurity
+        $security = Roadmap::create([
+            'public_id' => Str::uuid()->toString(),
+            'author_id' => $author->id,
+            'title' => 'Lộ trình Cybersecurity',
+            'slug' => 'lo-trinh-cybersecurity',
+            'description' => 'Bảo mật ứng dụng, phát hiện lỗ hổng và phòng chống tấn công mạng.',
+            'objective' => 'Network Security, Penetration Testing, Ethical Hacking',
+            'category' => 'security',
+            'level' => 'expert',
+            'status' => 'approved',
+            'published_at' => now(),
+        ]);
+
+        $securityStage1 = RoadmapSection::create([
+            'roadmap_id' => $security->id,
+            'title' => 'Security Fundamentals',
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $security->id,
+            'section_id' => $securityStage1->id,
+            'title' => 'Cơ bản về an ninh mạng',
+            'slug' => 'network-security-' . (time() + 12),
+            'lesson_type' => 'text',
+            'content' => '<p>Tìm hiểu các nguyên tắc bảo mật cơ bản.</p>',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        // Roadmap 8: Cloud Computing
+        $cloud = Roadmap::create([
+            'public_id' => Str::uuid()->toString(),
+            'author_id' => $author->id,
+            'title' => 'Lộ trình Cloud Computing',
+            'slug' => 'lo-trinh-cloud-computing',
+            'description' => 'Quản lý hạ tầng đám mây với AWS, Azure và Google Cloud Platform.',
+            'objective' => 'AWS, Azure, GCP, Cloud Architecture',
+            'category' => 'cloud',
+            'level' => 'intermediate',
+            'status' => 'approved',
+            'published_at' => now(),
+        ]);
+
+        $cloudStage1 = RoadmapSection::create([
+            'roadmap_id' => $cloud->id,
+            'title' => 'Cloud Basics',
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $cloud->id,
+            'section_id' => $cloudStage1->id,
+            'title' => 'Giới thiệu Cloud Computing',
+            'slug' => 'cloud-intro-' . (time() + 13),
+            'lesson_type' => 'video',
+            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'content' => '<p>Các dịch vụ Cloud phổ biến: AWS, Azure, GCP.</p>',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        // Roadmap 9: Game Development
+        $game = Roadmap::create([
+            'public_id' => Str::uuid()->toString(),
+            'author_id' => $author->id,
+            'title' => 'Lộ trình Game Development',
+            'slug' => 'lo-trinh-game-development',
+            'description' => 'Xây dựng game 2D và 3D với Unity hoặc Unreal Engine.',
+            'objective' => 'Unity, C#, Unreal Engine, Game Design',
+            'category' => 'game',
+            'level' => 'intermediate',
+            'status' => 'approved',
+            'published_at' => now(),
+        ]);
+
+        $gameStage1 = RoadmapSection::create([
+            'roadmap_id' => $game->id,
+            'title' => 'Game Development Basics',
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $game->id,
+            'section_id' => $gameStage1->id,
+            'title' => 'Unity và C# cơ bản',
+            'slug' => 'unity-basics-' . (time() + 14),
+            'lesson_type' => 'video',
+            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'content' => '<p>Bắt đầu với Unity Game Engine.</p>',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        // Roadmap 10: UI/UX Design
+        $uiux = Roadmap::create([
+            'public_id' => Str::uuid()->toString(),
+            'author_id' => $author->id,
+            'title' => 'Lộ trình UI/UX Design',
+            'slug' => 'lo-trinh-uiux-design',
+            'description' => 'Thiết kế giao diện người dùng và trải nghiệm người dùng chuyên nghiệp.',
+            'objective' => 'Figma, Adobe XD, User Research, Prototyping',
+            'category' => 'frontend',
+            'level' => 'beginner',
+            'status' => 'approved',
+            'published_at' => now(),
+        ]);
+
+        $uiuxStage1 = RoadmapSection::create([
+            'roadmap_id' => $uiux->id,
+            'title' => 'UI/UX Fundamentals',
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $uiux->id,
+            'section_id' => $uiuxStage1->id,
+            'title' => 'Nguyên tắc thiết kế UI/UX',
+            'slug' => 'uiux-principles-' . (time() + 15),
+            'lesson_type' => 'text',
+            'content' => '<p>Tìm hiểu các nguyên tắc thiết kế giao diện.</p>',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        // Roadmap 11: Database Administration
+        $database = Roadmap::create([
+            'public_id' => Str::uuid()->toString(),
+            'author_id' => $author->id,
+            'title' => 'Lộ trình Database Administration',
+            'slug' => 'lo-trinh-database-administration',
+            'description' => 'Quản trị cơ sở dữ liệu MySQL, PostgreSQL, MongoDB và tối ưu hóa performance.',
+            'objective' => 'MySQL, PostgreSQL, MongoDB, Database Optimization',
+            'category' => 'backend',
+            'level' => 'intermediate',
+            'status' => 'approved',
+            'published_at' => now(),
+        ]);
+
+        $dbStage1 = RoadmapSection::create([
+            'roadmap_id' => $database->id,
+            'title' => 'Database Fundamentals',
+            'sort_order' => 1,
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $database->id,
+            'section_id' => $dbStage1->id,
+            'title' => 'SQL cơ bản và thiết kế database',
+            'slug' => 'sql-basics-' . (time() + 16),
+            'lesson_type' => 'text',
+            'content' => '<p>Học SQL và thiết kế cơ sở dữ liệu quan hệ.</p>',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $this->command->info('✅ Seeded: 11 diverse roadmaps with sections and lessons!');
     }
 }

@@ -33,9 +33,28 @@ Route::get('/roadmaps/{roadmap_id}/lessons/{lesson_id}', [LearningController::cl
 // ==========================================
 Route::middleware(['auth'])->group(function () {
     
-    // Không gian học tập, làm bài học theo lộ trình
-    Route::get('/roadmaps/{id}/learn', function ($id) {
-        return view('learning::layouts.lesson-view', compact('id'));
-    })->name('learning.roadmaps.learn');
+    // Không gian học tập - Learning workspace với lessonId tùy chọn
+    Route::get('/roadmaps/{roadmapId}/learn/{lessonId?}', [LearningController::class, 'learn'])
+        ->name('learning.roadmaps.learn');
+
+    // Đăng ký vào lộ trình
+    Route::post('/roadmaps/{id}/enroll', [LearningController::class, 'enroll'])
+        ->name('learning.roadmaps.enroll');
+
+    // Đánh dấu bài học hoàn thành và chuyển sang bài tiếp theo
+    Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/complete', [LearningController::class, 'completeLesson'])
+        ->name('learning.lessons.complete');
+
+    // Lưu ghi chú bài học
+    Route::post('/lessons/{lesson_id}/note', [LearningController::class, 'saveNote'])
+        ->name('learning.lessons.note');
+
+    // Đặt câu hỏi thảo luận
+    Route::post('/lessons/{lesson_id}/question', [LearningController::class, 'postQuestion'])
+        ->name('learning.lessons.question');
+
+    // Nộp dự án (project submission)
+    Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/submit-project', [LearningController::class, 'submitProject'])
+        ->name('learning.lessons.submitProject');
 
 });

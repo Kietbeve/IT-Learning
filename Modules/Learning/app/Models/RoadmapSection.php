@@ -11,6 +11,6 @@ class RoadmapSection extends Model
     // Một chặng thì có nhiều bài học
     public function lessons()
     {
-        return $this->hasMany(RoadmapLesson::class, 'roadmap_section_id');
+        return $this->hasMany(RoadmapLesson::class, 'section_id');
     }
 }
