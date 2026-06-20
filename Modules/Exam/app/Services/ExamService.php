@@ -281,6 +281,7 @@ class ExamService
         $query = Exam::query()
             ->select([
                 'id',
+                'slug',
                 'title',
                 'short_description',
                 'duration_minutes',
@@ -322,5 +323,51 @@ class ExamService
         },
       },
     ],...
+    */
+
+    //Hàm lấy 1 bài kiểm tra bằng slug 
+    public function getExamBySlug(string $examSlug)
+    {
+    return Exam::query()
+        ->select([
+            'id',
+            'slug',
+            'title',
+            'description',
+            'duration_minutes',
+            'type',
+            'pass_percent',
+            'author_id',
+            'category_id',
+        ])
+        ->with([
+            'author:id,name',
+            'category:id,name',
+        ])
+        ->withCount('questions')
+        ->where('slug', $examSlug)
+        ->firstOrFail();
+    }
+
+    /*
+    Ket qua tra ve co dang:
+    id: 1,
+    slug: "de-thi-laravel-co-ban",
+    title: "Đề thi Laravel cơ bản",
+    description: "Đề thi dùng để test giao diện làm bài.",
+    duration_minutes: 30,
+    type: "hybrid",
+    pass_percent: "50.00",
+    author_id: 1,
+    category_id: 1,
+    questions_count: 3,
+    author: Modules\Auth\Models\User {#9019
+      id: 1,
+      name: "admin",
+    },
+    category: App\Models\Category {#9022
+      id: 1,
+      name: "PHP",
+    }
     */
 }

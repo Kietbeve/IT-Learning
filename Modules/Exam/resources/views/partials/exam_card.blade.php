@@ -57,7 +57,7 @@
 
       </div>
 
-      <x-button sm indigo label="Xem chi tiết" right-icon="arrow-right" />
+      <x-button sm indigo :href="route('exam.examDetail', ['examSlug' => $exam->slug])" label="Xem chi tiết" right-icon="arrow-right" />
 
     </div>
 

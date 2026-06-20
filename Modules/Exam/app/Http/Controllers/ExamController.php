@@ -36,11 +36,12 @@ class ExamController extends Controller
     }
 
     /**
-     * Hàm dùng để test giao diện trang chi tiết bài thi
+     * Hàm render exam_detail
      */
-    public function viewDetail()
+    public function showExamDetail($examSlug)
     {
-        return view('exam::detail');
+      $exam =$this->examService->getExamBySlug($examSlug);
+      return view('exam::exam_detail',compact('exam'));
     }
 
     /**

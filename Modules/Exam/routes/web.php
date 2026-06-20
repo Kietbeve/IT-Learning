@@ -19,8 +19,8 @@ Route::group(["prefix"=> "exam"], function () {
     // Route::resource('exam', ExamController::class)->names('exam');
     Route::get("", [ExamController::class, 'index'])->name('exam.index');
 
-    // Route test giao diện trang chi tiết bài thi từ module Payment
-    Route::get("detail", [ExamController::class, 'viewDetail'])->name('exam.detail');
+    // Route giao diện Exam Detail bằng slug 
+    Route::get('{examSlug}', [ExamController::class, 'showExamDetail'])->name('exam.examDetail');
 
     //Route test giao diện trang bai thi
     Route::get("exam_attempt", [ExamController::class, 'examAttempt'])->name('exam.attempt');
