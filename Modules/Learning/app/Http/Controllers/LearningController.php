@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
 use Modules\Learning\Services\RoadmapService; 
+use Modules\Learning\Models\Roadmap;
+use Illuminate\Support\Facades\Auth;
 
+use App\Models\User;
 class LearningController extends Controller
 {
     protected RoadmapService $roadmapService;
@@ -17,28 +20,67 @@ class LearningController extends Controller
     }
 
     /**
+ 
      * TRANG 1: Danh sách lộ trình
      */
     public function index(Request $request): View
     {
-        return view('learning::layouts.roadmap-list', [
-            'roadmaps' => $this->roadmapService->getFilteredRoadmaps($request->all(), 6)
-        ]);
-    }
+        $roadmaps = $this->roadmapService->getFilteredRoadmaps($request->all(), 6);
+        
+        /** @var mixed $user */
+        $user = Auth::user();
+        $registeredRoadmaps = collect();
+        $unregisteredRoadmaps = Roadmap::all();
 
-    /**
+        if ($user) {
+            // Lấy danh sách ID lộ trình mà user này thực sự đã đăng ký từ bảng roadmap_enrollments
+            $registeredIds = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $user->id)
+                ->pluck('roadmap_id')
+                ->toArray();
+
+            // Truy vấn lấy dữ liệu roadmap tương ứng để hiển thị lên Sidebar
+            $registeredRoadmaps = Roadmap::whereIn('id', $registeredIds)->get();
+            $unregisteredRoadmaps = Roadmap::whereNotIn('id', $registeredIds)->get();
+        }
+
+        return view('learning::layouts.roadmap-list', compact(
+            'roadmaps', 
+            'registeredRoadmaps', 
+            'unregisteredRoadmaps'
+        ));
+    }
+  /**
      * TRANG 2: Chi tiết lộ trình
      */
     public function show(mixed $id): View
     {
-        $userId = auth()->check() ? auth()->id() : null;
+        $userId = Auth::id();
         
+        /** @var mixed $user */
+        $user = Auth::user();
+        
+        $registeredRoadmaps = collect();
+        $unregisteredRoadmaps = Roadmap::all();
+
+        if ($user) {
+            // Đồng bộ cách lấy dữ liệu giống trang index từ bảng roadmap_enrollments
+            $registeredIds = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $user->id)
+                ->pluck('roadmap_id')
+                ->toArray();
+
+            $registeredRoadmaps = Roadmap::whereIn('id', $registeredIds)->get();
+            $unregisteredRoadmaps = Roadmap::whereNotIn('id', $registeredIds)->get();
+        }
+
         return view('learning::layouts.roadmap-detail', array_merge(
-            ['id' => $id], 
+            [
+                'id' => $id, 
+                'registeredRoadmaps' => $registeredRoadmaps, 
+                'unregisteredRoadmaps' => $unregisteredRoadmaps
+            ],
             $this->roadmapService->getRoadmapDetail($id, $userId)
         ));
     }
-
     /**
      * TRANG 3: Nội dung chi tiết bài học
      */
@@ -55,11 +97,11 @@ class LearningController extends Controller
      */
     public function enroll(Request $request, mixed $id)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để đăng ký lộ trình');
         }
 
-        $userId = auth()->id();
+        $userId = Auth::id();
         
         // Check if already enrolled
         if ($this->roadmapService->checkEnrollment($userId, $id)) {
@@ -70,7 +112,7 @@ class LearningController extends Controller
         $enrollment = $this->roadmapService->enrollRoadmap($userId, $id);
 
         if ($enrollment) {
-            return back()->with('success', 'Đăng ký lộ trình thành công!');
+           return redirect()->route('learning.roadmaps.show', $id)->with('success', 'Đăng ký lộ trình thành công!');
         }
 
         return back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại');
@@ -82,11 +124,11 @@ class LearningController extends Controller
     public function learn(mixed $roadmapId, mixed $lessonId = null)
     {
         // Check authentication
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để học');
         }
 
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         // Check enrollment
         if (!$this->roadmapService->checkEnrollment($userId, $roadmapId)) {
@@ -170,11 +212,11 @@ class LearningController extends Controller
      */
     public function completeLesson(Request $request, mixed $roadmapId, mixed $lessonId)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        $userId = auth()->id();
+        $userId = Auth::id();
         
         $result = $this->roadmapService->markLessonCompleted($userId, $roadmapId, $lessonId);
 
@@ -211,7 +253,7 @@ class LearningController extends Controller
      */
     public function saveNote(Request $request, mixed $lessonId)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return back()->with('error', 'Vui lòng đăng nhập');
         }
 
@@ -219,7 +261,7 @@ class LearningController extends Controller
             'content' => 'required|string|max:5000',
         ]);
 
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         \Modules\Learning\Models\LessonNote::updateOrCreate(
             [
@@ -239,7 +281,7 @@ class LearningController extends Controller
      */
     public function postQuestion(Request $request, mixed $lessonId)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return back()->with('error', 'Vui lòng đăng nhập');
         }
 
@@ -247,7 +289,7 @@ class LearningController extends Controller
             'content' => 'required|string|max:2000',
         ]);
 
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         \Modules\Learning\Models\LessonQuestion::create([
             'user_id' => $userId,
@@ -264,7 +306,7 @@ class LearningController extends Controller
      */
     public function submitProject(Request $request, mixed $roadmapId, mixed $lessonId)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return back()->with('error', 'Vui lòng đăng nhập');
         }
 
@@ -275,7 +317,7 @@ class LearningController extends Controller
             'attachment' => 'nullable|file|mimes:zip,pdf,png,jpg|max:102400',
         ]);
 
-        $userId = auth()->id();
+        $userId = Auth::id();
         
         // Get enrollment
         $enrollment = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $userId)

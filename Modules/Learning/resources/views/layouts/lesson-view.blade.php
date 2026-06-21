@@ -58,7 +58,7 @@
                 <span class="text-cyan-600 font-bold">{{ $completedSections }}/{{ $totalSections }} chương ({{ $completedLessonsInRoadmap }}/{{ $totalLessonsInRoadmap }} bài) • {{ $progressPercent }}%</span>
             </div>
             <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                <div class="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-500" style="width: {{ $progressPercent }}%"></div>
+                <div class="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-500" class="width: {{ $progressPercent }}%"></div>
             </div>
         </div>
     </header>

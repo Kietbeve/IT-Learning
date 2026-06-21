@@ -1,6 +1,7 @@
 @extends('layouts.user')
 
 @section('content')
+@include('learning::components.sidebar')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
     <div class="flex flex-col md:flex-row md:justify-between md:items-start border-b border-blue-100 pb-6 mb-8 gap-4">
@@ -41,7 +42,7 @@
                     <span class="text-sm font-bold text-blue-600">{{ $progressPercent }}%</span>
                 </div>
                 <div class="w-full bg-gray-100 rounded-full h-2.5">
-                    <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: {{ $progressPercent }}%"></div>
+                    <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" class="width: {{ $progressPercent }}%"></div>
                 </div>
                 @php
                     // Tính số chương hoàn thành (section-based progress)
