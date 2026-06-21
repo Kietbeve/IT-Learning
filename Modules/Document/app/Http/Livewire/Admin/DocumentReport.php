@@ -4,19 +4,17 @@ namespace Modules\Document\Http\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Modules\Document\Models\DocumentReport as Report;
+use Illuminate\Support\Facades\Auth;
 
 class DocumentReport extends Component
 {
     use WithPagination;
 
     public $search = '';
-    public $statusFilter = 'pending'; // Show pending reports by default
+    public $statusFilter = 'pending';
     public $reasonFilter = 'all';
     
-    // Mock reports stored in session or component state
-    public $mockReports = [];
-
-    // Properties for handling admin dismiss notes
     public $selectedReportId = null;
     public $reportNote = '';
 
@@ -25,75 +23,6 @@ class DocumentReport extends Component
         'statusFilter' => ['except' => 'pending'],
         'reasonFilter' => ['except' => 'all'],
     ];
-
-    public function mount()
-    {
-        // Populate rich mock reports if empty
-        if (empty($this->mockReports)) {
-            $this->mockReports = [
-                [
-                    'id' => 1,
-                    'document_id' => 1,
-                    'document_title' => 'Giáo trình Laravel 11 từ căn bản đến nâng cao',
-                    'document_author' => 'Nguyễn Văn Cộng Tác Viên',
-                    'user_name' => 'Trần Học Viên',
-                    'user_email' => 'student@example.com',
-                    'reason' => 'copyright',
-                    'description' => 'Tài liệu này sao chép nguyên bản giáo trình của trường Đại học Công nghệ mà không có sự đồng ý của tác giả. Yêu cầu gỡ bỏ.',
-                    'status' => 'pending',
-                    'created_at' => now()->subHours(2)->format('Y-m-d H:i:s'),
-                    'resolved_by' => null,
-                    'resolved_at' => null,
-                    'review_note' => null,
-                ],
-                [
-                    'id' => 2,
-                    'document_id' => 2,
-                    'document_title' => 'Source code Website bán hàng PHP thuần cực đẹp',
-                    'document_author' => 'Nguyễn Văn Cộng Tác Viên',
-                    'user_name' => 'Lê Học Sinh',
-                    'user_email' => 'student2@example.com',
-                    'reason' => 'spam',
-                    'description' => 'Link tải source code này bị lỗi và chứa nhiều liên kết quảng cáo độc hại, không đúng như mô tả.',
-                    'status' => 'pending',
-                    'created_at' => now()->subDays(1)->format('Y-m-d H:i:s'),
-                    'resolved_by' => null,
-                    'resolved_at' => null,
-                    'review_note' => null,
-                ],
-                [
-                    'id' => 3,
-                    'document_id' => 2,
-                    'document_title' => 'Source code Website bán hàng PHP thuần cực đẹp',
-                    'document_author' => 'Nguyễn Văn Cộng Tác Viên',
-                    'user_name' => 'Hoàng Minh',
-                    'user_email' => 'student3@example.com',
-                    'reason' => 'inappropriate',
-                    'description' => 'Tài liệu chứa từ ngữ không phù hợp trong phần hướng dẫn cài đặt ở trang 4.',
-                    'status' => 'resolved',
-                    'created_at' => now()->subDays(3)->format('Y-m-d H:i:s'),
-                    'resolved_by' => 'Admin IT-Learning',
-                    'resolved_at' => now()->subDays(2)->format('Y-m-d H:i:s'),
-                    'review_note' => 'Đã yêu cầu cộng tác viên chỉnh sửa lại nội dung trang 4.',
-                ],
-                [
-                    'id' => 4,
-                    'document_id' => 3,
-                    'document_title' => 'Đồ án tốt nghiệp: Hệ thống quản lý thư viện trường học',
-                    'document_author' => 'Trần Học Viên',
-                    'user_name' => 'Phạm Văn Nam',
-                    'user_email' => 'nam@example.com',
-                    'reason' => 'other',
-                    'description' => 'Tài liệu đăng tải bị trùng lặp với đồ án của tôi đã đăng tuần trước.',
-                    'status' => 'dismissed',
-                    'created_at' => now()->subDays(5)->format('Y-m-d H:i:s'),
-                    'resolved_by' => 'Admin IT-Learning',
-                    'resolved_at' => now()->subDays(4)->format('Y-m-d H:i:s'),
-                    'review_note' => 'Đồ án tốt nghiệp của bạn Phạm Văn Nam đăng sau, nội dung không trùng lặp hoàn toàn mà có cải tiến công nghệ mới.',
-                ]
-            ];
-        }
-    }
 
     public function updatingSearch()
     {
@@ -112,17 +41,15 @@ class DocumentReport extends Component
 
     public function resolveReport($id)
     {
-        $reports = $this->mockReports;
-        foreach ($reports as &$report) {
-            if ($report['id'] == $id) {
-                $report['status'] = 'resolved';
-                $report['resolved_by'] = 'Admin IT-Learning';
-                $report['resolved_at'] = now()->format('Y-m-d H:i:s');
-                $report['review_note'] = null; // Duyệt thì không cần ghi chú lý do
-                break;
-            }
-        }
-        $this->mockReports = $reports;
+        $report = Report::findOrFail($id);
+        
+        $report->update([
+            'status' => 'resolved',
+            'resolved_by' => Auth::id(),
+            'resolved_at' => now(),
+            'review_note' => null
+        ]);
+        
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã phê duyệt báo cáo và gỡ bỏ tài liệu vi phạm thành công.']);
     }
 
@@ -144,17 +71,14 @@ class DocumentReport extends Component
             'reportNote.max' => 'Ghi chú không được vượt quá 500 ký tự.',
         ]);
 
-        $reports = $this->mockReports;
-        foreach ($reports as &$report) {
-            if ($report['id'] == $this->selectedReportId) {
-                $report['status'] = 'dismissed';
-                $report['resolved_by'] = 'Admin IT-Learning';
-                $report['resolved_at'] = now()->format('Y-m-d H:i:s');
-                $report['review_note'] = $this->reportNote;
-                break;
-            }
-        }
-        $this->mockReports = $reports;
+        $report = Report::findOrFail($this->selectedReportId);
+        
+        $report->update([
+            'status' => 'dismissed',
+            'resolved_by' => Auth::id(),
+            'resolved_at' => now(),
+            'review_note' => $this->reportNote
+        ]);
 
         $this->dispatch('close-modal', 'report-dismiss-modal');
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã bác bỏ báo cáo vi phạm thành công.']);
@@ -166,79 +90,50 @@ class DocumentReport extends Component
     public function getReasonLabel($reason)
     {
         $reasons = [
-            'copyright' => 'Bản quyền / Trùng lặp',
-            'spam' => 'Spam / Lừa đảo',
-            'inappropriate' => 'Nội dung không phù hợp',
-            'other' => 'Khác',
+            'Bản quyền' => 'Vi phạm bản quyền',
+            'Nội dung sai' => 'Nội dung sai lệch',
+            'File hỏng' => 'Tệp tin lỗi',
+            'Spam' => 'Spam / Quảng cáo',
+            'Khác' => 'Lý do khác',
         ];
 
-        return $reasons[$reason] ?? 'Khác';
+        return $reasons[$reason] ?? $reason;
     }
 
     public function render()
     {
-        // Count reports for stats cards from mock list
-        $pendingCount = collect($this->mockReports)->where('status', 'pending')->count();
-        $resolvedCount = collect($this->mockReports)->where('status', 'resolved')->count();
-        $dismissedCount = collect($this->mockReports)->where('status', 'dismissed')->count();
-        $totalCount = count($this->mockReports);
+        // Real database queries instead of mock data
+        $query = Report::with(['user', 'document.author', 'resolver'])
+            ->orderBy('created_at', 'desc');
 
-        // Filter mock reports
-        $filtered = collect($this->mockReports);
-
+        // Apply filters
         if ($this->statusFilter !== 'all') {
-            $filtered = $filtered->where('status', $this->statusFilter);
+            $query->where('status', $this->statusFilter);
         }
 
         if ($this->reasonFilter !== 'all') {
-            $filtered = $filtered->where('reason', $this->reasonFilter);
+            $query->where('reason', $this->reasonFilter);
         }
 
         if (!empty($this->search)) {
-            $searchLower = mb_strtolower($this->search, 'UTF-8');
-            $filtered = $filtered->filter(function($item) use ($searchLower) {
-                return str_contains(mb_strtolower($item['document_title'], 'UTF-8'), $searchLower)
-                    || str_contains(mb_strtolower($item['description'], 'UTF-8'), $searchLower)
-                    || str_contains(mb_strtolower($item['user_name'], 'UTF-8'), $searchLower);
+            $query->where(function($q) {
+                $q->whereHas('document', function($q2) {
+                    $q2->where('title', 'like', '%' . $this->search . '%');
+                })
+                ->orWhereHas('user', function($q2) {
+                    $q2->where('name', 'like', '%' . $this->search . '%');
+                })
+                ->orWhere('details', 'like', '%' . $this->search . '%');
             });
         }
 
-        // Map to objects so blade file can use arrow syntax seamlessly
-        $objectReports = $filtered->map(function($item) {
-            return (object)[
-                'id' => $item['id'],
-                'document_id' => $item['document_id'],
-                'document' => (object)[
-                    'id' => $item['document_id'],
-                    'title' => $item['document_title'],
-                    'author' => (object)['name' => $item['document_author']],
-                ],
-                'user' => (object)[
-                    'name' => $item['user_name'],
-                    'email' => $item['user_email'],
-                ],
-                'reason' => $item['reason'],
-                'description' => $item['description'],
-                'status' => $item['status'],
-                'resolver' => $item['resolved_by'] ? (object)['name' => $item['resolved_by']] : null,
-                'resolved_at' => $item['resolved_at'] ? \Carbon\Carbon::parse($item['resolved_at']) : null,
-                'created_at' => \Carbon\Carbon::parse($item['created_at']),
-                'review_note' => $item['review_note'] ?? null,
-            ];
-        });
+        $reports = $query->paginate(8);
 
-        // Paginate manually using Laravel collection helper
-        $perPage = 8;
-        $page = (int) request()->query('page', 1);
-        if ($page < 1) $page = 1;
-        $paginatedItems = $objectReports->slice(($page - 1) * $perPage, $perPage)->all();
-        $reports = new \Illuminate\Pagination\LengthAwarePaginator(
-            $paginatedItems,
-            $objectReports->count(),
-            $perPage,
-            $page,
-            ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
-        );
+        // Count stats from real database
+        $pendingCount = Report::where('status', 'pending')->count();
+        $resolvedCount = Report::where('status', 'resolved')->count();
+        $dismissedCount = Report::where('status', 'dismissed')->count();
+        $totalCount = Report::count();
 
         return view('document::livewire.admin.document-report', [
             'reports' => $reports,

@@ -16,7 +16,7 @@ use Modules\Document\Http\Controllers\DocumentController;
 
 // User Routes
 Route::get('/documents', \Modules\Document\Http\Livewire\User\DocumentList::class)->name('documents.index');
-Route::get('/documents/{id}', \Modules\Document\Http\Livewire\User\DocumentDetail::class)->name('documents.show');
+Route::get('/documents/{id}/{slug?}', \Modules\Document\Http\Livewire\User\DocumentDetail::class)->name('documents.show');
 Route::get('/documents/download/{token}', [\Modules\Document\Http\Controllers\DocumentDownloadController::class, 'download'])->name('documents.download');
 
 Route::middleware('auth')->group(function () {

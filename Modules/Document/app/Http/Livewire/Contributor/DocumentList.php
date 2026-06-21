@@ -57,23 +57,44 @@ class DocumentList extends Component
         return $user?->id;
     }
 
-    public function toggleVisibility($id)
-    {
-        $doc = Document::where('author_id', $this->getAuthorId())->find($id);
-        if (!$doc) return;
-
-        $newVisibility = $doc->visibility === 'public' ? 'private' : 'public';
-        $doc->update(['visibility' => $newVisibility]);
-
-        $this->dispatch('notify', ['type' => 'success', 'message' => 'Cập nhật chế độ hiển thị thành công.']);
-    }
-
     public function deleteDocument($id)
     {
         $doc = Document::where('author_id', $this->getAuthorId())->find($id);
         if ($doc) {
             $doc->delete(); // Soft delete
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa tài liệu thành công (Xóa mềm).']);
+        }
+    }
+
+    public function dismissRejectedDraft($documentId)
+    {
+        Document::where('parent_document_id', $documentId)
+            ->where('status', 'rejected')
+            ->forceDelete();
+        
+        $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa cảnh báo.']);
+    }
+
+    public function dismissRejection($documentId, $type)
+    {
+        if ($type === 'draft') {
+            // Delete rejected drafts
+            Document::where('parent_document_id', $documentId)
+                ->where('status', 'rejected')
+                ->forceDelete();
+            
+            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa cảnh báo bản nháp bị từ chối.']);
+        } elseif ($type === 'direct') {
+            // Soft delete the rejected document
+            $doc = Document::where('author_id', $this->getAuthorId())
+                ->where('id', $documentId)
+                ->where('status', 'rejected')
+                ->first();
+            
+            if ($doc) {
+                $doc->delete(); // Soft delete
+                $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã ẩn tài liệu bị từ chối.']);
+            }
         }
     }
 
@@ -84,6 +105,12 @@ class DocumentList extends Component
 
         // Query only contributor's own documents
         $query = Document::where('author_id', $authorId)->withTrashed();
+
+        // Hide rejected drafts (show only original docs or non-rejected drafts)
+        $query->where(function($q) {
+            $q->whereNull('parent_document_id') // Always show original documents
+              ->orWhere('status', '!=', 'rejected'); // Only show non-rejected drafts
+        });
 
         if (!empty($this->search)) {
             $query->where(function($q) {
@@ -104,7 +131,7 @@ class DocumentList extends Component
             $query->where('category_id', $this->categoryFilter);
         }
 
-        $documents = $query->with(['category', 'product', 'reviewer'])
+        $documents = $query->with(['category', 'product', 'reviewer', 'rejectedDrafts'])
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 

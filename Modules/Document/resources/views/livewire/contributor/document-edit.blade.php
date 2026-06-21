@@ -10,6 +10,18 @@
         </a>
     </div>
 
+    @if(session('success'))
+        <div class="rounded-2xl border border-green-200 bg-green-50/80 px-4 py-3 text-sm font-semibold text-green-700 shadow-sm" x-data x-init="window.scrollTo({top: 0, behavior: 'smooth'});">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-semibold text-rose-700 shadow-sm" x-data x-init="window.scrollTo({top: 0, behavior: 'smooth'});">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <form wire:submit.prevent="save" class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Main Form Columns -->
         <div class="md:col-span-2 space-y-6">
@@ -61,8 +73,8 @@
                     <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-700">
                         <svg class="w-8 h-8 text-slate-450 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         <div class="min-w-0 flex-1">
-                            <span class="font-bold text-slate-900 block truncate text-sm" title="{{ basename($existingFilePath) }}">{{ basename($existingFilePath) }}</span>
-                            <span class="block text-[10px] text-slate-400 font-bold uppercase mt-0.5">Lưu trữ trên cloud</span>
+                            <span class="font-bold text-slate-900 block truncate text-sm" title="{{ $doc->title }}">{{ $doc->title }}</span>
+                            <span class="block text-[10px] text-slate-400 font-bold uppercase mt-0.5">{{ strtoupper($doc->file_type) }} • Lưu trữ trên cloud</span>
                         </div>
                     </div>
                 </div>
@@ -135,8 +147,10 @@
                     <div x-show="paid" x-transition class="space-y-1.5 pt-1.5">
                         <label for="price" class="text-[10px] font-bold text-slate-500 uppercase">Giá bán (VND) <span class="text-rose-500">*</span></label>
                         <div class="relative">
-                            <input type="number" id="price" wire:model.blur="price" placeholder="10000" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none transition-colors" />
-                            <span class="absolute inset-y-0 right-4 inline-flex items-center text-xs font-bold text-slate-400">đ</span>
+                            <input type="number" id="price" wire:model.blur="price" placeholder="10000" 
+                                x-on:input="$el.value = $el.value.replace(/^0+/, '') || '0'"
+                                class="w-full rounded-2xl border border-slate-200 px-4 py-3 pr-16 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <span class="absolute inset-y-0 right-4 inline-flex items-center text-xs font-bold text-slate-400 pointer-events-none">VND</span>
                         </div>
                         @error('price') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
                     </div>
@@ -189,7 +203,7 @@
                     <!-- Existing thumbnail -->
                     @elseif ($existingThumbnailPath)
                         <div class="relative rounded-2xl overflow-hidden border border-slate-200">
-                            <img src="{{ Storage::url($existingThumbnailPath) }}" class="w-full h-32 object-cover" alt="Current Cover" />
+                            <img src="{{ $doc->thumbnail_url }}" class="w-full h-32 object-cover" alt="Current Cover" />
                         </div>
                     @endif
 

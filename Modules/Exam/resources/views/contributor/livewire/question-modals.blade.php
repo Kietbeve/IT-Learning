@@ -112,36 +112,83 @@
                     <option value="hard">Khó</option>
                 </x-native-select>
 
-                <x-native-select label="Loại câu hỏi" wire:model="type">
+                    <x-native-select label="Loại câu hỏi" wire:model.live="type">
                     <option value="single_choice">Trắc nghiệm một đáp án</option>
                     <option value="multiple_choice">Trắc nghiệm nhiều đáp án</option>
                     <option value="essay">Tự luận</option>
                 </x-native-select>
             </div>
 
-            @if (in_array($type, ['single_choice', 'multiple_choice'], true))
+            {{-- Phần đáp án: Động theo loại câu hỏi --}}
+            @if ($type === 'single_choice' || $type === 'multiple_choice')
                 <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <div class="text-sm font-semibold text-slate-700">Đáp án</div>
+                    {{-- Header với nút thêm đáp án --}}
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm font-semibold text-slate-700">Đáp án</div>
+                        <x-button xs positive icon="plus" label="Thêm đáp án" wire:click="addOption" />
+                    </div>
 
+                    {{-- Danh sách đáp án --}}
                     @foreach ($options as $index => $option)
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                            <x-input :label="'Đáp án ' . chr(65 + $index)" wire:model="options.{{ $index }}.content"
-                                :placeholder="'Nhập đáp án ' . chr(65 + $index)" />
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+                            {{-- Ô nhập nội dung đáp án --}}
+                            <x-input 
+                                :label="'Đáp án ' . chr(65 + $index)" 
+                                wire:model="options.{{ $index }}.content"
+                                :placeholder="'Nhập đáp án ' . chr(65 + $index)" 
+                            />
 
-                            <label
-                                class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-                                <input type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                    wire:model="options.{{ $index }}.is_correct">
-                                Đúng
-                            </label>
+                            {{-- Radio button cho single_choice, Checkbox cho multiple_choice --}}
+                            @if ($type === 'single_choice')
+                                <label class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                                    <input 
+                                        type="radio" 
+                                        name="correct_answer_create"
+                                        class="border-slate-300 text-blue-600 focus:ring-blue-500"
+                                        wire:click="selectSingleCorrectAnswer({{ $index }})"
+                                        @if($option['is_correct']) checked @endif
+                                    >
+                                    Đúng
+                                </label>
+                            @else
+                                <label class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                                    <input 
+                                        type="checkbox" 
+                                        class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                        wire:model="options.{{ $index }}.is_correct"
+                                    >
+                                    Đúng
+                                </label>
+                            @endif
+
+                            {{-- Nút xóa đáp án (disable nếu chỉ còn 2 đáp án) --}}
+                            <x-button 
+                                xs 
+                                negative 
+                                icon="trash" 
+                                wire:click="removeOption({{ $index }})"
+                                :disabled="count($options) <= 2"
+                            />
                         </div>
                     @endforeach
 
                     @error('options')
-                        <p class="text-sm text-red-500">
-                            {{ $message }}
-                        </p>
+                        <p class="text-sm text-red-500">{{ $message }}</p>
                     @enderror
+                </div>
+
+            {{-- Phần đáp án tự luận (tạm thời chưa lưu) --}}
+            @elseif ($type === 'essay')
+                <div class="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <div class="text-sm font-semibold text-slate-700">Đáp án tự luận</div>
+                    <x-textarea 
+                        wire:model="essayAnswer"
+                        placeholder="Nhập gợi ý đáp án (tính năng đang phát triển - tạm thời không lưu)"
+                        rows="5"
+                    />
+                    <p class="text-xs text-amber-600">
+                        ℹ️ Đáp án tự luận sẽ được cập nhật trong phiên bản sau
+                    </p>
                 </div>
             @endif
         </div>
@@ -181,36 +228,83 @@
                         <option value="hard">Khó</option>
                     </x-native-select>
 
-                    <x-native-select label="Loại câu hỏi" wire:model="type">
+                <x-native-select label="Loại câu hỏi" wire:model.live="type">
                         <option value="single_choice">Trắc nghiệm một đáp án</option>
                         <option value="multiple_choice">Trắc nghiệm nhiều đáp án</option>
                         <option value="essay">Tự luận</option>
                     </x-native-select>
                 </div>
 
-                @if (in_array($type, ['single_choice', 'multiple_choice'], true))
+                {{-- Phần đáp án: Động theo loại câu hỏi --}}
+                @if ($type === 'single_choice' || $type === 'multiple_choice')
                     <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                        <div class="text-sm font-semibold text-slate-700">Đáp án</div>
+                        {{-- Header với nút thêm đáp án --}}
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm font-semibold text-slate-700">Đáp án</div>
+                            <x-button xs positive icon="plus" label="Thêm đáp án" wire:click="addOption" />
+                        </div>
 
+                        {{-- Danh sách đáp án --}}
                         @foreach ($options as $index => $option)
-                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                                <x-input label="Đáp án {{ chr(65 + $index) }}" wire:model="options.{{ $index }}.content"
-                                    placeholder="Nhập đáp án {{ chr(65 + $index) }}" />
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+                                {{-- Ô nhập nội dung đáp án --}}
+                                <x-input 
+                                    :label="'Đáp án ' . chr(65 + $index)" 
+                                    wire:model="options.{{ $index }}.content"
+                                    :placeholder="'Nhập đáp án ' . chr(65 + $index)" 
+                                />
 
-                                <label
-                                    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-                                    <input type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                        wire:model="options.{{ $index }}.is_correct">
-                                    Đúng
-                                </label>
+                                {{-- Radio button cho single_choice, Checkbox cho multiple_choice --}}
+                                @if ($type === 'single_choice')
+                                    <label class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                                        <input 
+                                            type="radio" 
+                                            name="correct_answer_edit"
+                                            class="border-slate-300 text-blue-600 focus:ring-blue-500"
+                                            wire:click="selectSingleCorrectAnswer({{ $index }})"
+                                            @if($option['is_correct']) checked @endif
+                                        >
+                                        Đúng
+                                    </label>
+                                @else
+                                    <label class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                                        <input 
+                                            type="checkbox" 
+                                            class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                            wire:model="options.{{ $index }}.is_correct"
+                                        >
+                                        Đúng
+                                    </label>
+                                @endif
+
+                                {{-- Nút xóa đáp án (disable nếu chỉ còn 2 đáp án) --}}
+                                <x-button 
+                                    xs 
+                                    negative 
+                                    icon="trash" 
+                                    wire:click="removeOption({{ $index }})"
+                                    :disabled="count($options) <= 2"
+                                />
                             </div>
                         @endforeach
 
                         @error('options')
-                            <p class="text-sm text-red-500">
-                                {{ $message }}
-                            </p>
+                            <p class="text-sm text-red-500">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                {{-- Phần đáp án tự luận (tạm thời chưa lưu) --}}
+                @elseif ($type === 'essay')
+                    <div class="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                        <div class="text-sm font-semibold text-slate-700">Đáp án tự luận</div>
+                        <x-textarea 
+                            wire:model="essayAnswer"
+                            placeholder="Nhập gợi ý đáp án (tính năng đang phát triển - tạm thời không lưu)"
+                            rows="5"
+                        />
+                        <p class="text-xs text-amber-600">
+                            ℹ️ Đáp án tự luận sẽ được cập nhật trong phiên bản sau
+                        </p>
                     </div>
                 @endif
 

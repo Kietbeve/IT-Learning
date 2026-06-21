@@ -10,12 +10,14 @@ use Modules\Payment\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Modules\Document\Jobs\ProcessWatermarkJob;
 
 class DocumentEdit extends Component
 {
     use WithFileUploads;
 
     public $documentId;
+    public $doc;
     public $title = '';
     public $category_id = '';
     public $short_description = '';
@@ -50,6 +52,7 @@ class DocumentEdit extends Component
             abort(404, 'Tài liệu không tồn tại hoặc bạn không có quyền chỉnh sửa.');
         }
 
+        $this->doc = $doc;
         $this->documentId = $doc->id;
         $this->title = $doc->title;
         $this->category_id = $doc->category_id;
@@ -116,6 +119,58 @@ class DocumentEdit extends Component
             abort(403);
         }
 
+        // Check if anything actually changed
+        $hasFileChange = $this->newFile !== null;
+        $hasThumbnailChange = $this->newThumbnailFile !== null;
+
+        $hasTextChange = (
+            $doc->title !== $this->title ||
+            $doc->category_id != $this->category_id ||
+            $doc->short_description !== $this->short_description ||
+            $doc->description !== $this->description ||
+            $doc->visibility !== $this->visibility ||
+            $doc->is_downloadable != $this->is_downloadable
+        );
+
+        $hasPriceChange = false;
+        if ($doc->product) {
+            $hasPriceChange = ($this->isPaid && $this->price != $doc->product->price) || !$this->isPaid;
+        } else {
+            $hasPriceChange = $this->isPaid && $this->price > 0;
+        }
+
+        if (!$hasFileChange && !$hasThumbnailChange && !$hasTextChange && !$hasPriceChange) {
+            session()->flash('error', 'Bạn chưa thay đổi thông tin nào. Vui lòng chỉnh sửa trước khi lưu.');
+            return redirect()->back();
+        }
+
+        // Check if ONLY visibility changed on APPROVED document
+        if ($doc->status === 'approved') {
+            $onlyVisibilityChanged = (
+                $doc->visibility !== $this->visibility &&
+                $doc->title === $this->title &&
+                $doc->category_id == $this->category_id &&
+                $doc->short_description === $this->short_description &&
+                $doc->description === $this->description &&
+                $doc->is_downloadable == $this->is_downloadable &&
+                !$hasFileChange &&
+                !$hasThumbnailChange &&
+                !$hasPriceChange
+            );
+
+            if ($onlyVisibilityChanged) {
+                // Public → Private: INSTANT (no approval needed)
+                if ($doc->visibility === 'public' && $this->visibility === 'private') {
+                    $doc->update(['visibility' => 'private']);
+                    session()->flash('success', 'Đã chuyển tài liệu sang chế độ riêng tư.');
+                    return redirect()->route('contributor.documents.index');
+                }
+                
+                // Private → Public: CREATE DRAFT (needs approval)
+                // Fall through to draft creation logic below
+            }
+        }
+
         // 1. Process new original file if uploaded
         $originalPath = $doc->file_original_path;
         $previewPath = $doc->preview_file_path;
@@ -125,30 +180,31 @@ class DocumentEdit extends Component
         $fileSize = $doc->file_size;
 
         if ($this->newFile) {
-            $originalExt = $this->newFile->getClientOriginalExtension();
-            $originalName = 'doc_' . uniqid() . '.' . $originalExt;
-            $originalPath = $this->newFile->storeAs('documents', $originalName, 'public');
-            
-            $fileType = strtolower($originalExt);
+            $year = now()->format('Y');
+            $month = now()->format('m');
+            $originalExt = strtolower($this->newFile->getClientOriginalExtension());
+            $originalUuid = Str::uuid();
+            $originalPath = "originals/resources/{$year}/{$month}/{$originalUuid}.{$originalExt}";
+            Storage::disk('r2')->put($originalPath, file_get_contents($this->newFile->getRealPath()));
+
+            $fileType = $originalExt;
             $fileSize = $this->newFile->getSize();
 
-            // Mock watermark for PDFs
-            if ($fileType === 'pdf') {
-                $previewPath = $originalPath;
-                $watermarkPath = $originalPath;
-                $watermarkStatus = 'success';
-            } else {
-                $previewPath = null;
-                $watermarkPath = null;
-                $watermarkStatus = 'pending';
-            }
+            // Re-dispatch watermark job for new file
+            $previewPath = null;
+            $watermarkPath = null;
+            $watermarkStatus = 'pending';
         }
 
         // 2. Process new thumbnail if uploaded
         $thumbnailPath = $doc->thumbnail;
         if ($this->newThumbnailFile) {
-            $thumbnailName = 'thumb_' . uniqid() . '.' . $this->newThumbnailFile->getClientOriginalExtension();
-            $thumbnailPath = $this->newThumbnailFile->storeAs('documents', $thumbnailName, 'public');
+            $year = now()->format('Y');
+            $month = now()->format('m');
+            $thumbExt = strtolower($this->newThumbnailFile->getClientOriginalExtension());
+            $thumbUuid = Str::uuid();
+            $thumbnailPath = "thumbnails/resources/{$year}/{$month}/{$thumbUuid}.{$thumbExt}";
+            Storage::disk('r2')->put($thumbnailPath, file_get_contents($this->newThumbnailFile->getRealPath()));
         }
 
         // 3. Generate unique slug if title has changed
@@ -163,41 +219,87 @@ class DocumentEdit extends Component
             }
         }
 
-        // 4. Update Document
-        $doc->update([
-            'category_id' => $this->category_id,
-            'title' => $this->title,
-            'slug' => $slug,
-            'short_description' => $this->short_description,
-            'description' => $this->description,
-            'thumbnail' => $thumbnailPath,
-            'preview_file_path' => $previewPath,
-            'file_original_path' => $originalPath,
-            'file_watermarked_path' => $watermarkPath,
-            'file_type' => $fileType,
-            'file_size' => $fileSize,
-            'visibility' => $this->visibility,
-            'is_downloadable' => $this->is_downloadable,
-            'watermark_status' => $watermarkStatus,
-            'status' => 'pending', // Send back to pending queue when edited
-        ]);
+        // 4. Update Document or Create Draft Copy
+        if ($doc->status === 'approved' && $doc->parent_document_id === null) {
+            // Only create draft when editing ORIGINAL approved document (not drafts)
+            $draft = Document::create([
+                'public_id' => 'doc_' . Str::random(12),
+                'author_id' => $doc->author_id,
+                'category_id' => $this->category_id,
+                'title' => $this->title,
+                'slug' => $slug . '-draft-' . $doc->id, // Unique slug for draft
+                'short_description' => $this->short_description,
+                'description' => $this->description,
+                'thumbnail' => $thumbnailPath,
+                'preview_file_path' => $previewPath,
+                'file_original_path' => $originalPath,
+                'file_watermarked_path' => $watermarkPath,
+                'file_type' => $fileType,
+                'file_size' => $fileSize,
+                'visibility' => $this->visibility,
+                'is_downloadable' => $this->is_downloadable,
+                'watermark_status' => $watermarkStatus,
+                'status' => 'pending',
+                'parent_document_id' => $doc->id, // Link to original
+            ]);
 
-        // 5. Update or Create/Delete Product Mapping
-        if ($this->isPaid && $this->price > 0) {
-            Product::updateOrCreate(
-                ['document_id' => $doc->id],
-                [
-                    'name' => $doc->title,
-                    'price' => $this->price,
-                    'is_active' => true,
-                ]
-            );
+            if ($this->newFile && in_array($fileType, ['pdf', 'docx'])) {
+                ProcessWatermarkJob::dispatch($draft->id);
+            }
+
+            // Handle product for draft
+            if ($this->isPaid && $this->price > 0) {
+                Product::updateOrCreate(
+                    ['document_id' => $draft->id],
+                    [
+                        'name' => $draft->title,
+                        'price' => $this->price,
+                        'is_active' => true,
+                    ]
+                );
+            }
+
+            session()->flash('success', 'Đã tạo bản chỉnh sửa! Admin sẽ duyệt bản cập nhật. Tài liệu gốc vẫn đang live.');
         } else {
-            // Delete product if toggled back to free
-            Product::where('document_id', $doc->id)->delete();
-        }
+            // Document not approved yet → Edit in-place (existing behavior)
+            $doc->update([
+                'category_id' => $this->category_id,
+                'title' => $this->title,
+                'slug' => $slug,
+                'short_description' => $this->short_description,
+                'description' => $this->description,
+                'thumbnail' => $thumbnailPath,
+                'preview_file_path' => $previewPath,
+                'file_original_path' => $originalPath,
+                'file_watermarked_path' => $watermarkPath,
+                'file_type' => $fileType,
+                'file_size' => $fileSize,
+                'visibility' => $this->visibility,
+                'is_downloadable' => $this->is_downloadable,
+                'watermark_status' => $watermarkStatus,
+                'status' => 'pending',
+            ]);
 
-        session()->flash('success', 'Cập nhật tài liệu thành công! Tài liệu đang chờ duyệt lại.');
+            if ($this->newFile && in_array($fileType, ['pdf', 'docx'])) {
+                ProcessWatermarkJob::dispatch($doc->id);
+            }
+
+            // Handle product for in-place edit
+            if ($this->isPaid && $this->price > 0) {
+                Product::updateOrCreate(
+                    ['document_id' => $doc->id],
+                    [
+                        'name' => $doc->title,
+                        'price' => $this->price,
+                        'is_active' => true,
+                    ]
+                );
+            } else {
+                Product::where('document_id', $doc->id)->delete();
+            }
+
+            session()->flash('success', 'Cập nhật tài liệu thành công! Tài liệu đang chờ duyệt lại.');
+        }
         return redirect()->route('contributor.documents.index');
     }
 

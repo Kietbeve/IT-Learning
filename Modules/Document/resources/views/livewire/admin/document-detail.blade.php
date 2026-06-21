@@ -1,4 +1,4 @@
-<div x-data="{ showRejectModal: false }" 
+<div x-data="{ showRejectModal: false, showImageModal: false }" 
      @open-modal.window="let d = $event.detail; if (d === 'reject-detail-modal' || d?.[0] === 'reject-detail-modal' || d?.id === 'reject-detail-modal') showRejectModal = true"
      @close-modal.window="let d = $event.detail; if (d === 'reject-detail-modal' || d?.[0] === 'reject-detail-modal' || d?.id === 'reject-detail-modal') showRejectModal = false"
      class="space-y-6">
@@ -17,6 +17,52 @@
             </a>
         @endif
     </div>
+
+    @if(!empty($changes))
+    <!-- Changes Section -->
+    <div class="rounded-3xl border-2 border-amber-200 bg-amber-50 p-6 shadow-sm">
+        <div class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="flex-1">
+                <h3 class="text-base font-bold text-amber-900 mb-3">Những thay đổi so với bản gốc</h3>
+                <div class="space-y-4">
+                    @foreach($changes as $field => $change)
+                        <div class="bg-white rounded-2xl p-4 border border-amber-200">
+                            <div class="text-xs font-semibold text-amber-700 uppercase mb-3">
+                                @if($field === 'title') Tiêu đề
+                                @elseif($field === 'short_description') Mô tả ngắn
+                                @elseif($field === 'description') Nội dung chi tiết
+                                @elseif($field === 'category') Danh mục
+                                @elseif($field === 'visibility') Hiển thị
+                                @elseif($field === 'is_downloadable') Cho phép tải xuống
+                                @elseif($field === 'price') Giá
+                                @elseif($field === 'file') Tệp tin
+                                @else {{ ucfirst($field) }}
+                                @endif
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <div class="text-xs font-medium text-slate-500 mb-1.5">Cũ:</div>
+                                    <div class="text-sm text-slate-700 bg-red-50 border border-red-200 rounded-xl p-3">
+                                        {{ Str::limit($change['old'], 200) }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-medium text-slate-500 mb-1.5">Mới:</div>
+                                    <div class="text-sm text-slate-700 bg-green-50 border border-green-200 rounded-xl p-3">
+                                        {{ Str::limit($change['new'], 200) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Layout 2 Columns -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -57,8 +103,11 @@
                     <div class="flex items-center gap-3">
                         <svg class="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                         <div class="min-w-0 flex-1">
-                            <p class="font-semibold text-slate-900 truncate" title="{{ $doc->file_original_path }}">{{ basename($doc->file_original_path) }}</p>
-                            <p class="text-xs text-slate-400 mt-0.5">Dung lượng: {{ number_format($doc->file_size / 1024 / 1024, 2) }} MB | Định dạng: {{ strtoupper($doc->file_type) }}</p>
+                            @php
+                                $originalExt = pathinfo($doc->file_original_path, PATHINFO_EXTENSION);
+                            @endphp
+                            <p class="font-semibold text-slate-900 truncate" title="{{ $doc->slug }}.{{ $originalExt }}">{{ $doc->slug }}.{{ $originalExt }}</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Dung lượng: {{ number_format($doc->file_size / 1024 / 1024, 2) }} MB | Định dạng: {{ strtoupper($originalExt) }}</p>
                         </div>
                     </div>
                 </div>
@@ -72,7 +121,7 @@
                             <span class="text-xs text-slate-500 font-mono break-all block mt-0.5">{{ $doc->preview_file_path ?? 'Không có tệp xem trước' }}</span>
                         </div>
                         @if($doc->preview_file_path)
-                            <a href="{{ Storage::url($doc->preview_file_path) }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
+                            <a href="{{ $doc->preview_file_url }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
                                 Xem tệp
                             </a>
                         @endif
@@ -85,7 +134,7 @@
                             <span class="text-xs text-slate-500 font-mono break-all block mt-0.5">{{ $doc->file_watermarked_path ?? 'Chưa tạo tệp đóng dấu' }}</span>
                         </div>
                         @if($doc->file_watermarked_path)
-                            <a href="{{ Storage::url($doc->file_watermarked_path) }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
+                            <a href="{{ $doc->file_watermarked_url }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
                                 Xem tệp
                             </a>
                         @endif
@@ -100,8 +149,8 @@
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block">Ảnh bìa tài liệu</span>
                 @if($doc->thumbnail)
-                    <div class="aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 relative group">
-                        <img src="{{ Storage::url($doc->thumbnail) }}" alt="{{ $doc->title }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <div @click="showImageModal = true" class="aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 relative group cursor-pointer hover:border-blue-400 hover:shadow-lg transition-all">
+                        <img src="{{ $doc->thumbnail_url }}" alt="{{ $doc->title }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     </div>
                 @else
                     <div class="aspect-video w-full rounded-2xl bg-slate-50 border border-slate-200 border-dashed flex flex-col items-center justify-center text-slate-400">
@@ -264,4 +313,17 @@
             </div>
         </div>
     </div>
+
+    <!-- Image Lightbox Modal -->
+    @if($doc->thumbnail)
+    <div x-show="showImageModal" 
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm" 
+         style="display: none;"
+         x-transition
+         @click="showImageModal = false">
+        <div class="relative max-w-[85vw] max-h-[85vh] flex flex-col items-center" @click.stop>
+            <img src="{{ $doc->thumbnail_url }}" alt="{{ $doc->title }}" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" />
+        </div>
+    </div>
+    @endif
 </div>
