@@ -30,6 +30,8 @@ class Roadmap extends Model
         'reviewed_by',
         'reviewed_at',
         'published_at',
+        'category',
+        'level',
     ];
 
     protected function casts(): array
@@ -55,6 +57,7 @@ class Roadmap extends Model
         return $this->belongsTo(Category::class);
     }
 
+    // Relationships với các models khác trong module
     public function sections(): HasMany
     {
         return $this->hasMany(RoadmapSection::class);
@@ -68,5 +71,31 @@ class Roadmap extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(RoadmapEnrollment::class);
+    }
+
+    public function lessonProgress(): HasMany
+    {
+        return $this->hasMany(RoadmapLessonProgress::class);
+    }
+
+    /**
+     * Check if a user is enrolled in this roadmap
+     */
+    public function isEnrolledBy($userId): bool
+    {
+        return $this->enrollments()->where('user_id', $userId)->exists();
+    }
+
+    /**
+     * Get enrollment for a specific user
+     */
+    public function getEnrollmentFor($userId)
+    {
+        return $this->enrollments()->where('user_id', $userId)->first();
     }
 }
