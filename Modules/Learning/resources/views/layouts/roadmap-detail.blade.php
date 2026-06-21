@@ -1,86 +1,185 @@
-@extends('learning::layouts.master')
+@extends('layouts.user')
 
 @section('content')
-<div class="min-h-screen bg-slate-50 text-slate-800 font-sans">
-<div class="min-h-screen bg-slate-50 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
-    <div class="bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-12 px-6 shadow-md">
-        <div class="max-w-5xl mx-auto">
-            <span class="bg-blue-800 text-blue-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                Phân hệ Học Tập
-            </span>
-            <h1 class="text-3xl font-extrabold mt-3 tracking-tight">Lộ trình học: Trở thành Lập trình viên Full-stack</h1>
-            <p class="text-blue-100 mt-2 max-w-2xl">Bắt đầu hành trình chinh phục kiến thức công nghệ từ con số 0 cùng IT-Learning.</p>
+    <div class="flex flex-col md:flex-row md:justify-between md:items-start border-b border-blue-100 pb-6 mb-8 gap-4">
+        <div class="flex-1">
+            <a href="{{ route('learning.roadmaps.index') }}" class="text-sm text-blue-600 hover:underline flex items-center gap-1 mb-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                Quay lại danh sách
+            </a>
+            <h1 class="text-3xl font-bold text-blue-600 mb-2">
+                {{ $roadmapTitle }}
+            </h1>
             
-            <div class="mt-8 bg-blue-900/40 p-5 rounded-2xl backdrop-blur-sm border border-blue-400/20 max-w-xl">
+            @if($roadmap)
+                <div class="flex gap-2 mb-3">
+                    @if($roadmap->level)
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ ucfirst($roadmap->level) }}
+                        </span>
+                    @endif
+                    @if($roadmap->category)
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                            {{ $roadmap->category }}
+                        </span>
+                    @endif
+                </div>
+                @if($roadmap->description)
+                    <p class="text-gray-600 text-sm mt-2">{{ $roadmap->description }}</p>
+                @endif
+            @else
+                <p class="text-gray-500 text-sm mt-1">Mã lộ trình: #{{ $id }}</p>
+            @endif
+        </div>
+
+        @if($isEnrolled)
+            <div class="bg-white border border-blue-100 rounded-xl p-4 shadow-sm min-w-[280px]">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-semibold text-blue-100 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        Tiến độ lộ trình của bạn
-                    </span>
-                    <span class="text-lg font-bold text-cyan-300">45.00%</span>
+                    <span class="text-sm font-semibold text-gray-700">Tiến độ học tập</span>
+                    <span class="text-sm font-bold text-blue-600">{{ $progressPercent }}%</span>
                 </div>
-                <div class="w-full bg-blue-950 rounded-full h-3 overflow-hidden">
-                    <div class="bg-gradient-to-r from-cyan-400 to-blue-400 h-3 rounded-full transition-all duration-500" style="width: 45%"></div>
+                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                    <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: {{ $progressPercent }}%"></div>
                 </div>
-                <div class="flex justify-between items-center mt-3 text-xs text-blue-200">
-                    <p>Trạng thái: <span class="text-cyan-300 font-medium">Đang học (learning)</span></p>
-                    <p>Bắt đầu từ: 06/06/2026</p>
-                </div>
+                @php
+                    // Tính số chương hoàn thành (section-based progress)
+                    $totalSectionsCount = 0;
+                    $completedSectionsCount = 0;
+                    $totalLessonsCount = count($lessons);
+                    $completedLessonsCount = collect($lessonProgress)->where('status', 'completed')->count();
+                    
+                    // Group lessons by section to count completed sections
+                    $lessonsBySection = collect($lessons)->groupBy('section_id');
+                    $totalSectionsCount = $lessonsBySection->count();
+                    
+                    foreach ($lessonsBySection as $sectionId => $sectionLessons) {
+                        $allComplete = true;
+                        foreach ($sectionLessons as $lesson) {
+                            $lessonId = $lesson['id'];
+                            if (!isset($lessonProgress[$lessonId]) || $lessonProgress[$lessonId]['status'] !== 'completed') {
+                                $allComplete = false;
+                                break;
+                            }
+                        }
+                        if ($allComplete) {
+                            $completedSectionsCount++;
+                        }
+                    }
+                @endphp
+                <p class="text-xs text-gray-400 mt-1.5 text-right">
+                    {{ $completedSectionsCount }}/{{ $totalSectionsCount }} chương • {{ $completedLessonsCount }}/{{ $totalLessonsCount }} bài học
+                </p>
             </div>
-        </div>
+        @else
+            <div class="bg-white border border-blue-100 rounded-xl p-4 shadow-sm min-w-[280px]">
+                @auth
+                    <form action="{{ route('learning.roadmaps.enroll', $id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-150 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                            Đăng ký học ngay
+                        </button>
+                    </form>
+                    <p class="text-xs text-gray-500 text-center mt-2">Miễn phí - {{ count($lessons) }} bài học</p>
+                @else
+                    <a href="{{ route('login') }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-150 text-center">
+                        Đăng nhập để học
+                    </a>
+                @endauth
+            </div>
+        @endif
     </div>
 
-    <div class="max-w-5xl mx-auto px-6 py-10">
-        <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            Danh sách bài học trong lộ trình
-        </h2>
-
-        <div class="space-y-4">
-            <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm hover:border-blue-300 transition flex items-center justify-between">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-green-50 text-green-600 rounded-lg font-bold mt-1 shadow-inner">01</div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-lg hover:text-blue-600 cursor-pointer">Tổng quan về Kiến trúc Web & HTTP</h3>
-                        <p class="text-sm text-slate-500 mt-1 flex items-center gap-3">
-                            <span>⏱ Thời gian hoàn thành: 05/06/2026</span>
-                        </p>
-                    </div>
-                </div>
-                <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-md border border-green-200 uppercase">
-                    Đã xong (completed)
-                </span>
-            </div>
-
-            <div class="bg-white border-2 border-blue-500 p-5 rounded-xl shadow-sm hover:shadow-md transition flex items-center justify-between">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-blue-50 text-blue-600 rounded-lg font-bold mt-1 shadow-inner">02</div>
-                    <div>
-                        <h3 class="font-bold text-blue-600 text-lg">Xây dựng giao diện cơ bản với HTML5 và CSS3</h3>
-                        <p class="text-sm text-slate-500 mt-1 flex items-center gap-3">
-                            <span class="text-blue-500 font-medium animate-pulse">● Đang học dở dang...</span>
-                        </p>
-                    </div>
-                </div>
-                <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-sm shadow-blue-200">
-                    Học tiếp
-                </a>
-            </div>
-
-            <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm opacity-75 hover:opacity-100 transition flex items-center justify-between">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-slate-100 text-slate-500 rounded-lg font-bold mt-1">03</div>
-                    <div>
-                        <h3 class="font-bold text-slate-700 text-lg">Lập trình Javascript cơ bản và xử lý mảng</h3>
-                        <p class="text-sm text-slate-400 mt-1">Chưa bắt đầu học</p>
-                    </div>
-                </div>
-                <span class="bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1.5 rounded-md uppercase">
-                    Chưa học
-                </span>
-            </div>
+    @if(session('success'))
+        <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-4">
+            {{ session('success') }}
         </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <div class="space-y-4">
+        @if(isset($lessons) && count($lessons) > 0)
+            @foreach($lessons as $index => $lesson)
+                @php
+                    $lessonId = $lesson['id'];
+                    $progress = $lessonProgress[$lessonId] ?? null;
+                    $isCompleted = $progress && $progress['status'] === 'completed';
+                @endphp
+
+                <div class="bg-white border border-blue-50 hover:border-blue-300 rounded-xl p-5 shadow-sm hover:shadow-md transition duration-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    
+                    <div class="flex items-start gap-4 flex-1">
+                        <div class="flex-shrink-0 w-10 h-10 bg-blue-50 text-blue-600 font-bold rounded-lg flex items-center justify-center text-sm border border-blue-100">
+                            {{ $index + 1 }}
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-800 hover:text-blue-600 transition">
+                                {{ $lesson['title'] }}
+                            </h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                <p class="text-gray-400 text-xs flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    45 phút
+                                </p>
+                                @if(isset($lesson['lesson_type']))
+                                    <span class="text-xs text-gray-400">• {{ ucfirst($lesson['lesson_type']) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-3 sm:pt-0">
+                        
+                        <div>
+                            @if($isCompleted)
+                                <span class="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium border border-green-200">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                    Hoàn thành
+                                </span>
+                            @elseif($progress && $progress['status'] === 'in_progress')
+                                <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium border border-blue-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                                    Đang học
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 bg-gray-50 text-gray-700 px-3 py-1 rounded-full text-xs font-medium border border-gray-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                    Chưa học
+                                </span>
+                            @endif
+                        </div>
+
+                        @if($isEnrolled)
+                            <a href="{{ route('learning.roadmaps.learn', [$id, $lessonId]) }}" 
+                               class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition duration-150">
+                                Xem chi tiết
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                        @else
+                            <a href="{{ route('learning.lessons.show', ['roadmap_id' => $id, 'lesson_id' => $lessonId]) }}" 
+                               class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition duration-150">
+                                Xem chi tiết
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                        @endif
+
+                    </div>
+                </div>
+            @endforeach
+        @else
+            <div class="bg-white border border-blue-50 rounded-xl p-8 text-center text-gray-400 shadow-sm">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                Chưa có bài học nào trong lộ trình này.
+            </div>
+        @endif
     </div>
+
 </div>
 @endsection

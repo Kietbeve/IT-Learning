@@ -54,7 +54,7 @@
            class="{{ request()->is('exam*') ? 'text-blue-500 font-bold' : 'text-slate-300 hover:text-white' }} transition-colors duration-200">
             Đề thi
         </a>
-        <a href="/learning" 
+        <a href="{{ route('learning.roadmaps.index') }}" 
            class="{{ request()->is('learning*') ? 'text-blue-500 font-bold' : 'text-slate-300 hover:text-white' }} transition-colors duration-200">
             Lộ trình học tập
         </a>
@@ -141,7 +141,7 @@
                     </x-dropdown.item>
                 @endif
                 @if(auth()->user()->hasRole('admin'))
-                    <x-dropdown.item href="{{ route('auth.admin.dashboard') }}">
+                    <x-dropdown.item href="{{ route('admin.dashboard') }}">
                         <div class="flex items-center text-amber-600 font-semibold">
                             <x-icon name="shield-check" class="w-4 h-4 mr-2" />
                             <span>Trang quản trị</span>

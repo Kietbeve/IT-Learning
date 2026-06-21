@@ -3,40 +3,35 @@
 namespace Modules\Learning\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-use Modules\Auth\Models\User;
 
 class RoadmapEnrollment extends Model
 {
+    // Khai báo các trường được phép ghi dữ liệu vào Database
     protected $fillable = [
-        'roadmap_id',
         'user_id',
+        'roadmap_id',
         'status',
         'progress_percent',
         'started_at',
-        'completed_at',
+        'completed_at'
     ];
 
-    protected $casts = [
-        'progress_percent' => 'decimal:2',
-        'started_at' => 'datetime',
-        'completed_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
+        ];
+    }
 
-    public function roadmap(): BelongsTo
+    // Định nghĩa mối quan hệ với bảng Roadmap
+    public function roadmap()
     {
         return $this->belongsTo(Roadmap::class);
     }
 
-    public function user(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function lessonProgresses(): HasMany
-    {
-        return $this->hasMany(LessonProgress::class, 'enrollment_id');
+        return $this->belongsTo(\Modules\Auth\Models\User::class);
     }
 }

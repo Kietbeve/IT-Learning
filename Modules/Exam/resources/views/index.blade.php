@@ -15,12 +15,13 @@
         <h1 class="text-3xl font-bold text-gray-900 mb-6 px-4 sm:px-6 lg:px-8">Danh sách bài thi</h1>
 
         <div class="flex flex-col gap-4 px-4 sm:px-6 lg:px-8">
-            @include('exam::patials.exam_card')
-            @include('exam::patials.exam_card')
-            @include('exam::patials.exam_card')
-            @include('exam::patials.exam_card')
-            @include('exam::patials.exam_card')
-            @include('exam::patials.exam_card')
+          @foreach ($exams as $exam)
+            @include('exam::partials.exam_card',
+            [
+              'exam'=>$exam
+            ])
+          @endforeach
+            
         </div>
     </div>
 @endsection

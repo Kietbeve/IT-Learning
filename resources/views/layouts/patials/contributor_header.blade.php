@@ -42,7 +42,7 @@
                 <div class="border-t border-slate-100 my-1"></div>
 
                 @if(auth()->user() && auth()->user()->hasRole('admin'))
-                    <x-dropdown.item href="{{ route('auth.admin.dashboard') }}">
+                    <x-dropdown.item href="{{ route('admin.dashboard') }}">
                         <div class="flex items-center text-amber-600 font-semibold">
                             <x-icon name="shield-check" class="w-4 h-4 mr-2" />
                             <span>Trang quản trị</span>

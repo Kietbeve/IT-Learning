@@ -115,7 +115,7 @@ class AuthController extends Controller
     {
         $user = User::find(Auth::id());
         if (Auth::check() && $user?->hasRole('admin')) {
-            return redirect()->route('auth.admin.dashboard');
+            return redirect()->route('admin.dashboard');
         }
         return view('auth::admin.login');
     }
@@ -138,6 +138,6 @@ class AuthController extends Controller
             return redirect()->back()->withErrors(['login_error' => $result['message']])->withInput();
         }
 
-        return redirect()->route('auth.admin.dashboard');
+        return redirect()->route('admin.dashboard');
     }
 }
