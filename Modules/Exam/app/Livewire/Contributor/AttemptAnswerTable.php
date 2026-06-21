@@ -10,12 +10,24 @@ use PowerComponents\LivewirePowerGrid\Facades\Filter;
 use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
+use WireUi\Traits\WireUiActions;
 
 final class AttemptAnswerTable extends PowerGridComponent
 {
+    use WireUiActions;
     public string $tableName = 'attempt-answer-table';
 
     public int $attemptId;
+
+    public function setUp(): array
+    {
+        return [
+            PowerGrid::header(),
+            PowerGrid::footer(),
+            // PowerGrid::detail(),
+            // PowerGrid::responsive(),
+        ];
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -28,6 +40,7 @@ final class AttemptAnswerTable extends PowerGridComponent
         return AttemptAnswer::query()
             ->where('attempt_id', $this->attemptId)
             ->with([
+                'question',
                 'question.options:id,question_id,option_key',
             ]);
     }
@@ -74,13 +87,41 @@ final class AttemptAnswerTable extends PowerGridComponent
 
             ->add('answer_text')
 
-            ->add('is_correct_label', fn (AttemptAnswer $model) =>
-                match ($model->is_correct) {
-                    true => 'Correct',
-                    false => 'Wrong',
-                    default => 'Pending',
-                }
-            )
+            // ->add('is_correct_label', fn (AttemptAnswer $model) =>
+            //     match ($model->is_correct) {
+            //         true => 'Correct',
+            //         false => 'Wrong',
+            //         default => 'Pending',
+            //     }
+            // )
+            ->add('status')
+            ->add('status_actions', function (AttemptAnswer $model) {
+                $correctClass = $model->status === 'correct'
+                    ? 'bg-green-600 text-white border-green-600'
+                    : 'bg-white text-gray-700 border-gray-300';
+
+                $incorrectClass = $model->status === 'incorrect'
+                    ? 'bg-red-600 text-white border-red-600'
+                    : 'bg-white text-gray-700 border-gray-300';
+
+                return '
+                    <div class="flex items-center gap-2">
+                        <button
+                            wire:click="markCorrect('.$model->id.')"
+                            class="rounded-md border px-3 py-1 text-xs font-medium '.$correctClass.'"
+                        >
+                            ✓ Correct
+                        </button>
+
+                        <button
+                            wire:click="markIncorrect('.$model->id.')"
+                            class="rounded-md border px-3 py-1 text-xs font-medium '.$incorrectClass.'"
+                        >
+                            ✗ Incorrect
+                        </button>
+                    </div>
+                ';
+            })
 
             ->add('answered_at_formatted', fn (AttemptAnswer $model) =>
                 $model->answered_at?->format('d/m/Y H:i')
@@ -108,7 +149,12 @@ final class AttemptAnswerTable extends PowerGridComponent
 
             Column::make('Answer', 'answer_text'),
 
-            Column::make('Result', 'is_correct_label', 'is_correct')
+            // Column::make('Result', 'is_correct_label', 'is_correct')
+            //     ->sortable(),
+
+            // Column::make('Status', 'status_toggle', 'status')
+            //     ->sortable(),
+            Column::make('Status', 'status_actions', 'status')
                 ->sortable(),
 
             Column::make('Answered At', 'answered_at_formatted', 'answered_at')
@@ -127,10 +173,13 @@ final class AttemptAnswerTable extends PowerGridComponent
     public function filters(): array
     {
         return [
-            Filter::select('is_correct', 'is_correct')
+            Filter::select('status', 'status')
                 ->dataSource([
-                    ['id' => 1, 'name' => 'Correct'],
-                    ['id' => 0, 'name' => 'Wrong'],
+                    // ['id' => 1, 'name' => 'Correct'],
+                    // ['id' => 0, 'name' => 'Wrong'],
+                    ['id' => 'pending', 'name' => 'Pending'],
+                    ['id' => 'correct', 'name' => 'Correct'],
+                    ['id' => 'incorrect', 'name' => 'Incorrect'],
                 ])
                 ->optionLabel('name')
                 ->optionValue('id'),
@@ -171,5 +220,51 @@ final class AttemptAnswerTable extends PowerGridComponent
             'essay' => 'Essay',
             default => $type ?? '—',
         };
+    }
+
+    public function markCorrect(int $answerId): void
+    {
+        $answer = AttemptAnswer::findOrFail($answerId);
+
+         $question = $answer->attempt
+            ->exam
+            ->questions
+            ->firstWhere('id', $answer->question_id);
+
+        $answer->update([
+            'status' => 'correct',
+            'score'  => $question?->pivot?->score ?? 0,
+            'is_correct'=>1,
+        ]);
+
+        $this->notification()->success(
+            title: 'Chấm điểm thành công!',
+            description: "Câu {$question?->pivot?->sort_order} được đánh dấu là correct."
+        );
+
+        $this->refresh();
+    }
+
+    public function markIncorrect(int $answerId): void
+    {
+        $answer = AttemptAnswer::findOrFail($answerId);
+
+        $question = $answer->attempt
+            ->exam
+            ->questions
+            ->firstWhere('id', $answer->question_id);
+
+        $answer->update([
+            'status' => 'incorrect',
+            'score' => 0,
+            'is_correct'=>0,
+        ]);
+
+        $this->notification()->warning(
+            title: 'Đã cập nhật!',
+            description: "Câu {$question?->pivot?->sort_order} được đánh dấu là Incorrect."
+        );
+
+        $this->refresh();
     }
 }

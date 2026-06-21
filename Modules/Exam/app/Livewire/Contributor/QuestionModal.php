@@ -37,6 +37,7 @@ class QuestionModal extends Component
 
     public array $options = [];
     public array $categories = [];
+    public ?string $essayAnswer = null; // Tạm giữ đáp án tự luận (chưa lưu DB)
     protected ExamService $examService;
 
     public function boot(ExamService $examService): void
@@ -62,9 +63,8 @@ class QuestionModal extends Component
     {
         $this->resetModal();
 
+        // Khởi tạo với 2 options (tối thiểu yêu cầu)
         $this->options = [
-            ['content' => '', 'is_correct' => false],
-            ['content' => '', 'is_correct' => false],
             ['content' => '', 'is_correct' => false],
             ['content' => '', 'is_correct' => false],
         ];
@@ -132,6 +132,51 @@ class QuestionModal extends Component
         $this->resetModal();
         $this->questionIds = $ids;
         $this->showBulkDeleteModal = true;
+    }
+
+    //Nhóm hàm quản lý options động
+    public function addOption(): void
+    {
+        // Thêm option mới vào cuối mảng
+        $this->options[] = ['content' => '', 'is_correct' => false];
+    }
+
+    public function removeOption(int $index): void
+    {
+        // Kiểm tra tối thiểu 2 options
+        if (count($this->options) <= 2) {
+            $this->notification()->error(
+                title: 'Không thể xóa',
+                description: 'Phải có ít nhất 2 đáp án.'
+            );
+            return;
+        }
+
+        // Xóa và reindex lại mảng
+        unset($this->options[$index]);
+        $this->options = array_values($this->options);
+    }
+
+    public function selectSingleCorrectAnswer(int $index): void
+    {
+        // Bỏ chọn tất cả, chỉ chọn đáp án được click (cho single choice)
+        foreach ($this->options as $i => $option) {
+            $this->options[$i]['is_correct'] = ($i === $index);
+        }
+    }
+
+    public function updatedType($value): void
+    {
+        // Reset options khi chuyển sang/từ essay
+        if ($value === 'essay') {
+            $this->options = [];
+        } elseif (empty($this->options)) {
+            // Khôi phục 2 options mặc định khi chuyển từ essay sang choice
+            $this->options = [
+                ['content' => '', 'is_correct' => false],
+                ['content' => '', 'is_correct' => false],
+            ];
+        }
     }
 
     //Nhóm hàm xủ lí 
@@ -286,6 +331,7 @@ class QuestionModal extends Component
             'type',
             'category_id',
             'options',
+            'essayAnswer', // Reset đáp án tự luận
         ]);
     }
 

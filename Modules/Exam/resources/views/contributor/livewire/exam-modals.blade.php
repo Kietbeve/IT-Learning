@@ -225,12 +225,12 @@
                         <option value="private" @selected($visibility === 'private')>Riêng tư</option>
                     </x-native-select>
 
-                    <x-native-select label="Trạng thái" wire:model="status">
+                    {{-- <x-native-select label="Trạng thái" wire:model="status">
                         <option value="draft" @selected($status === 'draft')>Nháp</option>
                         <option value="pending" @selected($status === 'pending')>Chờ duyệt</option>
                         <option value="approved" @selected($status === 'approved')>Đã duyệt</option>
                         <option value="rejected" @selected($status === 'rejected')>Từ chối</option>
-                    </x-native-select>
+                    </x-native-select> --}}
 
                 </div>
 
