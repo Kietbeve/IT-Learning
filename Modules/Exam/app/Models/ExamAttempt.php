@@ -74,4 +74,48 @@ class ExamAttempt extends Model
             'attempt_id'
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Route Binding
+    |--------------------------------------------------------------------------
+    */
+
+    public function getRouteKeyName(): string
+    {
+        return 'session_id';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Helper Methods
+    |--------------------------------------------------------------------------
+    */
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at !== null && $this->expires_at->isPast();
+    }
+
+    public function canBeAccessed(): bool
+    {
+        return $this->status === 'in_progress' && !$this->isExpired();
+    }
+
+    public function getTimeRemaining(): int
+    {
+        if (!$this->started_at || !$this->exam) {
+            return 0;
+        }
+
+        $elapsed = now()->diffInSeconds($this->started_at);
+        $totalSeconds = $this->exam->duration_minutes * 60;
+        
+        return max(0, $totalSeconds - $elapsed);
+    }
+
+    public function getAnsweredQuestionsCount(): int
+    {
+        return $this->answers()->count();
+    }
 }

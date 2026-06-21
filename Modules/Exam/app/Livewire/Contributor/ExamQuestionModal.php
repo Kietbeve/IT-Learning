@@ -23,6 +23,10 @@ class ExamQuestionModal extends Component
     // Selected questions
     public array $selectedQuestionIds = [];
     public array $existingQuestionIds = []; // Questions already in exam
+    
+    // Score tracking
+    public array $questionScores = []; // Scores for newly selected questions
+    public array $existingQuestionScores = []; // Scores for existing questions
 
     // Filters
     public string $searchTerm = '';
@@ -64,15 +68,18 @@ class ExamQuestionModal extends Component
         $this->examId = $examId;
         $this->showAddQuestionModal = true;
         
-        // Load existing questions in exam
-        $this->existingQuestionIds = DB::table('exam_questions')
+        // Load existing questions with scores from exam
+        $existingData = DB::table('exam_questions')
             ->where('exam_id', $examId)
-            ->pluck('question_id')
-            ->toArray();
+            ->get(['question_id', 'score']);
+        
+        $this->existingQuestionIds = $existingData->pluck('question_id')->toArray();
+        $this->existingQuestionScores = $existingData->pluck('score', 'question_id')->toArray();
         
         // Reset state khi mở modal
         $this->reset([
             'selectedQuestionIds',
+            'questionScores',
             'searchTerm',
             'filterDifficulty',
             'filterType',
@@ -134,15 +141,17 @@ class ExamQuestionModal extends Component
     #[Computed]
     public function existingQuestions()
     {
-        // Load câu hỏi đã có trong đề thi (để hiển thị bên phải)
+        // Load câu hỏi đã có trong đề thi, sắp xếp theo sort_order
         if (empty($this->existingQuestionIds)) {
             return collect([]);
         }
 
         return Question::query()
+            ->join('exam_questions', 'questions.id', '=', 'exam_questions.question_id')
+            ->where('exam_questions.exam_id', $this->examId)
             ->with(['category', 'options'])
-            ->whereIn('id', $this->existingQuestionIds)
-            ->orderBy('id', 'desc')
+            ->orderBy('exam_questions.sort_order', 'asc')
+            ->select('questions.*')
             ->get();
     }
 
@@ -160,11 +169,21 @@ class ExamQuestionModal extends Component
             ->get();
     }
 
+    #[Computed]
+    public function totalScore(): float
+    {
+        $existingTotal = array_sum(array_map('floatval', $this->existingQuestionScores));
+        $newTotal = array_sum(array_map('floatval', $this->questionScores));
+        
+        return round($existingTotal + $newTotal, 2);
+    }
+
     public function addQuestion(int $questionId): void
     {
         // Thêm câu hỏi vào danh sách selected (one-way add)
         if (!in_array($questionId, $this->selectedQuestionIds)) {
             $this->selectedQuestionIds[] = $questionId;
+            $this->questionScores[$questionId] = 1.0; // Default score
         }
     }
 
@@ -175,34 +194,99 @@ class ExamQuestionModal extends Component
         
         if ($index !== false) {
             unset($this->selectedQuestionIds[$index]);
+            unset($this->questionScores[$questionId]); // Remove score
             $this->selectedQuestionIds = array_values($this->selectedQuestionIds);
         }
     }
 
+    public function removeExistingQuestion(int $questionId): void
+    {
+        // Xóa trực tiếp từ DB không cần confirm
+        DB::table('exam_questions')
+            ->where('exam_id', $this->examId)
+            ->where('question_id', $questionId)
+            ->delete();
+        
+        // Tính lại sort_order
+        $this->recalculateSortOrder();
+        
+        // Cập nhật state arrays
+        $this->existingQuestionIds = array_values(
+            array_diff($this->existingQuestionIds, [$questionId])
+        );
+        unset($this->existingQuestionScores[$questionId]);
+        
+        $this->notification()->success('Đã xóa câu hỏi khỏi đề thi');
+    }
+
+    protected function validateAllScores(): bool
+    {
+        // Validate new question scores
+        foreach ($this->questionScores as $questionId => $score) {
+            $score = (float) $score;
+            if ($score < 0.5 || $score > 50) {
+                $this->notification()->error(
+                    title: 'Điểm không hợp lệ',
+                    description: "Câu hỏi có điểm không hợp lệ. Điểm phải từ 0.5 đến 50."
+                );
+                return false;
+            }
+        }
+        
+        // Validate existing question scores
+        foreach ($this->existingQuestionScores as $questionId => $score) {
+            $score = (float) $score;
+            if ($score < 0.5 || $score > 50) {
+                $this->notification()->error(
+                    title: 'Điểm không hợp lệ',
+                    description: "Câu hỏi có điểm không hợp lệ. Điểm phải từ 0.5 đến 50."
+                );
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
     public function saveQuestionsToExam(): void
     {
-        // Validate: phải chọn ít nhất 1 câu hỏi
-        if (empty($this->selectedQuestionIds)) {
+        // Allow saving if there are existing questions to update OR new questions to add
+        if (empty($this->selectedQuestionIds) && empty($this->existingQuestionIds)) {
             $this->notification()->error(
                 title: 'Lỗi!',
-                description: 'Vui lòng chọn ít nhất 1 câu hỏi.'
+                description: 'Không có câu hỏi nào để lưu.'
             );
+            return;
+        }
+
+        // Validate all scores
+        if (!$this->validateAllScores()) {
             return;
         }
 
         try {
             DB::transaction(function () {
-                // Lấy sort_order lớn nhất hiện tại
+                // Update existing question scores (if changed)
+                foreach ($this->existingQuestionScores as $questionId => $score) {
+                    DB::table('exam_questions')
+                        ->where('exam_id', $this->examId)
+                        ->where('question_id', $questionId)
+                        ->update([
+                            'score' => (float) $score,
+                            'updated_at' => now(),
+                        ]);
+                }
+
+                // Insert new questions with scores
                 $maxOrder = DB::table('exam_questions')
                     ->where('exam_id', $this->examId)
                     ->max('sort_order') ?? 0;
 
-                // Insert từng câu hỏi vào exam_questions
                 foreach ($this->selectedQuestionIds as $index => $questionId) {
                     DB::table('exam_questions')->insert([
                         'exam_id' => $this->examId,
                         'question_id' => $questionId,
-                        'score' => 1, // Default score = 1
+                        'score' => (float) ($this->questionScores[$questionId] ?? 1.0),
                         'sort_order' => $maxOrder + $index + 1,
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -211,17 +295,16 @@ class ExamQuestionModal extends Component
             });
 
             $count = count($this->selectedQuestionIds);
-
             $this->notification()->success(
                 title: 'Thành công!',
-                description: "Đã thêm {$count} câu hỏi vào đề thi."
+                description: "Đã thêm {$count} câu hỏi và cập nhật điểm số."
             );
 
             // Đóng modal
             $this->showAddQuestionModal = false;
 
             // Reset state
-            $this->reset(['selectedQuestionIds']);
+            $this->reset(['selectedQuestionIds', 'questionScores', 'existingQuestionScores']);
 
             // Dispatch event để table refresh
             $this->dispatch('questions-added-to-exam');
@@ -314,7 +397,14 @@ class ExamQuestionModal extends Component
     public function closeModal(): void
     {
         $this->showAddQuestionModal = false;
-        $this->reset(['selectedQuestionIds', 'existingQuestionIds', 'searchTerm', 'currentPage']);
+        $this->reset([
+            'selectedQuestionIds', 
+            'existingQuestionIds', 
+            'questionScores',
+            'existingQuestionScores',
+            'searchTerm', 
+            'currentPage'
+        ]);
     }
 
     public function resetFilters(): void

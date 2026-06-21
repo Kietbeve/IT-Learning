@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-
+    <x-notifications z-index="z-50" />
     {{-- Nav --}}
     <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500">
 
@@ -17,16 +17,16 @@
         <span>/</span>
 
         <a
-            href="{{ route('contributor.exams.detail', ['examId' => $attemptAnswer->attempt->exam->id]) }}"
+            href="{{ route('contributor.exams.detail', ['examId' => $examAttempt->exam->id]) }}"
             class="hover:text-gray-700"
         >
-            {{ $attemptAnswer->attempt->exam->title }}
+            {{ $examAttempt->exam->title }}
         </a>
 
         <span>/</span>
 
         <a
-            href="{{ route('contributor.exams.attempts', ['examId' => $attemptAnswer->attempt->exam->id]) }}"
+            href="{{ route('contributor.exams.attempts', ['examId' => $examAttempt->exam->id]) }}"
             class="hover:text-gray-700"
         >
             Lịch sử làm bài
@@ -35,7 +35,7 @@
         <span>/</span>
 
         <span class="text-gray-900">
-            Attempt #{{ $attemptAnswer->attempt->id }}
+            Attempt #{{ $examAttempt->id }}
         </span>
 
     </nav>
@@ -49,13 +49,13 @@
             </h1>
 
             <p class="text-sm text-gray-500 mt-1">
-                Exam: <span class="font-medium">{{ $attemptAnswer->attempt?->exam?->title }}</span>
-                • User: <span class="font-medium">{{ $attemptAnswer->attempt?->user?->name }}</span>
+                Exam: <span class="font-medium">{{ $examAttempt?->exam?->title }}</span>
+                • User: <span class="font-medium">{{ $examAttempt?->user?->name }}</span>
             </p>
 
             <p class="text-sm text-gray-500">
-                Attempt #{{ $attemptAnswer->attempt->id }}
-                • Status: <span class="font-semibold">{{ $attemptAnswer->attempt->status }}</span>
+                Attempt #{{ $examAttempt->id }}
+                • Status: <span class="font-semibold">{{ $examAttempt->status }}</span>
             </p>
         </div>
 
@@ -67,28 +67,28 @@
         <div class="p-4 bg-white border rounded-lg shadow-sm">
             <div class="text-sm text-gray-500">Score</div>
             <div class="text-2xl font-bold text-gray-900">
-                {{ $attemptAnswer->attempt->score ?? 0 }}
+                {{ $examAttempt->score ?? 0 }}
             </div>
         </div>
 
         <div class="p-4 bg-white border rounded-lg shadow-sm">
             <div class="text-sm text-gray-500">Percent</div>
             <div class="text-2xl font-bold text-blue-600">
-                {{ $attemptAnswer->attempt->percent_score ?? 0 }}%
+                {{ $examAttempt->percent_score ?? 0 }}%
             </div>
         </div>
 
         <div class="p-4 bg-white border rounded-lg shadow-sm">
             <div class="text-sm text-gray-500">Correct</div>
             <div class="text-2xl font-bold text-green-600">
-                {{ $attemptAnswer->attempt->correct_answers ?? 0 }}
+                {{ $examAttempt->correct_answers ?? 0 }}
             </div>
         </div>
 
         <div class="p-4 bg-white border rounded-lg shadow-sm">
             <div class="text-sm text-gray-500">Wrong</div>
             <div class="text-2xl font-bold text-red-600">
-                {{ $attemptAnswer->attempt->wrong_answers ?? 0 }}
+                {{ $examAttempt->wrong_answers ?? 0 }}
             </div>
         </div>
 
@@ -100,21 +100,21 @@
         <div class="p-3 bg-gray-50 rounded-lg">
             <span class="text-gray-500">Started:</span>
             <span class="font-medium">
-                {{ $attemptAnswer->attempt->started_at?->format('d/m/Y H:i') }}
+                {{ $examAttempt->started_at?->format('d/m/Y H:i') }}
             </span>
         </div>
 
         <div class="p-3 bg-gray-50 rounded-lg">
             <span class="text-gray-500">Submitted:</span>
             <span class="font-medium">
-                {{ $attemptAnswer->attempt->submitted_at?->format('d/m/Y H:i') ?? '—' }}
+                {{ $examAttempt->submitted_at?->format('d/m/Y H:i') ?? '—' }}
             </span>
         </div>
 
         <div class="p-3 bg-gray-50 rounded-lg">
             <span class="text-gray-500">Status:</span>
             <span class="font-semibold">
-                {{ ucfirst($attemptAnswer->attempt->status) }}
+                {{ ucfirst($examAttempt->status) }}
             </span>
         </div>
 
@@ -131,7 +131,7 @@
 
         {{-- PowerGrid Table --}}
         <livewire:modules.exam.livewire.contributor.attempt-answer-table
-            :attempt-id="$attemptAnswer->attempt->id"
+            :attempt-id="$examAttempt->id"
         />
 
     </div>

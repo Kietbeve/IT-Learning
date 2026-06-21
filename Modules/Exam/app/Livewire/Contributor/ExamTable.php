@@ -13,6 +13,7 @@ use PowerComponents\LivewirePowerGrid\Facades\Filter;
 use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
+use PowerComponents\LivewirePowerGrid\Facades\Rule;
 
 final class ExamTable extends PowerGridComponent
 {
@@ -71,7 +72,9 @@ final class ExamTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Exam::query()->with('category')
+        return Exam::query()
+            ->with('category')
+            ->withCount('questions')
             ->where('author_id', auth()->id());
     }
 
@@ -170,7 +173,7 @@ final class ExamTable extends PowerGridComponent
 
             Filter::select('status_label', 'status')
                 ->dataSource([
-                    ['id' => 'draft',    'name' => 'Bản nháp'],
+                    // ['id' => 'draft',    'name' => 'Bản nháp'],
                     ['id' => 'pending',  'name' => 'Chờ duyệt'],
                     ['id' => 'approved', 'name' => 'Đã duyệt'],
                     ['id' => 'rejected', 'name' => 'Từ chối'],
@@ -208,6 +211,20 @@ final class ExamTable extends PowerGridComponent
                 ->slot('Xóa')
                 ->class('inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700')
                 ->dispatch('open-delete-confirm', ['examId' => $row->id]),
+        ];
+    }
+
+
+
+    public function actionRules($row): array
+    {
+        return [
+            Rule::rows()
+                ->when(fn (Exam $exam) => $exam->questions_count === 0)
+                ->setAttribute(
+                    'class',
+                    '!bg-red-50 border-l-4 border-red-500'
+                ),
         ];
     }
 
@@ -273,7 +290,7 @@ final class ExamTable extends PowerGridComponent
     private function mapExamStatus(string $status): string
     {
         return match ($status) {
-            'draft'    => 'Bản nháp',
+            // 'draft'    => 'Bản nháp',
             'pending'  => 'Chờ duyệt',
             'approved' => 'Đã duyệt',
             'rejected' => 'Từ chối',

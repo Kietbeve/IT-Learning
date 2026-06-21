@@ -200,7 +200,23 @@
                                                     </span>
                                                 </div>
                                             </div>
-                                            <span class="text-xs text-gray-400 whitespace-nowrap">Đã có</span>
+                                            <div class="flex items-center gap-2">
+                                                <div class="flex flex-col items-end">
+                                                    <label class="text-xs text-gray-500 mb-1">Điểm</label>
+                                                    <input type="number" 
+                                                        wire:model.blur="existingQuestionScores.{{ $question->id }}"
+                                                        step="0.5"
+                                                        min="0.5"
+                                                        max="50"
+                                                        class="w-16 px-2 py-1 text-xs border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
+                                                    />
+                                                </div>
+                                                <button wire:click="removeExistingQuestion({{ $question->id }})"
+                                                    class="text-red-500 hover:text-red-700 text-lg font-bold mt-5" 
+                                                    title="Xóa câu hỏi">
+                                                    ×
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -245,10 +261,22 @@
                                                     </span>
                                                 </div>
                                             </div>
-                                            <button wire:click="removeNewQuestion({{ $question->id }})"
-                                                class="text-red-500 hover:text-red-700 text-lg font-bold" title="Bỏ chọn">
-                                                ×
-                                            </button>
+                                            <div class="flex items-center gap-2">
+                                                <div class="flex flex-col items-end">
+                                                    <label class="text-xs text-blue-600 mb-1">Điểm</label>
+                                                    <input type="number" 
+                                                        wire:model.blur="questionScores.{{ $question->id }}"
+                                                        step="0.5"
+                                                        min="0.5"
+                                                        max="50"
+                                                        class="w-16 px-2 py-1 text-xs border-blue-300 rounded focus:border-blue-500 focus:ring-blue-500"
+                                                    />
+                                                </div>
+                                                <button wire:click="removeNewQuestion({{ $question->id }})"
+                                                    class="text-red-500 hover:text-red-700 text-lg font-bold mt-5" title="Bỏ chọn">
+                                                    ×
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -273,14 +301,33 @@
         <x-slot name="footer">
             <div class="flex justify-between items-center w-full">
                 <div class="text-sm text-gray-600">
-                    @if(count($selectedQuestionIds) > 0)
-                        Sẽ thêm <strong class="text-blue-600">{{ count($selectedQuestionIds) }}</strong> câu hỏi vào đề thi
-                    @endif
+                    <div class="space-y-1">
+                        {{-- Total questions --}}
+                        <div>
+                            <span class="text-gray-700">Tổng câu hỏi: </span>
+                            <strong class="text-gray-900">{{ count($existingQuestionIds) + count($selectedQuestionIds) }}</strong>
+                            <span class="text-gray-500">
+                                (Đã có: {{ count($existingQuestionIds) }}
+                                @if(count($selectedQuestionIds) > 0)
+                                    + Mới: <span class="text-blue-600">{{ count($selectedQuestionIds) }}</span>
+                                @endif
+                                )
+                            </span>
+                        </div>
+                        
+                        {{-- Total score --}}
+                        <div>
+                            <span class="text-gray-700">Tổng điểm: </span>
+                            <strong class="text-green-600 text-base">{{ $this->totalScore }}</strong>
+                            <span class="text-gray-500">điểm</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex gap-2">
                     <x-button flat label="Hủy" wire:click="closeModal" />
-                    <x-button primary label="Lưu ({{ count($selectedQuestionIds) }} câu)"
-                        wire:click="saveQuestionsToExam" :disabled="count($selectedQuestionIds) === 0" />
+                    <x-button primary 
+                        label="Lưu{{ count($selectedQuestionIds) > 0 ? ' (' . count($selectedQuestionIds) . ' câu mới)' : '' }}"
+                        wire:click="saveQuestionsToExam" />
                 </div>
             </div>
         </x-slot>

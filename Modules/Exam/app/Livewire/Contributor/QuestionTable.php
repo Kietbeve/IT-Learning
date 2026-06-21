@@ -59,7 +59,7 @@ final class QuestionTable extends PowerGridComponent
                 active:scale-95
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
             )
-            ->dispatch('open-create-modal',[]),
+            ->dispatch('question-create',[]),
 
             Button::add('bulk-delete')
                 ->slot(
@@ -183,17 +183,17 @@ final class QuestionTable extends PowerGridComponent
             Button::add('view')
                 ->slot('Xem')
                 ->class('inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700')
-                ->dispatch('open-view-modal', ['questionId' => $row->id]),
+                ->dispatch('question-view', ['id' => $row->id]),
 
             Button::add('edit')
                 ->slot('Cập nhật')
                 ->class('inline-flex items-center rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-600')
-                ->dispatch('open-edit-modal', ['questionId' => $row->id]),
+                ->dispatch('question-edit', ['id' => $row->id]),
 
             Button::add('delete')
                 ->slot('Xóa')
                 ->class('inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700')
-                ->dispatch('open-delete-confirm', ['questionId' => $row->id]),
+                ->dispatch('question-delete-confirm', ['id' => $row->id]),
         ];
     }
 
@@ -203,33 +203,26 @@ final class QuestionTable extends PowerGridComponent
     |--------------------------------------------------------------------------
     */
 
-    #[On('open-view-modal')]
-    public function openViewModal(int $questionId): void
-    {
-        $this->dispatch('question-view', id: $questionId)
-            ->to(QuestionModal::class);
-    }
+    // #[On('open-view-modal')]
+    // public function openViewModal(int $questionId): void
+    // {
+    //     $this->dispatch('question-view', id: $questionId)
+    //         ->to(QuestionModal::class);
+    // }
 
-    #[On('open-edit-modal')]
-    public function openEditModal(int $questionId): void
-    {
-        $this->dispatch('question-edit', id: $questionId)
-        ->to(QuestionModal::class);
-    }
+    // #[On('open-edit-modal')]
+    // public function openEditModal(int $questionId): void
+    // {
+    //     $this->dispatch('question-edit', id: $questionId)
+    //     ->to(QuestionModal::class);
+    // }
 
-    #[On('open-create-modal')]
-    public function openCreateModal(): void
-    {
-        $this->dispatch('question-create')
-        ->to(QuestionModal::class);
-    }
-
-    #[On('open-delete-confirm')]
-    public function openDeleteConfirm(int $questionId): void
-    {
-        $this->dispatch('question-delete-confirm', id: $questionId)
-        ->to(QuestionModal::class);
-    }
+    // #[On('open-delete-confirm')]
+    // public function openDeleteConfirm(int $questionId): void
+    // {
+    //     $this->dispatch('question-delete-confirm', id: $questionId)
+    //     ->to(QuestionModal::class);
+    // }
 
     #[On('open-bulk-delete-confirm')]
     public function openBulkDeleteConfirm(): void
