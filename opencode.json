@@ -1,0 +1,33 @@
+{
+  "provider": {
+    "9router": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "http://127.0.0.1:20128/v1",
+        "apiKey": "sk-c2dac82b45965c2e-leih3v-35e49e3b"
+      },
+      "models": {
+        "kr/claude-sonnet-4.5-thinking-agentic": {
+          "name": "kr/claude-sonnet-4.5-thinking-agentic",
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "model": "9router/kr/claude-sonnet-4.5-thinking-agentic",
+  "agent": {
+    "explorer": {
+      "description": "Fast explorer subagent for codebase exploration",
+      "mode": "subagent",
+      "model": "9router/kr/claude-sonnet-4.5-thinking-agentic"
+    }
+  }
+}

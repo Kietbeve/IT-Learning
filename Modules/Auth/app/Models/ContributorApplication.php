@@ -18,6 +18,11 @@ class ContributorApplication extends Model
         'rejected_reason',
         'reviewed_by',
         'reviewed_at',
+        'bank_name',
+        'bank_account_number',
+        'bank_account_name',
+        'id_card_number',
+        'address',
     ];
 
     protected $casts = [
