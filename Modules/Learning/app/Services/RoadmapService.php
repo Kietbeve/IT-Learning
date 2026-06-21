@@ -19,11 +19,43 @@ class RoadmapService
 
         if ($hasData) {
             $query = Roadmap::query();
-            if (!empty($filters['sort']) && $filters['sort'] === 'oldest') {
-                $query->oldest();
-            } else {
-                $query->latest();
+            
+            // Search filter
+            if (!empty($filters['search'])) {
+                $search = $filters['search'];
+                $query->where(function($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%")
+                      ->orWhere('objective', 'like', "%{$search}%");
+                });
             }
+            
+            // Category filter
+            if (!empty($filters['category'])) {
+                $query->where('category', $filters['category']);
+            }
+            
+            // Level filter
+            if (!empty($filters['level'])) {
+                $query->where('level', $filters['level']);
+            }
+            
+            // Sorting
+            $sortBy = $filters['sort_by'] ?? 'latest';
+            switch ($sortBy) {
+                case 'oldest':
+                    $query->oldest();
+                    break;
+                case 'popular':
+                    // Giả lập sort theo độ phổ biến (có thể customize sau)
+                    $query->orderBy('id', 'asc');
+                    break;
+                case 'latest':
+                default:
+                    $query->latest();
+                    break;
+            }
+            
             return $query->paginate($perPage);
         }
 
@@ -58,108 +90,94 @@ class RoadmapService
         );
     }
     /**
-     * TRANG 2: Chi tiết lộ trình (Danh sách bài học mẫu hoặc thật)
+     * TRANG 2: Chi tiết lộ trình với dữ liệu thực từ DB và progress tracking
      */
-    public function getRoadmapDetail(mixed $id): array
+    public function getRoadmapDetail(mixed $id, $userId = null): array
     {
-        $roadmapTitle = 'Lộ trình Học tập';
-        $lessons = [];
-
-        // Thử tìm lộ trình trong DB thật trước
         try {
-            $roadmap = Roadmap::find($id);
+            $roadmap = Roadmap::with(['lessons' => function($query) {
+                $query->where('is_published', true)->orderBy('sort_order');
+            }])->find($id);
         } catch (\Exception $e) {
             $roadmap = null;
         }
 
-        if ($roadmap) {
-            $roadmapTitle = $roadmap->title;
-            // Giả lập sinh ra các bài học ăn theo tên DB thật
-            for ($i = 1; $i <= 5; $i++) {
-                $lessons[] = [
-                    'id' => $i,
-                    'title' => "Bài {$i}: Nội dung kiến thức nâng cao thuộc " . $roadmapTitle
-                ];
-            }
-        } else {
-            // Nếu DB trống -> Lấy mảng bài học mẫu đồng bộ
-            $roadmapTemplates = [
-                1 => [
-                    'title' => 'Lộ trình Frontend Developer',
-                    'titles' => [
-                        1 => 'Bài 1: Khởi đầu với HTML5 & CSS3 cho Frontend',
-                        2 => 'Bài 2: Làm chủ Responsive Design với Tailwind CSS',
-                        3 => 'Bài 3: JavaScript căn bản và DOM Manipulation',
-                        4 => 'Bài 4: Lập trình Frontend nâng cao với React.js',
-                        5 => 'Bài 5: Deploy ứng dụng Frontend lên Vercel/Netlify'
-                    ]
-                ],
-                2 => [
-                    'title' => 'Lộ trình Backend Developer',
-                    'titles' => [
-                        1 => 'Bài 1: Cài đặt môi trường và Cơ bản về PHP/Node.js',
-                        2 => 'Bài 2: Thiết kế Cơ sở dữ liệu quan hệ với MySQL',
-                        3 => 'Bài 3: Xây dựng RESTful API chuẩn quốc tế',
-                        4 => 'Bài 4: Xác thực người dùng nâng cao với JWT/Passport',
-                        5 => 'Bài 5: Quản lý mã nguồn Backend và đẩy lên Server'
-                    ]
-                ],
-                3 => [
-                    'title' => 'Lộ trình Fullstack Developer',
-                    'titles' => [
-                        1 => 'Bài 1: Kiến trúc hệ thống Fullstack Web',
-                        2 => 'Bài 2: Kết nối Giao diện Frontend với API Backend',
-                        3 => 'Bài 3: Quản lý State đồng bộ giữa Client và Server',
-                        4 => 'Bài 4: Tối ưu hóa hiệu năng và bảo mật ứng dụng',
-                        5 => 'Bài 5: Triển khai dự án Fullstack bằng Docker'
-                    ]
-                ],
-                4 => [
-                    'title' => 'Lập trình di động (Mobile)',
-                    'titles' => [
-                        1 => 'Bài 1: Làm quen với Flutter / React Native',
-                        2 => 'Bài 2: Thiết kế giao diện Mobile Widgets linh hoạt',
-                        3 => 'Bài 3: Xử lý trạng thái và dữ liệu cục bộ',
-                        4 => 'Bài 4: Tích hợp API và Push Notification',
-                        5 => 'Bài 5: Đóng gói và phát hành ứng dụng lên Store'
-                    ]
-                ],
-                5 => [
-                    'title' => 'Lộ trình DevOps Engineer',
-                    'titles' => [
-                        1 => 'Bài 1: Hệ điều hành Linux và Scripting cơ bản',
-                        2 => 'Bài 2: Đóng gói ứng dụng với Docker Containers',
-                        3 => 'Bài 3: Xây dựng chu trình tự động hóa CI/CD',
-                        4 => 'Bài 4: Quản trị hạ tầng Cloud (AWS / Google Cloud)',
-                        5 => 'Bài 5: Giám sát hệ thống với Prometheus & Grafana'
-                    ]
-                ],
-                6 => [
-                    'title' => 'Lộ trình Data Science & AI',
-                    'titles' => [
-                        1 => 'Bài 1: Lập trình Python cho phân tích dữ liệu',
-                        2 => 'Bài 2: Khai phá dữ liệu và Thống kê ứng dụng',
-                        3 => 'Bài 3: Thuật toán Học máy (Machine Learning)',
-                        4 => 'Bài 4: Nhập môn Trí tuệ nhân tạo & Deep Learning',
-                        5 => 'Bài 5: Triển khai mô hình AI vào sản phẩm thực tế'
-                    ]
-                ]
-            ];
+        // Nếu không tìm thấy roadmap trong DB, dùng mock data
+        if (!$roadmap) {
+            return $this->getMockRoadmapDetail($id);
+        }
 
-            if (isset($roadmapTemplates[$id])) {
-                $roadmapTitle = $roadmapTemplates[$id]['title'];
-                foreach ($roadmapTemplates[$id]['titles'] as $lId => $title) {
-                    $lessons[] = [
-                        'id' => $lId,
-                        'title' => $title
-                    ];
-                }
+        // Lấy danh sách lessons từ DB
+        $lessons = [];
+        foreach ($roadmap->lessons as $lesson) {
+            $lessons[] = [
+                'id' => $lesson->id,
+                'title' => $lesson->title,
+                'lesson_type' => $lesson->lesson_type ?? 'text',
+                'is_preview' => $lesson->is_preview ?? false,
+            ];
+        }
+
+        // Lấy thông tin enrollment và progress nếu có userId
+        $enrollment = null;
+        $lessonProgress = [];
+        if ($userId) {
+            $enrollment = $this->getEnrollmentProgress($userId, $id);
+            if ($enrollment) {
+                $progressList = $this->getLessonProgressList($userId, $id);
+                $lessonProgress = $progressList;
             }
         }
 
         return [
-            'roadmapTitle' => $roadmapTitle,
-            'lessons' => $lessons
+            'roadmap' => $roadmap,
+            'roadmapTitle' => $roadmap->title,
+            'lessons' => $lessons,
+            'enrollment' => $enrollment,
+            'lessonProgress' => $lessonProgress,
+            'isEnrolled' => $enrollment ? true : false,
+            'progressPercent' => $enrollment ? $enrollment->progress_percent : 0,
+        ];
+    }
+
+    /**
+     * Mock data fallback when DB is empty
+     */
+    private function getMockRoadmapDetail(mixed $id): array
+    {
+        $roadmapTemplates = [
+            1 => [
+                'title' => 'Lộ trình Frontend Developer',
+                'description' => 'Làm chủ HTML5, CSS3, JavaScript và ReactJS',
+                'titles' => [
+                    'Bài 1: Khởi đầu với HTML5 & CSS3 cho Frontend',
+                    'Bài 2: Làm chủ Responsive Design với Tailwind CSS',
+                    'Bài 3: JavaScript căn bản và DOM Manipulation',
+                    'Bài 4: Lập trình Frontend nâng cao với React.js',
+                    'Bài 5: Deploy ứng dụng Frontend lên Vercel/Netlify'
+                ]
+            ],
+        ];
+
+        $template = $roadmapTemplates[$id] ?? $roadmapTemplates[1];
+        $lessons = [];
+        foreach ($template['titles'] as $index => $title) {
+            $lessons[] = [
+                'id' => $index + 1,
+                'title' => $title,
+                'lesson_type' => 'text',
+                'is_preview' => false,
+            ];
+        }
+
+        return [
+            'roadmap' => null,
+            'roadmapTitle' => $template['title'],
+            'lessons' => $lessons,
+            'enrollment' => null,
+            'lessonProgress' => [],
+            'isEnrolled' => false,
+            'progressPercent' => 0,
         ];
     }
 
@@ -200,5 +218,122 @@ class RoadmapService
             'lessonTitle' => $lessonTitle,
             'pdfFile' => $pdfFile
         ];
+    }
+
+    /**
+     * Check if user is enrolled in a roadmap
+     */
+    public function checkEnrollment($userId, $roadmapId): bool
+    {
+        return \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $userId)
+            ->where('roadmap_id', $roadmapId)
+            ->exists();
+    }
+
+    /**
+     * Enroll user in a roadmap
+     */
+    public function enrollRoadmap($userId, $roadmapId)
+    {
+        $enrollment = \Modules\Learning\Models\RoadmapEnrollment::firstOrCreate(
+            [
+                'user_id' => $userId,
+                'roadmap_id' => $roadmapId,
+            ],
+            [
+                'status' => 'active',
+                'progress_percent' => 0,
+                'started_at' => now(),
+            ]
+        );
+
+        return $enrollment;
+    }
+
+    /**
+     * Get enrollment progress for a user
+     */
+    public function getEnrollmentProgress($userId, $roadmapId)
+    {
+        return \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $userId)
+            ->where('roadmap_id', $roadmapId)
+            ->first();
+    }
+
+    /**
+     * Get lesson progress list for a user in a roadmap
+     */
+    public function getLessonProgressList($userId, $roadmapId): array
+    {
+        $progress = \Modules\Learning\Models\RoadmapLessonProgress::where('user_id', $userId)
+            ->where('roadmap_id', $roadmapId)
+            ->get()
+            ->keyBy('roadmap_lesson_id');
+
+        return $progress->toArray();
+    }
+
+    /**
+     * Mark a lesson as completed
+     */
+    public function markLessonCompleted($userId, $roadmapId, $lessonId): bool
+    {
+        try {
+            $progress = \Modules\Learning\Models\RoadmapLessonProgress::updateOrCreate(
+                [
+                    'user_id' => $userId,
+                    'roadmap_id' => $roadmapId,
+                    'roadmap_lesson_id' => $lessonId,
+                ],
+                [
+                    'status' => 'completed',
+                    'completed_at' => now(),
+                    'started_at' => now(),
+                ]
+            );
+
+            // Update overall enrollment progress
+            $this->updateEnrollmentProgress($userId, $roadmapId);
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Update enrollment progress percentage based on completed lessons
+     */
+    public function updateEnrollmentProgress($userId, $roadmapId): void
+    {
+        // Get total lessons count
+        $totalLessons = \Modules\Learning\Models\RoadmapLesson::where('roadmap_id', $roadmapId)
+            ->where('is_published', true)
+            ->count();
+
+        if ($totalLessons === 0) {
+            return;
+        }
+
+        // Get completed lessons count
+        $completedLessons = \Modules\Learning\Models\RoadmapLessonProgress::where('user_id', $userId)
+            ->where('roadmap_id', $roadmapId)
+            ->where('status', 'completed')
+            ->count();
+
+        // Calculate progress percentage
+        $progressPercent = round(($completedLessons / $totalLessons) * 100);
+
+        // Update enrollment
+        $enrollment = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $userId)
+            ->where('roadmap_id', $roadmapId)
+            ->first();
+
+        if ($enrollment) {
+            $enrollment->update([
+                'progress_percent' => $progressPercent,
+                'completed_at' => $progressPercent >= 100 ? now() : null,
+            ]);
+        }
     }
 }
