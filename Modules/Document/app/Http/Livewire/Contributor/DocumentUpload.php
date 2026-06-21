@@ -10,6 +10,7 @@ use Modules\Payment\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Modules\Document\Jobs\ProcessWatermarkJob;
 
 class DocumentUpload extends Component
 {
@@ -76,27 +77,27 @@ class DocumentUpload extends Component
     {
         $this->validate();
 
-        // 1. Store the original file
-        $originalExt = $this->originalFile->getClientOriginalExtension();
-        $originalName = 'doc_' . uniqid() . '.' . $originalExt;
-        $originalPath = $this->originalFile->storeAs('documents', $originalName, 'public');
+        $year = now()->format('Y');
+        $month = now()->format('m');
 
-        // 2. Mock watermark and preview files (for previewing PDF in development)
+        // 1. Store the original file to R2 originals/
+        $originalExt = strtolower($this->originalFile->getClientOriginalExtension());
+        $originalUuid = Str::uuid();
+        $originalR2Path = "originals/resources/{$year}/{$month}/{$originalUuid}.{$originalExt}";
+        Storage::disk('r2')->put($originalR2Path, file_get_contents($this->originalFile->getRealPath()));
+
+        // 2. Watermark will be processed asynchronously via Queue
         $previewPath = null;
         $watermarkPath = null;
         $watermarkStatus = 'pending';
 
-        if (strtolower($originalExt) === 'pdf') {
-            $previewPath = $originalPath;
-            $watermarkPath = $originalPath;
-            $watermarkStatus = 'success';
-        }
-
-        // 3. Store thumbnail if uploaded
-        $thumbnailPath = null;
+        // 3. Store thumbnail to R2 thumbnails/ if uploaded
+        $thumbnailR2Path = null;
         if ($this->thumbnailFile) {
-            $thumbnailName = 'thumb_' . uniqid() . '.' . $this->thumbnailFile->getClientOriginalExtension();
-            $thumbnailPath = $this->thumbnailFile->storeAs('documents', $thumbnailName, 'public');
+            $thumbExt = strtolower($this->thumbnailFile->getClientOriginalExtension());
+            $thumbUuid = Str::uuid();
+            $thumbnailR2Path = "thumbnails/resources/{$year}/{$month}/{$thumbUuid}.{$thumbExt}";
+            Storage::disk('r2')->put($thumbnailR2Path, file_get_contents($this->thumbnailFile->getRealPath()));
         }
 
         // 4. Generate unique slug
@@ -119,17 +120,20 @@ class DocumentUpload extends Component
             'slug' => $slug,
             'short_description' => $this->short_description,
             'description' => $this->description,
-            'thumbnail' => $thumbnailPath,
+            'thumbnail' => $thumbnailR2Path,
             'preview_file_path' => $previewPath,
-            'file_original_path' => $originalPath,
+            'file_original_path' => $originalR2Path,
             'file_watermarked_path' => $watermarkPath,
-            'file_type' => strtolower($originalExt),
+            'file_type' => $originalExt,
             'file_size' => $this->originalFile->getSize(),
             'visibility' => $this->visibility,
             'is_downloadable' => $this->is_downloadable,
             'watermark_status' => $watermarkStatus,
-            'status' => 'pending', // Pending approval by default
+            'status' => 'pending',
         ]);
+
+        // 5.1. Dispatch async job to process watermark
+        ProcessWatermarkJob::dispatch($document->id);
 
         // 6. Create Product mapping if paid
         if ($this->isPaid && $this->price > 0) {

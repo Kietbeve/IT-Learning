@@ -166,21 +166,25 @@
 
                         <!-- Reported Reason & Status Badges -->
                         <div class="flex flex-wrap items-center gap-2">
-                            @if($rep->reason === 'copyright')
+                            @if($rep->reason === 'Bản quyền')
                                 <span class="inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
-                                    Bản quyền / Trùng lặp
+                                    Bản quyền / Sở hữu trí tuệ
                                 </span>
-                            @elseif($rep->reason === 'spam')
+                            @elseif($rep->reason === 'Spam')
                                 <span class="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                                    Spam / Lừa đảo
+                                    Spam / Quảng cáo
                                 </span>
-                            @elseif($rep->reason === 'inappropriate')
+                            @elseif($rep->reason === 'Nội dung sai')
                                 <span class="inline-flex rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700">
-                                    Không phù hợp
+                                    Nội dung sai lệch
+                                </span>
+                            @elseif($rep->reason === 'File hỏng')
+                                <span class="inline-flex rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+                                    Tệp tin lỗi / Mã độc
                                 </span>
                             @else
                                 <span class="inline-flex rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                                    Khác
+                                    {{ $rep->reason }}
                                 </span>
                             @endif
 

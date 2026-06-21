@@ -69,7 +69,9 @@ class DocumentList extends Component
                 'document_id' => $documentId,
                 'user_id' => $userId
             ]);
-            $document->increment('favorite_count');
+            \Illuminate\Support\Facades\DB::table('documents')
+                ->where('id', $document->id)
+                ->increment('favorite_count');
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã lưu tài liệu vào danh sách yêu thích']);
         }
     }
