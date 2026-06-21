@@ -130,7 +130,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($doc->product)
-                                    <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }}đ</span>
+                                    <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }} VND</span>
                                 @else
                                     <span class="inline-flex rounded-lg bg-emerald-50 text-[10px] font-bold text-emerald-700 border border-emerald-100">Miễn phí</span>
                                 @endif

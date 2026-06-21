@@ -96,11 +96,9 @@
                         <div class="divide-y divide-slate-100">
                             @forelse($documents->take(5) as $doc)
                                 @php
-                                    $docThumbnailUrl = $doc->thumbnail 
-                                        ? asset('storage/' . $doc->thumbnail) 
-                                        : $placeholders[$doc->id % count($placeholders)];
+                                    $docThumbnailUrl = $doc->thumbnail_url ?? $placeholders[$doc->id % count($placeholders)];
                                 @endphp
-                                <a href="{{ route('documents.show', $doc->id) }}" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors duration-200 border-b border-slate-100">
+                                <a href="{{ route('documents.show', [$doc->id, Str::slug($doc->title)]) }}" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors duration-200 border-b border-slate-100">
                                     <img src="{{ $docThumbnailUrl }}" class="w-12 h-12 rounded-lg object-cover bg-slate-100 border border-slate-100 shrink-0" alt="" />
                                     <div class="min-w-0 flex-1">
                                         <h4 class="text-sm font-semibold text-slate-800 truncate">{{ $doc->title }}</h4>
@@ -288,12 +286,10 @@
             <div wire:loading.class="opacity-60 transition-opacity duration-200" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 @forelse($documents as $doc)
                     @php
-                        $thumbnailUrl = $doc->thumbnail 
-                            ? asset('storage/' . $doc->thumbnail) 
-                            : $placeholders[$doc->id % count($placeholders)];
+                        $thumbnailUrl = $doc->thumbnail_url ?? $placeholders[$doc->id % count($placeholders)];
                     @endphp
 
-                    <a href="{{ route('documents.show', $doc->id) }}" class="group flex flex-col rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                    <a href="{{ route('documents.show', [$doc->id, Str::slug($doc->title)]) }}" class="group flex flex-col rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                         <!-- Thumbnail -->
                         <div class="aspect-[16/10] w-full overflow-hidden relative bg-slate-100">
                             <img src="{{ $thumbnailUrl }}" 

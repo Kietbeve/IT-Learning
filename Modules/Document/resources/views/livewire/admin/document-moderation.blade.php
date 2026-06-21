@@ -107,6 +107,15 @@
                                 <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-700 font-bold">
                                     {{ $doc->file_type }}
                                 </span>
+                                @if($doc->parent_document_id || $doc->reviewed_at)
+                                    <span class="inline-flex items-center rounded bg-blue-100 px-1.5 py-0.5 text-blue-700 font-bold">
+                                        📝 Sửa
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-green-700 font-bold">
+                                        🆕 MỚI
+                                    </span>
+                                @endif
                                 <span>{{ number_format($doc->file_size / 1024 / 1024, 2) }} MB</span>
                                 <span>•</span>
                                 <span class="text-slate-500">Danh mục: {{ $doc->category?->name ?? 'Mặc định' }}</span>
@@ -179,6 +188,15 @@
                                         <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-700 font-bold">
                                             {{ $doc->file_type }}
                                         </span>
+                                @if($doc->parent_document_id || $doc->reviewed_at)
+                                            <span class="inline-flex items-center rounded bg-blue-100 px-1.5 py-0.5 text-blue-700 font-bold">
+                                                📝 Sửa
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-green-700 font-bold">
+                                                🆕 MỚI
+                                            </span>
+                                        @endif
                                         <span>{{ number_format($doc->file_size / 1024 / 1024, 2) }} MB</span>
                                         <span>•</span>
                                         <span class="text-slate-500">Danh mục: {{ $doc->category?->name ?? 'Mặc định' }}</span>

@@ -149,6 +149,65 @@
                                 <span class="text-slate-500">Danh mục: {{ $doc->category?->name ?? 'Mặc định' }}</span>
                             </div>
 
+                            @if(($doc->status === 'rejected' && $doc->rejected_reason) || (!$doc->parent_document_id && $doc->rejectedDrafts->isNotEmpty()))
+                                @php 
+                                    $isDraftRejection = !$doc->parent_document_id && $doc->rejectedDrafts->isNotEmpty();
+                                    
+                                    if ($isDraftRejection) {
+                                        $rejectedDoc = $doc->rejectedDrafts->first();
+                                        $reason = $rejectedDoc->rejected_reason;
+                                        $date = $rejectedDoc->created_at->format('d/m/Y H:i');
+                                        $title = 'Bản cập nhật bị từ chối';
+                                        $bgColor = 'bg-amber-50';
+                                        $borderColor = 'border-amber-400';
+                                        $textColor = 'text-amber-900';
+                                        $textColorLight = 'text-amber-800';
+                                        $textColorLighter = 'text-amber-600';
+                                        $iconColor = 'text-amber-600';
+                                        $dismissType = 'draft';
+                                    } else {
+                                        $reason = $doc->rejected_reason;
+                                        $date = $doc->updated_at->format('d/m/Y H:i');
+                                        $title = 'Bị từ chối';
+                                        $bgColor = 'bg-rose-50';
+                                        $borderColor = 'border-rose-500';
+                                        $textColor = 'text-rose-900';
+                                        $textColorLight = 'text-rose-800';
+                                        $textColorLighter = 'text-rose-600';
+                                        $iconColor = 'text-rose-600';
+                                        $dismissType = 'direct';
+                                    }
+                                @endphp
+                                <div class="mt-3 p-2 {{ $bgColor }} border-l-4 {{ $borderColor }} rounded-r-lg" x-data="{ expanded: false }">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex items-start gap-2 flex-1 min-w-0">
+                                            <svg class="w-4 h-4 {{ $iconColor }} shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                            <div class="flex-1 text-[11px] min-w-0 leading-snug">
+                                                <div :class="expanded ? '' : 'line-clamp-1'">
+                                                    <span class="font-bold {{ $textColor }}">{{ $title }}:</span>
+                                                    <span class="{{ $textColorLight }} ml-1 break-words">{{ $reason }}</span>
+                                                    <span class="{{ $textColorLighter }} ml-2 whitespace-nowrap">({{ $date }})</span>
+                                                </div>
+                                                @if(strlen($reason) > 50)
+                                                    <button @click="expanded = !expanded" class="text-[11px] font-bold {{ $textColor }} underline hover:opacity-80 mt-1 inline-flex items-center gap-1">
+                                                        <span x-show="!expanded">▼ Xem thêm</span>
+                                                        <span x-show="expanded" style="display: none;">▲ Thu gọn</span>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <button wire:click="dismissRejection({{ $doc->id }}, '{{ $dismissType }}')" 
+                                                class="shrink-0 {{ $textColor }} hover:{{ $textColorLight }} transition-colors mt-0.5">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
+
                             @if($doc->tags->isNotEmpty())
                                 <div class="flex flex-wrap gap-1 mt-1">
                                     @foreach($doc->tags as $tag)
@@ -156,19 +215,12 @@
                                     @endforeach
                                 </div>
                             @endif
-
-                            @if($doc->status === 'rejected' && $doc->rejected_reason)
-                                <div class="mt-2 text-[10px] text-rose-700 bg-rose-50 border border-rose-100 rounded-2xl p-3 flex items-start gap-1.5">
-                                    <svg class="w-4 h-4 shrink-0 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                    <span>Lý do: <span class="font-bold text-rose-800">{{ $doc->rejected_reason }}</span></span>
-                                </div>
-                            @endif
                         </div>
 
                         <!-- Price tag -->
-                        <div class="shrink-0 text-right">
+                        <div class="shrink-0 text-right space-y-2">
                             @if($doc->product)
-                                <span class="text-indigo-650 font-extrabold text-sm">{{ number_format($doc->product->price) }}đ</span>
+                                <span class="text-indigo-650 font-extrabold text-sm">{{ number_format($doc->product->price) }} VND</span>
                             @else
                                 <span class="inline-flex rounded-lg bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-100">Miễn phí</span>
                             @endif
@@ -216,11 +268,9 @@
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <button wire:click="toggleVisibility({{ $doc->id }})" 
-                                    @if($doc->trashed()) disabled @endif
-                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all {{ $doc->visibility === 'public' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100' }}">
+                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold {{ $doc->visibility === 'public' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-50 text-slate-400' }}">
                                 {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
-                            </button>
+                            </span>
                             
                             @if(!$doc->trashed())
                                 <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 text-xs font-bold transition-all">
@@ -231,11 +281,11 @@
                                         class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-600 px-3 py-1.5 text-xs font-bold transition-all">
                                     Ẩn
                                 </button>
-                            @endif
-                        </div>
+                        @endif
                     </div>
                 </div>
-            @empty
+            </div>
+        @empty
                 <div class="p-8 text-center text-slate-400">
                     Không tìm thấy tài liệu nào khớp với bộ lọc.
                 </div>
@@ -294,6 +344,65 @@
                                         </span>
                                     </div>
 
+                                    @if(($doc->status === 'rejected' && $doc->rejected_reason) || (!$doc->parent_document_id && $doc->rejectedDrafts->isNotEmpty()))
+                                        @php 
+                                            $isDraftRejection = !$doc->parent_document_id && $doc->rejectedDrafts->isNotEmpty();
+                                            
+                                            if ($isDraftRejection) {
+                                                $rejectedDoc = $doc->rejectedDrafts->first();
+                                                $reason = $rejectedDoc->rejected_reason;
+                                                $date = $rejectedDoc->created_at->format('d/m/Y H:i');
+                                                $title = 'Bản cập nhật bị từ chối';
+                                                $bgColor = 'bg-amber-50';
+                                                $borderColor = 'border-amber-400';
+                                                $textColor = 'text-amber-900';
+                                                $textColorLight = 'text-amber-800';
+                                                $textColorLighter = 'text-amber-600';
+                                                $iconColor = 'text-amber-600';
+                                                $dismissType = 'draft';
+                                            } else {
+                                                $reason = $doc->rejected_reason;
+                                                $date = $doc->updated_at->format('d/m/Y H:i');
+                                                $title = 'Bị từ chối';
+                                                $bgColor = 'bg-rose-50';
+                                                $borderColor = 'border-rose-500';
+                                                $textColor = 'text-rose-900';
+                                                $textColorLight = 'text-rose-800';
+                                                $textColorLighter = 'text-rose-600';
+                                                $iconColor = 'text-rose-600';
+                                                $dismissType = 'direct';
+                                            }
+                                        @endphp
+                                        <div class="mt-3 p-2 {{ $bgColor }} border-l-4 {{ $borderColor }} rounded-r-lg" x-data="{ expanded: false }">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div class="flex items-start gap-2 flex-1 min-w-0">
+                                                    <svg class="w-4 h-4 {{ $iconColor }} shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                                    </svg>
+                                                    <div class="flex-1 text-[11px] min-w-0 leading-snug">
+                                                        <div :class="expanded ? '' : 'line-clamp-1'">
+                                                            <span class="font-bold {{ $textColor }}">{{ $title }}:</span>
+                                                            <span class="{{ $textColorLight }} ml-1 break-words">{{ $reason }}</span>
+                                                            <span class="{{ $textColorLighter }} ml-2 whitespace-nowrap">({{ $date }})</span>
+                                                        </div>
+                                                        @if(strlen($reason) > 50)
+                                                            <button @click="expanded = !expanded" class="text-[11px] font-bold {{ $textColor }} underline hover:opacity-80 mt-1 inline-flex items-center gap-1">
+                                                                <span x-show="!expanded">▼ Xem thêm</span>
+                                                                <span x-show="expanded" style="display: none;">▲ Thu gọn</span>
+                                                            </button>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <button wire:click="dismissRejection({{ $doc->id }}, '{{ $dismissType }}')" 
+                                                        class="shrink-0 {{ $textColor }} hover:{{ $textColorLight }} transition-colors mt-0.5">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endif
+
                                     @if($doc->tags->isNotEmpty())
                                         <div class="flex flex-wrap gap-1 mt-1.5">
                                             @foreach($doc->tags as $tag)
@@ -301,18 +410,11 @@
                                             @endforeach
                                         </div>
                                     @endif
-
-                                    @if($doc->status === 'rejected' && $doc->rejected_reason)
-                                        <div class="mt-2 text-[10px] text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-2.5 py-1.5 flex items-start gap-1.5 whitespace-normal break-words overflow-hidden">
-                                            <svg class="w-3.5 h-3.5 shrink-0 text-rose-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                            <span>Lý do: <span class="font-bold text-rose-700">{{ $doc->rejected_reason }}</span></span>
-                                        </div>
-                                    @endif
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($doc->product)
-                                    <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }}đ</span>
+                                    <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }} VND</span>
                                 @else
                                     <span class="inline-flex rounded-lg bg-emerald-50 text-[10px] font-bold text-emerald-700 border border-emerald-100">Miễn phí</span>
                                 @endif
@@ -340,12 +442,10 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <button wire:click="toggleVisibility({{ $doc->id }})" 
-                                        @if($doc->trashed()) disabled @endif
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 {{ $doc->visibility === 'public' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100' }}">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold {{ $doc->visibility === 'public' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-50 text-slate-400' }}">
                                     <span class="h-1.5 w-1.5 rounded-full {{ $doc->visibility === 'public' ? 'bg-indigo-500' : 'bg-slate-400' }}"></span>
                                     {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
-                                </button>
+                                </span>
                             </td>
                             <td class="px-6 py-4 text-slate-400 font-medium whitespace-nowrap text-xs">
                                 {{ $doc->created_at->format('d/m/Y') }}

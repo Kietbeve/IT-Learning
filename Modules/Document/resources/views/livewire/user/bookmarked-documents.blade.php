@@ -48,7 +48,7 @@
                 <article class="flex flex-col rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 relative group">
                     <div class="aspect-[16/9] w-full bg-slate-100 flex items-center justify-center relative border-b border-slate-100 overflow-hidden">
                         @if($fav->document->thumbnail)
-                            <img src="{{ asset('storage/' . $fav->document->thumbnail) }}" alt="{{ $fav->document->title }}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <img src="{{ $fav->document->thumbnail_url }}" alt="{{ $fav->document->title }}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         @else
                             <div class="flex flex-col items-center gap-2 text-slate-400">
                                 @if($fav->document->file_type === 'pdf')
@@ -77,7 +77,7 @@
                     <div class="flex-1 p-6 flex flex-col justify-between">
                         <div>
                             <h3 class="text-base font-semibold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
-                                <a href="{{ route('documents.show', $fav->document_id) }}">{{ $fav->document->title }}</a>
+                                <a href="{{ route('documents.show', [$fav->document_id, Str::slug($fav->document->title)]) }}">{{ $fav->document->title }}</a>
                             </h3>
                             <p class="mt-2 text-sm text-slate-500 line-clamp-2">{{ $fav->document->short_description }}</p>
                         </div>
