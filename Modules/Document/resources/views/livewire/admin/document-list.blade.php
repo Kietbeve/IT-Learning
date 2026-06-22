@@ -1,5 +1,6 @@
-<div x-data="{ notification: null }" 
-     @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
+<div id="admin-document-list"
+     x-data="{ notification: null }" 
+     x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      class="space-y-6">
 
     <!-- Notification Toast -->
@@ -25,30 +26,62 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Tổng số tài liệu</p>
-            <p class="mt-4 text-3xl font-semibold text-slate-900">{{ number_format($totalCount) }}</p>
-            <p class="mt-2 text-sm text-slate-500">Tất cả tài liệu trong hệ thống</p>
-        </article>
+    <div class="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+        <!-- Total -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Tổng tài liệu</p>
+                <span class="rounded-xl bg-slate-50 p-2">
+                    <svg class="h-5 w-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($totalCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tất cả tài liệu</p>
+        </div>
 
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Đã phê duyệt</p>
-            <p class="mt-4 text-3xl font-semibold text-slate-900">{{ number_format($approvedCount) }}</p>
-            <p class="mt-2 text-sm text-slate-500">Tài liệu đang hiển thị công khai</p>
-        </article>
+        <!-- Approved -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Đã duyệt</p>
+                <span class="rounded-xl bg-green-50 p-2">
+                    <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($approvedCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tài liệu đã phê duyệt</p>
+        </div>
 
-        <article class="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
-            <p class="text-sm uppercase tracking-[0.24em] text-amber-600">Chờ duyệt</p>
-            <p class="mt-4 text-3xl font-semibold text-amber-700">{{ number_format($pendingCount) }}</p>
-            <p class="mt-2 text-sm text-amber-600">Tài liệu cần kiểm duyệt</p>
-        </article>
+        <!-- Pending -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Chờ duyệt</p>
+                <span class="rounded-xl bg-amber-50 p-2">
+                    <svg class="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($pendingCount) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Cần kiểm duyệt</p>
+        </div>
 
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Tổng lượt tải xuống</p>
-            <p class="mt-4 text-3xl font-semibold text-slate-900">{{ number_format($totalDownloads) }}</p>
-            <p class="mt-2 text-sm text-slate-500">Số lượt học viên tải tài nguyên</p>
-        </article>
+        <!-- Downloads -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Lượt tải</p>
+                <span class="rounded-xl bg-blue-50 p-2">
+                    <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($totalDownloads) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tổng lượt tải</p>
+        </div>
     </div>
 
     <!-- Main List Card -->
@@ -94,14 +127,16 @@
             </div>
         </div>
 
-        <!-- Mobile Card View (hidden on md and up) -->
-        <div class="block md:hidden divide-y divide-slate-100">
+        <!-- Table Content with Loading State -->
+        <div wire:loading.class="opacity-60 transition-opacity duration-200" class="transition-opacity duration-200">
+            <!-- Mobile Card View (hidden on md and up) -->
+            <div class="block md:hidden divide-y divide-slate-100">
             @forelse($documents as $doc)
                 <div class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-4">
                         <div class="space-y-1.5 flex-1 min-w-0">
                             <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" class="hover:text-blue-600 font-bold text-slate-900 block leading-tight text-base truncate" title="{{ $doc->title }}">
-                                {{ $doc->title }}
+                                {{ \Illuminate\Support\Str::limit($doc->title, 45) }}
                             </a>
                             
                             <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
@@ -113,12 +148,6 @@
                                 <span class="text-slate-500">{{ $doc->category?->name ?? 'Mặc định' }}</span>
                             </div>
 
-                            @if($doc->status === 'rejected' && $doc->rejected_reason)
-                                <div class="mt-1.5 text-[10px] text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-2.5 py-1.5 flex items-start gap-1 whitespace-normal break-words">
-                                    <svg class="w-3.5 h-3.5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                    <span>Lý do từ chối: <strong class="font-medium text-rose-700">{{ $doc->rejected_reason }}</strong></span>
-                                </div>
-                            @endif
                         </div>
 
                         <!-- Price tag -->
@@ -191,36 +220,36 @@
         </div>
 
         <!-- Desktop Table View (hidden on mobile) -->
-        <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-full">
+        <div class="hidden md:block overflow-hidden">
+            <table class="w-full text-left border-collapse table-fixed">
                 <thead>
                     <tr class="border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/70">
-                        <th class="px-4 py-4 cursor-pointer hover:bg-slate-100 transition-colors" wire:click="sortBy('title')">
+                        <th class="px-4 py-4 cursor-pointer hover:bg-slate-100 transition-colors w-[30%]" wire:click="sortBy('title')">
                             Tài liệu
                             @if($sortField === 'title')
                                 <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             @endif
                         </th>
-                        <th class="px-4 py-4 hidden md:table-cell">Tác giả</th>
-                        <th class="px-4 py-4">Hình thức / Giá</th>
-                        <th class="px-4 py-4">Trạng thái</th>
-                        <th class="px-4 py-4 hidden sm:table-cell">Hiển thị</th>
-                        <th class="px-4 py-4 hidden lg:table-cell cursor-pointer hover:bg-slate-100 transition-colors" wire:click="sortBy('created_at')">
+                        <th class="px-4 py-4 hidden md:table-cell w-[14%]">Tác giả</th>
+                        <th class="px-4 py-4 w-[10%]">Hình thức</th>
+                        <th class="px-4 py-4 w-[10%]">Trạng thái</th>
+                        <th class="px-4 py-4 hidden sm:table-cell w-[10%]">Hiển thị</th>
+                        <th class="px-4 py-4 hidden lg:table-cell cursor-pointer hover:bg-slate-100 transition-colors w-[10%]" wire:click="sortBy('created_at')">
                             Ngày tạo
                             @if($sortField === 'created_at')
                                 <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             @endif
                         </th>
-                        <th class="px-4 py-4 text-right">Thao tác</th>
+                        <th class="px-4 py-4 text-right w-[10%]">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
                     @forelse($documents as $doc)
                         <tr class="hover:bg-slate-50/50 transition-colors">
-                            <td class="px-4 py-4">
-                                <div class="space-y-1.5 max-w-[280px] sm:max-w-xs md:max-w-md lg:max-w-lg">
+                            <td class="px-4 py-4 overflow-hidden">
+                                <div class="space-y-1.5">
                                     <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" class="hover:text-blue-600 font-bold text-slate-900 block leading-tight truncate" title="{{ $doc->title }}">
-                                        {{ $doc->title }}
+                                        {{ \Illuminate\Support\Str::limit($doc->title, 45) }}
                                     </a>
                                     
                                     <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
@@ -236,20 +265,13 @@
                                         </span>
                                     </div>
 
-                                    @if($doc->status === 'rejected' && $doc->rejected_reason)
-                                        <div class="mt-1.5 text-[11px] text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-2.5 py-1.5 flex items-start gap-1 max-w-md whitespace-normal break-words">
-                                            <svg class="w-3.5 h-3.5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                            <span>Lý do từ chối: <strong class="font-medium text-rose-700">{{ $doc->rejected_reason }}</strong></span>
-                                        </div>
-                                    @endif
-
                                     <!-- Author info shown on mobile/tablet instead of dedicated column -->
                                     <div class="md:hidden text-[10px] text-slate-400">
                                         Đăng bởi: <span class="font-medium text-slate-600">{{ $doc->author?->name ?? 'Uploader' }}</span>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-4 hidden md:table-cell whitespace-nowrap">
+                            <td class="px-4 py-4 hidden md:table-cell">
                                 <div class="font-medium text-slate-900 truncate max-w-[150px]" title="{{ $doc->author?->name ?? 'Uploader' }}">{{ $doc->author?->name ?? 'Uploader' }}</div>
                                 <div class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]" title="{{ $doc->author?->email ?? '' }}">{{ $doc->author?->email ?? '' }}</div>
                             </td>
@@ -325,11 +347,12 @@
                 </tbody>
             </table>
         </div>
+        </div>
 
         <!-- Pagination -->
         @if($documents->hasPages())
             <div class="p-6 border-t border-slate-200 bg-slate-50/50">
-                {{ $documents->links() }}
+                {{ $documents->links(data: ['scrollTo' => '#admin-document-list']) }}
             </div>
         @endif
     </section>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 use Modules\Auth\Models\User;
 use App\Models\Category;
@@ -39,6 +40,7 @@ class Exam extends Model
         'publish_at',
         'attempt_count',
     ];
+    
 
     protected function casts(): array
     {
@@ -119,5 +121,21 @@ class Exam extends Model
             RoadmapLesson::class,
             'exam_id'
         );
+    }
+
+    protected static function generateUniqueSlug(string $title): string
+    {
+        $slug = Str::slug($title);
+        $originalSlug = $slug;
+        $counter = 1;
+
+        while (
+            static::where('slug', $slug)->exists()
+        ) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }

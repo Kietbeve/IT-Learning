@@ -28,6 +28,9 @@ class DatabaseSeeder extends Seeder
             \Modules\Auth\Database\Seeders\AuthDatabaseSeeder::class,
             \Modules\Exam\database\seeders\QuestionSeeder::class,
             \Modules\Document\database\seeders\DocumentDatabaseSeeder::class,
+            //seeder orders và dashboard
+            OrderSeeder::class,
+            DashboardSeeder::class,
         ]);
     }
 }

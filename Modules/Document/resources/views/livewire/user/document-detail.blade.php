@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
+<div class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
     <!-- Notification Toast -->
     <div x-show="notification" 
          x-transition:enter="transition ease-out duration-300"
@@ -97,242 +97,29 @@
                 <!-- Interactive Viewer depending on File Type -->
                 @if($doc->file_type === 'pdf')
                     @php
-                        $watermarkedFile = ($doc->watermark_status === 'success' && $doc->file_watermarked_path) ? $doc->file_watermarked_path : null;
-                        $pdfPath = $hasAccess ? ($watermarkedFile ?? $doc->file_original_path) : ($doc->preview_file_path ?? $doc->file_original_path);
-                        $hasRealPdf = $pdfPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath);
+                        $watermarkedUrl = ($doc->watermark_status === 'success' && $doc->file_watermarked_path) ? $doc->file_watermarked_url : null;
+                        $pdfUrl = $hasAccess ? ($watermarkedUrl ?? $doc->file_original_url) : ($doc->preview_file_url ?? $doc->file_original_url);
                     @endphp
 
-                    @if($hasRealPdf)
+                    @if($pdfUrl)
                         <!-- Real PDF Reader iframe -->
                         <div class="rounded-2xl overflow-hidden h-[500px] border border-slate-200 shadow-inner">
-                            <iframe src="{{ asset('storage/' . $pdfPath) }}#toolbar=0" class="w-full h-full border-0"></iframe>
+                            <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0"></iframe>
                         </div>
                     @else
-                        <!-- PDF Viewer Simulator -->
-                        <div x-data="{ page: 1, maxPage: 3 }" class="rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden flex flex-col h-[500px]">
-                            <!-- Toolbar -->
-                            <div class="bg-slate-800 text-white px-4 py-2.5 flex items-center justify-between text-xs">
-                                <span class="font-medium">document_preview.pdf</span>
-                                <div class="flex items-center gap-3">
-                                    <button type="button" @click="if(page > 1) page--" :disabled="page === 1" class="p-1 hover:bg-slate-700 rounded transition disabled:opacity-30">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                                    </button>
-                                    <span>Trang <span x-text="page"></span> / <span x-text="maxPage"></span></span>
-                                    <button type="button" @click="if(page < maxPage) page++" :disabled="page === maxPage" class="p-1 hover:bg-slate-700 rounded transition disabled:opacity-30">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                    </button>
-                                </div>
-                                <span class="text-slate-400">Xem thử 60%</span>
-                            </div>
-
-                            <!-- Pages Container -->
-                            <div class="flex-1 overflow-y-auto p-6 flex justify-center relative bg-slate-200/50">
-                                <!-- Watermark Overlay (translucent, repeating text) -->
-                                <div class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-around items-center opacity-[0.04] select-none uppercase font-bold text-4xl tracking-widest text-slate-900 rotate-[-30deg]">
-                                    <div>IT-Learning Watermark</div>
-                                    <div>Tài liệu học tập</div>
-                                    <div>IT-Learning Watermark</div>
-                                </div>
-
-                                <!-- Page 1 -->
-                                <div x-show="page === 1" class="w-full max-w-lg bg-white shadow-md rounded border border-slate-100 p-8 flex flex-col justify-between min-h-[380px] relative">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-slate-800 border-b border-slate-100 pb-3">{{ $doc->title }}</h3>
-                                        <p class="mt-4 text-sm font-semibold text-slate-700">Mục lục & Giới thiệu:</p>
-                                        <p class="mt-2 text-xs text-slate-600 leading-relaxed">{{ $doc->short_description }}</p>
-                                        <p class="mt-4 text-xs text-slate-500 leading-relaxed">
-                                            Tài liệu này được phát hành bởi hệ thống IT-Learning nhằm mục đích bổ trợ kiến thức lập trình cho học viên CNTT. Nghiêm cấm mọi hành vi sao chép và phân phối trái phép khi chưa được sự đồng ý của tác giả.
-                                        </p>
-                                    </div>
-                                    <div class="text-[10px] text-slate-400 border-t border-slate-100 pt-3 text-center">Trang 1 - Bản quyền thuộc về IT-Learning</div>
-                                </div>
-
-                                <!-- Page 2 -->
-                                <div x-show="page === 2" class="w-full max-w-lg bg-white shadow-md rounded border border-slate-100 p-8 flex flex-col justify-between min-h-[380px] relative">
-                                    <div>
-                                        <h4 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Chương 1: Khởi đầu và Cấu trúc tổng quan</h4>
-                                        <div class="mt-4 space-y-3">
-                                            <p class="text-xs text-slate-600 leading-relaxed">
-                                                {{ Str::limit($doc->description, 300) }}
-                                            </p>
-                                            <p class="text-xs text-slate-600 leading-relaxed">
-                                                Dưới đây là một số nội dung tóm lược về chủ đề chính để người học có thể hình dung được quy mô kiến thức truyền đạt:
-                                            </p>
-                                            <ul class="list-disc list-inside text-xs text-slate-500 space-y-1 pl-2">
-                                                <li>Khái niệm cơ bản và phương pháp cài đặt.</li>
-                                                <li>Thiết lập môi trường làm việc chuẩn.</li>
-                                                <li>Các mẫu thiết kế (Design patterns) ứng dụng phổ biến.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="text-[10px] text-slate-400 border-t border-slate-100 pt-3 text-center">Trang 2 - Bản quyền thuộc về IT-Learning</div>
-                                </div>
-
-                                <!-- Page 3 (Locked page) -->
-                                <div x-show="page === 3" class="w-full max-w-lg bg-white shadow-md rounded border border-slate-100 p-8 flex flex-col justify-center items-center min-h-[380px] relative overflow-hidden">
-                                    <!-- Blurred background content -->
-                                    <div class="absolute inset-0 p-8 opacity-25 filter blur-[3px] pointer-events-none select-none">
-                                        <h4 class="text-sm font-bold text-slate-800">Chương 2: Triển khai thực tế & Tối ưu hóa</h4>
-                                        <p class="mt-4 text-xs text-slate-600 leading-relaxed">
-                                            Nội dung phần này đi sâu vào cách tối ưu hóa hiệu năng, xử lý lỗi ngoại lệ và các kỹ năng nâng cao phục vụ dự án thực tế.
-                                        </p>
-                                    </div>
-                                    
-                                    <!-- Lock Overlay -->
-                                    <div class="relative z-10 flex flex-col items-center text-center p-6 bg-white/95 backdrop-blur-sm rounded-2xl max-w-xs shadow-lg border border-slate-100">
-                                        <div class="h-10 w-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                        </div>
-                                        <h4 class="text-sm font-bold text-slate-900">Bản xem trước kết thúc</h4>
-                                        <p class="mt-2 text-xs text-slate-500">Nội dung trang sau đã bị ẩn. Hãy tải xuống tài nguyên đầy đủ để tiếp tục đọc.</p>
-                                        @if($hasAccess)
-                                            <button wire:click="download" class="mt-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-xs font-semibold shadow transition-colors">
-                                                Tải xuống đầy đủ
-                                            </button>
-                                        @else
-                                            <button wire:click="buyDocument" class="mt-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 text-xs font-semibold shadow transition-colors">
-                                                Mua để tải xuống
-                                            </button>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+                            <p>Không thể hiển thị tài liệu.</p>
                         </div>
                     @endif
 
                 @elseif($doc->file_type === 'docx')
-                    <!-- DOCX Viewer Simulator -->
-                    <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden flex flex-col h-[500px]">
-                        <!-- Office Header Ribbon -->
-                        <div class="bg-blue-800 text-white px-4 py-2 flex items-center gap-4 text-xs font-medium border-b border-blue-900 shrink-0">
-                            <span class="bg-blue-900 px-2 py-1 rounded text-[10px] font-bold">W</span>
-                            <span class="hover:bg-blue-700 px-2 py-0.5 rounded cursor-pointer">Tệp</span>
-                            <span class="hover:bg-blue-700 px-2 py-0.5 rounded cursor-pointer font-bold border-b-2 border-white">Trang chủ</span>
-                            <span class="hover:bg-blue-700 px-2 py-0.5 rounded cursor-pointer">Chèn</span>
-                            <span class="hover:bg-blue-700 px-2 py-0.5 rounded cursor-pointer">Bố cục</span>
-                        </div>
-                        
-                        <!-- Word Body Container -->
-                        <div class="flex-1 overflow-y-auto p-8 bg-slate-100 flex justify-center relative">
-                            <!-- Watermark Overlay (translucent, repeating text) -->
-                            <div class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-around items-center opacity-[0.04] select-none uppercase font-bold text-4xl tracking-widest text-slate-900 rotate-[-30deg]">
-                                <div>IT-Learning Watermark</div>
-                                <div>Tài liệu Word</div>
-                                <div>IT-Learning Watermark</div>
-                            </div>
-
-                            <div class="w-full max-w-lg bg-white shadow-md border border-slate-200 p-10 min-h-[500px] flex flex-col justify-between relative">
-                                <div>
-                                    <!-- Title -->
-                                    <div class="text-center mb-8">
-                                        <h3 class="text-2xl font-bold text-slate-800 uppercase tracking-tight">{{ $doc->title }}</h3>
-                                        <div class="h-1 w-20 bg-blue-600 mx-auto mt-3"></div>
-                                        <p class="text-xs text-slate-400 mt-2">Đăng tải bởi: {{ $doc->author?->name ?? 'IT-Learning' }}</p>
-                                    </div>
-
-                                    <!-- Content Mock -->
-                                    <div class="space-y-4 text-xs text-slate-700">
-                                        <p class="font-bold text-sm text-slate-800">I. GIỚI THIỆU CHUNG</p>
-                                        <p class="leading-relaxed pl-4">{{ $doc->short_description }}</p>
-                                        
-                                        <p class="font-bold text-sm text-slate-800 mt-6">II. NỘI DUNG CHI TIẾT</p>
-                                        <p class="leading-relaxed pl-4">{{ Str::limit($doc->description, 200) }}</p>
-                                        
-                                        <!-- Blurry end section -->
-                                        <div class="relative pt-12">
-                                            <div class="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent z-10"></div>
-                                            <p class="font-bold text-sm text-slate-300">III. SƠ ĐỒ THIẾT KẾ & PHÂN TÍCH</p>
-                                            <p class="text-slate-300 pl-4">Phần sơ đồ luồng dữ liệu DFD và thực thể ERD chi tiết mô hình hóa nghiệp vụ của hệ thống.</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Purchase/Download Banner inside doc -->
-                                <div class="mt-8 border-t border-slate-100 pt-6 flex flex-col items-center text-center relative z-20">
-                                    <p class="text-xs font-semibold text-slate-600 mb-3">Tài liệu còn tiếp tục... Hãy tải file gốc để xem toàn bộ.</p>
-                                    @if($hasAccess)
-                                        <button wire:click="download" class="rounded-xl bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 text-xs font-semibold shadow transition-colors">
-                                            Tải file gốc (.docx)
-                                        </button>
-                                    @else
-                                        <button wire:click="buyDocument" class="rounded-xl bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 text-xs font-semibold shadow transition-colors">
-                                            Mua để tải xuống (.docx)
-                                        </button>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+                        <p>Tài liệu DOCX không hỗ trợ xem trực tiếp. Vui lòng tải xuống để xem.</p>
                     </div>
 
                 @elseif($doc->file_type === 'zip')
-                    <!-- ZIP File Explorer Simulator/Real Reader -->
-                    <div x-data="{ 
-                        selectedFile: '{{ !empty($zipFiles) ? array_key_first($zipFiles) : 'README.md' }}',
-                        files: @js($zipFiles)
-                    }" class="rounded-2xl border border-slate-200 bg-slate-900 text-slate-300 overflow-hidden flex flex-col h-[500px] font-mono text-xs relative">
-                        <!-- Watermark Overlay (translucent, repeating text) -->
-                        <div class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-around items-center opacity-[0.03] select-none uppercase font-bold text-3xl tracking-widest text-white rotate-[-30deg]">
-                            <div>IT-Learning Source Code</div>
-                            <div>Bản xem trước dự án</div>
-                            <div>IT-Learning Source Code</div>
-                        </div>
-
-                        <!-- Editor Header -->
-                        <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between shrink-0 font-sans">
-                            <div class="flex items-center gap-2">
-                                <span class="h-3 w-3 rounded-full bg-rose-500"></span>
-                                <span class="h-3 w-3 rounded-full bg-amber-500"></span>
-                                <span class="h-3 w-3 rounded-full bg-emerald-500"></span>
-                                <span class="text-slate-400 font-semibold ml-2 font-mono">source_code.zip (Trình duyệt tệp tin)</span>
-                            </div>
-                            <span class="text-slate-500 text-[10px]">Nhấp để xem nội dung tệp</span>
-                        </div>
-
-                        <!-- Main Split View -->
-                        <div class="flex-1 flex overflow-hidden">
-                            <!-- Left Sidebar (Explorer) -->
-                            <div class="w-64 border-r border-slate-800 bg-slate-950 overflow-y-auto p-3 space-y-1 select-none shrink-0 font-sans">
-                                <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2">Thư mục nguồn</div>
-                                <div class="space-y-1 text-slate-400 font-mono">
-                                    <!-- File Tree -->
-                                    <template x-for="(meta, path) in files">
-                                        <div @click="selectedFile = path"
-                                             :class="selectedFile === path ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 hover:text-white'"
-                                             class="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition">
-                                            <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                                            <span class="truncate" x-text="path"></span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-
-                            <!-- Right Code Content -->
-                            <div class="flex-1 flex flex-col overflow-hidden bg-slate-900">
-                                <!-- Tab header -->
-                                <div class="bg-slate-950 px-4 py-2 border-b border-slate-800 text-[10px] text-slate-400 flex items-center gap-2 shrink-0">
-                                    <svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                                    <span x-text="selectedFile"></span>
-                                </div>
-                                <!-- Code Editor Text Area -->
-                                <div class="flex-1 overflow-auto p-4 leading-relaxed whitespace-pre font-mono text-emerald-400 selection:bg-slate-700 select-all">
-                                    <code x-text="files[selectedFile] ? files[selectedFile].content : ''"></code>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Footer Download / Purchase Prompt -->
-                        <div class="bg-slate-950 px-6 py-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 font-sans">
-                            <span class="text-xs text-slate-400">Đây là bản xem trước cấu trúc source code của tệp ZIP.</span>
-                            @if($hasAccess)
-                                <button wire:click="download" class="rounded-xl bg-slate-800 text-white border border-slate-700 hover:bg-slate-700 px-4 py-2 text-xs font-semibold transition-all">
-                                    Tải xuống toàn bộ code (.zip)
-                                </button>
-                            @else
-                                <button wire:click="buyDocument" class="rounded-xl bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 text-xs font-semibold shadow transition-all">
-                                    Mua code để tải xuống
-                                </button>
-                            @endif
-                        </div>
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+                        <p>Tệp ZIP không hỗ trợ xem trực tiếp. Vui lòng tải xuống để xem nội dung.</p>
                     </div>
                 @endif
             </div>
@@ -442,48 +229,101 @@
                 <div class="space-y-3">
                     @guest
                         @if($doc->product)
-                            <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-500 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/10 flex items-center justify-center gap-2 transition-all">
+                            <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
                                 Mua tài nguyên ngay
                             </button>
                         @else
-                            <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/10 flex items-center justify-center gap-2 transition-all">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l-4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3 3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                            <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                 Đăng nhập để tải xuống
                             </button>
                         @endif
                     @else
-                        @if($hasAccess)
-                            @if($doc->is_downloadable)
-                                <button wire:click="download" class="w-full rounded-2xl bg-slate-900 hover:bg-slate-800 text-white py-4 text-sm font-semibold shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2 transition-all">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                    Tải xuống tài nguyên
+                        @if(!$doc->product)
+                            <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Tải xuống
+                            </button>
+                        @elseif($isVip)
+                            <div class="space-y-3">
+                                <button wire:click="download" class="w-full rounded-2xl bg-amber-600 hover:bg-amber-700 text-white py-4 text-sm font-semibold shadow-lg shadow-amber-600/20 hover:shadow-amber-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                                    Tải xuống với gói VIP
                                 </button>
-                            @endif
+                                <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
+                                    Mua tài nguyên ngay
+                                </button>
+                            </div>
                         @else
-                            <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-500 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/10 flex items-center justify-center gap-2 transition-all">
+                            <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
                                 Mua tài nguyên ngay
                             </button>
                         @endif
                     @endguest
 
-                    <button wire:click="toggleFavorite" class="w-full rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 py-3.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all">
+                    <button wire:click="toggleFavorite" class="w-full rounded-2xl border-2 border-slate-200 bg-white hover:border-rose-200 hover:bg-rose-50 text-slate-700 hover:text-rose-600 py-3.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                         @if($isBookmarked)
-                            <svg class="w-4 h-4 fill-red-500 text-red-500" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                            Đã lưu tài liệu
+                            <svg class="w-4 h-4 fill-rose-500 text-rose-500" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            <span>Đã lưu tài liệu</span>
                         @else
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                            Lưu vào yêu thích
+                            <span>Lưu vào yêu thích</span>
                         @endif
                     </button>
 
-                    <button wire:click="openReportModal" class="w-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 py-3 text-xs font-bold flex items-center justify-center gap-2 transition-all">
-                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
-                        Báo cáo tài liệu vi phạm
+                    <button wire:click="openReportModal" class="w-full rounded-2xl border-2 border-dashed border-slate-200 bg-white hover:border-red-200 hover:bg-red-50 text-slate-500 hover:text-red-600 py-3.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                        Báo cáo vi phạm
                     </button>
                 </div>
             </div>
+
+            {{-- VIP Suggestion Card (for Premium documents, non-VIP users) --}}
+            @auth
+                @php
+                    $isVip = Auth::user()->vip_expires_at && Auth::user()->vip_expires_at->isFuture();
+                    $isPremium = $doc->product && $doc->product->price > 0;
+                @endphp
+                
+                @if($isPremium && !$isVip && !$hasAccess)
+                    <div class="rounded-3xl border-2 border-amber-400 bg-gradient-to-br from-amber-50 to-yellow-50 p-6 shadow-lg">
+                        <div class="flex items-start gap-3 mb-4">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-md">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-1">Nâng cấp VIP Premium</h3>
+                                <p class="text-sm text-gray-600">Tiết kiệm hơn với gói VIP</p>
+                            </div>
+                        </div>
+                        
+                        <ul class="space-y-2 mb-4">
+                            <li class="flex items-start gap-2 text-sm text-gray-700">
+                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                <span>Gói <strong>1 tháng:</strong> Tải <strong>5 tài liệu</strong> Premium</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-sm text-gray-700">
+                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                <span>Gói <strong>3 tháng:</strong> Tải <strong>20 tài liệu</strong> - Tiết kiệm <strong>40%</strong></span>
+                            </li>
+                            <li class="flex items-start gap-2 text-sm text-gray-700">
+                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                <span>Gói <strong>6 tháng:</strong> Tải <strong>50 tài liệu</strong> - Tiết kiệm <strong>60%</strong></span>
+                            </li>
+                        </ul>
+                        
+                        <a href="{{ route('student.subscription') }}" 
+                           class="block w-full text-center rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3 text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300">
+                            ⚡ Xem các gói VIP
+                        </a>
+                    </div>
+                @endif
+            @endauth
 
             <!-- Author Card -->
             <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -514,11 +354,9 @@
                     @endphp
                     @forelse($relatedDocuments as $rel)
                         @php
-                            $relThumb = $rel->thumbnail 
-                                ? asset('storage/' . $rel->thumbnail) 
-                                : $relPlaceholders[$rel->id % count($relPlaceholders)];
+                            $relThumb = $rel->thumbnail_url ?? $relPlaceholders[$rel->id % count($relPlaceholders)];
                         @endphp
-                        <a href="{{ route('documents.show', $rel->id) }}" class="flex gap-3 p-2 rounded-2xl hover:bg-slate-50 transition-all duration-200 group">
+                        <a href="{{ route('documents.show', [$rel->id, Str::slug($rel->title)]) }}" class="flex gap-3 p-2 rounded-2xl hover:bg-slate-50 transition-all duration-200 group">
                             <!-- Thumbnail -->
                             <div class="h-16 w-20 shrink-0 rounded-xl overflow-hidden bg-slate-100 shadow-sm">
                                 <img src="{{ $relThumb }}" alt="{{ $rel->title }}" class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" />
@@ -542,6 +380,9 @@
             </div>
         </div>
     </div>
+
+    {{-- Checkout Modal --}}
+    @livewire('payment-checkout-modal')
 
     <!-- Report Abuse Modal -->
     <div x-data="{ show: $wire.entangle('showReportModal') }"

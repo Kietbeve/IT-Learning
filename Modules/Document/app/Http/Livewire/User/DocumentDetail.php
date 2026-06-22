@@ -8,9 +8,13 @@ use Modules\Document\Models\DocumentFavorite;
 use Modules\Document\Models\DocumentReview;
 use Modules\Document\Models\DocumentDownload;
 use Modules\Payment\Models\DocumentAccess;
+use Modules\Payment\Models\Order;
+use Modules\Payment\Models\OrderItem;
+use Modules\Payment\Services\SubscriptionService;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class DocumentDetail extends Component
 {
@@ -22,7 +26,7 @@ class DocumentDetail extends Component
     public $reportReason = 'Bản quyền';
     public $reportDetails = '';
 
-    public function mount($id)
+    public function mount($id, $slug = null)
     {
         $this->documentId = $id;
 
@@ -31,23 +35,59 @@ class DocumentDetail extends Component
             abort(404);
         }
 
-        // Increment view count
-        $doc->increment('view_count');
+        // Security checks: prevent URL probing of hidden documents
+        // 1. Block drafts - users shouldn't access drafts directly
+        if ($doc->parent_document_id !== null) {
+            abort(404);
+        }
+
+        // 2. Only show approved documents to regular users
+        if ($doc->status !== 'approved') {
+            abort(404);
+        }
+
+        // 3. Check visibility - use 404 to not reveal document existence
+        $userId = Auth::id();
+        if ($doc->visibility === 'private' && (!$userId || $doc->author_id !== $userId)) {
+            abort(404);
+        }
+
+        // Increment view count (without updating updated_at timestamp)
+        \Illuminate\Support\Facades\DB::table('documents')
+            ->where('id', $doc->id)
+            ->increment('view_count');
 
         // Load real ZIP contents if it is a ZIP format
         if ($doc->file_type === 'zip') {
-            $useWatermarked = ($doc->watermark_status === 'success' && $doc->file_watermarked_path);
-            $filePath = storage_path('app/public/' . ($useWatermarked ? $doc->file_watermarked_path : $doc->file_original_path));
-            if (file_exists($filePath)) {
+            $zipPath = ($doc->watermark_status === 'success' && $doc->file_watermarked_path)
+                ? $doc->file_watermarked_path
+                : $doc->file_original_path;
+
+            $localZip = null;
+
+            // Local path (legacy)
+            $localPath = storage_path('app/public/' . $zipPath);
+            if (file_exists($localPath)) {
+                $localZip = $localPath;
+            }
+
+            // R2 path — download to temp
+            if (!$localZip && $zipPath && Storage::disk('r2')->exists($zipPath)) {
+                $tempZip = storage_path('app/temp/' . uniqid('zip_') . '.zip');
+                $dir = dirname($tempZip);
+                if (!is_dir($dir)) mkdir($dir, 0755, true);
+                file_put_contents($tempZip, Storage::disk('r2')->get($zipPath));
+                $localZip = $tempZip;
+            }
+
+            if ($localZip) {
                 $zip = new \ZipArchive();
-                if ($zip->open($filePath) === TRUE) {
+                if ($zip->open($localZip) === TRUE) {
                     for ($i = 0; $i < $zip->numFiles; $i++) {
                         $name = $zip->getNameIndex($i);
-                        // Skip folder directories
                         if (substr($name, -1) === '/') continue;
 
                         $content = $zip->getFromIndex($i);
-                        // Limit size to prevent memory crash on very large files
                         if (strlen($content) > 50000) {
                             $content = substr($content, 0, 50000) . "\n\n... [Nội dung tệp quá dài, vui lòng tải xuống để xem đầy đủ]";
                         }
@@ -59,6 +99,7 @@ class DocumentDetail extends Component
                     }
                     $zip->close();
                 }
+                if (isset($tempZip) && file_exists($tempZip)) @unlink($tempZip);
             }
 
             // Fallback mock files for demonstration if the actual file does not exist
@@ -99,18 +140,28 @@ class DocumentDetail extends Component
         $doc = Document::find($this->documentId);
         if (!$doc) return;
 
+        // Check visibility
+        if ($doc->visibility === 'private' && $doc->author_id !== $userId) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Tài liệu này hiện đang ở chế độ riêng tư.']);
+            return;
+        }
+
         $fav = DocumentFavorite::where('document_id', $this->documentId)->where('user_id', $userId)->first();
 
         if ($fav) {
             $fav->delete();
-            $doc->decrement('favorite_count');
+            \Illuminate\Support\Facades\DB::table('documents')
+                ->where('id', $doc->id)
+                ->decrement('favorite_count');
             $this->dispatch('notify', ['type' => 'info', 'message' => 'Đã bỏ lưu tài liệu']);
         } else {
             DocumentFavorite::create([
                 'document_id' => $this->documentId,
                 'user_id' => $userId
             ]);
-            $doc->increment('favorite_count');
+            \Illuminate\Support\Facades\DB::table('documents')
+                ->where('id', $doc->id)
+                ->increment('favorite_count');
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã lưu tài liệu vào danh sách yêu thích']);
         }
     }
@@ -122,6 +173,13 @@ class DocumentDetail extends Component
 
         if (!Auth::check()) {
             return redirect()->route('login');
+        }
+
+        // Check visibility
+        $userId = Auth::id();
+        if ($doc->visibility === 'private' && $doc->author_id !== $userId) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Tài liệu này hiện đang ở chế độ riêng tư.']);
+            return;
         }
 
         // Check is_downloadable flag
@@ -141,13 +199,62 @@ class DocumentDetail extends Component
                 ->where('document_id', $doc->id)
                 ->first();
 
-            if ($access) {
-                $hasAccess = true;
-                $orderItemId = $access->order_item_id;
+        if ($access) {
+            $hasAccess = true;
+            $orderItemId = $access->order_item_id;
+        } else {
+            $subscriptionService = app(SubscriptionService::class);
+            if ($subscriptionService->canDownloadPremium(Auth::user())) {
+                try {
+                    DB::beginTransaction();
+                    
+                    $orderCode = now()->timestamp . rand(1000, 9999);
+                    $order = Order::create([
+                        'order_code' => (string) $orderCode,
+                        'order_type' => 'document',
+                        'user_id' => $userId,
+                        'total_amount' => 0,
+                        'payment_status' => 'paid',
+                        'order_status' => 'completed',
+                        'paid_at' => now(),
+                        'download_token' => \Illuminate\Support\Str::random(64),
+                    ]);
+                    
+                    $orderItem = OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $doc->product->id,
+                        'document_id' => $doc->id,
+                        'document_title_snapshot' => $doc->title,
+                        'unit_price' => 0,
+                        'quantity' => 1,
+                        'subtotal' => 0,
+                        'contributor_amount' => 0,
+                        'platform_amount' => 0,
+                    ]);
+                    
+                    DocumentAccess::create([
+                        'user_id' => $userId,
+                        'document_id' => $doc->id,
+                        'order_item_id' => $orderItem->id,
+                        'access_type' => 'vip',
+                    ]);
+                    
+                    $subscriptionService->decreaseQuota(Auth::user());
+                    
+                    DB::commit();
+                    
+                    $hasAccess = true;
+                    $orderItemId = $orderItem->id;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $this->dispatch('notify', ['type' => 'error', 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+                    return;
+                }
             } else {
                 $this->dispatch('notify', ['type' => 'info', 'message' => 'Bạn cần mua tài liệu này trước khi tải xuống.']);
                 return;
             }
+        }
         } else {
             // Free document
             $hasAccess = true;
@@ -222,7 +329,6 @@ class DocumentDetail extends Component
 
     public function buyDocument()
     {
-        // Simulate purchase for the sake of demo/testing, creating the DocumentAccess record
         if (!Auth::check()) {
             return redirect()->route('login');
         }
@@ -230,13 +336,13 @@ class DocumentDetail extends Component
         $doc = Document::find($this->documentId);
         if (!$doc || !$doc->product) return;
 
-        // Create document access directly (Mocking successful Payment)
-        DocumentAccess::updateOrCreate(
-            ['user_id' => Auth::id(), 'document_id' => $doc->id],
-            ['access_type' => 'purchased']
-        );
+        // Check visibility
+        if ($doc->visibility === 'private' && $doc->author_id !== Auth::id()) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Tài liệu này hiện đang ở chế độ riêng tư.']);
+            return;
+        }
 
-        $this->dispatch('notify', ['type' => 'success', 'message' => 'Thanh toán thành công! Bạn hiện đã có quyền truy cập tài liệu này.']);
+        $this->dispatch('openCheckoutModal', documentId: $this->documentId);
     }
 
     public function openReportModal()
@@ -286,7 +392,10 @@ class DocumentDetail extends Component
         $isBookmarked = Auth::check() && $doc->favorites->isNotEmpty();
 
         $hasAccess = false;
+        $isVip = false;
         if (Auth::check()) {
+            $user = Auth::user();
+            $isVip = $user->vip_expires_at && $user->vip_expires_at->isFuture();
             if (!$doc->product) {
                 $hasAccess = true;
             } else {
@@ -321,6 +430,7 @@ class DocumentDetail extends Component
             'doc' => $doc,
             'isBookmarked' => $isBookmarked,
             'hasAccess' => $hasAccess,
+            'isVip' => $isVip,
             'hasDownloaded' => $hasDownloaded,
             'hasReviewed' => $hasReviewed,
             'avgRating' => round($avgRating, 1),

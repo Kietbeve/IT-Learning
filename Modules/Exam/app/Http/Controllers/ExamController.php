@@ -6,15 +6,58 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Modules\Exam\Models\Exam;
+use Modules\Exam\Services\ExamService;
+use Modules\Exam\Models\AttemptAnswer;
+use Modules\Exam\Models\ExamAttempt;
 
 class ExamController extends Controller
 {
-    /**
-     * Display a listing of the resource.
+    /*
+     * Khoi tao ExamControler
+     */
+    public function __construct(
+      private ExamService $examService
+    )
+    {
+      // throw new \Exception('Not implemented');
+    }
+
+    /*
+     * Trang danh sách bài thi của exam
      */
     public function index()
     {
-        return view('exam::index');
+        // Goi du lieu tu Sevice
+        $exams = $this->examService->getExamList();
+
+        // Truyen du lieu vao view
+        return view('exam::index',compact('exams'));
+    }
+
+    /**
+     * Hàm render exam_detail
+     */
+    public function showExamDetail($examSlug)
+    {
+      $exam =$this->examService->getExamBySlug($examSlug);
+      return view('exam::exam_detail',compact('exam'));
+    }
+
+    /**
+     * Hàm dùng để test giao diện trang bai thi
+     */
+    public function examAttempt()
+    {
+        return view('exam::exam_attempt');
+    }
+
+    /**
+     * Hàm dùng để test giao diện trang kết quả bài thi
+     */
+    public function examResult()
+    {
+        return view('exam::exam_result');
     }
 
     /**
@@ -67,7 +110,99 @@ class ExamController extends Controller
     //view contributor/questions
     public function questionManager()
     {
-        return view("exam::livewire.question-table");
+        return view("exam::contributor.question-table");
     }
-    
+    public function examManager()
+    {
+        $stats = Exam::query()
+        ->selectRaw('COUNT(*) as total')
+        ->selectRaw("SUM(status = 'approved') as approved")
+        ->selectRaw("SUM(status = 'pending') as pending")
+        ->selectRaw("SUM(status = 'rejected') as rejected")
+        // ->selectRaw("SUM(status = 'published') as published")
+        ->selectRaw("SUM(status = 'draft') as draft")
+        ->first();
+
+        $stats->no_questions = Exam::doesntHave('questions')->count();
+
+        return view("exam::contributor.exam-table", compact('stats'));
+    }
+    public function examDetail($examId)
+    {
+        $exam = Exam::findOrFail($examId);
+        $questionCount = $exam->questions()->count();
+        $attemptCount = $exam->attempts()->count();
+        //return view ExamDetail with data
+        return view('exam::contributor.exam-detail', 
+            compact('exam','questionCount','attemptCount'));
+    }
+    public function examQuestionManager($examId)
+    {
+        $exam = Exam::findOrFail($examId);
+
+        $questions = $exam->questions();
+
+        $stats = [
+            'total_questions' => (clone $questions)->count(),
+
+            'multiple_choice' => (clone $questions)
+                ->where('type', 'multiple_choice')
+                ->count(),
+            
+            'single_choice' => (clone $questions)
+            ->where('type', 'single_choice')
+            ->count(), 
+
+            'essay' => (clone $questions)
+                ->where('type', 'essay')
+                ->count(),
+
+            'total_score' => (clone $questions)
+                ->sum('exam_questions.score'),
+        ];
+        return view("exam::contributor.exam-question-table", compact('exam', 'stats'));
+    }
+
+    public function examAttemptManager($examId)
+    {
+        $exam = Exam::findOrFail($examId);
+
+        $attempts = $exam->attempts();
+
+        $stats = [
+            'total_attempts' => (clone $attempts)->count(),
+
+            'submitted_attempts' => (clone $attempts)
+                ->where('status', 'submitted')
+                ->count(),
+            
+            'pass_rate' => (clone $attempts)
+            ->where('status', 'pass')
+            ->count(), 
+
+            'average_score' => (clone $attempts)
+                ->avg('score'),
+        ];
+        return view("exam::contributor.exam-attempt-table", compact('exam', 'stats'));
+    }
+    public function attemptAnswerDetail($attemptId)
+    {
+    $examAttempt = ExamAttempt::query()
+        ->with([
+            'exam',
+            'user',
+            'answers.question',
+        ])
+        ->findOrFail($attemptId);
+
+        return view(
+            'exam::contributor.attempt-answer-table',
+            compact('examAttempt')
+        );
+    }
+
+    public function examReviewTable()
+    {
+        return view("exam::admin.exam-review-table");
+    }
 }

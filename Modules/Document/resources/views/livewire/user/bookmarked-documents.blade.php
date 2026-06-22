@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
+<div id="bookmarked-documents-list" class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
     <!-- Notification Toast -->
     <div x-show="notification" 
          x-transition:enter="transition ease-out duration-300"
@@ -39,14 +39,16 @@
         </div>
     </div>
 
-    <!-- Bookmarked Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <!-- Table Content with Loading State -->
+    <div wire:loading.class="opacity-60 transition-opacity duration-200" class="transition-opacity duration-200">
+        <!-- Bookmarked Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         @forelse($favorites as $fav)
             @if($fav->document)
                 <article class="flex flex-col rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 relative group">
                     <div class="aspect-[16/9] w-full bg-slate-100 flex items-center justify-center relative border-b border-slate-100 overflow-hidden">
                         @if($fav->document->thumbnail)
-                            <img src="{{ asset('storage/' . $fav->document->thumbnail) }}" alt="{{ $fav->document->title }}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <img src="{{ $fav->document->thumbnail_url }}" alt="{{ $fav->document->title }}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         @else
                             <div class="flex flex-col items-center gap-2 text-slate-400">
                                 @if($fav->document->file_type === 'pdf')
@@ -75,7 +77,7 @@
                     <div class="flex-1 p-6 flex flex-col justify-between">
                         <div>
                             <h3 class="text-base font-semibold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
-                                <a href="{{ route('documents.show', $fav->document_id) }}">{{ $fav->document->title }}</a>
+                                <a href="{{ route('documents.show', [$fav->document_id, Str::slug($fav->document->title)]) }}">{{ $fav->document->title }}</a>
                             </h3>
                             <p class="mt-2 text-sm text-slate-500 line-clamp-2">{{ $fav->document->short_description }}</p>
                         </div>
@@ -111,9 +113,10 @@
             </div>
         @endforelse
     </div>
+    </div>
 
     <!-- Pagination -->
     <div class="mt-8">
-        {{ $favorites->links() }}
+        {{ $favorites->links(data: ['scrollTo' => '#bookmarked-documents-list']) }}
     </div>
 </div>

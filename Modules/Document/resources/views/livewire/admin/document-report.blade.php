@@ -1,5 +1,6 @@
-<div x-data="{ notification: null, showReportDismissModal: false }" 
-     @notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
+<div id="admin-document-report"
+     x-data="{ notification: null, showReportDismissModal: false }" 
+     x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      @open-modal.window="let d = $event.detail; if (d === 'report-dismiss-modal' || d?.[0] === 'report-dismiss-modal' || d?.id === 'report-dismiss-modal') showReportDismissModal = true"
      @close-modal.window="let d = $event.detail; if (d === 'report-dismiss-modal' || d?.[0] === 'report-dismiss-modal' || d?.id === 'report-dismiss-modal') showReportDismissModal = false"
      class="space-y-6">
@@ -54,32 +55,60 @@
         <!-- Statistics Cards -->
         <div class="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
             <!-- Pending -->
-            <article class="rounded-3xl border border-rose-200 bg-rose-50/50 p-4 sm:p-6 shadow-sm">
-                <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-rose-600 font-bold">Chờ giải quyết</p>
-                <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-rose-700">{{ number_format($pendingCount) }}</p>
-                <p class="mt-2 text-xs text-rose-500">Yêu cầu chưa xử lý</p>
-            </article>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-slate-600">Chờ giải quyết</p>
+                    <span class="rounded-xl bg-amber-50 p-2">
+                        <svg class="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </span>
+                </div>
+                <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($pendingCount) }}</p>
+                <p class="mt-1 text-sm text-slate-500">Yêu cầu chưa xử lý</p>
+            </div>
 
             <!-- Resolved -->
-            <article class="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-4 sm:p-6 shadow-sm">
-                <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-emerald-600 font-bold">Đã xử lý</p>
-                <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-emerald-700">{{ number_format($resolvedCount) }}</p>
-                <p class="mt-2 text-xs text-emerald-500">Tài liệu đã bị gỡ</p>
-            </article>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-slate-600">Đã xử lý</p>
+                    <span class="rounded-xl bg-green-50 p-2">
+                        <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </span>
+                </div>
+                <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($resolvedCount) }}</p>
+                <p class="mt-1 text-sm text-slate-500">Tài liệu đã gỡ</p>
+            </div>
 
             <!-- Dismissed -->
-            <article class="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
-                <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-slate-500 font-bold">Đã bác bỏ</p>
-                <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-700">{{ number_format($dismissedCount) }}</p>
-                <p class="mt-2 text-xs text-slate-500">Báo cáo không hợp lệ</p>
-            </article>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-slate-600">Đã bác bỏ</p>
+                    <span class="rounded-xl bg-slate-50 p-2">
+                        <svg class="h-5 w-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                        </svg>
+                    </span>
+                </div>
+                <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($dismissedCount) }}</p>
+                <p class="mt-1 text-sm text-slate-500">Báo cáo không hợp lệ</p>
+            </div>
 
             <!-- Total -->
-            <article class="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
-                <p class="text-xs sm:text-sm uppercase tracking-[0.24em] text-slate-500 font-bold">Tổng số báo cáo</p>
-                <p class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">{{ number_format($totalCount) }}</p>
-                <p class="mt-2 text-xs text-slate-500">Số lượt phản ánh</p>
-            </article>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-slate-600">Tổng báo cáo</p>
+                    <span class="rounded-xl bg-blue-50 p-2">
+                        <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </span>
+                </div>
+                <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($totalCount) }}</p>
+                <p class="mt-1 text-sm text-slate-500">Số lượt phản ánh</p>
+            </div>
         </div>
 
         <!-- Filter Header -->
@@ -122,7 +151,9 @@
             </div>
         </div>
 
-        <!-- Cards Layout List -->
+        <!-- Table Content with Loading State -->
+        <div wire:loading.class="opacity-60 transition-opacity duration-200" class="transition-opacity duration-200">
+            <!-- Cards Layout List -->
         <div class="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
             @forelse($reports as $rep)
                 <article class="group relative rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-4">
@@ -135,21 +166,25 @@
 
                         <!-- Reported Reason & Status Badges -->
                         <div class="flex flex-wrap items-center gap-2">
-                            @if($rep->reason === 'copyright')
+                            @if($rep->reason === 'Bản quyền')
                                 <span class="inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
-                                    Bản quyền / Trùng lặp
+                                    Bản quyền / Sở hữu trí tuệ
                                 </span>
-                            @elseif($rep->reason === 'spam')
+                            @elseif($rep->reason === 'Spam')
                                 <span class="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                                    Spam / Lừa đảo
+                                    Spam / Quảng cáo
                                 </span>
-                            @elseif($rep->reason === 'inappropriate')
+                            @elseif($rep->reason === 'Nội dung sai')
                                 <span class="inline-flex rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700">
-                                    Không phù hợp
+                                    Nội dung sai lệch
+                                </span>
+                            @elseif($rep->reason === 'File hỏng')
+                                <span class="inline-flex rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+                                    Tệp tin lỗi / Mã độc
                                 </span>
                             @else
                                 <span class="inline-flex rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                                    Khác
+                                    {{ $rep->reason }}
                                 </span>
                             @endif
 
@@ -247,7 +282,7 @@
         <!-- Pagination -->
         @if($reports && $reports->hasPages())
             <div class="p-4 border-t border-slate-200 bg-white rounded-3xl">
-                {{ $reports->links() }}
+                {{ $reports->links(data: ['scrollTo' => '#admin-document-report']) }}
             </div>
         @endif
     @endif

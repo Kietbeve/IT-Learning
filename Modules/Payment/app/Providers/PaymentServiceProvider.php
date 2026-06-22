@@ -22,6 +22,27 @@ class PaymentServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'database/migrations'));
+
+        // Dang ky Livewire components
+        if (class_exists(\Livewire\Livewire::class)) {
+            \Livewire\Livewire::component('user-subscription', \Modules\Payment\Http\Livewire\User\Subscription::class);
+            \Livewire\Livewire::component('user-transaction-history', \Modules\Payment\Http\Livewire\User\TransactionHistory::class);
+            \Livewire\Livewire::component('user-purchases', \Modules\Payment\Http\Livewire\User\Purchases::class);
+            \Livewire\Livewire::component('payment-checkout-modal', \Modules\Payment\Http\Livewire\User\CheckoutModal::class);
+
+            // Contributor payment components
+            \Livewire\Livewire::component('contributor-wallet', \Modules\Payment\Http\Livewire\Contributor\Wallet::class);
+            \Livewire\Livewire::component('contributor-transaction-history', \Modules\Payment\Http\Livewire\Contributor\TransactionHistory::class);
+            \Livewire\Livewire::component('contributor-payout-request', \Modules\Payment\Http\Livewire\Contributor\PayoutRequest::class);
+            \Livewire\Livewire::component('contributor-earnings-report', \Modules\Payment\Http\Livewire\Contributor\EarningsReport::class);
+
+            // Admin payment components
+            \Livewire\Livewire::component('admin-order-management', \Modules\Payment\Http\Livewire\Admin\OrderManagement::class);
+            \Livewire\Livewire::component('admin-transaction-list', \Modules\Payment\Http\Livewire\Admin\TransactionList::class);
+            \Livewire\Livewire::component('admin-payout-review', \Modules\Payment\Http\Livewire\Admin\PayoutReview::class);
+            \Livewire\Livewire::component('admin-platform-revenue', \Modules\Payment\Http\Livewire\Admin\PlatformRevenue::class);
+            \Livewire\Livewire::component('admin-revenue-settings', \Modules\Payment\Http\Livewire\Admin\RevenueSettings::class);
+        }
     }
 
     /**
@@ -29,6 +50,7 @@ class PaymentServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->register(\Modules\Payment\Providers\RouteServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
     }
 

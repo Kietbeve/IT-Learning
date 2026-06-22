@@ -13,6 +13,7 @@ use Modules\Exam\Models\Exam;
 use Modules\Exam\Models\ExamAttempt;
 use Modules\Learning\Models\Roadmap;
 use Modules\Learning\Models\ProjectSubmission;
+use Modules\Payment\Models\WalletTransaction;
 /**
  * Bảng users: quản lý toàn bộ tài khoản trong hệ thống.
  *
@@ -61,12 +62,22 @@ class User extends Authenticatable
         'blocked_at',
         'blocked_by',
         'contributor_balance',
+        'vip_expires_at',
+        'vip_download_quota',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'vip_expires_at' => 'datetime',
+        ];
+    }
+
     public function questions()
     {
         return $this->hasMany(
@@ -135,6 +146,14 @@ class User extends Authenticatable
         return $this->hasMany(
             ProjectSubmission::class,
             'reviewed_by'
+        );
+    }
+
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(
+            WalletTransaction::class,
+            'user_id'
         );
     }
 }

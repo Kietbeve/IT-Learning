@@ -1,6 +1,6 @@
-<aside class="hidden w-72 shrink-0 border-r border-slate-200 bg-white px-4 py-6 lg:block overflow-y-auto h-screen sticky top-0">
+<aside class="hidden w-72 shrink-0 border-r border-slate-200 bg-white px-4 py-6 lg:block overflow-y-auto h-screen sticky top-0 custom-scrollbar">
     <div class="mb-10 flex items-center gap-3">
-        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">A</div>
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white font-bold">A</div>
         <div>
             <p class="text-sm uppercase tracking-[0.2em] text-slate-400">Admin</p>
             <p class="text-lg font-semibold text-slate-900">IT Learning</p>
@@ -24,10 +24,11 @@
             ];
         @endphp
 
+    <nav class="space-y-1">
         @foreach($navItems as $item)
             @php 
                 $active = request()->routeIs($item['route']);
-                if ($item['route'] === 'auth.admin.dashboard' && $item['label'] !== 'Dashboard') {
+                if ($item['route'] === 'admin.dashboard' && $item['label'] !== 'Dashboard') {
                     $active = false;
                 }
             @endphp

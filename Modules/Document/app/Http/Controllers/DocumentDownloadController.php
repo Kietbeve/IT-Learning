@@ -56,7 +56,12 @@ class DocumentDownloadController extends Controller
             abort(404, 'Tài liệu không tồn tại.');
         }
 
-        // 2. Double-check authentication for download
+        // 2. Check visibility (doc might have been made private after page loaded)
+        if ($doc->visibility === 'private' && $doc->author_id !== $userId) {
+            abort(403, 'Tài liệu này hiện đang ở chế độ riêng tư.');
+        }
+
+        // 3. Double-check authentication for download
         if (!$userId) {
             return response('
                 <!DOCTYPE html>
@@ -96,8 +101,10 @@ class DocumentDownloadController extends Controller
             'downloaded_at' => now(),
         ]);
 
-        // 4. Increment download count
-        $doc->increment('download_count');
+        // 4. Increment download count (without updating updated_at timestamp)
+        \Illuminate\Support\Facades\DB::table('documents')
+            ->where('id', $doc->id)
+            ->increment('download_count');
 
         // 5. Download the file — prefer watermarked version only if watermark succeeded
         if ($doc->watermark_status === 'success' && $doc->file_watermarked_path) {
@@ -107,26 +114,37 @@ class DocumentDownloadController extends Controller
         }
         $fileName = $doc->slug . '.' . ($doc->file_type ?? 'pdf');
 
+        // R2 path — stream via temporary signed URL
+        if ($filePath && !str_starts_with($filePath, 'documents/') && !str_starts_with($filePath, 'http')) {
+            try {
+                return redirect()->away($doc->file_watermarked_url ?? $doc->file_original_url);
+            } catch (\Exception $e) {}
+        }
+
+        // Local path (legacy)
         if ($filePath && Storage::disk('public')->exists($filePath)) {
             return Storage::disk('public')->download($filePath, $fileName);
-        } elseif ($filePath && Storage::exists($filePath)) {
-            return Storage::download($filePath, $fileName);
-        } else {
-            // Simulated streamed download with a nice mockup + watermark header
-            return response()->streamDownload(function () use ($doc) {
-                echo "=========================================================\n";
-                echo "                 HỆ THỐNG IT-LEARNING\n";
-                echo "=========================================================\n";
-                echo "Tên tài nguyên: " . $doc->title . "\n";
-                echo "Định dạng file: " . strtoupper($doc->file_type) . "\n";
-                echo "Đăng bởi tác giả: " . ($doc->author?->name ?? 'Uploader') . "\n";
-                echo "Năm đăng tải: " . ($doc->published_at ? $doc->published_at->year : ($doc->created_at ? $doc->created_at->year : '2026')) . "\n";
-                echo "---------------------------------------------------------\n";
-                echo "Mô tả nội dung:\n" . $doc->description . "\n";
-                echo "---------------------------------------------------------\n";
-                echo "[WATERMARK]: Bản quyền tài liệu thuộc về IT-Learning. Nghiêm cấm sao chép, thương mại hóa dưới mọi hình thức.\n";
-                echo "=========================================================\n";
-            }, $fileName);
         }
+
+        // Full URL or fallback
+        if ($filePath && str_starts_with($filePath, 'http')) {
+            return redirect()->away($filePath);
+        }
+
+        // Simulated streamed download with a nice mockup + watermark header
+        return response()->streamDownload(function () use ($doc) {
+            echo "=========================================================\n";
+            echo "                 HỆ THỐNG IT-LEARNING\n";
+            echo "=========================================================\n";
+            echo "Tên tài nguyên: " . $doc->title . "\n";
+            echo "Định dạng file: " . strtoupper($doc->file_type) . "\n";
+            echo "Đăng bởi tác giả: " . ($doc->author?->name ?? 'Uploader') . "\n";
+            echo "Năm đăng tải: " . ($doc->published_at ? $doc->published_at->year : ($doc->created_at ? $doc->created_at->year : '2026')) . "\n";
+            echo "---------------------------------------------------------\n";
+            echo "Mô tả nội dung:\n" . $doc->description . "\n";
+            echo "---------------------------------------------------------\n";
+            echo "[WATERMARK]: Bản quyền tài liệu thuộc về IT-Learning. Nghiêm cấm sao chép, thương mại hóa dưới mọi hình thức.\n";
+            echo "=========================================================\n";
+        }, $fileName);
     }
 }
