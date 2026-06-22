@@ -171,13 +171,32 @@
 
                 <div class="space-y-3">
 
-                    <x-button
+                    {{-- <x-button
                         indigo
                         xl
                         right-icon="arrow-right"
                         class="w-full flex justify-center"
                         label="Bắt đầu làm bài"
-                    />
+                    /> --}}
+                    @if ($errors->has('exam'))
+                        <x-alert
+                            negative
+                            :title="$errors->first('exam')"
+                            class="mb-4"
+                        />
+                    @endif
+                    <form method="POST" action="{{ route('exam.attempt.start', $exam->slug) }}">
+                        @csrf
+
+                        <x-button
+                            type="submit"
+                            indigo
+                            xl
+                            right-icon="arrow-right"
+                            class="w-full justify-center"
+                            label="Bắt đầu làm bài"
+                        />
+                    </form>
 
                     <x-button
                         outline

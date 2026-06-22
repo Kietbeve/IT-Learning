@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 
 use Modules\Exam\Models\Question;
@@ -22,7 +24,8 @@ class ExamService
     public function __construct(
         //Inject Model vào constructor
         protected Question $questionModel,
-        protected QuestionOption $question_optionModel
+        protected QuestionOption $question_optionModel,
+        protected ExamAttempt $exam_attemptModel,
     ){}
     public function createQuestion(array $data, int $authorId): Question
     {
@@ -114,8 +117,8 @@ class ExamService
     | Exam Attempt Methods
     |--------------------------------------------------------------------------
     */
-
-    public function validateAttemptAccess(ExamAttempt $attempt, User $user): void
+    // Hàm check quyền truy cập bài thi
+    public function validateAttemptAccess(ExamAttempt $attempt, ?User $user=null): void
     {
         // // Check ownership
         // if ($attempt->user_id !== $user->id) {
@@ -138,7 +141,7 @@ class ExamService
     {
         return $attempt->isExpired();
     }
-
+    // Hàm lấy danh sách câu hỏi cho mỗi attempt
     public function loadQuestionsForAttempt(ExamAttempt $attempt): Collection
     {
         $exam = $attempt->exam;
@@ -163,12 +166,12 @@ class ExamService
             ->orderBy('exam_questions.sort_order')
             ->get();
         
-        // Shuffle if official exam type
+        // Shuffle if official exam type - trộn khi đề thi có loại là official - chưa test
         if ($exam->type === 'official') {
             $questions = $questions->shuffle();
         }
         
-        // Persist order for consistency
+        // Persist order for consistency - cache thứ tư hiển thi câu hỏi cho mỗi attempt
         $this->persistQuestionOrder(
             $attempt, 
             $questions->pluck('id')->toArray()
@@ -177,6 +180,7 @@ class ExamService
         return $questions;
     }
 
+    // Lấy câu hỏi đã xáo trộn
     public function getShuffledQuestions(Exam $exam): Collection
     {
         return $exam->questions()
@@ -184,17 +188,17 @@ class ExamService
             ->get()
             ->shuffle();
     }
-
+    // hàm lưu trữ thứ tự câu hỏi mỗi attempt
     public function persistQuestionOrder(ExamAttempt $attempt, array $questionIds): void
     {
         // Store in cache for 24 hours (longer than any exam duration)
         Cache::put(
-            "attempt_{$attempt->id}_question_order",
+            "attempt_{$attempt->id}_question_order",//key cache để lưu trữ thứ tự câu hỏi mỗi attempt
             $questionIds,
             now()->addHours(24)
         );
     }
-
+    // Hàm lấy thứ tự câu hỏi đã được lưu trong cache
     public function getPersistedQuestionOrder(ExamAttempt $attempt): ?array
     {
         return Cache::get("attempt_{$attempt->id}_question_order");
@@ -339,6 +343,7 @@ class ExamService
             'pass_percent',
             'author_id',
             'category_id',
+            'publish_at',
         ])
         ->with([
             'author:id,name',
@@ -370,4 +375,77 @@ class ExamService
       name: "PHP",
     }
     */
+
+      public function startExam(
+        Exam $exam,
+        ?User $user = null,
+        ?string $sessionId = null
+    ): ExamAttempt {
+        //validate đề thi hợp lệ để vào thi
+        if (! $exam->publish_at) {
+            throw ValidationException::withMessages([
+                'exam' => 'Bài kiểm tra chưa được công bố.',
+            ]);
+        }
+
+        if ($exam->publish_at->isFuture()) {
+            throw ValidationException::withMessages([
+                'exam' => 'Bài kiểm tra chưa đến thời gian mở.',
+            ]);
+        }
+
+        if ($exam->duration_minutes <= 0) {
+            throw ValidationException::withMessages([
+                'exam' => 'Bài kiểm tra chưa cấu hình thời gian làm bài.',
+            ]);
+        }
+
+        if (! $exam->questions()->exists()) {
+            throw ValidationException::withMessages([
+                'exam' => 'Bài kiểm tra chưa có câu hỏi.',
+            ]);
+        }
+        //check phiên làm bài đã có
+        $attempt = null;
+        if ($user) {
+
+            $attempt = $this->exam_attemptModel::query()
+                ->where('exam_id', $exam->id)
+                ->where('user_id', $user->id)
+                ->where('status', 'in_progress')
+                ->first();
+
+        } elseif ($sessionId) {
+
+            $attempt = $this->exam_attemptModel::query()
+                ->where('exam_id', $exam->id)
+                ->where('session_id', $sessionId)
+                ->where('status', 'in_progress')
+                ->first();
+
+        }
+
+        if ($attempt) {
+            return $attempt;
+        }
+
+        //tạo phiên làm bài nếu chưa có
+        return $this->exam_attemptModel::create([
+            'exam_id'         => $exam->id,
+            'user_id'         => $user?->id,
+            'session_id'      => (string) Str::uuid(),
+
+            'started_at'      => now(),
+
+            'expires_at'      => now()->addMinutes(
+                $exam->duration_minutes
+            ),
+
+            'total_questions' => $exam
+                ->questions()
+                ->count(),
+
+            'status'          => 'in_progress',
+        ]);
+    }
 }

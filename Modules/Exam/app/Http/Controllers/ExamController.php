@@ -205,4 +205,22 @@ class ExamController extends Controller
     {
         return view("exam::admin.exam-review-table");
     }
+
+    public function startExam(Request $request,$examSlug){
+        $exam =$this->examService->getExamBySlug($examSlug);
+
+        $attempt = $this->examService->startExam(
+            exam: $exam,
+            user: auth()->user(),
+            sessionId: $request->cookie("exam_{$exam->id}")
+        );
+
+        return redirect()
+            ->route('exam.attempt.take', $attempt->session_id)
+            ->cookie(//cookie dành cho người dùng không đăng nhập lưu phiên làm bài
+                "exam_{$exam->id}",
+                $attempt->session_id,
+                60 * 24 // 1 ngày
+            );
+    }
 }
