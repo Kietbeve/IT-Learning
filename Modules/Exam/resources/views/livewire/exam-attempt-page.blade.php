@@ -407,7 +407,7 @@
                             primary
                             label="Nộp bài"
                             wire:click="$set('showSubmitModal', true)"
-                            x-bind:disabled="examSubmitted"
+                            :disabled="$attempt->status !== 'in_progress'"
                             class="flex-1 sm:flex-none" />
                         </div>
                     </div>

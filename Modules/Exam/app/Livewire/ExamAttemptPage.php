@@ -411,6 +411,8 @@ class ExamAttemptPage extends Component
 
     public function autoSubmitExam()
     {
+        $this->attempt->refresh();
+
         if ($this->attempt->status !== 'in_progress') {
             return;
         }
