@@ -26,10 +26,13 @@ class ExamController extends Controller
     /*
      * Trang danh sách bài thi của exam
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Goi du lieu tu Sevice
-        $exams = $this->examService->getExamList();
+
+        // Goi danh sach bai kiem tra tu Sevice
+        $exams = $this->examService->search([
+        'keyword' => $request->keyword
+        ]);
 
         // Truyen du lieu vao view
         return view('exam::index',compact('exams'));

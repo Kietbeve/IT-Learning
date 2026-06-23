@@ -278,27 +278,33 @@ class ExamService
         // Step 6: Dispatch background grading job (outside transaction)
         GradeExamAttemptJob::dispatch($attempt->id);
     }
-    
-    //Hàm lấy danh sách bài kiểm tra
-    public function getExamList(?int $limit = null)
+
+    //Hàm query chuẩn cho danh sách bài thi
+    private function baseListQuery()
     {
-        $query = Exam::query()
-            ->select([
-                'id',
-                'slug',
-                'title',
-                'short_description',
-                'duration_minutes',
-                'author_id',
-                'category_id',
-                'created_at',
-            ])
-            ->with([
-                'author:id,name',
-                'category:id,name',
-            ])
-            ->withCount('questions')
-            ->latest(); // orderByDesc('created_at')
+      return Exam::query()
+          ->select([
+              'id',
+              'slug',
+              'title',
+              'short_description',
+              'duration_minutes',
+              'author_id',
+              'category_id',
+              'created_at',
+          ])
+          ->with([
+              'author:id,name',
+              'category:id,name',
+          ])
+          ->withCount('questions')
+          ->latest();
+    }
+    
+    //Hàm lấy danh sách bài kiểm tra mới nhất
+    public function getExamListLatest(?int $limit = null)
+    {
+        $query = $this->baseListQuery();
 
         if ($limit !== null) {
             $query->limit($limit);
@@ -329,7 +335,27 @@ class ExamService
     ],...
     */
 
-    //Hàm lấy 1 bài kiểm tra bằng slug 
+    //Hàm lấy bài thi theo thông tin truyền vào
+    public function search(array $filters = [])
+    {
+
+      $query = $this->baseListQuery();
+
+      if (!empty($filters['keyword'])) {
+          $keyword = trim($filters['keyword']);
+
+          $query->where(function ($query) use ($keyword) {
+              $query->where('title', 'like', "%{$keyword}%")
+                  ->orWhere('short_description', 'like', "%{$keyword}%")
+                  ->orWhere('description', 'like', "%{$keyword}%");
+          });
+      }
+
+      return $query->paginate(12);
+    }
+    
+
+    //Hàm chi tiết lấy 1 bài kiểm tra bằng slug 
     public function getExamBySlug(string $examSlug)
     {
     return Exam::query()
@@ -353,7 +379,6 @@ class ExamService
         ->where('slug', $examSlug)
         ->firstOrFail();
     }
-
     /*
     Ket qua tra ve co dang:
     id: 1,
