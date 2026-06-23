@@ -8,8 +8,9 @@ use Illuminate\Contracts\View\View;
 use Modules\Learning\Services\RoadmapService; 
 use Modules\Learning\Models\Roadmap;
 use Illuminate\Support\Facades\Auth;
-
+use Modules\Learning\Models\LessonQuestion; // SỬA: Đổi từ Question thành LessonQuestion cho đúng model dự án
 use App\Models\User;
+
 class LearningController extends Controller
 {
     protected RoadmapService $roadmapService;
@@ -20,7 +21,6 @@ class LearningController extends Controller
     }
 
     /**
- 
      * TRANG 1: Danh sách lộ trình
      */
     public function index(Request $request): View
@@ -49,7 +49,8 @@ class LearningController extends Controller
             'unregisteredRoadmaps'
         ));
     }
-  /**
+
+    /**
      * TRANG 2: Chi tiết lộ trình
      */
     public function show(mixed $id): View
@@ -81,6 +82,7 @@ class LearningController extends Controller
             $this->roadmapService->getRoadmapDetail($id, $userId)
         ));
     }
+
     /**
      * TRANG 3: Nội dung chi tiết bài học
      */
@@ -196,6 +198,108 @@ class LearningController extends Controller
                 ->first();
         }
 
+        $pdfFile = '';
+        if ($roadmapId == 1) {
+            $pdfMap = [
+                1 => 'Bai_1_HTML5_CSS3.pdf',
+                5 => 'Bai_2_Tailwind_CSS.pdf',
+                3 => 'Routes_va_Controllers_chi_tiet.pdf',
+                4 => 'Bai_4_ReactJS.pdf',
+                23 => 'Lo_Trinh_va_Tong_Ket_Backend_Developer.pdf',
+                25 => 'Lo_Trinh_va_Tong_Ket_Backend_Developer.pdf',
+                //5 => 'Bai_5_Deploy.pdf',
+            ];
+            // Sử dụng ID của bài học đang xem để map ra file PDF
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 2) {
+            $pdfMap = [
+                1 => 'Bai_1_HTML5_CSS3.pdf',
+                5 => 'CSS_Flexbox_va_Grid.pdf',
+                7 => 'ES6_Modern_JavaScript.pdf',
+                4 => 'Bai_4_ReactJS.pdf',
+                19 => 'Tai_Lieu_Ly_Thuyet_Lo_Trinh_Frontend_Developer.pdf',
+                21 => 'Tong_Ket_Lo_Trinh_Frontend_Developer.pdf',
+                //5 => 'Bai_5_Deploy.pdf',
+            ];
+            // Sử dụng ID của bài học đang xem để map ra file PDF
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 3) {
+            $pdfMap = [
+                8 => 'Kien_Truc_he_thong_va_Lo_Trinh_Fullstack_Developer.pdf',
+                27 => 'Kien_Truc_he_thong_va_Lo_Trinh_Fullstack_Developer.pdf',
+                29 => 'Kien_Truc_he_thong_va_Lo_Trinh_Fullstack_Developer.pdf',
+                4 => 'Bai_4_ReactJS.pdf',
+                19 => 'Tai_Lieu_Ly_Thuyet_Lo_Trinh_Frontend_Developer.pdf',
+                21 => 'Tong_Ket_Lo_Trinh_Frontend_Developer.pdf',
+                //5 => 'Bai_5_Deploy.pdf',
+            ];
+            // Sử dụng ID của bài học đang xem để map ra file PDF
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 4) {
+            $pdfMap = [
+                31 => 'Tai_Lieu_Ly_Thuyet_Lo_Trinh_Mobile_Development.pdf',
+                33 => 'Tong_Ket_Lo_Trinh_Mobile_Development.pdf',
+                
+            ];
+            // Sử dụng ID của bài học đang xem để map ra file PDF
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 5) {
+            $pdfMap = [
+                10 => 'Tong_Ket_Lo_Trinh_Linux_va_Shell_Scripting.pdf',
+                35 => 'Tai_Lieu_Ly_Thuyet_Lo_Trinh_DevOps_Engineer.pdf',
+                37 => 'Tong_Ket_Lo_Trinh_DevOps_Engineer.pdf',
+                
+            ];
+            // Sử dụng ID của bài học đang xem để map ra file PDF
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+         if ($roadmapId == 6) {
+            $pdfMap = [
+               
+                39 => 'lo_trinh_data_science_ai.pdf',
+                41 => 'lo_trinh_data_science_ai.pdf',
+                
+            ];
+            // Sử dụng ID của bài học đang xem để map ra file PDF
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+         if ($roadmapId == 7) {
+            $pdfMap = [
+               
+                13 => 'co_ban_an_ninh_mang.pdf',
+                43 => 'lo_trinh_cybersecurity.pdf',
+                45 => 'lo_trinh_cybersecurity.pdf',
+                
+            ];
+            // Sử dụng ID của bài học đang xem để map ra file PDF
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+         if ($roadmapId == 8) {
+            $pdfMap = [
+               
+               
+                47 => 'lo_trinh_cloud_computing.pdf',
+                49 => 'lo_trinh_cloud_computing.pdf',
+                
+            ];
+            // Sử dụng ID của bài học đang xem để map ra file PDF
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+
+
+        // Truyền thêm biến 'pdfFile' sang giao diện
         return view('learning::layouts.lesson-view', [
             'roadmap' => $roadmap,
             'currentLesson' => $currentLesson,
@@ -204,6 +308,7 @@ class LearningController extends Controller
             'userNote' => $userNote,
             'lessonQuestions' => $lessonQuestions,
             'projectSubmission' => $projectSubmission,
+            'pdfFile' => $pdfFile,
         ]);
     }
 
@@ -352,4 +457,25 @@ class LearningController extends Controller
 
         return back()->with('success', 'Đã nộp dự án thành công! Đợi giảng viên review.');
     }
+
+    /**
+     * Xóa bình luận / câu hỏi thảo luận của bài học
+     */
+    public function destroyQuestion(int $question_id)
+    {
+        // SỬA CHÍNH XÁC: Gọi đúng Model LessonQuestion của hệ thống
+        $question = LessonQuestion::findOrFail($question_id);
+
+        // BẢO MẬT: Chỉ cho phép chính chủ nhân của bình luận đó mới được phép xóa
+        if (Auth::id() !== $question->user_id) {
+            return redirect()->back()->with('error', 'Bạn không có quyền xóa bình luận này!');
+        }
+
+        // Tiến hành xóa khỏi Cơ sở dữ liệu
+        $question->delete();
+
+        // Quay lại trang không gian học tập và gửi kèm thông báo thành công
+        return redirect()->back()->with('success', 'Đã xóa bình luận thành công.');
+    }
+    
 }

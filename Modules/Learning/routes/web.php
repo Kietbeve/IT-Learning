@@ -53,6 +53,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/lessons/{lesson_id}/question', [LearningController::class, 'postQuestion'])
         ->name('learning.lessons.question');
 
+    // SỬA/THÊM: Route xóa bình luận câu hỏi thảo luận
+    Route::delete('/questions/{question_id}', [LearningController::class, 'destroyQuestion'])
+        ->name('learning.questions.destroy');
+
     // Nộp dự án (project submission)
     Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/submit-project', [LearningController::class, 'submitProject'])
         ->name('learning.lessons.submitProject');
