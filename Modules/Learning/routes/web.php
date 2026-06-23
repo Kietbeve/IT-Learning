@@ -59,6 +59,21 @@ Route::middleware(['auth'])->group(function () {
 
     // Nộp dự án (project submission)
     Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/submit-project', [LearningController::class, 'submitProject'])
-        ->name('learning.lessons.submitProject');
+        ->name('learning.roadmaps.lessons.submit-project');
 
+});
+
+// ==========================================
+// 3. NHÓM ADMIN (Quản lý submissions)
+// ==========================================
+Route::middleware(['auth'])->prefix('admin/learning')->name('admin.learning.')->group(function () {
+    
+    // Danh sách tất cả submissions
+    Route::get('/submissions', \Modules\Learning\Livewire\Admin\ProjectSubmissionList::class)
+        ->name('submissions.index');
+    
+    // Review chi tiết một submission
+    Route::get('/submissions/{submissionId}/review', \Modules\Learning\Livewire\Admin\ProjectSubmissionReview::class)
+        ->name('submissions.review');
+    
 });

@@ -1,7 +1,12 @@
-<div id="learningSidebar" class="fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-50 transform -translate-x-full transition-transform duration-300">
+<div id="learningSidebar" class="fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-40 transform transition-transform duration-300">
     <div class="p-5 border-b flex justify-between items-center">
-        <h2 class="font-bold text-xl text-blue-600">Lộ trình học</h2>
-        <button onclick="toggleSidebar()" class="text-gray-500 text-xl">✕</button>
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="text-blue-600 hover:text-blue-700 text-2xl font-bold hover:bg-blue-50 w-9 h-9 rounded-lg flex items-center justify-center transition-colors">
+                ☰
+            </button>
+            <h2 class="font-bold text-xl text-blue-600">Lộ trình học</h2>
+        </div>
+        <button onclick="closeSidebar()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors">✕</button>
     </div>
 
     <div class="p-4 overflow-y-auto h-[calc(100%-80px)]">
@@ -27,15 +32,22 @@
     </div>
 </div>
 
-<button onclick="toggleSidebar()" class="fixed top-20 left-5 z-40 bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 transition">
-    ☰
-</button>
+<div id="sidebarOverlay" class="fixed top-0 left-0 h-full w-72 bg-white z-50 hidden transition-opacity duration-300" onclick="toggleSidebar()"></div>
 
 <script>
 function toggleSidebar() {
-    const sidebar = document.getElementById("learningSidebar");
-    if (sidebar) {
-        sidebar.classList.toggle("-translate-x-full");
+    const overlay = document.getElementById("sidebarOverlay");
+    
+    if (overlay) {
+        overlay.classList.toggle("hidden");
+    }
+}
+
+function closeSidebar() {
+    const overlay = document.getElementById("sidebarOverlay");
+    
+    if (overlay) {
+        overlay.classList.add("hidden");
     }
 }
 </script>

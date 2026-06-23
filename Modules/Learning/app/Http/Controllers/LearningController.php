@@ -10,6 +10,8 @@ use Modules\Learning\Models\Roadmap;
 use Illuminate\Support\Facades\Auth;
 use Modules\Learning\Models\LessonQuestion; // SỬA: Đổi từ Question thành LessonQuestion cho đúng model dự án
 use App\Models\User;
+use Modules\Learning\Http\Requests\StoreProjectSubmissionRequest;
+use Modules\Learning\Services\ProjectSubmissionService;
 
 class LearningController extends Controller
 {
@@ -88,6 +90,19 @@ class LearningController extends Controller
      */
     public function showLesson(mixed $roadmapId, mixed $lessonId): View
     {
+        // Check authentication
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để học');
+        }
+
+        $userId = Auth::id();
+
+        // Check enrollment - Học viên phải đăng ký lộ trình trước khi xem chi tiết bài học
+        if (!$this->roadmapService->checkEnrollment($userId, $roadmapId)) {
+            return redirect()->route('learning.roadmaps.show', $roadmapId)
+                ->with('error', 'Bạn cần đăng ký lộ trình này trước khi xem chi tiết bài học');
+        }
+
         return view('learning::layouts.lesson-show', array_merge(
             ['roadmapId' => $roadmapId, 'lessonId' => $lessonId],
             $this->roadmapService->getLessonDetail($roadmapId, $lessonId)
@@ -409,53 +424,34 @@ class LearningController extends Controller
     /**
      * Submit project for a lesson
      */
-    public function submitProject(Request $request, mixed $roadmapId, mixed $lessonId)
+    public function submitProject(StoreProjectSubmissionRequest $request, mixed $roadmapId, mixed $lessonId)
     {
         if (!Auth::check()) {
             return back()->with('error', 'Vui lòng đăng nhập');
         }
 
-        $request->validate([
-            'github_url' => 'required|url|max:500',
-            'live_demo_url' => 'nullable|url|max:500',
-            'note' => 'nullable|string|max:2000',
-            'attachment' => 'nullable|file|mimes:zip,pdf,png,jpg|max:102400',
-        ]);
-
         $userId = Auth::id();
-        
-        // Get enrollment
-        $enrollment = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $userId)
-            ->where('roadmap_id', $roadmapId)
-            ->firstOrFail();
+        $submissionService = app(ProjectSubmissionService::class);
 
-        // Get lesson and project
-        $lesson = \Modules\Learning\Models\RoadmapLesson::findOrFail($lessonId);
-        
-        if (!$lesson->project_id) {
-            return back()->with('error', 'Bài học này không có dự án');
+        try {
+            $submission = $submissionService->submitProject(
+                userId: $userId,
+                lessonId: (int) $lessonId,
+                roadmapId: (int) $roadmapId,
+                githubUrl: $request->input('github_url'),
+                liveDemoUrl: $request->input('live_demo_url'),
+                note: $request->input('note'),
+                attachment: $request->file('attachment')
+            );
+
+            $message = $submission->submission_no > 1 
+                ? "Đã nộp lại dự án thành công (lần {$submission->submission_no})! Đợi giảng viên review."
+                : 'Đã nộp dự án thành công! Đợi giảng viên review.';
+
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        // Handle file upload
-        $attachmentPath = null;
-        if ($request->hasFile('attachment')) {
-            $attachmentPath = $request->file('attachment')->store('project-submissions', 'public');
-        }
-
-        // Create or update submission
-        \Modules\Learning\Models\ProjectSubmission::create([
-            'project_id' => $lesson->project_id,
-            'user_id' => $userId,
-            'enrollment_id' => $enrollment->id,
-            'github_url' => $request->input('github_url'),
-            'live_demo_url' => $request->input('live_demo_url'),
-            'attachment_path' => $attachmentPath,
-            'note' => $request->input('note'),
-            'status' => 'submitted',
-            'submitted_at' => now(),
-        ]);
-
-        return back()->with('success', 'Đã nộp dự án thành công! Đợi giảng viên review.');
     }
 
     /**
