@@ -450,4 +450,67 @@ class ExamService
             'status'          => 'in_progress',
         ]);
     }
+
+    /**
+     * Finalize attempt grading - recalculate all statistics and mark as submitted
+     */
+    public function finalizeAttemptGrading(int $attemptId): array
+    {
+        return DB::transaction(function () use ($attemptId) {
+            // Load attempt with relationships
+            $attempt = ExamAttempt::with(['answers', 'exam.questions'])->findOrFail($attemptId);
+            
+            // Get all answers for this attempt
+            $answers = $attempt->answers;
+            
+            // Calculate statistics
+            $totalQuestions = $answers->count();
+            $correctAnswers = $answers->where(function ($answer) {
+                return $answer->status === 'correct' || $answer->is_correct === true;
+            })->count();
+            
+            $wrongAnswers = $answers->where(function ($answer) {
+                return $answer->status === 'incorrect' || $answer->is_correct === false;
+            })->count();
+            
+            $skippedAnswers = $answers->whereNull('answered_at')->count();
+            
+            // Calculate total score (sum of all answer scores)
+            $totalScore = $answers->sum('score');
+            
+            // Calculate max possible score from exam questions
+            $maxScore = $attempt->exam->questions->sum('pivot.score');
+            
+            // Calculate percent score
+            $percentScore = $maxScore > 0 ? ($totalScore / $maxScore) * 100 : 0;
+            
+            // Determine if passed
+            $isPassed = $percentScore >= $attempt->exam->pass_percent;
+            
+            // Update attempt with calculated values
+            $attempt->update([
+                'status' => 'completed',
+                'submitted_at' => now(),
+                'total_questions' => $totalQuestions,
+                'correct_answers' => $correctAnswers,
+                'wrong_answers' => $wrongAnswers,
+                'skipped_answers' => $skippedAnswers,
+                'score' => $totalScore,
+                'percent_score' => round($percentScore, 2),
+                'is_passed' => $isPassed,
+            ]);
+            
+            // Return statistics for notification
+            return [
+                'total_questions' => $totalQuestions,
+                'correct_answers' => $correctAnswers,
+                'wrong_answers' => $wrongAnswers,
+                'skipped_answers' => $skippedAnswers,
+                'score' => $totalScore,
+                'max_score' => $maxScore,
+                'percent_score' => round($percentScore, 2),
+                'is_passed' => $isPassed,
+            ];
+        });
+    }
 }

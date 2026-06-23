@@ -49,6 +49,7 @@ Route::group(["prefix"=> "contributor","middleware"=> ["auth",]], function () {
     route::get('exams/{examId}/questions',[ExamController::class,"examQuestionManager"])->name('contributor.exams.questions');
     Route::get('exams/{examId}/attempts',[ExamController::class,"examAttemptManager"])->name('contributor.exams.attempts');
     Route::get('exams/attempts/{attemptId}/answers',[ExamController::class,"attemptAnswerDetail"])->name('contributor.exams.attempts.answer');
+    Route::post('exams/attempts/{attemptId}/finalize',[ExamController::class,"finalizeAttempt"])->name('contributor.exams.attempts.finalize');
 });
 
 Route::group(["prefix"=> "admin","middleware"=> ["auth","role:admin"] ], function () {//test role

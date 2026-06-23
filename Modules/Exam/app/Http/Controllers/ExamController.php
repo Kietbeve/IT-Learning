@@ -223,4 +223,33 @@ class ExamController extends Controller
                 60 * 24 // 1 ngày
             );
     }
+
+    /**
+     * Finalize attempt grading - recalculate scores and mark as submitted
+     */
+    public function finalizeAttempt($attemptId)
+    {
+        try {
+            // Call service to finalize grading
+            $stats = $this->examService->finalizeAttemptGrading($attemptId);
+
+            // Redirect back with success message
+            return redirect()
+                ->back()
+                ->with('success', sprintf(
+                    'Chốt kết quả thành công! Điểm: %.1f/%.1f (%.1f%%) • Đúng: %d • Sai: %d • Bỏ qua: %d',
+                    $stats['score'],
+                    $stats['max_score'],
+                    $stats['percent_score'],
+                    $stats['correct_answers'],
+                    $stats['wrong_answers'],
+                    $stats['skipped_answers']
+                ));
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Không thể chốt kết quả: ' . $e->getMessage());
+        }
+    }
 }
