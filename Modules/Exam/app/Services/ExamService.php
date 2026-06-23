@@ -167,7 +167,7 @@ class ExamService
             ->get();
         
         // Shuffle if official exam type - trộn khi đề thi có loại là official - chưa test
-        if ($exam->type === 'official') {
+        if ($exam->mode == 'official') {
             $questions = $questions->shuffle();
         }
         
