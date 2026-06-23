@@ -16,7 +16,7 @@ class HomeController extends Controller
     }
     public function dashboard (){
       //lay danh sach de thi
-      $exams = $this->examService->getExamList(5);
+      $exams = $this->examService->getExamListLatest(5);
 
       //truyen du lieu vao trang
       return view('dashboard_user',compact('exams'));

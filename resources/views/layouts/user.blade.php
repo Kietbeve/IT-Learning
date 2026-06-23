@@ -76,7 +76,7 @@
             @endif
         @endauth
 
-        <main class="flex-1 p-8 bg-gray-50">
+        <main class="flex-1 p-8-4 bg-gray-50">
             @yield('content')
             {{ $slot ?? '' }}
         </main>
