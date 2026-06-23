@@ -151,6 +151,10 @@
                             const elapsed = Math.floor((now - this.startedAt) / 1000);
                             const total = this.durationMinutes * 60;
                             this.timeRemaining = Math.max(0, total - elapsed);
+
+                            if (this.timeRemaining === 0) {
+                                this.$wire.autoSubmitExam();
+                            }
                         },
                         
                         formatTime() {
@@ -383,12 +387,7 @@
                             class="flex-1 sm:flex-none hidden sm:inline-flex" />
                         
                         {{-- Submit Button - Visible at footer --}}
-                        <x-button 
-                            primary
-                            label="Nộp bài"
-                            wire:click="$set('showSubmitModal', true)"
-                            x-bind:disabled="examSubmitted"
-                            class="flex-1 sm:flex-none" />
+         
                         
                         <x-button 
                             outline
@@ -400,6 +399,17 @@
                             wire:loading.class="opacity-50"
                             :disabled="$currentQuestionIndex === count($questionIds) - 1"
                             class="flex-1 sm:flex-none" />
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t">
+                        <div class="flex justify-end">
+                            <x-button 
+                            primary
+                            label="Nộp bài"
+                            wire:click="$set('showSubmitModal', true)"
+                            :disabled="$attempt->status !== 'in_progress'"
+                            class="flex-1 sm:flex-none" />
+                        </div>
                     </div>
 
                     </div>{{-- End Question Container --}}

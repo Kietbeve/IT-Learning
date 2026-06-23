@@ -24,6 +24,9 @@ return new class extends Migration
 
             $table->longText('content');
 
+            $table->longText('answer_text')
+                ->nullable();
+
             $table->longText('explanation')
                 ->nullable();
 

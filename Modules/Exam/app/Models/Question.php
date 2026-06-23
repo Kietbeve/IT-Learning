@@ -22,6 +22,7 @@ class Question extends Model
         'author_id',
         'category_id',
         'content',
+        'answer_text',
         'explanation',
         'difficulty',
         'status',

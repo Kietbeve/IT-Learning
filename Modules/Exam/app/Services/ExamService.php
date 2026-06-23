@@ -39,6 +39,7 @@ class ExamService
                 'difficulty' => $data['difficulty'],
                 'status' => 'pending',
                 'type' => $data['type'],
+                'answer_text' => $data['answer_text'] ?? null,
             ]);
 
             if (
@@ -77,6 +78,7 @@ class ExamService
                 'explanation' => $data['explanation'] ?? null,
                 'difficulty' => $data['difficulty'],
                 'type' => $data['type'],
+                'answer_text' => $data['answer_text'] ?? null,
             ]);
 
             if (
@@ -167,7 +169,7 @@ class ExamService
             ->get();
         
         // Shuffle if official exam type - trộn khi đề thi có loại là official - chưa test
-        if ($exam->type === 'official') {
+        if ($exam->mode == 'official') {
             $questions = $questions->shuffle();
         }
         

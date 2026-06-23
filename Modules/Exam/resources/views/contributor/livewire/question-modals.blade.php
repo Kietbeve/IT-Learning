@@ -64,6 +64,18 @@
                     </div>
                 @endif
 
+                @if ($question->type === 'essay')
+    <div class="rounded-lg border border-green-200 bg-green-50 p-4">
+        <h3 class="mb-2 font-semibold text-green-700">
+            Đáp án mẫu
+        </h3>
+
+        <div class="text-sm text-slate-700">
+            {!! $question->answer_text ?: '<em>Chưa có đáp án mẫu</em>' !!}
+        </div>
+    </div>
+@endif
+
                 {{-- Explanation --}}
                 @if (!empty($question->explanation))
                     <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
@@ -182,13 +194,13 @@
                 <div class="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
                     <div class="text-sm font-semibold text-slate-700">Đáp án tự luận</div>
                     <x-textarea 
-                        wire:model="essayAnswer"
-                        placeholder="Nhập gợi ý đáp án (tính năng đang phát triển - tạm thời không lưu)"
+                        wire:model="answer_text"
+                        placeholder="Nhập gợi ý đáp án"
                         rows="5"
                     />
-                    <p class="text-xs text-amber-600">
+                    {{-- <p class="text-xs text-amber-600">
                         ℹ️ Đáp án tự luận sẽ được cập nhật trong phiên bản sau
-                    </p>
+                    </p> --}}
                 </div>
             @endif
         </div>
@@ -298,13 +310,13 @@
                     <div class="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
                         <div class="text-sm font-semibold text-slate-700">Đáp án tự luận</div>
                         <x-textarea 
-                            wire:model="essayAnswer"
-                            placeholder="Nhập gợi ý đáp án (tính năng đang phát triển - tạm thời không lưu)"
+                            wire:model="answer_text"
+                            placeholder="Nhập gợi ý đáp án"
                             rows="5"
                         />
-                        <p class="text-xs text-amber-600">
+                        {{-- <p class="text-xs text-amber-600">
                             ℹ️ Đáp án tự luận sẽ được cập nhật trong phiên bản sau
-                        </p>
+                        </p> --}}
                     </div>
                 @endif
 
