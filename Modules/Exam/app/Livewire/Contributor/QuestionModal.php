@@ -35,9 +35,10 @@ class QuestionModal extends Component
     public ?string $type = null;
     public ?int $category_id = null;
 
+    public ?string $answer_text=null;
+
     public array $options = [];
     public array $categories = [];
-    public ?string $essayAnswer = null; // Tạm giữ đáp án tự luận (chưa lưu DB)
     protected ExamService $examService;
 
     public function boot(ExamService $examService): void
@@ -68,6 +69,7 @@ class QuestionModal extends Component
             ['content' => '', 'is_correct' => false],
             ['content' => '', 'is_correct' => false],
         ];
+        $this->answer_text = null;
 
         $this->difficulty = 'medium';
         $this->type = 'single_choice';
@@ -100,6 +102,7 @@ class QuestionModal extends Component
         $this->explanation = $this->question->explanation;
         $this->difficulty = $this->question->difficulty;
         $this->type = $this->question->type;
+        $this->answer_text = $this->question->answer_text;
 
         // Load existing options
         $existingOptions = $this->question->options->map(function ($option) {
@@ -266,6 +269,10 @@ class QuestionModal extends Component
             'options' => ['array'],
             'options.*.content' => ['nullable', 'string'],
             'options.*.is_correct' => ['nullable', 'boolean'],
+            'answer_text' => [
+                $this->type === 'essay' ? 'required' : 'nullable',
+                'string',
+            ],
         ]);
 
         // Validate options for choice questions
@@ -298,6 +305,10 @@ class QuestionModal extends Component
             'options' => ['array'],
             'options.*.content' => ['nullable', 'string'],
             'options.*.is_correct' => ['nullable', 'boolean'],
+            'answer_text' => [
+                $this->type === 'essay' ? 'required' : 'nullable',
+                'string',
+            ],
         ]);
 
         // Validate options for choice questions
@@ -331,7 +342,7 @@ class QuestionModal extends Component
             'type',
             'category_id',
             'options',
-            'essayAnswer', // Reset đáp án tự luận
+            'answer_text', // Reset đáp án tự luận
         ]);
     }
 
