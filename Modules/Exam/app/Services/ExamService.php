@@ -420,7 +420,8 @@ class ExamService
           $query->reorder('created_at', 'asc');
       }
 
-      return $query->paginate(12);
+      // 10 bài thi / trang
+      return $query->paginate(10);
     }
     
 

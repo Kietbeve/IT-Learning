@@ -188,5 +188,111 @@
                 </div> 
           @endforelse 
         </div>
+
+        {{-- Phân trang --}}
+
+        @if($exams->hasPages())
+
+            <div class="mt-8 px-4 sm:px-6 lg:px-8">
+
+                <div class="flex justify-center">
+
+                    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm px-3 py-3">
+
+                        <div class="flex items-center gap-2">
+
+                            {{-- Previous --}}
+                            @if ($exams->onFirstPage())
+
+                                <div
+                                    class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-300 cursor-not-allowed"
+                                >
+                                    <x-icon name="chevron-left" class="w-5 h-5" />
+                                </div>
+
+                            @else
+
+                                <a
+                                    href="{{ $exams->previousPageUrl() }}"
+                                    class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-600 hover:bg-gray-100 transition"
+                                >
+                                    <x-icon name="chevron-left" class="w-5 h-5" />
+                                </a>
+
+                            @endif
+
+                            {{-- Tính toán hiển thị trang --}}
+                            @php
+                                $currentPage = $exams->currentPage();
+                                $lastPage = $exams->lastPage();
+
+                                if ($lastPage <= 3) {
+                                    $startPage = 1;
+                                    $endPage = $lastPage;
+                                } elseif ($currentPage <= 2) {
+                                    $startPage = 1;
+                                    $endPage = 3;
+                                } elseif ($currentPage >= $lastPage - 1) {
+                                    $startPage = $lastPage - 2;
+                                    $endPage = $lastPage;
+                                } else {
+                                    $startPage = $currentPage - 1;
+                                    $endPage = $currentPage + 1;
+                                }
+                            @endphp
+                            {{-- Page Numbers --}}
+                            @foreach(range($startPage, $endPage) as $page)
+
+                                @if($page == $exams->currentPage())
+
+                                    <div
+                                        class="min-w-[42px] h-10 px-3 rounded-xl bg-indigo-600 text-white font-bold text-base flex items-center justify-center shadow-sm"
+                                    >
+                                        {{ $page }}
+                                    </div>
+
+                                @else
+
+                                    <a
+                                        href="{{ $exams->url($page) }}"
+                                        class="min-w-[42px] h-10 px-3 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition"
+                                    >
+                                        {{ $page }}
+                                    </a>
+
+                                @endif
+
+                            @endforeach
+
+
+                            {{-- Next --}}
+                            @if ($exams->hasMorePages())
+
+                                <a
+                                    href="{{ $exams->nextPageUrl() }}"
+                                    class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-600 hover:bg-gray-100 transition"
+                                >
+                                    <x-icon name="chevron-right" class="w-5 h-5" />
+                                </a>
+
+                            @else
+
+                                <div
+                                    class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-300 cursor-not-allowed"
+                                >
+                                    <x-icon name="chevron-right" class="w-5 h-5" />
+                                </div>
+
+                            @endif
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        @endif
     </div>
 @endsection
