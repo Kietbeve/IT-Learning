@@ -1,18 +1,24 @@
-<div id="learningSidebar" class="fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-40 transform transition-transform duration-300">
+<button id="openSidebarBtn" onclick="openSidebar()" class="fixed top-20 left-4 z-[50] bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center shadow-lg hover:bg-blue-700 transition-all hidden">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+</button>
+
+<div id="learningSidebar" class="fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-[70] transform transition-transform duration-300">
     <div class="p-5 border-b flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <button onclick="toggleSidebar()" class="text-blue-600 hover:text-blue-700 text-2xl font-bold hover:bg-blue-50 w-9 h-9 rounded-lg flex items-center justify-center transition-colors">
-                ☰
-            </button>
-            <h2 class="font-bold text-xl text-blue-600">Lộ trình học</h2>
-        </div>
-        <button onclick="closeSidebar()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors">✕</button>
+        <h2 class="font-bold text-xl text-blue-600">Lộ trình học</h2>
+        
+        <button onclick="closeSidebar()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors" title="Đóng">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
 
     <div class="p-4 overflow-y-auto h-[calc(100%-80px)]">
         <h3 class="font-semibold text-green-600 mb-3">✓ Đã đăng ký</h3>
         @forelse($registeredRoadmaps ?? [] as $roadmap)
-            <a href="{{ route('learning.roadmaps.show', $roadmap->id) }}" class="block p-3 rounded-lg hover:bg-blue-50 mb-2">
+            <a href="{{ route('learning.roadmaps.show', $roadmap->id) }}" class="block p-3 rounded-lg hover:bg-blue-50 mb-2 transition-colors">
                 {{ $roadmap->title }}
             </a>
         @empty
@@ -23,7 +29,7 @@
 
         <h3 class="font-semibold text-gray-700 mb-3">📚 Chưa đăng ký</h3>
         @forelse($unregisteredRoadmaps ?? [] as $roadmap)
-            <a href="{{ route('learning.roadmaps.show', $roadmap->id) }}" class="block p-3 rounded-lg hover:bg-gray-100 mb-2">
+            <a href="{{ route('learning.roadmaps.show', $roadmap->id) }}" class="block p-3 rounded-lg hover:bg-gray-100 mb-2 transition-colors">
                 {{ $roadmap->title }}
             </a>
         @empty
@@ -32,21 +38,29 @@
     </div>
 </div>
 
-<div id="sidebarOverlay" class="fixed top-0 left-0 h-full w-72 bg-white z-50 hidden transition-opacity duration-300" onclick="toggleSidebar()"></div>
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-[60] hidden transition-opacity duration-300" onclick="closeSidebar()"></div>
 
 <script>
-function toggleSidebar() {
+function openSidebar() {
+    const sidebar = document.getElementById("learningSidebar");
+    const openBtn = document.getElementById("openSidebarBtn");
     const overlay = document.getElementById("sidebarOverlay");
     
-    if (overlay) {
-        overlay.classList.toggle("hidden");
+    if (sidebar && openBtn && overlay) {
+        sidebar.classList.remove("-translate-x-full");
+        openBtn.classList.add("hidden");
+        overlay.classList.remove("hidden");
     }
 }
 
 function closeSidebar() {
+    const sidebar = document.getElementById("learningSidebar");
+    const openBtn = document.getElementById("openSidebarBtn");
     const overlay = document.getElementById("sidebarOverlay");
     
-    if (overlay) {
+    if (sidebar && openBtn && overlay) {
+        sidebar.classList.add("-translate-x-full");
+        openBtn.classList.remove("hidden");
         overlay.classList.add("hidden");
     }
 }

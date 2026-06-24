@@ -3,6 +3,20 @@
 use Illuminate\Support\Facades\Route;
 // SỬA: Import đúng chuẩn Namespace của LearningController (có chữ app viết thường)
 use Modules\Learning\Http\Controllers\LearningController;
+use Livewire\Livewire;
+
+use Modules\Learning\Livewire\Admin\Collaborators\Index as CollabIndex;
+use Modules\Learning\Livewire\Admin\Collaborators\Create as CollabCreate;
+use Modules\Learning\Livewire\Admin\Collaborators\Edit as CollabEdit;
+
+Livewire::component('modules.learning.livewire.admin.collaborators', CollabIndex::class);
+Livewire::component('modules.learning.livewire.admin.collaborators.create', CollabCreate::class);
+Livewire::component('modules.learning.livewire.admin.collaborators.edit', CollabEdit::class);
+
+Route::get('/admin/collaborators', CollabIndex::class);
+Route::get('/admin/collaborators/create', CollabCreate::class);
+Route::get('/admin/collaborators/edit/{id}', CollabEdit::class);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -75,5 +89,24 @@ Route::middleware(['auth'])->prefix('admin/learning')->name('admin.learning.')->
     // Review chi tiết một submission
     Route::get('/submissions/{submissionId}/review', \Modules\Learning\Livewire\Admin\ProjectSubmissionReview::class)
         ->name('submissions.review');
+        
     
 });
+
+
+// Đường dẫn truy cập trang Quản lý Dashboard
+Route::get('/manage', function () {
+    // 'learning::' là namespace của module, 'manage.management-dashboard' là đường dẫn thư mục và file
+    return view('learning::manage.management-dashboard');
+});
+Route::get('/manage/roadmap', function () {
+    return view('learning::manage.management-roadmap');
+})->name('manage.roadmap'); // Đặt tên route để gọi cho tiện
+// 3. Route mới cho trang Chi tiết/Danh sách bài học (Theo đúng tên file hiện tại của bạn)
+Route::get('/manage/detail', function () {
+    return view('learning::manage.namagement-detail');
+})->name('manage.detail');
+// 4. Route mới cho trang Quản lý Chi tiết bài học
+Route::get('/manage/lesson', function () {
+    return view('learning::manage.management-lesson');
+})->name('manage.lesson');
