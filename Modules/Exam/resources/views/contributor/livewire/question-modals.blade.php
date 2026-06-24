@@ -395,4 +395,101 @@
             </div>
         </x-slot>
     </x-modal-card>
+
+    {{-- Modal Import câu hỏi --}}
+    <x-modal-card
+        title="Import câu hỏi"
+        blur
+        wire:model="showImportModal"
+        max-width="2xl"
+    >
+        <div class="space-y-4">
+
+            <div class="p-4 bg-blue-50 rounded-lg">
+                <p class="font-semibold">
+                    Tải file Excel mẫu
+                </p>
+
+                <a
+                    href="{{ route('questions.import.template') }}"
+                    class="inline-flex items-center mt-2 px-3 py-2 bg-blue-600 text-white rounded-lg"
+                >
+                    📄 Download mẫu
+                </a>
+            </div>
+
+            <div>
+                <input
+                    type="file"
+                    wire:model="importFile"
+                    accept=".xlsx,.xls,.csv"
+                    class="w-full"
+                >
+
+                <div wire:loading wire:target="importFile" class="text-blue-600 mt-2 text-sm">
+                    ⏳ Đang tải file lên server...
+                </div>
+
+                @error('importFile')
+                    <span class="text-red-500">
+                        {{ $message }}
+                    </span>
+                @enderror
+
+                                @if ($errors->has('import'))
+    <div
+        class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4"
+    >
+        <div class="flex items-start gap-3">
+            <svg
+                class="h-5 w-5 text-red-500 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01M5.07 19H18.93c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
+                />
+            </svg>
+
+            <div>
+                <h3 class="font-semibold text-red-800">
+                    Import thất bại
+                </h3>
+
+                <p class="mt-1 text-sm text-red-700">
+                    {{ $errors->first('import') }}
+                </p>
+            </div>
+        </div>
+    </div>
+@endif
+            </div>
+
+        </div>
+
+        <x-slot name="footer">
+            <div class="flex justify-end gap-2">
+
+                <x-button
+                    flat
+                    label="Hủy"
+                    x-on:click="$wire.showImportModal = false"
+                />
+
+                <x-button
+                    primary
+                    label="Import"
+                    wire:click="importQuestions"
+                    spinner="importQuestions"
+                    wire:loading.attr="disabled"
+                    wire:target="importFile"
+                />
+
+            </div>
+        </x-slot>
+    </x-modal-card>
 </div>

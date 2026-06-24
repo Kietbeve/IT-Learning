@@ -3,12 +3,13 @@
 namespace Modules\Exam\Services;
 
 use Illuminate\Support\Facades\DB;
-
+use Maatwebsite\Excel\Facades\Excel;
+use Modules\Exam\Imports\QuestionsImport;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-
+use Illuminate\Http\UploadedFile;
 
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\QuestionOption;
@@ -113,6 +114,26 @@ class ExamService
             return $question->fresh(['options']);
         });
     }
+
+    public function importQuestions(
+        UploadedFile $file,
+        int $authorId
+    ): int
+    {
+        $import = new QuestionsImport(
+            $this,
+            $authorId
+        );
+
+        Excel::import(
+            $import,
+            $file
+        );
+
+        return $import->getImportedCount();
+    }
+
+    
 
     /*
     |--------------------------------------------------------------------------

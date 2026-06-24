@@ -61,6 +61,20 @@ final class QuestionTable extends PowerGridComponent
             )
             ->dispatch('question-create',[]),
 
+            Button::add('import')
+            ->slot('📥 Import Excel')
+            ->class(
+                'inline-flex items-center gap-2
+                px-4 py-2
+                rounded-lg
+                bg-green-600 text-white font-medium
+                shadow-sm
+                transition-all duration-200
+                hover:bg-green-700 hover:shadow-md
+                active:scale-95'
+            )
+            ->dispatch('question-import', []),
+
             Button::add('bulk-delete')
                 ->slot(
                     '🗑️ Xóa (

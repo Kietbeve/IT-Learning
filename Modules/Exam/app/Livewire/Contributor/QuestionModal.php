@@ -14,16 +14,20 @@ use WireUi\Traits\WireUiActions;
 use Illuminate\Validation\ValidationException;
 use Modules\Exam\Http\Requests\StoreQuestionRequest;
 use Modules\Exam\Services\ExamService;
+use Livewire\WithFileUploads;
 
 class QuestionModal extends Component
 {
     use WireUiActions;
+    use WithFileUploads;
 
     public bool $showViewModal = false;
     public bool $showEditModal = false;
     public bool $showCreateModal = false;
     public bool $showDeleteModal = false;
     public bool $showBulkDeleteModal = false;
+    public bool $showImportModal = false;
+    public $importFile;
 
     public ?Question $question = null;
     public array $questionIds = [];
@@ -344,6 +348,59 @@ class QuestionModal extends Component
             'options',
             'answer_text', // Reset đáp án tự luận
         ]);
+    }
+    
+    //import file
+    #[On('question-import')]
+    public function import(): void
+    {
+        $this->resetValidation();
+
+        $this->importFile = null;
+
+        $this->showImportModal = true;
+    }
+
+    public function importQuestions(): void
+    {
+        
+        $this->validate([
+            'importFile' => [
+                'required',
+                'file',
+                'mimes:xlsx,xls,csv',
+            ],
+        ]);
+
+        // $count = $this->examService->importQuestions(
+        //     $this->importFile,
+        //     auth()->id()
+        // );
+        try {
+
+            $count = $this->examService->importQuestions(
+                $this->importFile,
+                auth()->id()
+            );
+
+        } catch (\Throwable $e) {
+            $this->notification()->error(
+                title: 'Import thất bại',
+                description: $e->getMessage()
+            );
+            return;
+        }
+        
+        $this->showImportModal = false;
+
+        $this->importFile = null;
+
+        $this->notification()->success(
+            title: 'Thành công',
+            description: "Đã import {$count} câu hỏi."
+        );
+
+        $this->dispatch('pg:eventRefresh-question-table');
     }
 
     public function render()

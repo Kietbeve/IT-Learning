@@ -10,6 +10,8 @@ use Modules\Exam\Models\Exam;
 use Modules\Exam\Services\ExamService;
 use Modules\Exam\Models\AttemptAnswer;
 use Modules\Exam\Models\ExamAttempt;
+use Maatwebsite\Excel\Facades\Excel;
+use Modules\Exam\Exports\QuestionTemplateExport;
 
 class ExamController extends Controller
 {
@@ -254,5 +256,13 @@ class ExamController extends Controller
                 ->back()
                 ->with('error', 'Không thể chốt kết quả: ' . $e->getMessage());
         }
+    }
+
+    public function template()
+    {
+        return Excel::download(
+            new QuestionTemplateExport(),
+            'question-template.xlsx'
+        );
     }
 }

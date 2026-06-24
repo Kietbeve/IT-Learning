@@ -60,3 +60,4 @@ Route::group(["prefix"=> "admin","middleware"=> ["auth","role:admin"] ], functio
 // Route giao diện Exam Detail bằng slug | Đặt ở cuối vì bị sung đột với các route khác- gõ exam/bất kì đều vào route này
 Route::get('exam/{examSlug}', [ExamController::class, 'showExamDetail'])->name('exam.examDetail');
 Route::post('exam/{examSlug}', [ExamController::class, 'startExam'])->name('exam.attempt.start');
+Route::get('/questions/import-template',[ExamController::class, 'template'])->name('questions.import.template');
