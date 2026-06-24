@@ -18,6 +18,7 @@ use Modules\Exam\Models\AttemptAnswer;
 use Modules\Exam\Models\Exam;
 use Modules\Auth\Models\User;
 use Modules\Exam\Jobs\GradeExamAttemptJob;
+use App\Models\Category;
 
 
 class ExamService
@@ -323,7 +324,35 @@ class ExamService
           ->withCount('questions')
           ->latest();
     }
-    
+
+    //Hàm lấy tất cả danh mục (id và tên) đang hoạt động
+    public function getAllCategories(): Collection
+    {
+        return Category::query()
+            ->select(['id', 'name'])
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+    }
+    /*
+    Kết quả trả về có dạng:
+    [
+      App\Models\Category {
+        id: 1,
+        name: "PHP",
+      },
+      App\Models\Category {
+        id: 2,
+        name: "Laravel",
+      },
+      App\Models\Category {
+        id: 3,
+        name: "Java",
+      },
+      ...
+    ]
+    */
+
     //Hàm lấy danh sách bài kiểm tra mới nhất
     public function getExamListLatest(?int $limit = null)
     {

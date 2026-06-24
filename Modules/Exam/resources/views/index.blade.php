@@ -83,50 +83,23 @@
                                           name="category"
                                           value=""
                                           class="border-gray-300"
-                                          checked
+                                          {{ request('category') ? '' : 'checked' }}
                                       >
                                       <span>Tất cả</span>
                                   </label>
 
-                                  <label class="flex items-center gap-2">
-                                      <input
-                                          type="radio"
-                                          name="category"
-                                          value="1"
-                                          class="border-gray-300"
-                                      >
-                                      <span>Laravel</span>
-                                  </label>
-
-                                  <label class="flex items-center gap-2">
-                                      <input
-                                          type="radio"
-                                          name="category"
-                                          value="2"
-                                          class="border-gray-300"
-                                      >
-                                      <span>PHP</span>
-                                  </label>
-
-                                  <label class="flex items-center gap-2">
-                                      <input
-                                          type="radio"
-                                          name="category"
-                                          value="3"
-                                          class="border-gray-300"
-                                      >
-                                      <span>Java</span>
-                                  </label>
-
-                                  <label class="flex items-center gap-2">
-                                      <input
-                                          type="radio"
-                                          name="category"
-                                          value="4"
-                                          class="border-gray-300"
-                                      >
-                                      <span>Database</span>
-                                  </label>
+                                  @foreach ($categories as $category)
+                                      <label class="flex items-center gap-2">
+                                          <input
+                                              type="radio"
+                                              name="category"
+                                              value="{{ $category->id }}"
+                                              class="border-gray-300"
+                                              {{ request('category') == $category->id ? 'checked' : '' }}
+                                          >
+                                          <span>{{ $category->name }}</span>
+                                      </label>
+                                  @endforeach
 
                               </div>
 
@@ -140,19 +113,19 @@
                                   label="Loại bài thi"
                                   name="type"
                               >
-                                  <option value="">
+                                  <option value="" {{ request('type') ? '' : 'selected' }}>
                                       Tất cả
                                   </option>
 
-                                  <option value="multiple_choice">
+                                  <option value="multiple_choice" {{ request('type') == 'multiple_choice' ? 'selected' : '' }}>
                                       Trắc nghiệm
                                   </option>
 
-                                  <option value="essay">
+                                  <option value="essay" {{ request('type') == 'essay' ? 'selected' : '' }}>
                                       Tự luận
                                   </option>
 
-                                  <option value="hybrid">
+                                  <option value="hybrid" {{ request('type') == 'hybrid' ? 'selected' : '' }}>
                                       Hybrid
                                   </option>
 

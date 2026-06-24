@@ -30,6 +30,8 @@ class ExamController extends Controller
      */
     public function index(Request $request)
     {
+        // Lấy danh sách tất cả danh mục
+        $categories = $this->examService->getAllCategories();
 
         // Goi danh sach bai kiem tra tu Sevice
         $exams = $this->examService->search([
@@ -37,7 +39,7 @@ class ExamController extends Controller
         ]);
 
         // Truyen du lieu vao view
-        return view('exam::index',compact('exams'));
+        return view('exam::index',compact('exams','categories'));
     }
 
     /**
