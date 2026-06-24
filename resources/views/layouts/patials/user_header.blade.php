@@ -32,7 +32,7 @@
         </div>
 
         <div class="logo">
-            <a href="#"
+            <a href="{{ route('home.dashboard') }}"
                 class="flex items-center gap-1 text-white text-2xl font-bold font-sans hover:opacity-80 transition-opacity whitespace-nowrap">
                 <img src="{{ asset('Image/logo.png') }}" alt="Logo" class="h-12 w-auto object-contain">
                 <span class="tracking-tight">IT<span class="text-blue-500">Learning</span></span>
@@ -61,7 +61,10 @@
     </nav>
 
     <div class="user-profile flex items-center gap-3">
+      {{-- Xac thu dang nhap --}}
         @auth
+        {{-- Neu dang nhap thanh cong thuc hien cac lenh trong nay --}}
+
             {{-- VIP Button/Badge --}}
             @php
                 $isVip = Auth::user()->vip_expires_at && Auth::user()->vip_expires_at->isFuture();
@@ -140,6 +143,7 @@
                         </div>
                     </x-dropdown.item>
                 @endif
+
                 @if(auth()->user()->hasRole('admin'))
                     <x-dropdown.item href="{{ route('admin.dashboard') }}">
                         <div class="flex items-center text-amber-600 font-semibold">
@@ -159,7 +163,8 @@
                 </form>
 
             </x-dropdown>
-        @else
+        @else 
+        {{-- Neu chua dang nhap hien thi nut dang nhap --}}
             <a href="{{ route('auth.google.redirect') }}"
                 class="flex items-center gap-2 px-4 py-2 border border-slate-700 rounded-lg text-sm font-medium text-white bg-slate-800 hover:bg-slate-700 transition-colors duration-300 focus:outline-none shadow-sm">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -179,5 +184,6 @@
                 <span class="hidden sm:block">Đăng nhập bằng Google</span>
             </a>
         @endauth
+        
     </div>
 </header>
