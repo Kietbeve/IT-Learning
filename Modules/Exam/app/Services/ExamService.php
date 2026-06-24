@@ -387,12 +387,14 @@ class ExamService
     ],...
     */
 
-    //Hàm lấy bài thi theo thông tin truyền vào
+    //Hàm tìm kiếm bài thi theo các tham số lọc
+    //Tham số: keyword, category, type, sort
     public function search(array $filters = [])
     {
 
       $query = $this->baseListQuery();
 
+      // Lọc theo từ khóa (tìm trong tiêu đề, mô tả ngắn, mô tả chi tiết)
       if (!empty($filters['keyword'])) {
           $keyword = trim($filters['keyword']);
 
@@ -401,6 +403,21 @@ class ExamService
                   ->orWhere('short_description', 'like', "%{$keyword}%")
                   ->orWhere('description', 'like', "%{$keyword}%");
           });
+      }
+
+      // Lọc theo danh mục (category_id)
+      if (!empty($filters['category'])) {
+          $query->where('category_id', $filters['category']);
+      }
+
+      // Lọc theo loại bài thi (multiple_choice, essay, hybrid)
+      if (!empty($filters['type'])) {
+          $query->where('type', $filters['type']);
+      }
+
+      // Sắp xếp theo thời gian (mặc định: mới nhất)
+      if (!empty($filters['sort']) && $filters['sort'] === 'oldest') {
+          $query->reorder('created_at', 'asc');
       }
 
       return $query->paginate(12);

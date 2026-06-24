@@ -49,7 +49,7 @@
                           indigo
                           type="submit"
                           icon="magnifying-glass"
-                          class="shrink-0 !px-3 lg:!px-4"
+                          class="shrink-0 px-3! lg:px-4!"
                       >
                           <span class="hidden lg:inline">Tìm kiếm</span>
                       </x-button>

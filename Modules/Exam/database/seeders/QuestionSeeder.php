@@ -415,5 +415,452 @@ class QuestionSeeder extends Seeder
             ];
         }
         $officialExam->questions()->sync($syncData);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 20 câu hỏi bổ sung (đa dạng danh mục và loại)
+        | category_id: 1=PHP, 2=Laravel, 3=Database, 4=JavaScript, 5=Python, 6=Java, 7=Mạng máy tính
+        |--------------------------------------------------------------------------
+        */
+        $bulkQuestionsData = [
+            // ===== JavaScript (category_id = 4) =====
+            [
+                'category_id' => 4,
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Từ khóa nào dùng để khai báo biến có phạm vi block trong JavaScript?',
+                'explanation' => 'let và const có phạm vi block (block scope), còn var có phạm vi function.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'var',   'is_correct' => false],
+                    ['key' => 'B', 'content' => 'let',   'is_correct' => true],
+                    ['key' => 'C', 'content' => 'dim',   'is_correct' => false],
+                    ['key' => 'D', 'content' => 'set',   'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 4,
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Phương thức nào dùng để chuyển chuỗi JSON thành đối tượng JavaScript?',
+                'explanation' => 'JSON.parse() dùng để chuyển chuỗi JSON thành đối tượng JavaScript.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'JSON.stringify()', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'JSON.parse()',     'is_correct' => true],
+                    ['key' => 'C', 'content' => 'JSON.toObject()',  'is_correct' => false],
+                    ['key' => 'D', 'content' => 'JSON.convert()',   'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 4,
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Những phương thức nào thuộc Array trong JavaScript?',
+                'explanation' => 'map(), filter() và reduce() đều là phương thức của Array prototype.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'map()',    'is_correct' => true],
+                    ['key' => 'B', 'content' => 'filter()', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'reduce()', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'query()',  'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 4,
+                'type' => 'essay',
+                'difficulty' => 'hard',
+                'content' => 'Giải thích sự khác nhau giữa Promise và async/await trong JavaScript.',
+                'explanation' => 'Promise là đối tượng đại diện cho giá trị bất đồng bộ. async/await là cú pháp giúp viết code bất đồng bộ dễ đọc hơn, thực chất vẫn dùng Promise bên dưới.',
+            ],
+
+            // ===== Python (category_id = 5) =====
+            [
+                'category_id' => 5,
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Hàm nào dùng để in ra màn hình trong Python?',
+                'explanation' => 'print() là hàm dùng để xuất dữ liệu ra màn hình trong Python.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'echo()',    'is_correct' => false],
+                    ['key' => 'B', 'content' => 'print()',   'is_correct' => true],
+                    ['key' => 'C', 'content' => 'console()', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'write()',   'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 5,
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Kiểu dữ liệu nào trong Python là immutable (không thay đổi được)?',
+                'explanation' => 'Tuple là kiểu dữ liệu immutable, không thể thay đổi sau khi tạo.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'list',  'is_correct' => false],
+                    ['key' => 'B', 'content' => 'dict',  'is_correct' => false],
+                    ['key' => 'C', 'content' => 'tuple', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'set',   'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 5,
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Những thư viện nào phổ biến trong lĩnh vực Machine Learning với Python?',
+                'explanation' => 'TensorFlow, PyTorch và Scikit-learn là các thư viện ML phổ biến. Laravel là framework PHP.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'TensorFlow',   'is_correct' => true],
+                    ['key' => 'B', 'content' => 'PyTorch',      'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Scikit-learn', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Laravel',      'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 5,
+                'type' => 'essay',
+                'difficulty' => 'hard',
+                'content' => 'Giải thích cơ chế Garbage Collection trong Python và ảnh hưởng đến hiệu suất.',
+                'explanation' => 'Python sử dụng reference counting kết hợp cyclic garbage collector để tự động thu hồi bộ nhớ.',
+            ],
+
+            // ===== Java (category_id = 6) =====
+            [
+                'category_id' => 6,
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Phương thức nào là điểm bắt đầu thực thi của chương trình Java?',
+                'explanation' => 'Phương thức main() với signature public static void main(String[] args) là điểm bắt đầu.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'start()',  'is_correct' => false],
+                    ['key' => 'B', 'content' => 'main()',   'is_correct' => true],
+                    ['key' => 'C', 'content' => 'run()',    'is_correct' => false],
+                    ['key' => 'D', 'content' => 'init()',   'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 6,
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Từ khóa nào trong Java ngăn class được kế thừa?',
+                'explanation' => 'Từ khóa final khi đặt trước class sẽ ngăn class đó bị kế thừa.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'static',   'is_correct' => false],
+                    ['key' => 'B', 'content' => 'abstract', 'is_correct' => false],
+                    ['key' => 'C', 'content' => 'final',    'is_correct' => true],
+                    ['key' => 'D', 'content' => 'private',  'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 6,
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Những nguyên tắc nào thuộc SOLID trong lập trình hướng đối tượng?',
+                'explanation' => 'SOLID gồm: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Single Responsibility',    'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Open/Closed',             'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Don\'t Repeat Yourself',  'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Dependency Inversion',    'is_correct' => true],
+                ],
+            ],
+            [
+                'category_id' => 6,
+                'type' => 'essay',
+                'difficulty' => 'hard',
+                'content' => 'So sánh ArrayList và LinkedList trong Java. Khi nào nên dùng loại nào?',
+                'explanation' => 'ArrayList truy cập nhanh O(1), thêm/xóa chậm O(n). LinkedList ngược lại.',
+            ],
+
+            // ===== Mạng máy tính (category_id = 7) =====
+            [
+                'category_id' => 7,
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Mô hình OSI có bao nhiêu tầng?',
+                'explanation' => 'Mô hình OSI (Open Systems Interconnection) có 7 tầng.',
+                'options' => [
+                    ['key' => 'A', 'content' => '4 tầng', 'is_correct' => false],
+                    ['key' => 'B', 'content' => '5 tầng', 'is_correct' => false],
+                    ['key' => 'C', 'content' => '7 tầng', 'is_correct' => true],
+                    ['key' => 'D', 'content' => '6 tầng', 'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 7,
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Giao thức nào hoạt động ở tầng Transport trong mô hình TCP/IP?',
+                'explanation' => 'TCP (Transmission Control Protocol) hoạt động ở tầng Transport.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'HTTP', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'TCP',  'is_correct' => true],
+                    ['key' => 'C', 'content' => 'IP',   'is_correct' => false],
+                    ['key' => 'D', 'content' => 'ARP',  'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 7,
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Những thiết bị nào hoạt động ở tầng Network (tầng 3) trong mô hình OSI?',
+                'explanation' => 'Router và Switch Layer 3 hoạt động ở tầng Network.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Router',          'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Switch Layer 3',  'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Hub',             'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Repeater',        'is_correct' => false],
+                ],
+            ],
+            [
+                'category_id' => 7,
+                'type' => 'essay',
+                'difficulty' => 'hard',
+                'content' => 'Phân tích sự khác nhau giữa giao thức TCP và UDP. Cho ví dụ ứng dụng thực tế.',
+                'explanation' => 'TCP đảm bảo truyền tin cậy (web, email). UDP nhanh hơn nhưng không đảm bảo (video call, game online).',
+            ],
+
+            // ===== Database bổ sung (category_id = 3) =====
+            [
+                'category_id' => 3,
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Câu lệnh SQL nào dùng để lấy dữ liệu từ bảng?',
+                'explanation' => 'SELECT là câu lệnh dùng để truy vấn và lấy dữ liệu từ bảng.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'GET',    'is_correct' => false],
+                    ['key' => 'B', 'content' => 'SELECT', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'FETCH',  'is_correct' => false],
+                    ['key' => 'D', 'content' => 'FIND',   'is_correct' => false],
+                ],
+            ],
+
+            // ===== Laravel bổ sung (category_id = 2) =====
+            [
+                'category_id' => 2,
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Lệnh artisan nào dùng để tạo Controller mới trong Laravel?',
+                'explanation' => 'php artisan make:controller là lệnh tạo controller mới.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'php artisan make:controller',   'is_correct' => true],
+                    ['key' => 'B', 'content' => 'php artisan create:controller', 'is_correct' => false],
+                    ['key' => 'C', 'content' => 'php artisan new:controller',    'is_correct' => false],
+                    ['key' => 'D', 'content' => 'php artisan add:controller',    'is_correct' => false],
+                ],
+            ],
+
+            // ===== PHP bổ sung (category_id = 1) =====
+            [
+                'category_id' => 1,
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Những kiểu dữ liệu nào là kiểu scalar trong PHP?',
+                'explanation' => 'PHP có 4 kiểu scalar: int, float, string, bool.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'int',    'is_correct' => true],
+                    ['key' => 'B', 'content' => 'float',  'is_correct' => true],
+                    ['key' => 'C', 'content' => 'string', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'array',  'is_correct' => false],
+                ],
+            ],
+        ];
+
+        $bulkQuestionIds = [];
+
+        foreach ($bulkQuestionsData as $qData) {
+            $question = Question::create([
+                'author_id'   => 1,
+                'category_id' => $qData['category_id'],
+                'content'     => $qData['content'],
+                'explanation' => $qData['explanation'],
+                'difficulty'  => $qData['difficulty'],
+                'status'      => 'approved',
+                'type'        => $qData['type'],
+                'reviewed_by' => 1,
+                'reviewed_at' => now(),
+            ]);
+
+            $bulkQuestionIds[] = [
+                'id'          => $question->id,
+                'category_id' => $qData['category_id'],
+            ];
+
+            if (isset($qData['options']) && !empty($qData['options'])) {
+                $options = [];
+                foreach ($qData['options'] as $index => $opt) {
+                    $options[] = [
+                        'question_id' => $question->id,
+                        'option_key'  => $opt['key'],
+                        'content'     => $opt['content'],
+                        'is_correct'  => $opt['is_correct'],
+                        'sort_order'  => $index + 1,
+                        'created_at'  => now(),
+                        'updated_at'  => now(),
+                    ];
+                }
+                QuestionOption::insert($options);
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 11 bài kiểm tra bổ sung (đa dạng type, mode, danh mục)
+        |--------------------------------------------------------------------------
+        */
+        $bulkExamsData = [
+            // Exam 1: JavaScript - multiple_choice - practice
+            [
+                'category_id'       => 4,
+                'title'             => 'Kiểm tra JavaScript cơ bản',
+                'slug'              => 'kiem-tra-javascript-co-ban',
+                'short_description' => 'Bài kiểm tra kiến thức JavaScript nền tảng cho người mới.',
+                'description'       => 'Bao gồm câu hỏi về biến, kiểu dữ liệu, hàm và DOM cơ bản.',
+                'type'              => 'multiple_choice',
+                'mode'              => 'practice',
+                'duration_minutes'  => 15,
+            ],
+            // Exam 2: JavaScript - hybrid - official
+            [
+                'category_id'       => 4,
+                'title'             => 'Đề thi JavaScript nâng cao',
+                'slug'              => 'de-thi-javascript-nang-cao',
+                'short_description' => 'Đề thi chuyên sâu về ES6+, Promise và pattern nâng cao.',
+                'description'       => 'Đánh giá kiến thức nâng cao: async/await, closure, prototype chain.',
+                'type'              => 'hybrid',
+                'mode'              => 'official',
+                'duration_minutes'  => 45,
+            ],
+            // Exam 3: Python - multiple_choice - practice
+            [
+                'category_id'       => 5,
+                'title'             => 'Kiểm tra Python cho người mới',
+                'slug'              => 'kiem-tra-python-cho-nguoi-moi',
+                'short_description' => 'Bài kiểm tra cú pháp Python cơ bản và cấu trúc dữ liệu.',
+                'description'       => 'Bao gồm câu hỏi về biến, list, tuple, dictionary và vòng lặp.',
+                'type'              => 'multiple_choice',
+                'mode'              => 'practice',
+                'duration_minutes'  => 20,
+            ],
+            // Exam 4: Python - hybrid - official
+            [
+                'category_id'       => 5,
+                'title'             => 'Đề thi Python - Data Science',
+                'slug'              => 'de-thi-python-data-science',
+                'short_description' => 'Đề thi về ứng dụng Python trong khoa học dữ liệu.',
+                'description'       => 'Kiểm tra NumPy, Pandas, Matplotlib và Machine Learning cơ bản.',
+                'type'              => 'hybrid',
+                'mode'              => 'official',
+                'duration_minutes'  => 60,
+            ],
+            // Exam 5: Java - multiple_choice - practice
+            [
+                'category_id'       => 6,
+                'title'             => 'Kiểm tra Java OOP',
+                'slug'              => 'kiem-tra-java-oop',
+                'short_description' => 'Bài kiểm tra về lập trình hướng đối tượng trong Java.',
+                'description'       => 'Câu hỏi về class, object, inheritance, polymorphism, encapsulation.',
+                'type'              => 'multiple_choice',
+                'mode'              => 'practice',
+                'duration_minutes'  => 25,
+            ],
+            // Exam 6: Java - essay - official
+            [
+                'category_id'       => 6,
+                'title'             => 'Đề thi Java - Design Patterns',
+                'slug'              => 'de-thi-java-design-patterns',
+                'short_description' => 'Đề thi về các mẫu thiết kế phổ biến trong Java.',
+                'description'       => 'Factory, Singleton, Observer, Strategy và các design pattern.',
+                'type'              => 'essay',
+                'mode'              => 'official',
+                'duration_minutes'  => 40,
+            ],
+            // Exam 7: Mạng máy tính - hybrid - practice
+            [
+                'category_id'       => 7,
+                'title'             => 'Kiểm tra Mạng máy tính cơ bản',
+                'slug'              => 'kiem-tra-mang-may-tinh-co-ban',
+                'short_description' => 'Bài kiểm tra kiến thức nền tảng về mạng máy tính.',
+                'description'       => 'Câu hỏi về mô hình OSI, TCP/IP, địa chỉ IP và thiết bị mạng.',
+                'type'              => 'hybrid',
+                'mode'              => 'practice',
+                'duration_minutes'  => 30,
+            ],
+            // Exam 8: Mạng máy tính - essay - official
+            [
+                'category_id'       => 7,
+                'title'             => 'Đề thi An ninh mạng',
+                'slug'              => 'de-thi-an-ninh-mang',
+                'short_description' => 'Đề thi về bảo mật mạng và kỹ thuật phòng chống tấn công.',
+                'description'       => 'Firewall, VPN, mã hóa, SSL/TLS và các loại tấn công mạng.',
+                'type'              => 'essay',
+                'mode'              => 'official',
+                'duration_minutes'  => 50,
+            ],
+            // Exam 9: Database - hybrid - official
+            [
+                'category_id'       => 3,
+                'title'             => 'Đề thi SQL nâng cao',
+                'slug'              => 'de-thi-sql-nang-cao',
+                'short_description' => 'Đề thi chuyên sâu về truy vấn SQL phức tạp.',
+                'description'       => 'Subquery, JOIN phức tạp, window functions, index và optimization.',
+                'type'              => 'hybrid',
+                'mode'              => 'official',
+                'duration_minutes'  => 35,
+            ],
+            // Exam 10: Laravel - hybrid - practice
+            [
+                'category_id'       => 2,
+                'title'             => 'Kiểm tra Laravel Eloquent',
+                'slug'              => 'kiem-tra-laravel-eloquent',
+                'short_description' => 'Bài kiểm tra về ORM Eloquent trong Laravel.',
+                'description'       => 'Relationship, query builder, migration, seeder và model.',
+                'type'              => 'hybrid',
+                'mode'              => 'practice',
+                'duration_minutes'  => 20,
+            ],
+            // Exam 11: PHP - essay - official
+            [
+                'category_id'       => 1,
+                'title'             => 'Đề thi PHP nâng cao',
+                'slug'              => 'de-thi-php-nang-cao',
+                'short_description' => 'Đề thi chuyên sâu về PHP: OOP, namespace, trait.',
+                'description'       => 'Interface, abstract class, trait, autoloading, Composer.',
+                'type'              => 'essay',
+                'mode'              => 'official',
+                'duration_minutes'  => 40,
+            ],
+        ];
+
+        foreach ($bulkExamsData as $examData) {
+            $bulkExam = Exam::create([
+                'public_id'         => Str::uuid(),
+                'author_id'         => 1,
+                'category_id'       => $examData['category_id'],
+                'title'             => $examData['title'],
+                'slug'              => $examData['slug'],
+                'short_description' => $examData['short_description'],
+                'description'       => $examData['description'],
+                'type'              => $examData['type'],
+                'mode'              => $examData['mode'],
+                'duration_minutes'  => $examData['duration_minutes'],
+                'pass_percent'      => 50,
+                'visibility'        => 'public',
+                'status'            => 'approved',
+                'reviewed_by'       => 1,
+                'reviewed_at'       => now(),
+                'publish_at'        => now(),
+            ]);
+
+            // Gắn câu hỏi cùng danh mục vào bài kiểm tra
+            $matchingQuestions = collect($bulkQuestionIds)
+                ->where('category_id', $examData['category_id'])
+                ->values();
+
+            $examSyncData = [];
+            foreach ($matchingQuestions as $sortIndex => $q) {
+                $examSyncData[$q['id']] = [
+                    'sort_order' => $sortIndex + 1,
+                    'score'      => 1,
+                ];
+            }
+
+            $bulkExam->questions()->sync($examSyncData);
+        }
     }
 }
