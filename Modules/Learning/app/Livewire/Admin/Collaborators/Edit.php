@@ -40,8 +40,11 @@ class Edit extends Component
         return redirect()->to('/admin/collaborators');
     }
 
-    public function render()
-    {
-        return view('learning::livewire.admin.collaborators.edit');
-    }
+   public function render()
+{
+    $view = view('learning::livewire.admin.collaborators.edit');
+    
+    /** @var mixed $view */
+    return $view->extends('learning::layouts.master')->section('content');
+}
 }

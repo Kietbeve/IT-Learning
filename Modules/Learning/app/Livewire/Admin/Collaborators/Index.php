@@ -17,10 +17,11 @@ class Index extends Component
         session()->flash('message', 'Đã xóa cộng tác viên thành công!');
     }
 
-    public function render()
-    {
-        return view('learning::livewire.admin.collaborators.index', [
-            'collaborators' => User::where('type', 'collaborator')->latest()->get()
-        ]);
-    }
+  public function render()
+{
+    $view = view('learning::livewire.admin.collaborators.index');
+    
+    /** @var mixed $view */
+    return $view->extends('learning::layouts.master')->section('content');
+}
 }
