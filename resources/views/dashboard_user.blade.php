@@ -6,7 +6,7 @@
         {{-- Welcome Bar --}}
         @auth
         {{-- Chao khi da danh nhap --}}
-          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-indigo-100 shadow-sm p-4 sm:p-5 flex items-center justify-between">
+          <div class="bg-linear-to-r from-blue-50 to-indigo-50 rounded-xl border border-indigo-100 shadow-sm p-4 sm:p-5 flex items-center justify-between">
               <div class="flex items-center gap-3">
                   <div class="hidden sm:flex items-center justify-center bg-indigo-100 w-12 h-12 rounded-full">
                       <x-icon name="hand-raised" class="w-6 h-6 text-indigo-600" />
@@ -22,7 +22,7 @@
         @endauth
 
         {{-- 1. Hero Section --}}
-        <div class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl shadow-xl p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden">
+        <div class="bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl shadow-xl p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden">
             {{-- Decorative elements --}}
             <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
             
@@ -175,7 +175,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
                 {{-- Document Card 1 --}}
                 <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
-                    <div class="h-40 bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center border-b border-gray-100">
+                    <div class="h-40 bg-linear-to-br from-blue-50 to-indigo-50 flex items-center justify-center border-b border-gray-100">
                         <x-icon name="document-text" class="w-16 h-16 text-indigo-400 group-hover:scale-110 transition-transform" />
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
@@ -197,7 +197,7 @@
 
                 {{-- Document Card 2 --}}
                 <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
-                    <div class="h-40 bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center border-b border-gray-100">
+                    <div class="h-40 bg-linear-to-br from-green-50 to-emerald-50 flex items-center justify-center border-b border-gray-100">
                         <x-icon name="document-text" class="w-16 h-16 text-green-400 group-hover:scale-110 transition-transform" />
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
@@ -219,7 +219,7 @@
 
                 {{-- Document Card 3 --}}
                 <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
-                    <div class="h-40 bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center border-b border-gray-100">
+                    <div class="h-40 bg-linear-to-br from-purple-50 to-pink-50 flex items-center justify-center border-b border-gray-100">
                         <x-icon name="document-text" class="w-16 h-16 text-purple-400 group-hover:scale-110 transition-transform" />
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
@@ -241,7 +241,7 @@
 
                 {{-- Document Card 4 --}}
                 <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
-                    <div class="h-40 bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center border-b border-gray-100">
+                    <div class="h-40 bg-linear-to-br from-orange-50 to-red-50 flex items-center justify-center border-b border-gray-100">
                         <x-icon name="document-text" class="w-16 h-16 text-orange-400 group-hover:scale-110 transition-transform" />
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
@@ -263,7 +263,7 @@
 
                 {{-- Document Card 5 --}}
                 <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
-                    <div class="h-40 bg-gradient-to-br from-cyan-50 to-blue-50 flex items-center justify-center border-b border-gray-100">
+                    <div class="h-40 bg-linear-to-br from-cyan-50 to-blue-50 flex items-center justify-center border-b border-gray-100">
                         <x-icon name="document-text" class="w-16 h-16 text-cyan-400 group-hover:scale-110 transition-transform" />
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
@@ -285,7 +285,7 @@
 
                 {{-- Document Card 6 --}}
                 <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
-                    <div class="h-40 bg-gradient-to-br from-amber-50 to-yellow-50 flex items-center justify-center border-b border-gray-100">
+                    <div class="h-40 bg-linear-to-br from-amber-50 to-yellow-50 flex items-center justify-center border-b border-gray-100">
                         <x-icon name="document-text" class="w-16 h-16 text-amber-400 group-hover:scale-110 transition-transform" />
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
@@ -307,7 +307,7 @@
 
                 {{-- Document Card 7 --}}
                 <x-card padding="none" class="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full border border-gray-100 group">
-                    <div class="h-40 bg-gradient-to-br from-rose-50 to-pink-50 flex items-center justify-center border-b border-gray-100">
+                    <div class="h-40 bg-linear-to-br from-rose-50 to-pink-50 flex items-center justify-center border-b border-gray-100">
                         <x-icon name="document-text" class="w-16 h-16 text-rose-400 group-hover:scale-110 transition-transform" />
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
@@ -357,11 +357,15 @@
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Đề thi mới nhất</h2>
                 <a href="/exam" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Xem thêm &rarr;</a>
             </div>
-            <div class="grid grid-cols-1 gap-4 sm:gap-5">
-                {{-- Include Exam Card Partial --}}
-                @foreach ($exams as $exam)
-                  @include('exam::partials.exam_card',['exam => $exam'])
-                @endforeach  
+            {{-- <div class="grid grid-cols-1 gap-4 sm:gap-5"> --}}
+            <div class="relative">
+                <div class="flex gap-6 overflow-x-auto pb-4 px-4 sm:px-6 lg:px-8 scroll-smooth">
+                    @foreach ($exams as $exam)
+                        <div class="flex-none w-72">
+                            @include('exam::partials.exam_card', ['exam' => $exam])
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
 
@@ -395,7 +399,7 @@
         {{-- 6. CTA Đăng nhập Google --}}
 
         @guest
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl shadow-xl p-8 sm:p-10 lg:p-12 text-white relative overflow-hidden">
+        <div class="bg-linear-to-r from-blue-600 to-indigo-600 rounded-3xl shadow-xl p-8 sm:p-10 lg:p-12 text-white relative overflow-hidden">
             {{-- Decorative pattern --}}
             <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
             
