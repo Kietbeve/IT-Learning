@@ -371,12 +371,10 @@ class ExamAttemptPage extends Component
     public function recordTabSwitch(): void
     {
         // Only count violations if exam is still in progress
-        if ($this->attempt->status !== 'in_progress' || $this->attempt->exam->type!= 'official') {
+        if ($this->attempt->status !== 'in_progress' || $this->attempt->exam->mode!= 'official') {
             return;
         }
 
-        
-        
         $this->tabSwitchCount++;
         
         // Save to database immediately
