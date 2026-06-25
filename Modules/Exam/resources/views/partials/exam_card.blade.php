@@ -1,65 +1,90 @@
-<div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
-  <div class="p-4">
-
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden h-full flex flex-col">
     {{-- Header --}}
-    <div class="flex items-start gap-3">
+    <div class="bg-linear-to-r from-indigo-400 to-indigo-900 p-5">
 
-      <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-        <x-icon name="document-text" class="w-5 h-5 text-indigo-600" />
-      </div>
+        <div class="flex items-center justify-between">
 
-      <div class="flex-1 min-w-0">
+            <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                <span class="text-xl font-bold text-white">
+                    {{ mb_strtoupper(mb_substr($exam->category->name, 0, 1)) }}
+                </span>
+            </div>
 
-        <div class="flex items-start justify-between gap-3">
-          <h3 class="text-base font-semibold text-gray-900 line-clamp-1">
-            {{ $exam->title }}
-          </h3>
+            <x-badge
+                flat
+                white
+                label="{{ $exam->category->name }}"
+            />
 
-          <x-badge flat indigo label="{{ $exam->category->name }}" />
         </div>
-
-        <p class="text-sm text-gray-500 line-clamp-2 mt-1">
-          {{ $exam->short_description }}
-        </p>
-
-      </div>
 
     </div>
 
-    {{-- Meta --}}
-    <div class="flex flex-wrap gap-4 mt-4 text-sm text-gray-600">
+    {{-- Content --}}
+    <div class="p-5 flex-1 flex flex-col">
 
-      <div class="flex items-center gap-1">
-        <x-icon name="clock" class="w-4 h-4 text-gray-400" />
-        <span>{{ $exam->duration_minutes }} phút</span>
-      </div>
+        <h3 class="text-lg font-bold text-gray-900 line-clamp-2 min-h-14">
+            {{ $exam->title }}
+        </h3>
 
-      <div class="flex items-center gap-1">
-        <x-icon name="question-mark-circle" class="w-4 h-4 text-gray-400" />
-        <span>{{ $exam->questions_count }} câu</span>
-      </div>
+        <p class="mt-3 text-sm text-gray-500 line-clamp-3 flex-1">
+            {{ $exam->short_description }}
+        </p>
+
+        {{-- Meta --}}
+        <div class="mt-4 flex items-center justify-between text-sm">
+
+            <div class="flex items-center gap-1 text-gray-600">
+                <x-icon
+                    name="clock"
+                    class="w-4 h-4 text-gray-400"
+                />
+                <span>{{ $exam->duration_minutes }} phút</span>
+            </div>
+
+            <div class="flex items-center gap-1 text-gray-600">
+                <x-icon
+                    name="question-mark-circle"
+                    class="w-4 h-4 text-gray-400"
+                />
+                <span>{{ $exam->questions_count }} câu</span>
+            </div>
+
+        </div>
+
+        {{-- Author --}}
+        <div class="mt-5 flex items-center gap-3">
+
+            <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-semibold text-indigo-700">
+                {{ mb_strtoupper(mb_substr($exam->author->name, 0, 1)) }}
+            </div>
+
+            <div class="min-w-0">
+                <p class="text-xs text-gray-400">
+                    Tác giả
+                </p>
+
+                <p class="text-sm font-medium text-gray-700 truncate">
+                    {{ $exam->author->name }}
+                </p>
+            </div>
+
+        </div>
 
     </div>
 
     {{-- Footer --}}
-    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+    <div class="px-5 pb-5">
 
-      <div class="flex items-center gap-2">
-
-        <div
-          class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-xs font-semibold text-primary-700">
-          {{ mb_strtoupper(mb_substr($exam->author->name, 0, 1)) }}
-        </div>
-
-        <span class="text-sm text-gray-600">
-          {{ $exam->author->name }}
-        </span>
-
-      </div>
-
-      <x-button sm indigo :href="route('exam.examDetail', ['examSlug' => $exam->slug])" label="Xem chi tiết" right-icon="arrow-right" />
+        <x-button
+            indigo
+            class="w-full"
+            :href="route('exam.examDetail', ['examSlug' => $exam->slug])"
+            label="Xem chi tiết"
+            right-icon="arrow-right"
+        />
 
     </div>
 
-  </div>
+
 </div>
