@@ -18,6 +18,7 @@ use Modules\Exam\Models\AttemptAnswer;
 use Modules\Exam\Models\Exam;
 use Modules\Auth\Models\User;
 use Modules\Exam\Jobs\GradeExamAttemptJob;
+use App\Models\Category;
 
 
 class ExamService
@@ -323,7 +324,35 @@ class ExamService
           ->withCount('questions')
           ->latest();
     }
-    
+
+    //Hàm lấy tất cả danh mục (id và tên) đang hoạt động
+    public function getAllCategories(): Collection
+    {
+        return Category::query()
+            ->select(['id', 'name'])
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+    }
+    /*
+    Kết quả trả về có dạng:
+    [
+      App\Models\Category {
+        id: 1,
+        name: "PHP",
+      },
+      App\Models\Category {
+        id: 2,
+        name: "Laravel",
+      },
+      App\Models\Category {
+        id: 3,
+        name: "Java",
+      },
+      ...
+    ]
+    */
+
     //Hàm lấy danh sách bài kiểm tra mới nhất
     public function getExamListLatest(?int $limit = null)
     {
@@ -358,12 +387,14 @@ class ExamService
     ],...
     */
 
-    //Hàm lấy bài thi theo thông tin truyền vào
+    //Hàm tìm kiếm bài thi theo các tham số lọc
+    //Tham số: keyword, category, type, sort
     public function search(array $filters = [])
     {
 
       $query = $this->baseListQuery();
 
+      // Lọc theo từ khóa (tìm trong tiêu đề, mô tả ngắn, mô tả chi tiết)
       if (!empty($filters['keyword'])) {
           $keyword = trim($filters['keyword']);
 
@@ -374,7 +405,23 @@ class ExamService
           });
       }
 
-      return $query->paginate(12);
+      // Lọc theo danh mục (category_id)
+      if (!empty($filters['category'])) {
+          $query->where('category_id', $filters['category']);
+      }
+
+      // Lọc theo loại bài thi (multiple_choice, essay, hybrid)
+      if (!empty($filters['type'])) {
+          $query->where('type', $filters['type']);
+      }
+
+      // Sắp xếp theo thời gian (mặc định: mới nhất)
+      if (!empty($filters['sort']) && $filters['sort'] === 'oldest') {
+          $query->reorder('created_at', 'asc');
+      }
+
+      // 10 bài thi / trang
+      return $query->paginate(10);
     }
     
 
