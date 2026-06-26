@@ -1,7 +1,6 @@
 <?php
 
-namespace Modules\Exam\database\seeders;;
-
+namespace Modules\Exam\database\seeders;
 use Modules\Exam\Models\Exam;
 use App\Models\Tag;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -14,10 +13,13 @@ class ExamTagMapSeeder extends Seeder
      */
     public function run(): void
     {
-        // Cấu trúc thêm hàng trong bảng exam_tag_maps
-        // $exam1 = Exam::find(1);
-        // $exam1->tags()->sync([1, 2, 3]);
+        //Tim id bai kiem tra = 1
+        $exam1 = Exam::find(1);
+        //Gan tag co id la 5, 6
+        $exam1->tags()->sync([5, 6]);
 
+        $exam3 = Exam::find(3);
+        $exam3->tags()->sync([7 ]);
     }
 }
 
