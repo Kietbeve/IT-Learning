@@ -2,7 +2,7 @@
     <x-notifications z-index="z-50" />
 
     {{-- Modal: Thêm câu hỏi vào đề thi --}}
-    <x-modal-card title="Thêm câu hỏi vào đề thi" wire:model="showAddQuestionModal" max-width="7xl">
+    <x-modal-card title="Thêm câu hỏi vào đề thi" wire:model="showAddQuestionModal" max-width="full" class="mx-4">
         {{-- Search & Filters --}}
         <div class="mb-4 space-y-3">
             <div class="flex gap-3">
@@ -53,6 +53,143 @@
                     </select>
                 </div>
             </div>
+        </div>
+
+        {{-- Random Selection Banner - Banner chọn ngẫu nhiên câu hỏi --}}
+        <div class="mb-4 border-2 border-blue-300 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 overflow-hidden">
+            {{-- Header với toggle button --}}
+            <div class="flex items-center justify-between px-4 py-3 bg-blue-100 border-b border-blue-200">
+                <h3 class="text-sm font-bold text-blue-900 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                    </svg>
+                    Chọn ngẫu nhiên câu hỏi
+                </h3>
+                <button wire:click="toggleRandomBanner" type="button"
+                    class="text-blue-700 hover:text-blue-900 transition">
+                    @if($showRandomBanner)
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    @else
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    @endif
+                </button>
+            </div>
+
+            {{-- Content - Hiển thị khi showRandomBanner = true --}}
+            @if($showRandomBanner)
+                <div class="p-4">
+                    {{-- Tabs - Chọn chế độ random --}}
+                    <div class="flex gap-2 mb-4">
+                        <button wire:click="$set('randomMode', 'total')" type="button"
+                            class="flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition
+                                @if($randomMode === 'total')
+                                    bg-blue-600 text-white shadow-md
+                                @else
+                                    bg-white text-gray-700 border border-gray-300 hover:bg-gray-50
+                                @endif">
+                            📊 Theo tổng số lượng
+                        </button>
+                        <button wire:click="$set('randomMode', 'by_difficulty')" type="button"
+                            class="flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition
+                                @if($randomMode === 'by_difficulty')
+                                    bg-blue-600 text-white shadow-md
+                                @else
+                                    bg-white text-gray-700 border border-gray-300 hover:bg-gray-50
+                                @endif">
+                            🎯 Theo độ khó
+                        </button>
+                    </div>
+
+                    {{-- Chế độ 1: Random theo tổng số lượng --}}
+                    @if($randomMode === 'total')
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-lg p-3 border border-blue-200">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Số lượng câu hỏi cần random
+                                </label>
+                                <input type="number" 
+                                    wire:model="randomTotalCount" 
+                                    min="0"
+                                    max="{{ $this->availableCountsByDifficulty['total'] }}"
+                                    placeholder="Nhập số lượng..."
+                                    class="w-full px-3 py-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500">
+                                <p class="text-xs text-gray-500 mt-2">
+                                    💡 Có <strong class="text-blue-600">{{ $this->availableCountsByDifficulty['total'] }}</strong> câu hỏi khả dụng
+                                    (Dễ: {{ $this->availableCountsByDifficulty['easy'] }}, 
+                                    Trung bình: {{ $this->availableCountsByDifficulty['medium'] }}, 
+                                    Khó: {{ $this->availableCountsByDifficulty['hard'] }})
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Chế độ 2: Random theo từng độ khó --}}
+                    @if($randomMode === 'by_difficulty')
+                        <div class="grid grid-cols-3 gap-3">
+                            {{-- Input Câu dễ --}}
+                            <div class="bg-white rounded-lg p-3 border border-green-200">
+                                <label class="block text-sm font-medium text-green-700 mb-2">
+                                    😊 Dễ
+                                </label>
+                                <input type="number" 
+                                    wire:model="randomEasyCount" 
+                                    min="0"
+                                    max="{{ $this->availableCountsByDifficulty['easy'] }}"
+                                    placeholder="0"
+                                    class="w-full px-3 py-2 border-green-300 rounded-lg focus:border-green-500 focus:ring-green-500">
+                                <p class="text-xs text-gray-600 mt-2">
+                                    Có <strong class="text-green-600">{{ $this->availableCountsByDifficulty['easy'] }}</strong> câu
+                                </p>
+                            </div>
+
+                            {{-- Input Câu trung bình --}}
+                            <div class="bg-white rounded-lg p-3 border border-yellow-200">
+                                <label class="block text-sm font-medium text-yellow-700 mb-2">
+                                    😐 Trung bình
+                                </label>
+                                <input type="number" 
+                                    wire:model="randomMediumCount" 
+                                    min="0"
+                                    max="{{ $this->availableCountsByDifficulty['medium'] }}"
+                                    placeholder="0"
+                                    class="w-full px-3 py-2 border-yellow-300 rounded-lg focus:border-yellow-500 focus:ring-yellow-500">
+                                <p class="text-xs text-gray-600 mt-2">
+                                    Có <strong class="text-yellow-600">{{ $this->availableCountsByDifficulty['medium'] }}</strong> câu
+                                </p>
+                            </div>
+
+                            {{-- Input Câu khó --}}
+                            <div class="bg-white rounded-lg p-3 border border-red-200">
+                                <label class="block text-sm font-medium text-red-700 mb-2">
+                                    😰 Khó
+                                </label>
+                                <input type="number" 
+                                    wire:model="randomHardCount" 
+                                    min="0"
+                                    max="{{ $this->availableCountsByDifficulty['hard'] }}"
+                                    placeholder="0"
+                                    class="w-full px-3 py-2 border-red-300 rounded-lg focus:border-red-500 focus:ring-red-500">
+                                <p class="text-xs text-gray-600 mt-2">
+                                    Có <strong class="text-red-600">{{ $this->availableCountsByDifficulty['hard'] }}</strong> câu
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Button Chọn ngẫu nhiên --}}
+                    <button wire:click="randomSelectQuestions" type="button"
+                        class="w-full mt-4 px-4 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path>
+                        </svg>
+                        Chọn ngẫu nhiên
+                    </button>
+                </div>
+            @endif
         </div>
 
         {{-- Two-column Grid --}}
