@@ -33,16 +33,20 @@ class ExamController extends Controller
         // Lấy danh sách tất cả danh mục
         $categories = $this->examService->getAllCategories();
 
+        //lấy danh sách tag
+        $tags = $this->examService->getAllTags();
+
         // Gọi danh sách bài kiểm tra từ Service
         $exams = $this->examService->search([
             'keyword'  => $request->keyword,
             'category' => $request->category,
             'type'     => $request->type,
             'sort'     => $request->sort,
+            'tags'     => $request->tags,
         ]);
 
         // Truyen du lieu vao view
-        return view('exam::index',compact('exams','categories'));
+        return view('exam::index',compact('exams','categories','tags'));
     }
 
     /**
