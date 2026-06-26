@@ -85,7 +85,7 @@
         @include('layouts.patials.user_footer')
     </div>
     @livewireScripts
-    @wireUiScripts
+    @wireUiScripts 
 </body>
 
 </html>
