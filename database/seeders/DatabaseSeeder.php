@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             //seeder orders và dashboard
             OrderSeeder::class,
             DashboardSeeder::class,
+            SettingSeeder::class,
         ]);
     }
 }

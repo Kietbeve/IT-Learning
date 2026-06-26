@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -13,10 +12,10 @@ class SettingSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('settings')->insert([
+        $settings = [
             [
                 'key' => 'site_name',
-                'value' => 'myapp',
+                'value' => 'IT Learning',
                 'group' => 'general',
             ],
             [
@@ -39,6 +38,18 @@ class SettingSeeder extends Seeder
                 'value' => 'no-reply@myapp.com',
                 'group' => 'email',
             ],
-        ]);
+        ];
+
+        foreach ($settings as $setting) {
+            DB::table('settings')->updateOrInsert(
+                ['key' => $setting['key']],
+                [
+                    'value' => $setting['value'],
+                    'group' => $setting['group'],
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+        }
     }
 }

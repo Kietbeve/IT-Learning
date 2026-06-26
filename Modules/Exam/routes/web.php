@@ -54,7 +54,7 @@ Route::group(["prefix"=> "contributor","middleware"=> ["auth",]], function () {
 
 Route::group(["prefix"=> "admin","middleware"=> ["auth","role:admin"] ], function () {//test role
     Route::get('exams/{exam}/review', \Modules\Exam\Livewire\Admin\ExamReviewPage::class)->name('admin.review.exam.detail');
-    Route::get('exams',[ExamController::class,'examReviewTable'])->name('admin.review.exam');
+    Route::get('moderation/exams',[ExamController::class,'examReviewTable'])->name('admin.moderation.exam');
 });
 
 // Route giao diện Exam Detail bằng slug | Đặt ở cuối vì bị sung đột với các route khác- gõ exam/bất kì đều vào route này
