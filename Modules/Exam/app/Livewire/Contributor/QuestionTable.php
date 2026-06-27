@@ -12,9 +12,12 @@ use PowerComponents\LivewirePowerGrid\Facades\Filter;
 use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
+use PowerComponents\LivewirePowerGrid\Facades\Rule;
+use WireUi\Traits\WireUiActions;
 
 final class QuestionTable extends PowerGridComponent
 {
+    use WireUiActions;
     public string $tableName = 'question-table';
 
     public bool $showViewModal = false;
@@ -23,6 +26,7 @@ final class QuestionTable extends PowerGridComponent
 
     public int $selectedQuestionId = 0;
 
+    public bool $isAdmin = false;//check xem có phải admin không
     /*
     |--------------------------------------------------------------------------
     | Setup
@@ -32,6 +36,8 @@ final class QuestionTable extends PowerGridComponent
     public function setUp(): array
     {
         $this->showCheckBox();
+        $this->isAdmin = !auth()->user()->hasRole('contributor');
+
 
         return [
             PowerGrid::header()
@@ -47,52 +53,20 @@ final class QuestionTable extends PowerGridComponent
     {
         return [
             Button::add('create')
-            ->slot('➕ Thêm mới')
-            ->class(
-                'inline-flex items-center gap-2
-                px-4 py-2
-                rounded-lg
-                bg-blue-600 text-white font-medium
-                shadow-sm
-                transition-all duration-200
-                hover:bg-blue-700 hover:shadow-md
-                active:scale-95
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-            )
+             ->slot('➕ Thêm')
+            ->class('rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700')
             ->dispatch('question-create',[]),
 
             Button::add('import')
-            ->slot('📥 Import Excel')
-            ->class(
-                'inline-flex items-center gap-2
-                px-4 py-2
-                rounded-lg
-                bg-green-600 text-white font-medium
-                shadow-sm
-                transition-all duration-200
-                hover:bg-green-700 hover:shadow-md
-                active:scale-95'
-            )
+            ->slot('📥 Import')
+            ->class('rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700')
             ->dispatch('question-import', []),
 
             Button::add('bulk-delete')
                 ->slot(
-                    '🗑️ Xóa (
-                    <span class="font-bold"
-                        x-text="window.pgBulkActions.count(\'' . $this->tableName . '\')">
-                    </span>)'
+                '🗑️ Xóa (<span x-text="window.pgBulkActions.count(\''.$this->tableName.'\')"></span>)'
                 )
-                ->class(
-                    'inline-flex items-center gap-2
-                    rounded-lg
-                    bg-red-600
-                    px-4 py-2
-                    text-sm font-semibold text-white
-                    shadow-sm
-                    transition-all duration-200
-                    hover:bg-red-700 hover:shadow-md
-                    active:scale-95'
-                )
+                ->class('rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700')
                 ->dispatch('open-bulk-delete-confirm', []),
         ];
     }
@@ -104,8 +78,13 @@ final class QuestionTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
+        // return Question::query()
+        // ->where('author_id', auth()->id());//Chỉ quản lí câu hỏi cá nhân
         return Question::query()
-        ->where('author_id', auth()->id());//Chỉ quản lí câu hỏi cá nhân
+        ->when(
+            !$this->isAdmin,// Nếu là Contributor thì chỉ quản lí câu hỏi của mình
+            fn ($query) => $query->where('author_id', auth()->id())
+        );
     }
 
     /*
@@ -119,11 +98,42 @@ final class QuestionTable extends PowerGridComponent
         return PowerGrid::fields()
             ->add('id')
             ->add('content')
-            ->add('content_excerpt', fn (Question $model) => Str::limit($model->content, 80))
+            ->add('content_excerpt', fn (Question $model) => Str::words($model->content, 4, '...'))
             ->add('type')
             ->add('type_label', fn (Question $model) => $this->mapQuestionType($model->type))
             ->add('difficulty')
-            ->add('difficulty_label', fn (Question $model) => $this->mapDifficulty($model->difficulty));
+            ->add('difficulty_label', fn (Question $model) => $this->mapDifficulty($model->difficulty))
+            ->add('status_badge', function (Question $model) {
+                return match ($model->status) {
+                    'pending' => '<span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-800">
+                                    Chờ duyệt
+                                </span>',
+
+                    'approved' => '<span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                                    Đã duyệt
+                                </span>',
+
+                    'rejected' => '<span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800">
+                                    Từ chối
+                                </span>',
+
+                    default => '<span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-800">
+                                    Không xác định
+                                </span>',
+                };
+            })
+            ->add('is_shared')
+            ->add('share_button', function (Question $model) {
+                if (! $this->isAdmin) {
+                    return $model->is_shared
+                        ? '<button class="px-3 py-1 bg-green-500 text-white rounded" disabled>Đã chia sẻ</button>'
+                        : '<button class="px-3 py-1 bg-gray-400 text-white rounded cursor-not-allowed" disabled>Chia sẻ</button>';
+                }
+
+                    return $model->is_shared
+                        ? '<button wire:click="share('.$model->id.')" style="cursor:pointer;" class="px-3 py-1 bg-green-500 text-white rounded">Hủy chia sẻ</button>'
+                        : '<button wire:click="share('.$model->id.')" style="cursor:pointer;" class="px-3 py-1 bg-blue-500 text-white rounded">Chia sẻ</button>';
+                });
             // ->add('created_at')
             // ->add('created_at_formatted', fn (Question $model) => $model->created_at?->format('d/m/Y H:i') ?? '—');
     }
@@ -148,9 +158,11 @@ final class QuestionTable extends PowerGridComponent
 
             Column::make('Độ khó', 'difficulty_label', 'difficulty')
                 ->sortable(),
-
+            
+            Column::make('Trạng thái', 'status_badge', 'status'),
             // Column::make('Ngày tạo', 'created_at_formatted', 'created_at')
             //     ->sortable(),
+            Column::make('Chia sẻ', 'share_button'),
 
             Column::action('Thao tác'),
         ];
@@ -182,6 +194,17 @@ final class QuestionTable extends PowerGridComponent
                 ])
                 ->optionLabel('name')
                 ->optionValue('id'),
+            
+            Filter::boolean('is_shared'),
+
+            Filter::select('status', 'status')
+                ->dataSource([
+                    ['id' => 'pending', 'name' => 'Chờ duyệt'],
+                    ['id' => 'approved', 'name' => 'Đã duyệt'],
+                    ['id' => 'rejected', 'name' => 'Từ chối'],
+                ])
+                ->optionValue('id')
+                ->optionLabel('name'),
         ];
     }
 
@@ -193,21 +216,59 @@ final class QuestionTable extends PowerGridComponent
 
     public function actions(Question $row): array
     {
+        $actions = [];
+
+        $actions[] = Button::add('view')
+            ->slot('👁')
+            ->tooltip('Xem')
+            ->class('rounded-md border border-blue-200 bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100 hover:border-blue-300')
+            ->dispatch('question-view', ['id' => $row->id]);
+        //Nếu là admin và câu hỏi trạng thái là chờ duyệt thì sẽ hiện nhóm nút duyệt
+        if ($this->isAdmin && $row->status === 'pending') {
+            $actions[] = Button::add('approve')
+                ->slot('✔')
+                ->tooltip('Duyệt')
+                ->class('rounded-md border border-green-200 bg-green-50 p-2 text-green-600 transition hover:bg-green-100 hover:border-green-300')
+                ->dispatch('question-approve', ['id' => $row->id]);
+
+            $actions[] = Button::add('reject')
+                ->slot('✖')
+                ->tooltip('Từ chối')
+                ->class('rounded-md border border-red-200 bg-red-50 p-2 text-red-600 transition hover:bg-red-100 hover:border-red-300')
+                ->dispatch('question-reject', ['id' => $row->id]);
+
+            return $actions;
+        }
+
+        $actions[] = Button::add('edit')
+            ->slot('✏️')
+            ->tooltip('Cập nhật')
+            ->class('rounded-md border border-amber-200 bg-amber-50 p-2 text-amber-600 transition hover:bg-amber-100 hover:border-amber-300')
+            ->dispatch('question-edit', ['id' => $row->id]);
+
+        $actions[] = Button::add('delete')
+           ->slot('🗑')
+            ->tooltip('Xóa')
+            ->class('rounded-md border border-red-200 bg-red-50 p-2 text-red-600 transition hover:bg-red-100 hover:border-red-300')
+            ->dispatch('question-delete-confirm', ['id' => $row->id]);
+
+        return $actions;
+    }
+
+    public function actionRules($row): array
+    {
         return [
-            Button::add('view')
-                ->slot('Xem')
-                ->class('inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700')
-                ->dispatch('question-view', ['id' => $row->id]),
+            Rule::rows()
+                ->when(fn (Question $q) => $q->status === 'pending')
+                ->setAttribute('class', 'bg-yellow-50'),
 
-            Button::add('edit')
-                ->slot('Cập nhật')
-                ->class('inline-flex items-center rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-600')
-                ->dispatch('question-edit', ['id' => $row->id]),
+            Rule::rows()
+                ->when(fn (Question $q) => $q->status === 'approved')
+                ->setAttribute('class', 'bg-green-50'),
 
-            Button::add('delete')
-                ->slot('Xóa')
-                ->class('inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700')
-                ->dispatch('question-delete-confirm', ['id' => $row->id]),
+            Rule::rows()
+                ->when(fn (Question $q) => $q->status === 'rejected')
+                ->setAttribute('class', 'bg-red-50'),
         ];
     }
 
@@ -270,5 +331,21 @@ final class QuestionTable extends PowerGridComponent
             'hard'   => 'Khó',
             default  => $difficulty,
         };
+    }
+
+    public function share($id)
+    {
+        $question = Question::findOrFail($id);
+
+        $question->update([
+            'is_shared' => !$question->is_shared,
+        ]);
+
+        $this->notification()->success(
+            title: 'Thành công',
+            description: $question->is_shared ? 'Đã chia sẻ câu hỏi.' : 'Đã hủy chia sẻ câu hỏi.'
+        );
+
+        $this->dispatch('$refresh');
     }
 }

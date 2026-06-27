@@ -27,6 +27,9 @@ class QuestionModal extends Component
     public bool $showDeleteModal = false;
     public bool $showBulkDeleteModal = false;
     public bool $showImportModal = false;
+    public bool $showApproveModal = false;
+    public bool $showRejectModal = false;
+    public string $rejectReason = '';
     public $importFile;
 
     public ?Question $question = null;
@@ -139,6 +142,28 @@ class QuestionModal extends Component
         $this->resetModal();
         $this->questionIds = $ids;
         $this->showBulkDeleteModal = true;
+    }
+
+    #[On('question-approve')]
+    public function approveConfirm(int $id): void
+    {
+        $this->resetModal();
+
+        $this->question = Question::findOrFail($id);
+
+        $this->showApproveModal = true;
+    }
+
+    #[On('question-reject')]
+    public function rejectConfirm(int $id): void
+    {
+        $this->resetModal();
+
+        $this->question = Question::findOrFail($id);
+
+        $this->rejectReason = '';
+
+        $this->showRejectModal = true;
     }
 
     //Nhóm hàm quản lý options động
@@ -320,7 +345,10 @@ class QuestionModal extends Component
             $this->validateOptions();
         }
 
-        $this->examService->createQuestion($validated, Auth::id());
+        $this->examService->createQuestion(
+            [...$validated,'is_shared' => ! auth()->user()->hasRole('contributor'),],
+            Auth::id()
+        );
 
         $this->showCreateModal = false;
         $this->reset(['category_id', 'content', 'explanation', 'difficulty', 'type', 'options']);
@@ -348,6 +376,54 @@ class QuestionModal extends Component
             'options',
             'answer_text', // Reset đáp án tự luận
         ]);
+    }
+    public function approve(): void
+    {
+        if (! $this->question) {
+            return;
+        }
+
+        $this->question->update([
+            'status' => 'approved',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'rejected_reason' => null,
+        ]);
+
+        $this->showApproveModal = false;
+
+        $this->notification()->success(
+            title: 'Thành công!',
+            description: 'Đã duyệt câu hỏi.'
+        );
+
+        $this->dispatch('pg:eventRefresh-question-table');
+    }
+    public function reject(): void
+    {
+        if (! $this->question) {
+            return;
+        }
+
+        $this->validate([
+            'rejectReason' => ['required', 'string', 'max:500'],
+        ]);
+
+        $this->question->update([
+            'status' => 'rejected',
+            'rejected_reason' => $this->rejectReason,
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+        ]);
+
+        $this->showRejectModal = false;
+
+        $this->notification()->success(
+            title: 'Thành công!',
+            description: 'Đã từ chối câu hỏi.'
+        );
+
+        $this->dispatch('pg:eventRefresh-question-table');
     }
     
     //import file

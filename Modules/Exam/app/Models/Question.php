@@ -26,6 +26,7 @@ class Question extends Model
         'explanation',
         'difficulty',
         'status',
+        'is_shared',
         'type',
         'rejected_reason',
         'reviewed_by',
@@ -37,6 +38,7 @@ class Question extends Model
         return [
             'reviewed_at' => 'datetime',
             'deleted_at'  => 'datetime',
+            'is_shared'   => 'boolean',
         ];
     }
 

@@ -40,6 +40,7 @@ class ExamService
                 'explanation' => $data['explanation'] ?? null,
                 'difficulty' => $data['difficulty'],
                 'status' => 'pending',
+                'is_shared' => $data['is_shared'] ?? false,
                 'type' => $data['type'],
                 'answer_text' => $data['answer_text'] ?? null,
             ]);

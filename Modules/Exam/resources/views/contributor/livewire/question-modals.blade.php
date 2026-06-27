@@ -492,4 +492,68 @@
             </div>
         </x-slot>
     </x-modal-card>
+
+    {{-- Modal duyệt --}}
+    <x-modal-card title="Xác nhận duyệt câu hỏi" blur wire:model="showApproveModal">
+        <div class="space-y-4">
+
+            <p>
+                Bạn có chắc chắn muốn duyệt câu hỏi này?
+            </p>
+
+            <div class="rounded-lg border border-green-200 bg-green-50 p-4">
+                Sau khi duyệt, câu hỏi sẽ được chuyển sang trạng thái
+                <span class="font-semibold text-green-700">Đã duyệt</span>.
+            </div>
+
+        </div>
+
+        <x-slot name="footer">
+            <div class="flex justify-end gap-2">
+
+                <x-button
+                    flat
+                    label="Hủy"
+                    wire:click="$set('showApproveModal', false)"
+                />
+
+                <x-button
+                    positive
+                    label="Xác nhận"
+                    wire:click="approve"
+                />
+
+            </div>
+        </x-slot>
+    </x-modal-card>
+    {{-- Modal từ chối --}}
+    <x-modal-card title="Từ chối câu hỏi" blur wire:model="showRejectModal">
+        <div class="space-y-4">
+
+            <x-textarea
+                label="Lý do từ chối"
+                wire:model.defer="rejectReason"
+                placeholder="Nhập lý do từ chối..."
+            />
+
+        </div>
+
+        <x-slot name="footer">
+            <div class="flex justify-end gap-2">
+
+                <x-button
+                    flat
+                    label="Hủy"
+                    wire:click="$set('showRejectModal', false)"
+                />
+
+                <x-button
+                    negative
+                    label="Xác nhận từ chối"
+                    wire:click="reject"
+                />
+
+            </div>
+        </x-slot>
+    </x-modal-card>
 </div>

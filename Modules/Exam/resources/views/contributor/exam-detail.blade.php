@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.contributor')
 @section('content')
     <div class="space-y-6">
         <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500">

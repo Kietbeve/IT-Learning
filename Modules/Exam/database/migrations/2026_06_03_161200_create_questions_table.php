@@ -42,6 +42,9 @@ return new class extends Migration
                 'rejected',
             ])->default('pending');
 
+            $table->boolean('is_shared')
+                ->default(false);
+
             $table->enum('type', [
                 'single_choice',
                 'multiple_choice',

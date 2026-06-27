@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.contributor')
 
 @section('content')
 <div class="space-y-6">
