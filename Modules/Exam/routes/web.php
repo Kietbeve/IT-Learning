@@ -49,12 +49,16 @@ Route::group(["prefix"=> "contributor","middleware"=> ["auth",]], function () {
     route::get('exams/{examId}/questions',[ExamController::class,"examQuestionManager"])->name('contributor.exams.questions');
     Route::get('exams/{examId}/attempts',[ExamController::class,"examAttemptManager"])->name('contributor.exams.attempts');
     Route::get('exams/attempts/{attemptId}/answers',[ExamController::class,"attemptAnswerDetail"])->name('contributor.exams.attempts.answer');
+    Route::post('exams/attempts/{attemptId}/finalize',[ExamController::class,"finalizeAttempt"])->name('contributor.exams.attempts.finalize');
 });
 
 Route::group(["prefix"=> "admin","middleware"=> ["auth","role:admin"] ], function () {//test role
     Route::get('exams/{exam}/review', \Modules\Exam\Livewire\Admin\ExamReviewPage::class)->name('admin.review.exam.detail');
-    Route::get('exams',[ExamController::class,'examReviewTable'])->name('admin.review.exam');
+    Route::get('moderation/exams',[ExamController::class,'examReviewTable'])->name('admin.moderation.exam');
+    Route::get('questions',[ExamController::class,"questionManager"])->name('admin.questions');
 });
 
 // Route giao diện Exam Detail bằng slug | Đặt ở cuối vì bị sung đột với các route khác- gõ exam/bất kì đều vào route này
 Route::get('exam/{examSlug}', [ExamController::class, 'showExamDetail'])->name('exam.examDetail');
+Route::post('exam/{examSlug}', [ExamController::class, 'startExam'])->name('exam.attempt.start');
+Route::get('/questions/import-template',[ExamController::class, 'template'])->name('questions.import.template');

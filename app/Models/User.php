@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Modules\Learning\Models\Roadmap;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
@@ -44,4 +46,18 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function roadmaps(): BelongsToMany
+{
+    return $this->belongsToMany(
+        Roadmap::class,
+        'roadmap_enrollments',
+        'user_id',
+        'roadmap_id'
+    )
+    ->withPivot([
+        'status',
+        'progress_percent',
+        'started_at'
+    ]);
+}
 }

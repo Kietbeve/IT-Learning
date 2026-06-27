@@ -24,6 +24,9 @@ return new class extends Migration
 
             $table->longText('content');
 
+            $table->longText('answer_text')
+                ->nullable();
+
             $table->longText('explanation')
                 ->nullable();
 
@@ -38,6 +41,9 @@ return new class extends Migration
                 'approved',
                 'rejected',
             ])->default('pending');
+
+            $table->boolean('is_shared')
+                ->default(false);
 
             $table->enum('type', [
                 'single_choice',

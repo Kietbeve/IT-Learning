@@ -31,24 +31,24 @@
     showViolationModal: false,
     
     async init() {
-        // Show confirm dialog before requesting fullscreen
+        // Hiển thị hộp thoại xác nhận trước khi yêu cầu toàn màn hình
         const userConsent = confirm('Bài thi yêu cầu chế độ toàn màn hình. Bạn có đồng ý không?');
         
         if (!userConsent) {
-            // User clicked Cancel - go back to previous page
+            // Người dùng đã nhấn Hủy - quay lại trang trước
             window.history.back();
             return;
         }
         
-        // User clicked OK - request fullscreen and start exam
+        // Người dùng đã nhấn OK - yêu cầu toàn màn hình và bắt đầu bài thi
         try {
             await document.documentElement.requestFullscreen();
         } catch (err) {
-            // Fullscreen request failed, but user agreed, so continue anyway
+            // Yêu cầu toàn màn hình thất bại, nhưng người dùng đã đồng ý, nên vẫn tiếp tục
             console.warn('Fullscreen request failed:', err);
         }
         
-        // Start exam
+        // Bắt đầu bài thi
         this.startTimer();
         this.monitorFullscreen();
     },
@@ -110,13 +110,13 @@
     },
     
     submitExam() {
-        // Submit logic here
+        // Logic nộp bài ở đây
         alert('Nộp bài thành công!');
     }
 }" 
 class="min-h-screen bg-gray-50">
 
-    {{-- Fixed Header --}}
+    {{-- Tiêu đề cố định --}}
     <div class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 shadow-sm z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -128,24 +128,24 @@ class="min-h-screen bg-gray-50">
                     </div>
                 </div>
                 <div class="flex items-center gap-2 sm:gap-3">
-                    {{-- Countdown Timer --}}
+                    {{-- Đồng hồ đếm ngược --}}
                     <div class="flex items-center gap-2 bg-red-50 text-red-700 px-3 sm:px-4 py-2 rounded-lg border border-red-200">
                         <x-icon name="clock" class="w-5 h-5" />
                         <span class="font-mono text-base sm:text-lg font-bold" x-text="formatTime()"></span>
                     </div>
-                    {{-- Submit Button --}}
+                    {{-- Nút nộp bài --}}
                     <x-button primary label="Nộp bài" @click="confirmSubmit()" class="hidden sm:inline-flex" />
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Main Content Area with Sidebar --}}
+    {{-- Khu vực nội dung chính có thanh bên --}}
     <div class="pt-24 sm:pt-28 pb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col lg:flex-row gap-6">
                 
-                {{-- Sidebar: Question Navigation --}}
+                {{-- Thanh bên: Điều hướng câu hỏi --}}
                 <aside class="lg:w-64 lg:sticky lg:top-28 lg:self-start">
                     <x-card padding="p-4 sm:p-5">
                         <div class="mb-4">
@@ -162,7 +162,7 @@ class="min-h-screen bg-gray-50">
                             </div>
                         </div>
                         
-                        {{-- Question Number Grid --}}
+                        {{-- Lưới số câu hỏi --}}
                         <div class="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-5 gap-2">
                             <template x-for="n in totalQuestions" :key="n">
                                 <button 
@@ -178,7 +178,7 @@ class="min-h-screen bg-gray-50">
                             </template>
                         </div>
 
-                        {{-- Progress Stats --}}
+                        {{-- Thống kê tiến độ --}}
                         <div class="mt-5 pt-4 border-t border-gray-100">
                             <div class="flex justify-between text-sm mb-2">
                                 <span class="text-gray-600">Tiến độ</span>
@@ -194,17 +194,17 @@ class="min-h-screen bg-gray-50">
                             </div>
                         </div>
 
-                        {{-- Mobile Submit Button --}}
+                        {{-- Nút nộp bài trên thiết bị di động --}}
                         <div class="mt-4 sm:hidden">
                             <x-button primary label="Nộp bài" @click="confirmSubmit()" class="w-full" />
                         </div>
                     </x-card>
                 </aside>
 
-                {{-- Main Question Area --}}
+                {{-- Khu vực câu hỏi chính --}}
                 <main class="flex-1">
                     <x-card padding="p-5 sm:p-6 lg:p-8">
-                        {{-- Question Header --}}
+                        {{-- Tiêu đề câu hỏi --}}
                         <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
                             <div class="flex items-center gap-2">
                                 <x-badge flat primary label="Câu hỏi" />
@@ -217,7 +217,7 @@ class="min-h-screen bg-gray-50">
                             </x-badge>
                         </div>
 
-                        {{-- Question Content --}}
+                        {{-- Nội dung câu hỏi --}}
                         <div class="mb-6">
                             <h2 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 leading-relaxed">
                                 <template x-if="currentQuestion === 1">
@@ -231,7 +231,7 @@ class="min-h-screen bg-gray-50">
                                 </template>
                             </h2>
 
-                            {{-- Code Snippet Example (for programming questions) --}}
+                            {{-- Ví dụ đoạn mã (cho các câu hỏi lập trình) --}}
                             <template x-if="currentQuestion === 2">
                                 <div class="bg-gray-900 text-gray-100 p-4 rounded-lg mb-4 overflow-x-auto">
                                     <pre class="text-sm"><code>function quickSort(arr) {
@@ -245,7 +245,7 @@ class="min-h-screen bg-gray-50">
                             </template>
                         </div>
 
-                        {{-- Answer Options --}}
+                        {{-- Các tùy chọn đáp án --}}
                         <div class="space-y-3">
                             <template x-if="currentQuestion === 1">
                                 <div>
@@ -315,7 +315,7 @@ class="min-h-screen bg-gray-50">
                                 </div>
                             </template>
 
-                            {{-- Generic answers for other questions --}}
+                            {{-- Đáp án chung cho các câu hỏi khác --}}
                             <template x-if="currentQuestion !== 1">
                                 <div class="space-y-3">
                                     <template x-for="option in ['A', 'B', 'C', 'D']" :key="option">
@@ -341,7 +341,7 @@ class="min-h-screen bg-gray-50">
                             </template>
                         </div>
 
-                        {{-- Navigation Buttons --}}
+                        {{-- Các nút điều hướng --}}
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-100">
                             <x-button 
                                 outline 
@@ -376,7 +376,7 @@ class="min-h-screen bg-gray-50">
         </div>
     </div>
 
-    {{-- Submit Confirmation Modal --}}
+    {{-- Hộp thoại xác nhận nộp bài --}}
     <div 
         x-show="showSubmitModal"
         x-cloak
@@ -391,20 +391,20 @@ class="min-h-screen bg-gray-50">
                     <x-icon name="exclamation-triangle" class="h-8 w-8 text-yellow-600" />
                 </div>
                 <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
-                    X�c nh?n n?p b�i
+                    Xác nhận nộp bài
                 </h3>
                 <p class="text-sm sm:text-base text-gray-600 mb-6">
-                    B?n �? ho�n th�nh <strong x-text="Object.keys(answers).length"></strong>/<strong x-text="totalQuestions"></strong> c�u h?i.
+                    Bạn đã hoàn thành <strong x-text="Object.keys(answers).length"></strong>/<strong x-text="totalQuestions"></strong> câu hỏi.
                     <br><br>
-                    Sau khi n?p b�i, b?n s? kh�ng th? quay l?i ch?nh s?a. B?n c� ch?c ch?n mu?n n?p b�i kh�ng?
+                    Sau khi nộp bài, bạn sẽ không thể quay lại chỉnh sửa. Bạn có chắc chắn muốn nộp bài không?
                 </p>
                 
-                {{-- Time remaining warning --}}
+                {{-- Cảnh báo thời gian còn lại --}}
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
                     <div class="flex items-center justify-center gap-2 text-blue-700">
                         <x-icon name="clock" class="w-5 h-5" />
                         <span class="text-sm font-medium">
-                            Th?i gian c?n l?i: <span class="font-mono font-bold" x-text="formatTime()"></span>
+                            Thời gian còn lại: <span class="font-mono font-bold" x-text="formatTime()"></span>
                         </span>
                     </div>
                 </div>
@@ -413,12 +413,12 @@ class="min-h-screen bg-gray-50">
                     <x-button 
                         outline 
                         gray 
-                        label="Ki?m tra l?i" 
+                        label="Kiểm tra lại" 
                         @click="showSubmitModal = false"
                         class="flex-1" />
                     <x-button 
                         primary 
-                        label="N?p b�i ngay" 
+                        label="Nộp bài ngay" 
                         @click="submitExam()"
                         class="flex-1" />
                 </div>
@@ -426,7 +426,7 @@ class="min-h-screen bg-gray-50">
         </div>
     </div>
 
-    {{-- Fullscreen Violation Overlay --}}
+    {{-- Lớp phủ vi phạm toàn màn hình --}}
     <div 
         x-show="showViolationModal"
         x-cloak
@@ -437,13 +437,8 @@ class="min-h-screen bg-gray-50">
                 <x-icon name="exclamation-circle" class="h-12 w-12 text-red-600" />
             </div>
             <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-                C?nh b�o vi ph?m!
+                Cảnh báo vi phạm!
             </h3>
-            <p class="text-base sm:text-lg text-gray-700 mb-4">
-                Bạn đã thoát khỏi chế độ <strong>Fullscreen</strong>.
-            </p>
-            <div class="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6">
-                <p class="text-sm text-red-800 font-medium">
                     ⚠️ Vi phạm này đã được ghi nhận vào hệ thống.
                     <br>
                     Nếu vi phạm nhiều lần, bài thi của bạn có thể bị hủy.

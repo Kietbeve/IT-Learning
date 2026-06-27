@@ -3,10 +3,13 @@
 namespace Modules\Exam\Services;
 
 use Illuminate\Support\Facades\DB;
-
+use Maatwebsite\Excel\Facades\Excel;
+use Modules\Exam\Imports\QuestionsImport;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Collection;
-
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Http\UploadedFile;
 
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\QuestionOption;
@@ -15,14 +18,16 @@ use Modules\Exam\Models\AttemptAnswer;
 use Modules\Exam\Models\Exam;
 use Modules\Auth\Models\User;
 use Modules\Exam\Jobs\GradeExamAttemptJob;
-
+use App\Models\Category;
+use App\Models\Tag;
 
 class ExamService
 {
     public function __construct(
         //Inject Model vào constructor
         protected Question $questionModel,
-        protected QuestionOption $question_optionModel
+        protected QuestionOption $question_optionModel,
+        protected ExamAttempt $exam_attemptModel,
     ){}
     public function createQuestion(array $data, int $authorId): Question
     {
@@ -35,7 +40,9 @@ class ExamService
                 'explanation' => $data['explanation'] ?? null,
                 'difficulty' => $data['difficulty'],
                 'status' => 'pending',
+                'is_shared' => $data['is_shared'] ?? false,
                 'type' => $data['type'],
+                'answer_text' => $data['answer_text'] ?? null,
             ]);
 
             if (
@@ -64,6 +71,7 @@ class ExamService
         });
     }
 
+    //Cập nhật câu hỏi
     public function updateQuestion(Question $question, array $data): Question
     {
         return DB::transaction(function () use ($question, $data) {
@@ -74,6 +82,7 @@ class ExamService
                 'explanation' => $data['explanation'] ?? null,
                 'difficulty' => $data['difficulty'],
                 'type' => $data['type'],
+                'answer_text' => $data['answer_text'] ?? null,
             ]);
 
             if (
@@ -109,13 +118,34 @@ class ExamService
         });
     }
 
+    //Import câu hỏi từ file
+    public function importQuestions(
+        UploadedFile $file,
+        int $authorId
+    ): int
+    {
+        $import = new QuestionsImport(
+            $this,
+            $authorId
+        );
+
+        Excel::import(
+            $import,
+            $file
+        );
+
+        return $import->getImportedCount();
+    }
+
+    
+
     /*
     |--------------------------------------------------------------------------
     | Exam Attempt Methods
     |--------------------------------------------------------------------------
     */
-
-    public function validateAttemptAccess(ExamAttempt $attempt, User $user): void
+    // Hàm check quyền truy cập bài thi
+    public function validateAttemptAccess(ExamAttempt $attempt, ?User $user=null): void
     {
         // // Check ownership
         // if ($attempt->user_id !== $user->id) {
@@ -134,11 +164,13 @@ class ExamService
         }
     }
 
+    // Hàm kiểm tra hết hạn bài thi
     public function checkAttemptExpiration(ExamAttempt $attempt): bool
     {
         return $attempt->isExpired();
     }
 
+    // Hàm lấy danh sách câu hỏi cho mỗi attempt
     public function loadQuestionsForAttempt(ExamAttempt $attempt): Collection
     {
         $exam = $attempt->exam;
@@ -163,12 +195,12 @@ class ExamService
             ->orderBy('exam_questions.sort_order')
             ->get();
         
-        // Shuffle if official exam type
-        if ($exam->type === 'official') {
+        // Shuffle if official exam mode - trộn khi đề thi có chế độ là official - chưa test
+        if ($exam->mode == 'official') {
             $questions = $questions->shuffle();
         }
         
-        // Persist order for consistency
+        // Persist order for consistency - cache thứ tư hiển thi câu hỏi cho mỗi attempt
         $this->persistQuestionOrder(
             $attempt, 
             $questions->pluck('id')->toArray()
@@ -177,6 +209,7 @@ class ExamService
         return $questions;
     }
 
+    // Lấy câu hỏi đã xáo trộn
     public function getShuffledQuestions(Exam $exam): Collection
     {
         return $exam->questions()
@@ -184,17 +217,17 @@ class ExamService
             ->get()
             ->shuffle();
     }
-
+    // hàm lưu trữ thứ tự câu hỏi mỗi attempt
     public function persistQuestionOrder(ExamAttempt $attempt, array $questionIds): void
     {
         // Store in cache for 24 hours (longer than any exam duration)
         Cache::put(
-            "attempt_{$attempt->id}_question_order",
+            "attempt_{$attempt->id}_question_order",//key cache để lưu trữ thứ tự câu hỏi mỗi attempt
             $questionIds,
             now()->addHours(24)
         );
     }
-
+    // Hàm lấy thứ tự câu hỏi đã được lưu trong cache
     public function getPersistedQuestionOrder(ExamAttempt $attempt): ?array
     {
         return Cache::get("attempt_{$attempt->id}_question_order");
@@ -274,27 +307,61 @@ class ExamService
         // Step 6: Dispatch background grading job (outside transaction)
         GradeExamAttemptJob::dispatch($attempt->id);
     }
-    
-    //Hàm lấy danh sách bài kiểm tra
-    public function getExamList(?int $limit = null)
+
+    //Hàm query chuẩn cho danh sách bài thi
+    private function baseListQuery()
     {
-        $query = Exam::query()
-            ->select([
-                'id',
-                'slug',
-                'title',
-                'short_description',
-                'duration_minutes',
-                'author_id',
-                'category_id',
-                'created_at',
-            ])
-            ->with([
-                'author:id,name',
-                'category:id,name',
-            ])
-            ->withCount('questions')
-            ->latest(); // orderByDesc('created_at')
+      return Exam::query()
+          ->select([
+              'id',
+              'slug',
+              'title',
+              'short_description',
+              'duration_minutes',
+              'author_id',
+              'category_id',
+              'created_at',
+          ])
+          ->with([
+              'author:id,name',
+              'category:id,name',
+          ])
+          ->withCount('questions')
+          ->latest();
+    }
+
+    //Hàm lấy tất cả danh mục (id và tên) đang hoạt động
+    public function getAllCategories(): Collection
+    {
+        return Category::query()
+            ->select(['id', 'name'])
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+    }
+    /*
+    Kết quả trả về có dạng:
+    [
+      App\Models\Category {
+        id: 1,
+        name: "PHP",
+      },
+      App\Models\Category {
+        id: 2,
+        name: "Laravel",
+      },
+      App\Models\Category {
+        id: 3,
+        name: "Java",
+      },
+      ...
+    ]
+    */
+
+    //Hàm lấy danh sách bài kiểm tra mới nhất
+    public function getExamListLatest(?int $limit = null)
+    {
+        $query = $this->baseListQuery();
 
         if ($limit !== null) {
             $query->limit($limit);
@@ -325,7 +392,45 @@ class ExamService
     ],...
     */
 
-    //Hàm lấy 1 bài kiểm tra bằng slug 
+    //Hàm tìm kiếm bài thi theo các tham số lọc
+    //Tham số: keyword, category, type, sort
+    public function search(array $filters = [])
+    {
+
+      $query = $this->baseListQuery();
+
+      // Lọc theo từ khóa (tìm trong tiêu đề, mô tả ngắn, mô tả chi tiết)
+      if (!empty($filters['keyword'])) {
+          $keyword = trim($filters['keyword']);
+
+          $query->where(function ($query) use ($keyword) {
+              $query->where('title', 'like', "%{$keyword}%")
+                  ->orWhere('short_description', 'like', "%{$keyword}%")
+                  ->orWhere('description', 'like', "%{$keyword}%");
+          });
+      }
+
+      // Lọc theo danh mục (category_id)
+      if (!empty($filters['category'])) {
+          $query->where('category_id', $filters['category']);
+      }
+
+      // Lọc theo loại bài thi (multiple_choice, essay, hybrid)
+      if (!empty($filters['type'])) {
+          $query->where('type', $filters['type']);
+      }
+
+      // Sắp xếp theo thời gian (mặc định: mới nhất)
+      if (!empty($filters['sort']) && $filters['sort'] === 'oldest') {
+          $query->reorder('created_at', 'asc');
+      }
+
+      // 10 bài thi / trang
+      return $query->paginate(10);
+    }
+    
+
+    //Hàm chi tiết lấy 1 bài kiểm tra bằng slug 
     public function getExamBySlug(string $examSlug)
     {
     return Exam::query()
@@ -339,6 +444,7 @@ class ExamService
             'pass_percent',
             'author_id',
             'category_id',
+            'publish_at',
         ])
         ->with([
             'author:id,name',
@@ -348,7 +454,6 @@ class ExamService
         ->where('slug', $examSlug)
         ->firstOrFail();
     }
-
     /*
     Ket qua tra ve co dang:
     id: 1,
@@ -370,4 +475,156 @@ class ExamService
       name: "PHP",
     }
     */
+
+    // Hàm lấy toàn bộ tag
+    public function getAllTags(): array
+    {
+        return Tag::orderBy('name', 'asc')->pluck('name', 'id')->toArray();
+    }
+    /*
+    Ket qua tra ve co dang:
+    [
+      1 => "PHP",
+      2 => "Laravel",
+      3 => "Java",
+      ...    
+    ]
+    */
+   
+    
+
+    //Hàm bắt đầu làm bài kiểm tra
+    public function startExam(
+        Exam $exam,
+        ?User $user = null,
+        ?string $sessionId = null
+    ): ExamAttempt {
+        //validate đề thi hợp lệ để vào thi
+        if (! $exam->publish_at) {
+            throw ValidationException::withMessages([
+                'exam' => 'Bài kiểm tra chưa được công bố.',
+            ]);
+        }
+
+        if ($exam->publish_at->isFuture()) {
+            throw ValidationException::withMessages([
+                'exam' => 'Bài kiểm tra chưa đến thời gian mở.',
+            ]);
+        }
+
+        if ($exam->duration_minutes <= 0) {
+            throw ValidationException::withMessages([
+                'exam' => 'Bài kiểm tra chưa cấu hình thời gian làm bài.',
+            ]);
+        }
+
+        if (! $exam->questions()->exists()) {
+            throw ValidationException::withMessages([
+                'exam' => 'Bài kiểm tra chưa có câu hỏi.',
+            ]);
+        }
+        //check phiên làm bài đã có
+        $attempt = null;
+        if ($user) {
+
+            $attempt = $this->exam_attemptModel::query()
+                ->where('exam_id', $exam->id)
+                ->where('user_id', $user->id)
+                ->where('status', 'in_progress')
+                ->first();
+
+        } elseif ($sessionId) {
+
+            $attempt = $this->exam_attemptModel::query()
+                ->where('exam_id', $exam->id)
+                ->where('session_id', $sessionId)
+                ->where('status', 'in_progress')
+                ->first();
+
+        }
+
+        if ($attempt) {
+            return $attempt;
+        }
+
+        //tạo phiên làm bài nếu chưa có
+        return $this->exam_attemptModel::create([
+            'exam_id'         => $exam->id,
+            'user_id'         => $user?->id,
+            'session_id'      => (string) Str::uuid(),
+
+            'started_at'      => now(),
+
+            'expires_at'      => now()->addMinutes(
+                $exam->duration_minutes
+            ),
+
+            'total_questions' => $exam
+                ->questions()
+                ->count(),
+
+            'status'          => 'in_progress',
+        ]);
+    }
+
+    // Hàm chấm điểm bài thi
+    public function finalizeAttemptGrading(int $attemptId): array
+    {
+        return DB::transaction(function () use ($attemptId) {
+            // Load attempt with relationships
+            $attempt = ExamAttempt::with(['answers', 'exam.questions'])->findOrFail($attemptId);
+            
+            // Get all answers for this attempt
+            $answers = $attempt->answers;
+            
+            // Calculate statistics
+            $totalQuestions = $answers->count();
+            $correctAnswers = $answers->where(function ($answer) {
+                return $answer->status === 'correct' || $answer->is_correct === true;
+            })->count();
+            
+            $wrongAnswers = $answers->where(function ($answer) {
+                return $answer->status === 'incorrect' || $answer->is_correct === false;
+            })->count();
+            
+            $skippedAnswers = $answers->whereNull('answered_at')->count();
+            
+            // Calculate total score (sum of all answer scores)
+            $totalScore = $answers->sum('score');
+            
+            // Calculate max possible score from exam questions
+            $maxScore = $attempt->exam->questions->sum('pivot.score');
+            
+            // Calculate percent score
+            $percentScore = $maxScore > 0 ? ($totalScore / $maxScore) * 100 : 0;
+            
+            // Determine if passed
+            $isPassed = $percentScore >= $attempt->exam->pass_percent;
+            
+            // Update attempt with calculated values
+            $attempt->update([
+                'status' => 'completed',
+                'submitted_at' => now(),
+                'total_questions' => $totalQuestions,
+                'correct_answers' => $correctAnswers,
+                'wrong_answers' => $wrongAnswers,
+                'skipped_answers' => $skippedAnswers,
+                'score' => $totalScore,
+                'percent_score' => round($percentScore, 2),
+                'is_passed' => $isPassed,
+            ]);
+            
+            // Return statistics for notification
+            return [
+                'total_questions' => $totalQuestions,
+                'correct_answers' => $correctAnswers,
+                'wrong_answers' => $wrongAnswers,
+                'skipped_answers' => $skippedAnswers,
+                'score' => $totalScore,
+                'max_score' => $maxScore,
+                'percent_score' => round($percentScore, 2),
+                'is_passed' => $isPassed,
+            ];
+        });
+    }
 }

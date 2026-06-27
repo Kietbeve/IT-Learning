@@ -41,6 +41,6 @@ class GoogleService
 
         Auth::login($user);
 
-        return redirect('/exam');
+        return redirect('/');
     }
 }

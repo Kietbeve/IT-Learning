@@ -31,21 +31,6 @@ class AuthController extends Controller
         return view('auth::index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('auth::create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        //
-    }
 
     /**
      * Show the specified resource.
@@ -63,21 +48,6 @@ class AuthController extends Controller
         return view('auth::edit');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id): RedirectResponse
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
-    }
     function UserLogin()
     {
         if (Auth::check()) {
@@ -104,7 +74,7 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         // return redirect()->route('login');
-        return redirect('/exam');
+        return redirect('/');
     }
     //admin function
     public function adminDashboard()
