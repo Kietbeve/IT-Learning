@@ -53,6 +53,9 @@ class ExamQuestionModal extends Component
     public int $randomMediumCount = 0; // Số câu trung bình cần random
     public int $randomHardCount = 0; // Số câu khó cần random
 
+    // Question source tabs - Tabs chọn nguồn câu hỏi (cá nhân / dùng chung)
+    public string $questionSourceTab = 'personal'; // 'personal' (của tôi) hoặc 'shared' (dùng chung)
+
     // Modal states for remove
     public bool $showRemoveModal = false;
     public bool $showBulkRemoveModal = false;
@@ -102,6 +105,7 @@ class ExamQuestionModal extends Component
             'randomEasyCount',
             'randomMediumCount',
             'randomHardCount',
+            'questionSourceTab', // Reset về tab "Câu hỏi cá nhân" khi mở modal
         ]);
     }
 
@@ -116,6 +120,16 @@ class ExamQuestionModal extends Component
             ->with(['category', 'options'])
             ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds));
             // ->where('status', 'approved'); // Chỉ lấy câu hỏi đã duyệt
+
+        // Filter theo tab nguồn câu hỏi (cá nhân / dùng chung)
+        if ($this->questionSourceTab === 'personal') {
+            // Tab "Câu hỏi cá nhân": chỉ lấy câu hỏi do chính user hiện tại tạo
+            $query->where('author_id', auth()->id());
+        } elseif ($this->questionSourceTab === 'shared') {
+            // Tab "Câu hỏi dùng chung": lấy tất cả câu hỏi được đánh dấu là shared
+            // (Bao gồm cả câu hỏi của chính mình nếu đã set is_shared = true)
+            $query->where('is_shared', true);
+        }
 
         // Apply search filter
         if (!empty($this->searchTerm)) {
@@ -195,6 +209,15 @@ class ExamQuestionModal extends Component
         
         $query = Question::query()
             ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds));
+        
+        // Filter theo tab nguồn câu hỏi (cá nhân / dùng chung)
+        if ($this->questionSourceTab === 'personal') {
+            // Tab "Câu hỏi cá nhân": chỉ đếm câu hỏi của chính user hiện tại
+            $query->where('author_id', auth()->id());
+        } elseif ($this->questionSourceTab === 'shared') {
+            // Tab "Câu hỏi dùng chung": đếm tất cả câu hỏi được shared
+            $query->where('is_shared', true);
+        }
         
         // Áp dụng các filter hiện tại (search, type, category)
         if (!empty($this->searchTerm)) {
@@ -286,6 +309,15 @@ class ExamQuestionModal extends Component
             $query = Question::query()
                 ->whereNotIn('id', $excludeIds);
             
+            // Filter theo tab nguồn câu hỏi (QUAN TRỌNG: phải tôn trọng tab hiện tại)
+            if ($this->questionSourceTab === 'personal') {
+                // Chỉ random từ câu hỏi của chính user
+                $query->where('author_id', auth()->id());
+            } elseif ($this->questionSourceTab === 'shared') {
+                // Chỉ random từ câu hỏi được shared
+                $query->where('is_shared', true);
+            }
+            
             // Áp dụng các filter hiện tại
             if (!empty($this->searchTerm)) {
                 $query->where('content', 'like', '%' . $this->searchTerm . '%');
@@ -360,6 +392,15 @@ class ExamQuestionModal extends Component
             // Query base (loại trừ câu đã có và đã chọn)
             $excludeIds = array_merge($this->existingQuestionIds, $this->selectedQuestionIds);
             $baseQuery = Question::query()->whereNotIn('id', $excludeIds);
+            
+            // Filter theo tab nguồn câu hỏi (QUAN TRỌNG: phải tôn trọng tab hiện tại)
+            if ($this->questionSourceTab === 'personal') {
+                // Chỉ random từ câu hỏi của chính user
+                $baseQuery->where('author_id', auth()->id());
+            } elseif ($this->questionSourceTab === 'shared') {
+                // Chỉ random từ câu hỏi được shared
+                $baseQuery->where('is_shared', true);
+            }
             
             // Áp dụng filters
             if (!empty($this->searchTerm)) {
