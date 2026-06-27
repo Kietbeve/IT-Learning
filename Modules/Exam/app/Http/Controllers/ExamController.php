@@ -33,16 +33,20 @@ class ExamController extends Controller
         // Lấy danh sách tất cả danh mục
         $categories = $this->examService->getAllCategories();
 
+        //lấy danh sách tag
+        $tags = $this->examService->getAllTags();
+
         // Gọi danh sách bài kiểm tra từ Service
         $exams = $this->examService->search([
             'keyword'  => $request->keyword,
             'category' => $request->category,
             'type'     => $request->type,
             'sort'     => $request->sort,
+            'tags'     => $request->tags,
         ]);
 
         // Truyen du lieu vao view
-        return view('exam::index',compact('exams','categories'));
+        return view('exam::index',compact('exams','categories','tags'));
     }
 
     /**
@@ -70,53 +74,6 @@ class ExamController extends Controller
         return view('exam::exam_result');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('exam::create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        //
-    }
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        return view('exam::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('exam::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id): RedirectResponse
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
-    }
     //view contributor/questions
     public function questionManager()
     {
@@ -216,6 +173,7 @@ class ExamController extends Controller
         return view("exam::admin.exam-review-table");
     }
 
+    // Hàm xử lý bắt đầu làm bài thi
     public function startExam(Request $request,$examSlug){
         $exam =$this->examService->getExamBySlug($examSlug);
 

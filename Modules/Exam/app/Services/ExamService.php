@@ -19,7 +19,7 @@ use Modules\Exam\Models\Exam;
 use Modules\Auth\Models\User;
 use Modules\Exam\Jobs\GradeExamAttemptJob;
 use App\Models\Category;
-
+use App\Models\Tag;
 
 class ExamService
 {
@@ -71,6 +71,7 @@ class ExamService
         });
     }
 
+    //Cập nhật câu hỏi
     public function updateQuestion(Question $question, array $data): Question
     {
         return DB::transaction(function () use ($question, $data) {
@@ -117,6 +118,7 @@ class ExamService
         });
     }
 
+    //Import câu hỏi từ file
     public function importQuestions(
         UploadedFile $file,
         int $authorId
@@ -162,10 +164,12 @@ class ExamService
         }
     }
 
+    // Hàm kiểm tra hết hạn bài thi
     public function checkAttemptExpiration(ExamAttempt $attempt): bool
     {
         return $attempt->isExpired();
     }
+
     // Hàm lấy danh sách câu hỏi cho mỗi attempt
     public function loadQuestionsForAttempt(ExamAttempt $attempt): Collection
     {
@@ -472,7 +476,25 @@ class ExamService
     }
     */
 
-      public function startExam(
+    // Hàm lấy toàn bộ tag
+    public function getAllTags(): array
+    {
+        return Tag::orderBy('name', 'asc')->pluck('name', 'id')->toArray();
+    }
+    /*
+    Ket qua tra ve co dang:
+    [
+      1 => "PHP",
+      2 => "Laravel",
+      3 => "Java",
+      ...    
+    ]
+    */
+   
+    
+
+    //Hàm bắt đầu làm bài kiểm tra
+    public function startExam(
         Exam $exam,
         ?User $user = null,
         ?string $sessionId = null
@@ -545,9 +567,7 @@ class ExamService
         ]);
     }
 
-    /**
-     * Finalize attempt grading - recalculate all statistics and mark as submitted
-     */
+    // Hàm chấm điểm bài thi
     public function finalizeAttemptGrading(int $attemptId): array
     {
         return DB::transaction(function () use ($attemptId) {

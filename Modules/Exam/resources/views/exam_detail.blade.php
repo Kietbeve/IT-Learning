@@ -169,7 +169,10 @@
 
                 </div>
 
+                {{-- Form bắt đầu làm bài --}}
                 <div class="space-y-3">
+
+                    {{-- Hiển thị lỗi trả về từ Controller --}}
                     @if ($errors->has('exam'))
                         <x-alert
                             negative
@@ -177,9 +180,19 @@
                             class="mb-4"
                         />
                     @endif
-                    <form method="POST" action="{{ route('exam.attempt.start', $exam->slug) }}" x-data="{ confirmModal: false }">
+                    
+                    <form
+                        method="POST"
+                        action="{{ route('exam.attempt.start', $exam->slug) }}"
+                        x-data="{
+                            confirmModal: false,
+                            submitting: false
+                        }"
+                        @keydown.escape.window="confirmModal = false"
+                    >
                         @csrf
 
+                        {{-- Nút mở popup xác nhận, không submit trực tiếp --}}
                         <x-button
                             type="button"
                             indigo
@@ -187,74 +200,112 @@
                             right-icon="arrow-right"
                             class="w-full justify-center"
                             label="Bắt đầu làm bài"
-                            {{-- Chặn hành động mặc định của nút (không submit form ngay) --}}
-                            @click.prevent="confirmModal = true"
-                        /> 
+                            @click="confirmModal = true"
+                        />
 
-                        {{-- Popup trước khi làm bài --}}
-                        <div x-show="confirmModal" 
-                             style="display: none;" 
-                             class="fixed inset-0 z-50 overflow-y-auto" 
-                             role="dialog" 
-                             aria-modal="true">
-                             
-                            {{-- Làm mờ background khi pop-up hiển thị --}}
-                            <div x-show="confirmModal" 
-                                 x-transition.opacity.duration.300ms
-                                 class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm"></div>
+                        {{-- =========================
+                            Popup xác nhận
+                        ========================== --}}
+                        <div
+                            x-show="confirmModal"
+                            x-cloak
+                            class="fixed inset-0 z-50"
+                            style="display: none;"
+                        >
 
-                            {{-- Giao diện pop-up xác nhận --}}
-                            <div class="relative flex min-h-screen items-center justify-center p-4"
-                                 @click="confirmModal = false">
-                                
-                                {{-- Modal panel --}}
-                                <div x-show="confirmModal" 
-                                     x-transition:enter="ease-out duration-300" 
-                                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-                                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-                                     x-transition:leave="ease-in duration-200" 
-                                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
-                                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-                                     @click.stop
-                                     class="relative w-full max-w-lg rounded-xl bg-white text-left shadow-xl border border-gray-200 overflow-hidden">
-                                     
-                                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <div class="sm:flex sm:items-start">
-                                            <div class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-50 sm:mx-0 sm:h-10 sm:w-10">
-                                                <x-icon name="question-mark-circle" class="h-6 w-6 text-indigo-600" />
+                            {{-- Overlay popup --}}
+                            <div
+                                class="fixed inset-0 bg-black/40 backdrop-blur-sm"
+                                x-transition.opacity
+                                @click="confirmModal = false"
+                            ></div>
+
+                            {{-- Modal popup xác nhận --}}
+                            <div
+                                class="relative flex min-h-screen items-center justify-center p-4"
+                            >
+
+                                <div
+                                    @click.stop
+                                    x-transition
+                                    class="w-full max-w-lg overflow-hidden rounded-xl border bg-white shadow-xl"
+                                >
+
+                                    {{-- Nội dung --}}
+                                    <div class="px-6 py-5">
+
+                                        <div class="flex items-start gap-4">
+
+                                            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-50">
+                                                <x-icon
+                                                    name="question-mark-circle"
+                                                    class="h-6 w-6 text-indigo-600"
+                                                />
                                             </div>
-                                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                                <h3 class="text-lg leading-6 font-semibold text-gray-900" id="modal-title">
+
+                                            <div>
+
+                                                <h3 class="text-lg font-semibold text-gray-900">
                                                     Xác nhận làm bài kiểm tra
                                                 </h3>
-                                                <div class="mt-2">
-                                                    <p class="text-base text-gray-600">
-                                                        Bạn có chắc muốn làm bài kiểm tra này?
-                                                    </p>
-                                                </div>
+
+                                                <p class="mt-2 text-gray-600">
+                                                    Bạn có chắc chắn muốn bắt đầu bài kiểm tra này?
+                                                </p>
+
                                             </div>
+
                                         </div>
+
                                     </div>
-                                    
-                                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse sm:gap-2">
-                                        <x-button type="submit" indigo class="w-full sm:w-auto mb-3 sm:mb-0" label="Đồng ý" />
-                                        <x-button type="button" flat gray class="w-full sm:w-auto" label="Hủy" @click="confirmModal = false" />
+
+                                    {{-- Footer --}}
+                                    <div class="flex justify-end gap-2 bg-gray-50 px-6 py-4">
+
+                                        {{-- Hủy --}}
+                                        <x-button
+                                            type="button"
+                                            flat
+                                            gray
+                                            label="Hủy"
+                                            @click="confirmModal = false"
+                                        />
+
+                                        {{-- Đồng ý --}}
+                                        <x-button
+                                            type="submit"
+                                            indigo
+                                            label="Đồng ý"
+                                            x-bind:disabled="submitting"
+                                            x-on:click="
+                                                submitting = true;
+                                                confirmModal = false;
+                                            "
+                                        />
+
                                     </div>
+
                                 </div>
+
                             </div>
+
                         </div>
+
                     </form>
 
+                    {{-- =========================
+                        Chức năng lưu bài thi
+                    ========================== --}}
                     <x-button
                         outline
                         gray
                         xl
                         icon="bookmark"
-                        class="w-full flex justify-center"
+                        class="w-full justify-center"
                         label="Lưu bài thi"
                     />
 
-                </div>
+</div>
 
             </div>
 

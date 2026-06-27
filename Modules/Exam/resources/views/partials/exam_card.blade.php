@@ -1,6 +1,6 @@
 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden h-full flex flex-col">
     {{-- Header --}}
-    <div class="bg-linear-to-r from-indigo-400 to-indigo-900 p-5">
+    <div class="bg-linear-to-r from-indigo-500 to-indigo-900 p-5">
 
         <div class="flex items-center justify-between">
 
