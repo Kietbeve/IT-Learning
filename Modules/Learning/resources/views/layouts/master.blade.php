@@ -57,8 +57,9 @@
     </header>
 
     <main class="flex-grow">
-        @yield('content')
-    </main>
+    {{ $slot ?? '' }}
+    @yield('content')
+</main>
 
     <footer class="bg-slate-950 border-t border-slate-800/80 py-12 text-slate-500 text-xs mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">

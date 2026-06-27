@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Category;
 use Modules\Auth\Models\User;
 
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 class Roadmap extends Model
 {
     use SoftDeletes;
@@ -98,4 +100,18 @@ class Roadmap extends Model
     {
         return $this->enrollments()->where('user_id', $userId)->first();
     }
+    public function users(): BelongsToMany
+{
+    return $this->belongsToMany(
+        User::class,
+        'roadmap_enrollments',
+        'roadmap_id',
+        'user_id'
+    )
+    ->withPivot([
+        'status',
+        'progress_percent',
+        'started_at'
+    ]);
+}
 }
