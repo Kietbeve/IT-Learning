@@ -41,6 +41,21 @@ class ExamQuestionModal extends Component
     // Categories for filter dropdown
     public array $categories = [];
 
+    // Random selection feature - Chức năng chọn ngẫu nhiên câu hỏi
+    public bool $showRandomBanner = true; // Hiển thị/ẩn banner random
+    public string $randomMode = 'total'; // Chế độ random: 'total' hoặc 'by_difficulty'
+    
+    // Random theo tổng số lượng
+    public int $randomTotalCount = 0; // Tổng số câu cần random
+    
+    // Random theo từng độ khó
+    public int $randomEasyCount = 0; // Số câu dễ cần random
+    public int $randomMediumCount = 0; // Số câu trung bình cần random
+    public int $randomHardCount = 0; // Số câu khó cần random
+
+    // Question source tabs - Tabs chọn nguồn câu hỏi (cá nhân / dùng chung)
+    public string $questionSourceTab = 'personal'; // 'personal' (của tôi) hoặc 'shared' (dùng chung)
+
     // Modal states for remove
     public bool $showRemoveModal = false;
     public bool $showBulkRemoveModal = false;
@@ -85,6 +100,12 @@ class ExamQuestionModal extends Component
             'filterType',
             'filterCategoryId',
             'currentPage',
+            'randomMode',
+            'randomTotalCount',
+            'randomEasyCount',
+            'randomMediumCount',
+            'randomHardCount',
+            'questionSourceTab', // Reset về tab "Câu hỏi cá nhân" khi mở modal
         ]);
     }
 
@@ -99,6 +120,16 @@ class ExamQuestionModal extends Component
             ->with(['category', 'options'])
             ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds));
             // ->where('status', 'approved'); // Chỉ lấy câu hỏi đã duyệt
+
+        // Filter theo tab nguồn câu hỏi (cá nhân / dùng chung)
+        if ($this->questionSourceTab === 'personal') {
+            // Tab "Câu hỏi cá nhân": chỉ lấy câu hỏi do chính user hiện tại tạo
+            $query->where('author_id', auth()->id());
+        } elseif ($this->questionSourceTab === 'shared') {
+            // Tab "Câu hỏi dùng chung": lấy tất cả câu hỏi được đánh dấu là shared
+            // (Bao gồm cả câu hỏi của chính mình nếu đã set is_shared = true)
+            $query->where('is_shared', true);
+        }
 
         // Apply search filter
         if (!empty($this->searchTerm)) {
@@ -170,6 +201,51 @@ class ExamQuestionModal extends Component
     }
 
     #[Computed]
+    public function availableCountsByDifficulty(): array
+    {
+        // Đếm số câu hỏi available theo từng độ khó (dùng cho random selection)
+        // Loại trừ: câu hỏi đã có trong đề + câu hỏi đã chọn
+        $excludeIds = array_merge($this->existingQuestionIds, $this->selectedQuestionIds);
+        
+        $query = Question::query()
+            ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds));
+        
+        // Filter theo tab nguồn câu hỏi (cá nhân / dùng chung)
+        if ($this->questionSourceTab === 'personal') {
+            // Tab "Câu hỏi cá nhân": chỉ đếm câu hỏi của chính user hiện tại
+            $query->where('author_id', auth()->id());
+        } elseif ($this->questionSourceTab === 'shared') {
+            // Tab "Câu hỏi dùng chung": đếm tất cả câu hỏi được shared
+            $query->where('is_shared', true);
+        }
+        
+        // Áp dụng các filter hiện tại (search, type, category)
+        if (!empty($this->searchTerm)) {
+            $query->where('content', 'like', '%' . $this->searchTerm . '%');
+        }
+        
+        if (!empty($this->filterType)) {
+            $query->where('type', $this->filterType);
+        }
+        
+        if (!empty($this->filterCategoryId)) {
+            $query->where('category_id', $this->filterCategoryId);
+        }
+        
+        // Đếm theo từng độ khó
+        $counts = [
+            'easy' => (clone $query)->where('difficulty', 'easy')->count(),
+            'medium' => (clone $query)->where('difficulty', 'medium')->count(),
+            'hard' => (clone $query)->where('difficulty', 'hard')->count(),
+        ];
+        
+        // Tổng số câu available
+        $counts['total'] = $counts['easy'] + $counts['medium'] + $counts['hard'];
+        
+        return $counts;
+    }
+
+    #[Computed]
     public function totalScore(): float
     {
         $existingTotal = array_sum(array_map('floatval', $this->existingQuestionScores));
@@ -197,6 +273,220 @@ class ExamQuestionModal extends Component
             unset($this->questionScores[$questionId]); // Remove score
             $this->selectedQuestionIds = array_values($this->selectedQuestionIds);
         }
+    }
+
+    public function randomSelectQuestions(): void
+    {
+        // Lấy số lượng câu hỏi available
+        $availableCounts = $this->availableCountsByDifficulty();
+        
+        // Xử lý theo chế độ random được chọn
+        if ($this->randomMode === 'total') {
+            // Chế độ 1: Random theo tổng số lượng (không phân biệt độ khó)
+            $totalCount = (int) $this->randomTotalCount;
+            
+            // Validate: Số lượng phải > 0
+            if ($totalCount <= 0) {
+                $this->notification()->error(
+                    title: 'Lỗi!',
+                    description: 'Vui lòng nhập số lượng câu hỏi cần random.'
+                );
+                return;
+            }
+            
+            // Validate: Không vượt quá số câu available
+            if ($totalCount > $availableCounts['total']) {
+                $this->notification()->error(
+                    title: 'Lỗi!',
+                    description: "Chỉ có {$availableCounts['total']} câu hỏi khả dụng. Vui lòng nhập số nhỏ hơn."
+                );
+                return;
+            }
+            
+            // Query random questions (không phân biệt độ khó)
+            $excludeIds = array_merge($this->existingQuestionIds, $this->selectedQuestionIds);
+            
+            $query = Question::query()
+                ->whereNotIn('id', $excludeIds);
+            
+            // Filter theo tab nguồn câu hỏi (QUAN TRỌNG: phải tôn trọng tab hiện tại)
+            if ($this->questionSourceTab === 'personal') {
+                // Chỉ random từ câu hỏi của chính user
+                $query->where('author_id', auth()->id());
+            } elseif ($this->questionSourceTab === 'shared') {
+                // Chỉ random từ câu hỏi được shared
+                $query->where('is_shared', true);
+            }
+            
+            // Áp dụng các filter hiện tại
+            if (!empty($this->searchTerm)) {
+                $query->where('content', 'like', '%' . $this->searchTerm . '%');
+            }
+            if (!empty($this->filterType)) {
+                $query->where('type', $this->filterType);
+            }
+            if (!empty($this->filterCategoryId)) {
+                $query->where('category_id', $this->filterCategoryId);
+            }
+            
+            // Random select
+            $randomQuestionIds = $query->inRandomOrder()
+                ->limit($totalCount)
+                ->pluck('id')
+                ->toArray();
+            
+            // Thêm vào danh sách selected
+            foreach ($randomQuestionIds as $questionId) {
+                $this->addQuestion($questionId);
+            }
+            
+            // Thông báo thành công
+            $this->notification()->success(
+                title: 'Thành công!',
+                description: "Đã thêm {$totalCount} câu hỏi ngẫu nhiên."
+            );
+            
+            // Reset input
+            $this->randomTotalCount = 0;
+            
+        } else {
+            // Chế độ 2: Random theo từng độ khó (easy/medium/hard)
+            $easyCount = (int) $this->randomEasyCount;
+            $mediumCount = (int) $this->randomMediumCount;
+            $hardCount = (int) $this->randomHardCount;
+            
+            // Validate: Ít nhất 1 độ khó phải > 0
+            if ($easyCount <= 0 && $mediumCount <= 0 && $hardCount <= 0) {
+                $this->notification()->error(
+                    title: 'Lỗi!',
+                    description: 'Vui lòng nhập số lượng câu hỏi cần random cho ít nhất 1 độ khó.'
+                );
+                return;
+            }
+            
+            // Validate từng độ khó
+            if ($easyCount > $availableCounts['easy']) {
+                $this->notification()->error(
+                    title: 'Lỗi!',
+                    description: "Chỉ có {$availableCounts['easy']} câu dễ khả dụng."
+                );
+                return;
+            }
+            
+            if ($mediumCount > $availableCounts['medium']) {
+                $this->notification()->error(
+                    title: 'Lỗi!',
+                    description: "Chỉ có {$availableCounts['medium']} câu trung bình khả dụng."
+                );
+                return;
+            }
+            
+            if ($hardCount > $availableCounts['hard']) {
+                $this->notification()->error(
+                    title: 'Lỗi!',
+                    description: "Chỉ có {$availableCounts['hard']} câu khó khả dụng."
+                );
+                return;
+            }
+            
+            // Query base (loại trừ câu đã có và đã chọn)
+            $excludeIds = array_merge($this->existingQuestionIds, $this->selectedQuestionIds);
+            $baseQuery = Question::query()->whereNotIn('id', $excludeIds);
+            
+            // Filter theo tab nguồn câu hỏi (QUAN TRỌNG: phải tôn trọng tab hiện tại)
+            if ($this->questionSourceTab === 'personal') {
+                // Chỉ random từ câu hỏi của chính user
+                $baseQuery->where('author_id', auth()->id());
+            } elseif ($this->questionSourceTab === 'shared') {
+                // Chỉ random từ câu hỏi được shared
+                $baseQuery->where('is_shared', true);
+            }
+            
+            // Áp dụng filters
+            if (!empty($this->searchTerm)) {
+                $baseQuery->where('content', 'like', '%' . $this->searchTerm . '%');
+            }
+            if (!empty($this->filterType)) {
+                $baseQuery->where('type', $this->filterType);
+            }
+            if (!empty($this->filterCategoryId)) {
+                $baseQuery->where('category_id', $this->filterCategoryId);
+            }
+            
+            $totalAdded = 0;
+            
+            // Random select câu dễ
+            if ($easyCount > 0) {
+                $easyQuestions = (clone $baseQuery)
+                    ->where('difficulty', 'easy')
+                    ->inRandomOrder()
+                    ->limit($easyCount)
+                    ->pluck('id')
+                    ->toArray();
+                
+                foreach ($easyQuestions as $questionId) {
+                    $this->addQuestion($questionId);
+                }
+                $totalAdded += count($easyQuestions);
+            }
+            
+            // Random select câu trung bình
+            if ($mediumCount > 0) {
+                $mediumQuestions = (clone $baseQuery)
+                    ->where('difficulty', 'medium')
+                    ->inRandomOrder()
+                    ->limit($mediumCount)
+                    ->pluck('id')
+                    ->toArray();
+                
+                foreach ($mediumQuestions as $questionId) {
+                    $this->addQuestion($questionId);
+                }
+                $totalAdded += count($mediumQuestions);
+            }
+            
+            // Random select câu khó
+            if ($hardCount > 0) {
+                $hardQuestions = (clone $baseQuery)
+                    ->where('difficulty', 'hard')
+                    ->inRandomOrder()
+                    ->limit($hardCount)
+                    ->pluck('id')
+                    ->toArray();
+                
+                foreach ($hardQuestions as $questionId) {
+                    $this->addQuestion($questionId);
+                }
+                $totalAdded += count($hardQuestions);
+            }
+            
+            // Thông báo thành công chi tiết
+            $message = "Đã thêm {$totalAdded} câu hỏi ngẫu nhiên";
+            $details = [];
+            if ($easyCount > 0) $details[] = "{$easyCount} câu dễ";
+            if ($mediumCount > 0) $details[] = "{$mediumCount} câu trung bình";
+            if ($hardCount > 0) $details[] = "{$hardCount} câu khó";
+            
+            if (!empty($details)) {
+                $message .= " (" . implode(', ', $details) . ")";
+            }
+            
+            $this->notification()->success(
+                title: 'Thành công!',
+                description: $message
+            );
+            
+            // Reset inputs
+            $this->randomEasyCount = 0;
+            $this->randomMediumCount = 0;
+            $this->randomHardCount = 0;
+        }
+    }
+
+    public function toggleRandomBanner(): void
+    {
+        // Toggle hiển thị/ẩn banner random
+        $this->showRandomBanner = !$this->showRandomBanner;
     }
 
     public function removeExistingQuestion(int $questionId): void

@@ -42,13 +42,12 @@ final class ExamQuestionTable extends PowerGridComponent
             Button::add('add-question')
                 ->slot('➕ Thêm câu hỏi')
                 ->class(
-                    'inline-flex items-center gap-2
-                    px-4 py-2
-                    rounded-lg
-                    bg-blue-600 text-white font-medium
-                    shadow-sm
-                    transition-all duration-200
-                    hover:bg-blue-700 hover:shadow-md'
+                'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl
+                text-sm font-semibold text-white bg-blue-600
+                shadow-md shadow-blue-500/20 transition-all duration-200 transform
+                hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5
+                active:translate-y-0 active:scale-[0.98]
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
                 )
                 ->dispatch('open-add-question-modal', ['examId' => $this->examId]),
 
@@ -60,14 +59,12 @@ final class ExamQuestionTable extends PowerGridComponent
                     </span>)'
                 )
                 ->class(
-                    'inline-flex items-center gap-2
-                    rounded-lg
-                    bg-red-600
-                    px-4 py-2
-                    text-sm font-semibold text-white
-                    shadow-sm
-                    transition-all duration-200
-                    hover:bg-red-700'
+                'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl
+                text-sm font-semibold text-white bg-red-600
+                shadow-md shadow-red-500/20 transition-all duration-200 transform
+                hover:bg-red-700 hover:shadow-lg hover:shadow-red-500/30 hover:-translate-y-0.5
+                active:translate-y-0 active:scale-[0.98]
+                focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2'
                 )
                 ->dispatch('open-bulk-remove-confirm', []),
         ];
@@ -105,6 +102,17 @@ final class ExamQuestionTable extends PowerGridComponent
             'essay'           => 'Tự luận',
             default           => $question->type,
         })
+        ->add('difficulty')
+        ->add('difficulty_label', function ($question) {
+            return match ($question->difficulty) {
+                'easy' => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Dễ</span>',
+                'medium' => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Trung bình</span>',
+                'hard' => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Khó</span>',
+                default => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">'
+                    . e($question->difficulty) .
+                '</span>',
+            };
+        })
         ->add('score')
         ->add('sort_order');
         // ->add('status');
@@ -113,7 +121,9 @@ final class ExamQuestionTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('ID', 'id')
+            // Column::make('ID', 'id')
+            //     ->sortable(),
+            Column::make('Thứ tự', 'sort_order')
                 ->sortable(),
 
             Column::make('Câu hỏi', 'content')
@@ -121,10 +131,9 @@ final class ExamQuestionTable extends PowerGridComponent
 
             Column::make('Loại câu hỏi', 'type_label', 'type'),
 
-            Column::make('Điểm', 'score')
-                ->sortable(),
+            Column::make('Độ khó', 'difficulty_label', 'difficulty'),
 
-            Column::make('Thứ tự', 'sort_order')
+            Column::make('Điểm', 'score')
                 ->sortable(),
 
             // Column::make('Trạng thái', 'status'),
@@ -154,21 +163,44 @@ final class ExamQuestionTable extends PowerGridComponent
                 ])
                 ->optionLabel('name')
                 ->optionValue('id'),
+
+            Filter::select('difficulty', 'difficulty')
+                ->dataSource([
+                    ['difficulty' => 'easy', 'label' => 'Dễ'],
+                    ['difficulty' => 'medium', 'label' => 'Trung bình'],
+                    ['difficulty' => 'hard', 'label' => 'Khó'],
+                ])
+                ->optionValue('difficulty')
+                ->optionLabel('label'),
         ];
     }
 
     public function actions($row): array
     {
         return [
-            Button::add('remove')
-                ->slot('Gỡ')
-                ->class('inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white')
-                ->dispatch('remove-question', ['id' => $row->id]),
-
             Button::add('view-question')
-                ->slot('Xem')
-                ->class('inline-flex items-center rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white')
+                ->slot('👁️ Xem')
+                ->class(
+                'inline-flex items-center gap-1 px-3 py-1.5 rounded-lg
+                text-xs font-semibold text-white bg-indigo-600
+                shadow-sm shadow-indigo-500/20 transition-all duration-200 transform
+                hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-500/30 hover:-translate-y-0.5
+                active:translate-y-0 active:scale-[0.96]
+                focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
+                )
                 ->dispatch('open-view-question-modal', ['questionId' => $row->id]),
+            
+            Button::add('remove')
+                ->slot('❌ Gỡ')
+                ->class(
+                'inline-flex items-center gap-1 px-3 py-1.5 rounded-lg
+                text-xs font-semibold text-white bg-red-600
+                shadow-sm shadow-red-500/20 transition-all duration-200 transform
+                hover:bg-red-700 hover:shadow-md hover:shadow-red-500/30 hover:-translate-y-0.5
+                active:translate-y-0 active:scale-[0.96]
+                focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1'
+                )
+                ->dispatch('remove-question', ['id' => $row->id]),
         ];
     }
 

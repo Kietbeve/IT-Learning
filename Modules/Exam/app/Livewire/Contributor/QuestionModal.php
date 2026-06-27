@@ -14,16 +14,23 @@ use WireUi\Traits\WireUiActions;
 use Illuminate\Validation\ValidationException;
 use Modules\Exam\Http\Requests\StoreQuestionRequest;
 use Modules\Exam\Services\ExamService;
+use Livewire\WithFileUploads;
 
 class QuestionModal extends Component
 {
     use WireUiActions;
+    use WithFileUploads;
 
     public bool $showViewModal = false;
     public bool $showEditModal = false;
     public bool $showCreateModal = false;
     public bool $showDeleteModal = false;
     public bool $showBulkDeleteModal = false;
+    public bool $showImportModal = false;
+    public bool $showApproveModal = false;
+    public bool $showRejectModal = false;
+    public string $rejectReason = '';
+    public $importFile;
 
     public ?Question $question = null;
     public array $questionIds = [];
@@ -35,9 +42,10 @@ class QuestionModal extends Component
     public ?string $type = null;
     public ?int $category_id = null;
 
+    public ?string $answer_text=null;
+
     public array $options = [];
     public array $categories = [];
-    public ?string $essayAnswer = null; // Tạm giữ đáp án tự luận (chưa lưu DB)
     protected ExamService $examService;
 
     public function boot(ExamService $examService): void
@@ -68,6 +76,7 @@ class QuestionModal extends Component
             ['content' => '', 'is_correct' => false],
             ['content' => '', 'is_correct' => false],
         ];
+        $this->answer_text = null;
 
         $this->difficulty = 'medium';
         $this->type = 'single_choice';
@@ -100,6 +109,7 @@ class QuestionModal extends Component
         $this->explanation = $this->question->explanation;
         $this->difficulty = $this->question->difficulty;
         $this->type = $this->question->type;
+        $this->answer_text = $this->question->answer_text;
 
         // Load existing options
         $existingOptions = $this->question->options->map(function ($option) {
@@ -132,6 +142,28 @@ class QuestionModal extends Component
         $this->resetModal();
         $this->questionIds = $ids;
         $this->showBulkDeleteModal = true;
+    }
+
+    #[On('question-approve')]
+    public function approveConfirm(int $id): void
+    {
+        $this->resetModal();
+
+        $this->question = Question::findOrFail($id);
+
+        $this->showApproveModal = true;
+    }
+
+    #[On('question-reject')]
+    public function rejectConfirm(int $id): void
+    {
+        $this->resetModal();
+
+        $this->question = Question::findOrFail($id);
+
+        $this->rejectReason = '';
+
+        $this->showRejectModal = true;
     }
 
     //Nhóm hàm quản lý options động
@@ -266,6 +298,10 @@ class QuestionModal extends Component
             'options' => ['array'],
             'options.*.content' => ['nullable', 'string'],
             'options.*.is_correct' => ['nullable', 'boolean'],
+            'answer_text' => [
+                $this->type === 'essay' ? 'required' : 'nullable',
+                'string',
+            ],
         ]);
 
         // Validate options for choice questions
@@ -298,6 +334,10 @@ class QuestionModal extends Component
             'options' => ['array'],
             'options.*.content' => ['nullable', 'string'],
             'options.*.is_correct' => ['nullable', 'boolean'],
+            'answer_text' => [
+                $this->type === 'essay' ? 'required' : 'nullable',
+                'string',
+            ],
         ]);
 
         // Validate options for choice questions
@@ -305,7 +345,10 @@ class QuestionModal extends Component
             $this->validateOptions();
         }
 
-        $this->examService->createQuestion($validated, Auth::id());
+        $this->examService->createQuestion(
+            [...$validated,'is_shared' => ! auth()->user()->hasRole('contributor'),],
+            Auth::id()
+        );
 
         $this->showCreateModal = false;
         $this->reset(['category_id', 'content', 'explanation', 'difficulty', 'type', 'options']);
@@ -331,8 +374,109 @@ class QuestionModal extends Component
             'type',
             'category_id',
             'options',
-            'essayAnswer', // Reset đáp án tự luận
+            'answer_text', // Reset đáp án tự luận
         ]);
+    }
+    public function approve(): void
+    {
+        if (! $this->question) {
+            return;
+        }
+
+        $this->question->update([
+            'status' => 'approved',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'rejected_reason' => null,
+        ]);
+
+        $this->showApproveModal = false;
+
+        $this->notification()->success(
+            title: 'Thành công!',
+            description: 'Đã duyệt câu hỏi.'
+        );
+
+        $this->dispatch('pg:eventRefresh-question-table');
+    }
+    public function reject(): void
+    {
+        if (! $this->question) {
+            return;
+        }
+
+        $this->validate([
+            'rejectReason' => ['required', 'string', 'max:500'],
+        ]);
+
+        $this->question->update([
+            'status' => 'rejected',
+            'rejected_reason' => $this->rejectReason,
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+        ]);
+
+        $this->showRejectModal = false;
+
+        $this->notification()->success(
+            title: 'Thành công!',
+            description: 'Đã từ chối câu hỏi.'
+        );
+
+        $this->dispatch('pg:eventRefresh-question-table');
+    }
+    
+    //import file
+    #[On('question-import')]
+    public function import(): void
+    {
+        $this->resetValidation();
+
+        $this->importFile = null;
+
+        $this->showImportModal = true;
+    }
+
+    public function importQuestions(): void
+    {
+        
+        $this->validate([
+            'importFile' => [
+                'required',
+                'file',
+                'mimes:xlsx,xls,csv',
+            ],
+        ]);
+
+        // $count = $this->examService->importQuestions(
+        //     $this->importFile,
+        //     auth()->id()
+        // );
+        try {
+
+            $count = $this->examService->importQuestions(
+                $this->importFile,
+                auth()->id()
+            );
+
+        } catch (\Throwable $e) {
+            $this->notification()->error(
+                title: 'Import thất bại',
+                description: $e->getMessage()
+            );
+            return;
+        }
+        
+        $this->showImportModal = false;
+
+        $this->importFile = null;
+
+        $this->notification()->success(
+            title: 'Thành công',
+            description: "Đã import {$count} câu hỏi."
+        );
+
+        $this->dispatch('pg:eventRefresh-question-table');
     }
 
     public function render()

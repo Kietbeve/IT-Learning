@@ -27,10 +27,12 @@ class DatabaseSeeder extends Seeder
             //seeder từ module
             \Modules\Auth\Database\Seeders\AuthDatabaseSeeder::class,
             \Modules\Exam\database\seeders\QuestionSeeder::class,
+            \Modules\Exam\database\seeders\ExamTagMapSeeder::class,
             \Modules\Document\database\seeders\DocumentDatabaseSeeder::class,
             //seeder orders và dashboard
             OrderSeeder::class,
             DashboardSeeder::class,
+            SettingSeeder::class,
         ]);
     }
 }

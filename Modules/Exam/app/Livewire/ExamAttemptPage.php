@@ -28,7 +28,7 @@ class ExamAttemptPage extends Component
     public bool $showSubmitModal = false;
     public int $tabSwitchCount = 0;
     public bool $showWarningModal = false;
-    public bool $showFullscreenModal = true;
+    public bool $showFullscreenModal = false;
     
     // User answers - keyed by question_id
     public array $userAnswers = [];
@@ -88,6 +88,9 @@ class ExamAttemptPage extends Component
             
             // Load existing violation count
             $this->tabSwitchCount = $this->attempt->violation_count ?? 0;
+            if($this->attempt->exam->mode=='official'){
+                $this->showFullscreenModal=true;
+            }
             
         } catch (\Exception $e) {
             $this->notification()->error(
@@ -368,10 +371,10 @@ class ExamAttemptPage extends Component
     public function recordTabSwitch(): void
     {
         // Only count violations if exam is still in progress
-        if ($this->attempt->status !== 'in_progress') {
+        if ($this->attempt->status !== 'in_progress' || $this->attempt->exam->mode!= 'official') {
             return;
         }
-        
+
         $this->tabSwitchCount++;
         
         // Save to database immediately
@@ -402,6 +405,17 @@ class ExamAttemptPage extends Component
     {
         $this->showFullscreenModal = false;
         $this->dispatch('enter-fullscreen');
+    }
+
+    public function autoSubmitExam()
+    {
+        $this->attempt->refresh();
+
+        if ($this->attempt->status !== 'in_progress') {
+            return;
+        }
+
+        $this->submitExam();
     }
 
     public function render()

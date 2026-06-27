@@ -10,6 +10,8 @@ use Modules\Exam\Models\Exam;
 use Modules\Exam\Services\ExamService;
 use Modules\Exam\Models\AttemptAnswer;
 use Modules\Exam\Models\ExamAttempt;
+use Maatwebsite\Excel\Facades\Excel;
+use Modules\Exam\Exports\QuestionTemplateExport;
 
 class ExamController extends Controller
 {
@@ -26,13 +28,25 @@ class ExamController extends Controller
     /*
      * Trang danh sách bài thi của exam
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Goi du lieu tu Sevice
-        $exams = $this->examService->getExamList();
+        // Lấy danh sách tất cả danh mục
+        $categories = $this->examService->getAllCategories();
+
+        //lấy danh sách tag
+        $tags = $this->examService->getAllTags();
+
+        // Gọi danh sách bài kiểm tra từ Service
+        $exams = $this->examService->search([
+            'keyword'  => $request->keyword,
+            'category' => $request->category,
+            'type'     => $request->type,
+            'sort'     => $request->sort,
+            'tags'     => $request->tags,
+        ]);
 
         // Truyen du lieu vao view
-        return view('exam::index',compact('exams'));
+        return view('exam::index',compact('exams','categories','tags'));
     }
 
     /**
@@ -60,53 +74,6 @@ class ExamController extends Controller
         return view('exam::exam_result');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('exam::create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        //
-    }
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        return view('exam::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('exam::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id): RedirectResponse
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
-    }
     //view contributor/questions
     public function questionManager()
     {
@@ -204,5 +171,61 @@ class ExamController extends Controller
     public function examReviewTable()
     {
         return view("exam::admin.exam-review-table");
+    }
+
+    // Hàm xử lý bắt đầu làm bài thi
+    public function startExam(Request $request,$examSlug){
+        $exam =$this->examService->getExamBySlug($examSlug);
+
+        $attempt = $this->examService->startExam(
+            exam: $exam,
+            user: auth()->user(),
+            sessionId: $request->cookie("exam_{$exam->id}")
+        );
+
+        return redirect()
+            ->route('exam.attempt.take', $attempt->session_id)
+            ->cookie(//cookie dành cho người dùng không đăng nhập lưu phiên làm bài
+                "exam_{$exam->id}",
+                $attempt->session_id,
+                60 * 24 // 1 ngày
+            );
+    }
+
+    /**
+     * Finalize attempt grading - recalculate scores and mark as submitted
+     */
+    public function finalizeAttempt($attemptId)
+    {
+        try {
+            // Call service to finalize grading
+            $stats = $this->examService->finalizeAttemptGrading($attemptId);
+
+            // Redirect back with success message
+            return redirect()
+                ->back()
+                ->with('success', sprintf(
+                    'Chốt kết quả thành công! Điểm: %.1f/%.1f (%.1f%%) • Đúng: %d • Sai: %d • Bỏ qua: %d',
+                    $stats['score'],
+                    $stats['max_score'],
+                    $stats['percent_score'],
+                    $stats['correct_answers'],
+                    $stats['wrong_answers'],
+                    $stats['skipped_answers']
+                ));
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Không thể chốt kết quả: ' . $e->getMessage());
+        }
+    }
+
+    public function template()
+    {
+        return Excel::download(
+            new QuestionTemplateExport(),
+            'question-template.xlsx'
+        );
     }
 }

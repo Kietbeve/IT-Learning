@@ -1,6 +1,4 @@
-@extends(request()->routeIs('admin.*')
-    ? 'layouts.admin'
-    : 'layouts.contributor')
+@extends('layouts.admin')
 
 @section('content')
     <div class="space-y-6">

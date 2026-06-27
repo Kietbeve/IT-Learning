@@ -75,6 +75,7 @@ class User extends Authenticatable
     {
         return [
             'vip_expires_at' => 'datetime',
+            'blocked_at' => 'datetime',
         ];
     }
 
@@ -155,5 +156,15 @@ class User extends Authenticatable
             WalletTransaction::class,
             'user_id'
         );
+    }
+
+    /**
+     * Người dùng đã thực hiện khóa tài khoản này
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function blocker()
+    {
+        return $this->belongsTo(User::class, 'blocked_by');
     }
 }

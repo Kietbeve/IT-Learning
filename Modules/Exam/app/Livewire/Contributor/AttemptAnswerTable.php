@@ -11,21 +11,68 @@ use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use WireUi\Traits\WireUiActions;
+use PowerComponents\LivewirePowerGrid\Facades\Rule;
+use Livewire\Attributes\On;
 
 final class AttemptAnswerTable extends PowerGridComponent
 {
     use WireUiActions;
+    
     public string $tableName = 'attempt-answer-table';
-
     public int $attemptId;
-
+    public string $gradingStatus = 'all';
     public function setUp(): array
     {
+        $this->showCheckBox();
+
         return [
-            PowerGrid::header(),
-            PowerGrid::footer(),
+            PowerGrid::header()
+            ->showToggleColumns()
+            ->showSearchInput(),
+            PowerGrid::footer()
+            ->showPerPage(
+                perPage: 10,
+                perPageValues: [10, 25, 50, 100]
+            ),
+            // ->showRecordCount(),
             // PowerGrid::detail(),
             // PowerGrid::responsive(),
+        ];
+    }
+
+    public function header(): array
+    {
+        return [
+            Button::add('all')
+                ->slot('Tất cả ('.$this->totalCount().')')
+                ->class(
+                    $this->gradingStatus === 'all'
+                        ? 'bg-blue-500 text-white px-3 py-2 rounded'
+                        : 'bg-gray-100 px-3 py-2 rounded'
+                )
+                ->dispatch('grading-status', [
+                    'status' => 'all',
+                ]),
+
+            Button::add('pending')
+                ->slot('Chưa chấm ('.$this->pendingCount().')')
+                ->class(
+                    $this->gradingStatus === 'pending'
+                        ? 'bg-red-500 text-white px-3 py-2 rounded'
+                        : 'bg-gray-100 px-3 py-2 rounded'
+                )
+                ->dispatch('grading-status', [
+                    'status' => 'pending',
+                ]),
+
+            Button::add('graded')
+                ->slot('Đã chấm ('.$this->gradedCount().')')
+                ->class(
+                    $this->gradingStatus === 'graded'
+                        ? 'bg-green-500 text-white px-3 py-2 rounded'
+                        : 'bg-gray-100 px-3 py-2 rounded'
+                )
+                ->dispatch('grading-status', ['status' => 'graded']),
         ];
     }
 
@@ -39,6 +86,17 @@ final class AttemptAnswerTable extends PowerGridComponent
     {
         return AttemptAnswer::query()
             ->where('attempt_id', $this->attemptId)
+            ->when(
+                $this->gradingStatus === 'pending',
+                fn ($q) => $q->where('status', 'pending')
+            )
+            ->when(
+                $this->gradingStatus === 'graded',
+                fn ($q) => $q->whereIn('status', [
+                    'correct',
+                    'incorrect',
+                ])
+            )
             ->with([
                 'question',
                 'question.options:id,question_id,option_key',
@@ -57,7 +115,9 @@ final class AttemptAnswerTable extends PowerGridComponent
             ->add('id')
 
             ->add('question_content', fn (AttemptAnswer $model) =>
-                $model->question?->content
+                // $model->question?->content
+                str(strip_tags($model->question?->content))
+                ->words(4, '...')
             )
 
             ->add('question_type', fn (AttemptAnswer $model) =>
@@ -94,6 +154,19 @@ final class AttemptAnswerTable extends PowerGridComponent
             //         default => 'Pending',
             //     }
             // )
+
+            ->add('question_answer_text', function (AttemptAnswer $model) {
+
+                if ($model->question?->type !== 'essay') {
+                    return '—';
+                }
+
+                return '
+                    <span class="inline-flex rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                        '.e(str($model->question?->answer_text)->limit(100)).'
+                    </span>
+                ';
+            })
             ->add('status')
             ->add('status_actions', function (AttemptAnswer $model) {
                 $correctClass = $model->status === 'correct'
@@ -137,30 +210,32 @@ final class AttemptAnswerTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('ID', 'id')
-                ->sortable(),
+            Column::make('ID', 'id'),
+                // ->sortable(),
 
-            Column::make('Question', 'question_content')
+            Column::make('Câu hỏi', 'question_content')
                 ->searchable(),
 
-            Column::make('Type', 'question_type'),
+            Column::make('Loại câu hỏi', 'question_type')
+                ->sortable(),
 
-            Column::make('Selected', 'selected_options'),
+            Column::make('lựa chọn', 'selected_options'),
 
-            Column::make('Answer', 'answer_text'),
+            Column::make('Tự luận', 'answer_text'),
+            Column::make('Đáp án mẫu', 'question_answer_text'),
 
             // Column::make('Result', 'is_correct_label', 'is_correct')
             //     ->sortable(),
 
             // Column::make('Status', 'status_toggle', 'status')
             //     ->sortable(),
-            Column::make('Status', 'status_actions', 'status')
+            Column::make('Trạng thái', 'status_actions', 'status')
                 ->sortable(),
 
-            Column::make('Answered At', 'answered_at_formatted', 'answered_at')
+            Column::make('Thời gian làm', 'answered_at_formatted', 'answered_at')
                 ->sortable(),
 
-            Column::action('Actions'),
+            Column::action('Thao tác'),
         ];
     }
 
@@ -177,12 +252,29 @@ final class AttemptAnswerTable extends PowerGridComponent
                 ->dataSource([
                     // ['id' => 1, 'name' => 'Correct'],
                     // ['id' => 0, 'name' => 'Wrong'],
-                    ['id' => 'pending', 'name' => 'Pending'],
-                    ['id' => 'correct', 'name' => 'Correct'],
-                    ['id' => 'incorrect', 'name' => 'Incorrect'],
+                    ['id' => 'pending', 'name' => 'Chưa chấm'],
+                    ['id' => 'correct', 'name' => 'Đúng'],
+                    ['id' => 'incorrect', 'name' => 'Sai'],
                 ])
                 ->optionLabel('name')
                 ->optionValue('id'),
+
+            Filter::select('question_type', 'question_type')
+                ->dataSource([
+                    ['id' => 'single_choice', 'name' => 'Một đáp án'],
+                    ['id' => 'multiple_choice', 'name' => 'Nhiều đáp án'],
+                    ['id' => 'essay', 'name' => 'Tự luận'],
+                ])
+                ->optionLabel('name')
+                ->optionValue('id'),
+        ];
+    }
+    public function actionRules($row): array
+    {
+        return [
+            Rule::rows()
+                ->when(fn ($answer) => $answer->status === 'pending')
+                ->setAttribute('class', 'bg-red-50 border-l-4 border-red-500'),
         ];
     }
 
@@ -196,7 +288,7 @@ final class AttemptAnswerTable extends PowerGridComponent
     {
         return [
             Button::add('view')
-                ->slot('View')
+                ->slot('Xem')
                 ->class(
                     'inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700'
                 )
@@ -215,9 +307,9 @@ final class AttemptAnswerTable extends PowerGridComponent
     private function mapType(?string $type): string
     {
         return match ($type) {
-            'single_choice' => 'Single',
-            'multiple_choice' => 'Multiple',
-            'essay' => 'Essay',
+            'single_choice' => 'Một đáp án',
+            'multiple_choice' => 'Nhiều đáp án',
+            'essay' => 'Tự luận',
             default => $type ?? '—',
         };
     }
@@ -266,5 +358,39 @@ final class AttemptAnswerTable extends PowerGridComponent
         );
 
         $this->refresh();
+    }
+
+    #[On('grading-status')]
+    public function changeGradingStatus(string $status): void
+    {
+        $this->gradingStatus =$status;
+
+        $this->resetPage();
+    }
+
+    public function totalCount(): int
+    {
+        return AttemptAnswer::query()
+            ->where('attempt_id', $this->attemptId)
+            ->count();
+    }
+
+    public function pendingCount(): int
+    {
+        return AttemptAnswer::query()
+            ->where('attempt_id', $this->attemptId)
+            ->where('status', 'pending')
+            ->count();
+    }
+
+    public function gradedCount(): int
+    {
+        return AttemptAnswer::query()
+            ->where('attempt_id', $this->attemptId)
+            ->whereIn('status', [
+                'correct',
+                'incorrect',
+            ])
+            ->count();
     }
 }
