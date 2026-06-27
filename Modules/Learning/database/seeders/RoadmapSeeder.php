@@ -8,6 +8,7 @@ use App\Models\User;
 use Modules\Learning\Models\Roadmap;
 use Modules\Learning\Models\RoadmapSection;
 use Modules\Learning\Models\RoadmapLesson;
+use Modules\Learning\Models\Project;
 
 class RoadmapSeeder extends Seeder
 {
@@ -49,7 +50,7 @@ class RoadmapSeeder extends Seeder
             'title' => 'Giới thiệu PHP và cài đặt môi trường',
             'slug' => 'gioi-thieu-php-' . time(),
             'lesson_type' => 'video',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'video_url' => 'https://youtu.be/0Zay4yjYxJc?si=hldX_GIgAG2g6_Df',
             'content' => '<p>Học cách cài đặt PHP và Composer.</p>',
             'is_published' => true,
             'sort_order' => 1,
@@ -64,6 +65,27 @@ class RoadmapSeeder extends Seeder
             'content' => '<h3>Biến trong PHP</h3><p>PHP là ngôn ngữ dynamic typing.</p>',
             'is_published' => true,
             'sort_order' => 2,
+        ]);
+
+        // Project for Stage 1
+        $project1 = Project::create([
+            'roadmap_id' => $backend->id,
+            'section_id' => $backendStage1->id,
+            'title' => 'Project: PHP Fundamentals Practice',
+            'description' => 'Xây dựng ứng dụng PHP đơn giản để thực hành các kiến thức cơ bản',
+            'starter_code_url' => 'https://github.com/example/php-fundamentals-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $backend->id,
+            'section_id' => $backendStage1->id,
+            'title' => 'Project: PHP Fundamentals Practice',
+            'slug' => 'project-php-fundamentals-' . (time() + 100),
+            'lesson_type' => 'project',
+            'project_id' => $project1->id,
+            'content' => '<p>Hoàn thành project thực hành PHP Fundamentals</p>',
+            'is_published' => true,
+            'sort_order' => 3,
         ]);
 
         // Stage 2: Laravel Framework
@@ -82,6 +104,27 @@ class RoadmapSeeder extends Seeder
             'content' => '<h3>Routing trong Laravel</h3><p>Định nghĩa routes và controllers.</p>',
             'is_published' => true,
             'sort_order' => 1,
+        ]);
+
+        // Project for Stage 2
+        $project2 = Project::create([
+            'roadmap_id' => $backend->id,
+            'section_id' => $backendStage2->id,
+            'title' => 'Project: Laravel CRUD Application',
+            'description' => 'Xây dựng ứng dụng CRUD với Laravel framework',
+            'starter_code_url' => 'https://github.com/example/laravel-crud-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $backend->id,
+            'section_id' => $backendStage2->id,
+            'title' => 'Project: Laravel CRUD Application',
+            'slug' => 'project-laravel-crud-' . (time() + 101),
+            'lesson_type' => 'project',
+            'project_id' => $project2->id,
+            'content' => '<p>Hoàn thành project Laravel CRUD Application</p>',
+            'is_published' => true,
+            'sort_order' => 2,
         ]);
 
         // Roadmap 2: Frontend Developer
@@ -111,7 +154,7 @@ class RoadmapSeeder extends Seeder
             'title' => 'HTML5 Semantic Tags',
             'slug' => 'html5-semantic-' . (time() + 3),
             'lesson_type' => 'video',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'video_url' => 'https://youtu.be/kX3TfdUqpuU?si=KKlzRQAgFKazulzT',
             'content' => '<p>Tìm hiểu các thẻ HTML5 semantic.</p>',
             'is_published' => true,
             'sort_order' => 1,
@@ -128,6 +171,27 @@ class RoadmapSeeder extends Seeder
             'sort_order' => 2,
         ]);
 
+        // Project for Frontend Stage 1
+        $project3 = Project::create([
+            'roadmap_id' => $frontend->id,
+            'section_id' => $frontendStage1->id,
+            'title' => 'Project: Responsive Landing Page',
+            'description' => 'Xây dựng landing page responsive với HTML5 và CSS3',
+            'starter_code_url' => 'https://github.com/example/landing-page-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $frontend->id,
+            'section_id' => $frontendStage1->id,
+            'title' => 'Project: Responsive Landing Page',
+            'slug' => 'project-landing-page-' . (time() + 102),
+            'lesson_type' => 'project',
+            'project_id' => $project3->id,
+            'content' => '<p>Hoàn thành project Landing Page</p>',
+            'is_published' => true,
+            'sort_order' => 3,
+        ]);
+
         // Stage 2: JavaScript
         $frontendStage2 = RoadmapSection::create([
             'roadmap_id' => $frontend->id,
@@ -141,7 +205,7 @@ class RoadmapSeeder extends Seeder
             'title' => 'JavaScript Basics và DOM',
             'slug' => 'javascript-dom-' . (time() + 5),
             'lesson_type' => 'video',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'video_url' => 'https://youtu.be/lkIFF4maKMU?si=s2aVGgJUm9IbvlDd',
             'content' => '<p>Học cách manipulate DOM.</p>',
             'is_published' => true,
             'sort_order' => 1,
@@ -156,6 +220,27 @@ class RoadmapSeeder extends Seeder
             'content' => '<h3>ES6+</h3><p>Arrow functions, async/await.</p>',
             'is_published' => true,
             'sort_order' => 2,
+        ]);
+
+        // Project for Frontend Stage 2
+        $project4 = Project::create([
+            'roadmap_id' => $frontend->id,
+            'section_id' => $frontendStage2->id,
+            'title' => 'Project: Interactive JavaScript App',
+            'description' => 'Xây dựng ứng dụng JavaScript tương tác với DOM và ES6+',
+            'starter_code_url' => 'https://github.com/example/js-app-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $frontend->id,
+            'section_id' => $frontendStage2->id,
+            'title' => 'Project: Interactive JavaScript App',
+            'slug' => 'project-js-app-' . (time() + 103),
+            'lesson_type' => 'project',
+            'project_id' => $project4->id,
+            'content' => '<p>Hoàn thành project JavaScript App</p>',
+            'is_published' => true,
+            'sort_order' => 3,
         ]);
 
         // Roadmap 3: Fullstack Developer
@@ -189,6 +274,27 @@ class RoadmapSeeder extends Seeder
             'sort_order' => 1,
         ]);
 
+        // Project for Fullstack Stage 1
+        $project5 = Project::create([
+            'roadmap_id' => $fullstack->id,
+            'section_id' => $fullstackStage1->id,
+            'title' => 'Project: Fullstack Web Application',
+            'description' => 'Xây dựng ứng dụng web fullstack với frontend và backend',
+            'starter_code_url' => 'https://github.com/example/fullstack-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $fullstack->id,
+            'section_id' => $fullstackStage1->id,
+            'title' => 'Project: Fullstack Web Application',
+            'slug' => 'project-fullstack-app-' . (time() + 104),
+            'lesson_type' => 'project',
+            'project_id' => $project5->id,
+            'content' => '<p>Hoàn thành project Fullstack Web Application</p>',
+            'is_published' => true,
+            'sort_order' => 2,
+        ]);
+
         // Roadmap 4: Mobile Development
         $mobile = Roadmap::create([
             'public_id' => Str::uuid()->toString(),
@@ -215,10 +321,31 @@ class RoadmapSeeder extends Seeder
             'title' => 'Giới thiệu Flutter/React Native',
             'slug' => 'mobile-intro-' . (time() + 8),
             'lesson_type' => 'video',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'video_url' => 'https://youtu.be/-Uk9qH39S94?si=wMMZpZ49TeyN_CRw',
             'content' => '<p>Lựa chọn framework phù hợp cho Mobile Development.</p>',
             'is_published' => true,
             'sort_order' => 1,
+        ]);
+
+        // Project for Mobile Stage 1
+        $project6 = Project::create([
+            'roadmap_id' => $mobile->id,
+            'section_id' => $mobileStage1->id,
+            'title' => 'Project: Mobile App Prototype',
+            'description' => 'Xây dựng prototype ứng dụng mobile đơn giản',
+            'starter_code_url' => 'https://github.com/example/mobile-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $mobile->id,
+            'section_id' => $mobileStage1->id,
+            'title' => 'Project: Mobile App Prototype',
+            'slug' => 'project-mobile-app-' . (time() + 105),
+            'lesson_type' => 'project',
+            'project_id' => $project6->id,
+            'content' => '<p>Hoàn thành project Mobile App Prototype</p>',
+            'is_published' => true,
+            'sort_order' => 2,
         ]);
 
         // Roadmap 5: DevOps Engineer
@@ -258,10 +385,31 @@ class RoadmapSeeder extends Seeder
             'title' => 'Docker Container cơ bản',
             'slug' => 'docker-basics-' . (time() + 10),
             'lesson_type' => 'video',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'video_url' => 'https://youtu.be/DQdB7wFEygo?si=Y3bDPNIjMbkUJju-',
             'content' => '<p>Containerize ứng dụng với Docker.</p>',
             'is_published' => true,
             'sort_order' => 2,
+        ]);
+
+        // Project for DevOps Stage 1
+        $project7 = Project::create([
+            'roadmap_id' => $devops->id,
+            'section_id' => $devopsStage1->id,
+            'title' => 'Project: Dockerize Application',
+            'description' => 'Containerize một ứng dụng web với Docker',
+            'starter_code_url' => 'https://github.com/example/docker-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $devops->id,
+            'section_id' => $devopsStage1->id,
+            'title' => 'Project: Dockerize Application',
+            'slug' => 'project-dockerize-app-' . (time() + 106),
+            'lesson_type' => 'project',
+            'project_id' => $project7->id,
+            'content' => '<p>Hoàn thành project Dockerize Application</p>',
+            'is_published' => true,
+            'sort_order' => 3,
         ]);
 
         // Roadmap 6: Data Science & AI
@@ -290,10 +438,31 @@ class RoadmapSeeder extends Seeder
             'title' => 'Python cơ bản cho Data Science',
             'slug' => 'python-data-science-' . (time() + 11),
             'lesson_type' => 'video',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'video_url' => 'https://youtu.be/HrRA67O-QXI?si=uxIuwUh_6fdLipMA',
             'content' => '<p>Làm quen với Python, Pandas và NumPy.</p>',
             'is_published' => true,
             'sort_order' => 1,
+        ]);
+
+        // Project for Data Science Stage 1
+        $project8 = Project::create([
+            'roadmap_id' => $dataScience->id,
+            'section_id' => $dsStage1->id,
+            'title' => 'Project: Data Analysis with Python',
+            'description' => 'Phân tích dữ liệu với Python, Pandas và NumPy',
+            'starter_code_url' => 'https://github.com/example/data-analysis-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $dataScience->id,
+            'section_id' => $dsStage1->id,
+            'title' => 'Project: Data Analysis with Python',
+            'slug' => 'project-data-analysis-' . (time() + 107),
+            'lesson_type' => 'project',
+            'project_id' => $project8->id,
+            'content' => '<p>Hoàn thành project Data Analysis</p>',
+            'is_published' => true,
+            'sort_order' => 2,
         ]);
 
         // Roadmap 7: Cybersecurity
@@ -327,6 +496,27 @@ class RoadmapSeeder extends Seeder
             'sort_order' => 1,
         ]);
 
+        // Project for Security Stage 1
+        $project9 = Project::create([
+            'roadmap_id' => $security->id,
+            'section_id' => $securityStage1->id,
+            'title' => 'Project: Security Audit',
+            'description' => 'Thực hiện audit bảo mật cơ bản cho một ứng dụng web',
+            'starter_code_url' => 'https://github.com/example/security-audit-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $security->id,
+            'section_id' => $securityStage1->id,
+            'title' => 'Project: Security Audit',
+            'slug' => 'project-security-audit-' . (time() + 108),
+            'lesson_type' => 'project',
+            'project_id' => $project9->id,
+            'content' => '<p>Hoàn thành project Security Audit</p>',
+            'is_published' => true,
+            'sort_order' => 2,
+        ]);
+
         // Roadmap 8: Cloud Computing
         $cloud = Roadmap::create([
             'public_id' => Str::uuid()->toString(),
@@ -353,10 +543,31 @@ class RoadmapSeeder extends Seeder
             'title' => 'Giới thiệu Cloud Computing',
             'slug' => 'cloud-intro-' . (time() + 13),
             'lesson_type' => 'video',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'video_url' => 'https://youtu.be/ZaA0kNm18pE?si=31s_JM9KjPNIhln_',
             'content' => '<p>Các dịch vụ Cloud phổ biến: AWS, Azure, GCP.</p>',
             'is_published' => true,
             'sort_order' => 1,
+        ]);
+
+        // Project for Cloud Stage 1
+        $project10 = Project::create([
+            'roadmap_id' => $cloud->id,
+            'section_id' => $cloudStage1->id,
+            'title' => 'Project: Deploy to Cloud',
+            'description' => 'Deploy ứng dụng lên AWS/Azure/GCP',
+            'starter_code_url' => 'https://github.com/example/cloud-deploy-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $cloud->id,
+            'section_id' => $cloudStage1->id,
+            'title' => 'Project: Deploy to Cloud',
+            'slug' => 'project-cloud-deploy-' . (time() + 109),
+            'lesson_type' => 'project',
+            'project_id' => $project10->id,
+            'content' => '<p>Hoàn thành project Deploy to Cloud</p>',
+            'is_published' => true,
+            'sort_order' => 2,
         ]);
 
         // Roadmap 9: Game Development
@@ -385,10 +596,31 @@ class RoadmapSeeder extends Seeder
             'title' => 'Unity và C# cơ bản',
             'slug' => 'unity-basics-' . (time() + 14),
             'lesson_type' => 'video',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'video_url' => 'https://youtu.be/58qveWELZ-0?si=9W2X6d5ExRZ0Njey',
             'content' => '<p>Bắt đầu với Unity Game Engine.</p>',
             'is_published' => true,
             'sort_order' => 1,
+        ]);
+
+        // Project for Game Stage 1
+        $project11 = Project::create([
+            'roadmap_id' => $game->id,
+            'section_id' => $gameStage1->id,
+            'title' => 'Project: Simple 2D Game',
+            'description' => 'Xây dựng game 2D đơn giản với Unity',
+            'starter_code_url' => 'https://github.com/example/unity-2d-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $game->id,
+            'section_id' => $gameStage1->id,
+            'title' => 'Project: Simple 2D Game',
+            'slug' => 'project-2d-game-' . (time() + 110),
+            'lesson_type' => 'project',
+            'project_id' => $project11->id,
+            'content' => '<p>Hoàn thành project Simple 2D Game</p>',
+            'is_published' => true,
+            'sort_order' => 2,
         ]);
 
         // Roadmap 10: UI/UX Design
@@ -422,6 +654,27 @@ class RoadmapSeeder extends Seeder
             'sort_order' => 1,
         ]);
 
+        // Project for UI/UX Stage 1
+        $project12 = Project::create([
+            'roadmap_id' => $uiux->id,
+            'section_id' => $uiuxStage1->id,
+            'title' => 'Project: UI/UX Design Case Study',
+            'description' => 'Thiết kế giao diện hoàn chỉnh cho một ứng dụng',
+            'starter_code_url' => 'https://github.com/example/uiux-design-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $uiux->id,
+            'section_id' => $uiuxStage1->id,
+            'title' => 'Project: UI/UX Design Case Study',
+            'slug' => 'project-uiux-design-' . (time() + 111),
+            'lesson_type' => 'project',
+            'project_id' => $project12->id,
+            'content' => '<p>Hoàn thành project UI/UX Design Case Study</p>',
+            'is_published' => true,
+            'sort_order' => 2,
+        ]);
+
         // Roadmap 11: Database Administration
         $database = Roadmap::create([
             'public_id' => Str::uuid()->toString(),
@@ -451,6 +704,27 @@ class RoadmapSeeder extends Seeder
             'content' => '<p>Học SQL và thiết kế cơ sở dữ liệu quan hệ.</p>',
             'is_published' => true,
             'sort_order' => 1,
+        ]);
+
+        // Project for Database Stage 1
+        $project13 = Project::create([
+            'roadmap_id' => $database->id,
+            'section_id' => $dbStage1->id,
+            'title' => 'Project: Database Design & Optimization',
+            'description' => 'Thiết kế và tối ưu hóa cơ sở dữ liệu cho một hệ thống',
+            'starter_code_url' => 'https://github.com/example/database-design-starter',
+        ]);
+
+        RoadmapLesson::create([
+            'roadmap_id' => $database->id,
+            'section_id' => $dbStage1->id,
+            'title' => 'Project: Database Design & Optimization',
+            'slug' => 'project-database-design-' . (time() + 112),
+            'lesson_type' => 'project',
+            'project_id' => $project13->id,
+            'content' => '<p>Hoàn thành project Database Design & Optimization</p>',
+            'is_published' => true,
+            'sort_order' => 2,
         ]);
 
         $this->command->info('✅ Seeded: 11 diverse roadmaps with sections and lessons!');

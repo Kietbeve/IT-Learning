@@ -5,7 +5,14 @@ namespace Modules\Learning\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse; // 1. THÊM DÒNG NÀY
 use Modules\Learning\Services\RoadmapService; 
+use Modules\Learning\Models\Roadmap;
+use Illuminate\Support\Facades\Auth;
+use Modules\Learning\Models\LessonQuestion; 
+use App\Models\User;
+use Modules\Learning\Http\Requests\StoreProjectSubmissionRequest;
+use Modules\Learning\Services\ProjectSubmissionService;
 
 class LearningController extends Controller
 {
@@ -21,9 +28,27 @@ class LearningController extends Controller
      */
     public function index(Request $request): View
     {
-        return view('learning::layouts.roadmap-list', [
-            'roadmaps' => $this->roadmapService->getFilteredRoadmaps($request->all(), 6)
-        ]);
+        $roadmaps = $this->roadmapService->getFilteredRoadmaps($request->all(), 6);
+        
+        /** @var mixed $user */
+        $user = Auth::user();
+        $registeredRoadmaps = collect();
+        $unregisteredRoadmaps = Roadmap::all();
+
+        if ($user) {
+            $registeredIds = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $user->id)
+                ->pluck('roadmap_id')
+                ->toArray();
+
+            $registeredRoadmaps = Roadmap::whereIn('id', $registeredIds)->get();
+            $unregisteredRoadmaps = Roadmap::whereNotIn('id', $registeredIds)->get();
+        }
+
+        return view('learning::layouts.roadmap-list', compact(
+            'roadmaps', 
+            'registeredRoadmaps', 
+            'unregisteredRoadmaps'
+        ));
     }
 
     /**
@@ -31,10 +56,29 @@ class LearningController extends Controller
      */
     public function show(mixed $id): View
     {
-        $userId = auth()->check() ? auth()->id() : null;
+        $userId = Auth::id();
         
+        /** @var mixed $user */
+        $user = Auth::user();
+        
+        $registeredRoadmaps = collect();
+        $unregisteredRoadmaps = Roadmap::all();
+
+        if ($user) {
+            $registeredIds = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $user->id)
+                ->pluck('roadmap_id')
+                ->toArray();
+
+            $registeredRoadmaps = Roadmap::whereIn('id', $registeredIds)->get();
+            $unregisteredRoadmaps = Roadmap::whereNotIn('id', $registeredIds)->get();
+        }
+
         return view('learning::layouts.roadmap-detail', array_merge(
-            ['id' => $id], 
+            [
+                'id' => $id, 
+                'registeredRoadmaps' => $registeredRoadmaps, 
+                'unregisteredRoadmaps' => $unregisteredRoadmaps
+            ],
             $this->roadmapService->getRoadmapDetail($id, $userId)
         ));
     }
@@ -42,8 +86,22 @@ class LearningController extends Controller
     /**
      * TRANG 3: Nội dung chi tiết bài học
      */
-    public function showLesson(mixed $roadmapId, mixed $lessonId): View
+    // 2. SỬA ĐỔI KIỂU TRẢ VỀ TẠI ĐÂY THÀNH : View|RedirectResponse
+    public function showLesson(mixed $roadmapId, mixed $lessonId): View|RedirectResponse
     {
+        // Check authentication
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để học');
+        }
+
+        $userId = Auth::id();
+
+        // Check enrollment
+        if (!$this->roadmapService->checkEnrollment($userId, $roadmapId)) {
+            return redirect()->route('learning.roadmaps.show', $roadmapId)
+                ->with('error', 'Bạn cần đăng ký lộ trình này trước khi xem chi tiết bài học');
+        }
+
         return view('learning::layouts.lesson-show', array_merge(
             ['roadmapId' => $roadmapId, 'lessonId' => $lessonId],
             $this->roadmapService->getLessonDetail($roadmapId, $lessonId)
@@ -55,22 +113,20 @@ class LearningController extends Controller
      */
     public function enroll(Request $request, mixed $id)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để đăng ký lộ trình');
         }
 
-        $userId = auth()->id();
+        $userId = Auth::id();
         
-        // Check if already enrolled
         if ($this->roadmapService->checkEnrollment($userId, $id)) {
             return back()->with('info', 'Bạn đã đăng ký lộ trình này rồi');
         }
 
-        // Enroll user
         $enrollment = $this->roadmapService->enrollRoadmap($userId, $id);
 
         if ($enrollment) {
-            return back()->with('success', 'Đăng ký lộ trình thành công!');
+           return redirect()->route('learning.roadmaps.show', $id)->with('success', 'Đăng ký lộ trình thành công!');
         }
 
         return back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại');
@@ -81,20 +137,17 @@ class LearningController extends Controller
      */
     public function learn(mixed $roadmapId, mixed $lessonId = null)
     {
-        // Check authentication
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để học');
         }
 
-        $userId = auth()->id();
+        $userId = Auth::id();
 
-        // Check enrollment
         if (!$this->roadmapService->checkEnrollment($userId, $roadmapId)) {
             return redirect()->route('learning.roadmaps.show', $roadmapId)
                 ->with('error', 'Bạn chưa đăng ký lộ trình này');
         }
 
-        // Load roadmap with sections and lessons (including standalone lessons without sections)
         $roadmap = \Modules\Learning\Models\Roadmap::with([
             'sections.lessons' => function($query) {
                 $query->where('is_published', true)->orderBy('sort_order');
@@ -104,7 +157,6 @@ class LearningController extends Controller
             }
         ])->findOrFail($roadmapId);
 
-        // Get all lessons in order - from sections AND standalone
         $lessonsFromSections = $roadmap->sections->flatMap(function($section) {
             return $section->lessons;
         });
@@ -113,7 +165,6 @@ class LearningController extends Controller
         
         $allLessons = $lessonsFromSections->concat($standaloneLessons)->sortBy('sort_order')->values();
 
-        // Determine current lesson
         if ($lessonId) {
             $currentLesson = $allLessons->firstWhere('id', $lessonId);
         } else {
@@ -125,33 +176,132 @@ class LearningController extends Controller
                 ->with('error', 'Không tìm thấy bài học');
         }
 
-        // Get user progress
         $progressList = $this->roadmapService->getLessonProgressList($userId, $roadmapId);
 
-        // Find next lesson
         $currentIndex = $allLessons->search(function($lesson) use ($currentLesson) {
             return $lesson->id === $currentLesson->id;
         });
         $nextLesson = $allLessons->get($currentIndex + 1);
 
-        // Load user's note for this lesson
         $userNote = \Modules\Learning\Models\LessonNote::where('user_id', $userId)
             ->where('roadmap_lesson_id', $currentLesson->id)
             ->first();
 
-        // Load questions for this lesson
         $lessonQuestions = \Modules\Learning\Models\LessonQuestion::where('roadmap_lesson_id', $currentLesson->id)
             ->with('user')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Load user's project submission for this lesson
         $projectSubmission = null;
         if ($currentLesson->project_id) {
             $projectSubmission = \Modules\Learning\Models\ProjectSubmission::where('user_id', $userId)
                 ->where('project_id', $currentLesson->project_id)
                 ->latest()
                 ->first();
+        }
+
+        $pdfFile = '';
+        if ($roadmapId == 1) {
+            $pdfMap = [
+                1 => 'Bai_1_HTML5_CSS3.pdf',
+                2 => 'php_syntax_and_variables_guide.pdf',
+                4 => 'Routes_va_Controllers_chi_tiet.pdf',
+                36 => 'Lo_Trinh_va_Tong_Ket_Backend_Developer.pdf',
+                38 => 'Lo_Trinh_va_Tong_Ket_Backend_Developer.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 2) {
+            $pdfMap = [
+                1 => 'Bai_1_HTML5_CSS3.pdf',
+                7 => 'CSS_Flexbox_va_Grid.pdf',
+                10 => 'ES6_Modern_JavaScript.pdf',
+                4 => 'Bai_4_ReactJS.pdf',
+                32 => 'Tai_Lieu_Ly_Thuyet_Lo_Trinh_Frontend_Developer.pdf',
+                34 => 'Tong_Ket_Lo_Trinh_Frontend_Developer.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 3) {
+            $pdfMap = [
+                12 => 'Kien_Truc_he_thong_va_Lo_Trinh_Fullstack_Developer.pdf',
+                27 => 'Kien_Truc_he_thong_va_Lo_Trinh_Fullstack_Developer.pdf',
+                29 => 'Kien_Truc_he_thong_va_Lo_Trinh_Fullstack_Developer.pdf',
+                4 => 'Bai_4_ReactJS.pdf',
+                40 => 'Tai_Lieu_Ly_Thuyet_Lo_Trinh_Frontend_Developer.pdf',
+                42 => 'Tong_Ket_Lo_Trinh_Frontend_Developer.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 4) {
+            $pdfMap = [
+                44 => 'Tai_Lieu_Ly_Thuyet_Lo_Trinh_Mobile_Development.pdf',
+                46 => 'Tong_Ket_Lo_Trinh_Mobile_Development.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 5) {
+            $pdfMap = [
+                16 => 'Tong_Ket_Lo_Trinh_Linux_va_Shell_Scripting.pdf',
+                48 => 'Tai_Lieu_Ly_Thuyet_Lo_Trinh_DevOps_Engineer.pdf',
+                50 => 'Tong_Ket_Lo_Trinh_DevOps_Engineer.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+         if ($roadmapId == 6) {
+            $pdfMap = [
+                52 => 'lo_trinh_data_science_ai.pdf',
+                54 => 'lo_trinh_data_science_ai.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+         if ($roadmapId == 7) {
+            $pdfMap = [
+                21 => 'co_ban_an_ninh_mang.pdf',
+                56 => 'lo_trinh_cybersecurity.pdf',
+                58 => 'lo_trinh_cybersecurity.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+         if ($roadmapId == 8) {
+            $pdfMap = [
+                60 => 'lo_trinh_cloud_computing.pdf',
+                62 => 'lo_trinh_cloud_computing.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 9) {
+            $pdfMap = [
+                64 => 'Game_Development_Theory_and_Summary.pdf',
+                66 => 'Game_Development_Theory_and_Summary.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+        if ($roadmapId == 10) {
+            $pdfMap = [
+                27 => 'UI_UX_Design_Theory_and_Summary.pdf',
+                68 => 'UI_UX_Design_Theory_and_Summary.pdf',
+                70 => 'UI_UX_Design_Theory_and_Summary.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
+        }
+
+         if ($roadmapId == 11) {
+            $pdfMap = [
+                29 => 'Tai_Lieu_Ly_Thuyet_Database_Administration.pdf',
+                72 => 'Tai_Lieu_Ly_Thuyet_Database_Administration.pdf',
+                74 => 'Tai_Lieu_Ly_Thuyet_Database_Administration.pdf',
+            ];
+            $pdfFile = $pdfMap[$currentLesson->id] ?? '';
         }
 
         return view('learning::layouts.lesson-view', [
@@ -162,6 +312,7 @@ class LearningController extends Controller
             'userNote' => $userNote,
             'lessonQuestions' => $lessonQuestions,
             'projectSubmission' => $projectSubmission,
+            'pdfFile' => $pdfFile,
         ]);
     }
 
@@ -170,16 +321,14 @@ class LearningController extends Controller
      */
     public function completeLesson(Request $request, mixed $roadmapId, mixed $lessonId)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        $userId = auth()->id();
-        
+        $userId = Auth::id();
         $result = $this->roadmapService->markLessonCompleted($userId, $roadmapId, $lessonId);
 
         if ($result) {
-            // Find next lesson
             $roadmap = \Modules\Learning\Models\Roadmap::with(['sections.lessons' => function($query) {
                 $query->where('is_published', true)->orderBy('sort_order');
             }])->findOrFail($roadmapId);
@@ -211,7 +360,7 @@ class LearningController extends Controller
      */
     public function saveNote(Request $request, mixed $lessonId)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return back()->with('error', 'Vui lòng đăng nhập');
         }
 
@@ -219,7 +368,7 @@ class LearningController extends Controller
             'content' => 'required|string|max:5000',
         ]);
 
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         \Modules\Learning\Models\LessonNote::updateOrCreate(
             [
@@ -239,7 +388,7 @@ class LearningController extends Controller
      */
     public function postQuestion(Request $request, mixed $lessonId)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return back()->with('error', 'Vui lòng đăng nhập');
         }
 
@@ -247,7 +396,7 @@ class LearningController extends Controller
             'content' => 'required|string|max:2000',
         ]);
 
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         \Modules\Learning\Models\LessonQuestion::create([
             'user_id' => $userId,
@@ -262,52 +411,49 @@ class LearningController extends Controller
     /**
      * Submit project for a lesson
      */
-    public function submitProject(Request $request, mixed $roadmapId, mixed $lessonId)
+    public function submitProject(StoreProjectSubmissionRequest $request, mixed $roadmapId, mixed $lessonId)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return back()->with('error', 'Vui lòng đăng nhập');
         }
 
-        $request->validate([
-            'github_url' => 'required|url|max:500',
-            'live_demo_url' => 'nullable|url|max:500',
-            'note' => 'nullable|string|max:2000',
-            'attachment' => 'nullable|file|mimes:zip,pdf,png,jpg|max:102400',
-        ]);
+        $userId = Auth::id();
+        $submissionService = app(ProjectSubmissionService::class);
 
-        $userId = auth()->id();
-        
-        // Get enrollment
-        $enrollment = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $userId)
-            ->where('roadmap_id', $roadmapId)
-            ->firstOrFail();
+        try {
+            $submission = $submissionService->submitProject(
+                userId: $userId,
+                lessonId: (int) $lessonId,
+                roadmapId: (int) $roadmapId,
+                githubUrl: $request->input('github_url'),
+                liveDemoUrl: $request->input('live_demo_url'),
+                note: $request->input('note'),
+                attachment: $request->file('attachment')
+            );
 
-        // Get lesson and project
-        $lesson = \Modules\Learning\Models\RoadmapLesson::findOrFail($lessonId);
-        
-        if (!$lesson->project_id) {
-            return back()->with('error', 'Bài học này không có dự án');
+            $message = $submission->submission_no > 1 
+                ? "Đã nộp lại dự án thành công (lần {$submission->submission_no})! Đợi giảng viên review."
+                : 'Đã nộp dự án thành công! Đợi giảng viên review.';
+
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Xóa bình luận / câu hỏi thảo luận của bài học
+     */
+    public function destroyQuestion(int $question_id)
+    {
+        $question = LessonQuestion::findOrFail($question_id);
+
+        if (Auth::id() !== $question->user_id) {
+            return redirect()->back()->with('error', 'Bạn không có quyền xóa bình luận này!');
         }
 
-        // Handle file upload
-        $attachmentPath = null;
-        if ($request->hasFile('attachment')) {
-            $attachmentPath = $request->file('attachment')->store('project-submissions', 'public');
-        }
+        $question->delete();
 
-        // Create or update submission
-        \Modules\Learning\Models\ProjectSubmission::create([
-            'project_id' => $lesson->project_id,
-            'user_id' => $userId,
-            'enrollment_id' => $enrollment->id,
-            'github_url' => $request->input('github_url'),
-            'live_demo_url' => $request->input('live_demo_url'),
-            'attachment_path' => $attachmentPath,
-            'note' => $request->input('note'),
-            'status' => 'submitted',
-            'submitted_at' => now(),
-        ]);
-
-        return back()->with('success', 'Đã nộp dự án thành công! Đợi giảng viên review.');
+        return redirect()->back()->with('success', 'Đã xóa bình luận thành công.');
     }
 }
