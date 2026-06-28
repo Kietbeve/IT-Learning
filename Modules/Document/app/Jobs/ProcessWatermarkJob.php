@@ -80,6 +80,10 @@ class ProcessWatermarkJob implements ShouldQueue
                         if ($previewR2Path) {
                             $document->update(['preview_file_path' => $previewR2Path]);
                             Log::info("Preview generated", ['doc_id' => $document->id, 'preview_path' => $previewR2Path]);
+                        } else {
+                            // Fallback: use watermarked file as preview
+                            $document->update(['preview_file_path' => $watermarkedR2Path]);
+                            Log::info("Preview fallback to watermarked", ['doc_id' => $document->id]);
                         }
                         
                         if (file_exists($tempWatermarked)) @unlink($tempWatermarked);

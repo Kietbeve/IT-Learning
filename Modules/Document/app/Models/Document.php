@@ -71,8 +71,24 @@ class Document extends Model
     public function reviews() { return $this->hasMany(DocumentReview::class); }
     public function downloads() { return $this->hasMany(DocumentDownload::class); }
     
-    // Draft relationships
+    // OLD Draft relationships (via parent_document_id - legacy, keeping for backward compatibility)
     public function rejectedDrafts() { return $this->hasMany(Document::class, 'parent_document_id')->where('status', 'rejected')->orderBy('created_at', 'desc'); }
+    public function pendingDrafts() { return $this->hasMany(Document::class, 'parent_document_id')->where('status', 'pending')->orderBy('created_at', 'desc'); }
+    public function parentDocument() { return $this->belongsTo(Document::class, 'parent_document_id')->withTrashed(); }
+    
+    // NEW Submission relationships (via document_relationships table)
+    public function submissionHistory() { return $this->hasMany(DocumentRelationship::class, 'draft_document_id')->orderBy('submitted_at', 'desc'); }
+    public function editHistory() { return $this->hasMany(DocumentRelationship::class, 'parent_document_id')->orderBy('submitted_at', 'desc'); }
+    public function pendingRelationships() { return $this->hasMany(DocumentRelationship::class, 'draft_document_id')->where('status', 'pending'); }
+    public function approvedRelationships() { return $this->hasMany(DocumentRelationship::class, 'draft_document_id')->where('status', 'approved'); }
+    public function rejectedRelationships() { return $this->hasMany(DocumentRelationship::class, 'draft_document_id')->where('status', 'rejected'); }
+    
+    // Lifecycle history - chain của document (parent + children)
+    public function histories() {
+        return $this->hasMany(Document::class, 'parent_document_id')
+            ->with(['author', 'reviewer'])
+            ->orderBy('created_at', 'asc');
+    }
     
     // Cross-Module
     public function product() { return $this->hasOne(\Modules\Payment\Models\Product::class); }

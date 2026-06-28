@@ -240,8 +240,8 @@ class WatermarkService
             
             // Calculate preview pages based on document length
             if ($pageCount < 4) {
-                // Too short, no preview
-                return null;
+                // Short documents: just 1 page
+                $previewPages = 1;
             } elseif ($pageCount <= 6) {
                 // Short documents: only 1 page
                 $previewPages = 1;

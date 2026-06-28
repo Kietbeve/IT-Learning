@@ -5,6 +5,7 @@ namespace Modules\Document\Http\Livewire\Contributor;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Modules\Document\Models\Document;
+use Modules\Document\Models\DocumentRelationship;
 use App\Models\Category;
 use Modules\Payment\Models\Product;
 use Illuminate\Support\Facades\Auth;
@@ -259,6 +260,16 @@ class DocumentEdit extends Component
                 );
             }
 
+            // Create DocumentRelationship for edit submission
+            DocumentRelationship::create([
+                'parent_document_id' => $doc->id,
+                'draft_document_id' => $draft->id,
+                'relationship_type' => 'edit_submission',
+                'status' => 'pending',
+                'submitted_by' => Auth::id(),
+                'submitted_at' => now(),
+            ]);
+
             session()->flash('success', 'Đã tạo bản chỉnh sửa! Admin sẽ duyệt bản cập nhật. Tài liệu gốc vẫn đang live.');
         } else {
             // Document not approved yet → Edit in-place (existing behavior)
@@ -298,6 +309,16 @@ class DocumentEdit extends Component
                 Product::where('document_id', $doc->id)->delete();
             }
 
+            // Create DocumentRelationship for new submission (resubmit)
+            DocumentRelationship::create([
+                'parent_document_id' => null,
+                'draft_document_id' => $doc->id,
+                'relationship_type' => 'new_submission',
+                'status' => 'pending',
+                'submitted_by' => Auth::id(),
+                'submitted_at' => now(),
+            ]);
+
             session()->flash('success', 'Cập nhật tài liệu thành công! Tài liệu đang chờ duyệt lại.');
         }
         return redirect()->route('contributor.documents.index');
@@ -309,7 +330,7 @@ class DocumentEdit extends Component
         return view('document::livewire.contributor.document-edit', [
             'categories' => $categories,
         ])->layout('layouts.contributor', [
-            'pageTitle' => 'Chỉnh sửa tài liệu',
+            'pageTitle' => '',
             'breadcrumb' => new \Illuminate\Support\HtmlString('<span class="mx-2">/</span> Contributor <span class="mx-2">/</span> Tài liệu <span class="mx-2">/</span> Chỉnh sửa')
         ]);
     }

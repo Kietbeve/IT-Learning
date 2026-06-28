@@ -1,7 +1,22 @@
-<div id="admin-document-list"
+<div id="admin-document-list" wire:poll.10s.keep-alive
      x-data="{ notification: null }" 
      x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      class="space-y-6">
+
+    <style>
+        #admin-document-list, 
+        #admin-document-list.wire-loading,
+        #admin-document-list * { 
+            transition: none !important; 
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            visibility: visible !important;
+        }
+        [wire\:loading], [wire\:loading] * {
+            opacity: 1 !important;
+        }
+    </style>
 
     <!-- Notification Toast -->
     <div x-show="notification" 
@@ -139,6 +154,13 @@
                                 {{ \Illuminate\Support\Str::limit($doc->title, 45) }}
                             </a>
                             
+                            @if($doc->pendingDrafts && $doc->pendingDrafts->count() > 0)
+                                <div class="inline-flex items-center gap-1 text-xs text-amber-600 font-semibold">
+                                    <span>⚠</span>
+                                    <span>Đang có bản sửa mới chờ duyệt</span>
+                                </div>
+                            @endif
+                            
                             <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
                                 <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-700 font-bold">
                                     {{ $doc->file_type }}
@@ -252,6 +274,13 @@
                                         {{ \Illuminate\Support\Str::limit($doc->title, 45) }}
                                     </a>
                                     
+                                    @if($doc->pendingDrafts && $doc->pendingDrafts->count() > 0)
+                                        <div class="inline-flex items-center gap-1 text-xs text-amber-600 font-semibold">
+                                            <span>⚠</span>
+                                            <span>Đang có bản sửa mới chờ duyệt</span>
+                                        </div>
+                                    @endif
+                                    
                                     <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
                                         <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-700 font-bold">
                                             {{ $doc->file_type }}
@@ -309,7 +338,6 @@
                                 <button wire:click="toggleVisibility({{ $doc->id }})" 
                                         @if($doc->trashed()) disabled @endif
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors {{ $doc->visibility === 'public' ? 'bg-blue-50 text-blue-600 hover:bg-blue-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100' }}">
-                                    <span class="h-1.5 w-1.5 rounded-full {{ $doc->visibility === 'public' ? 'bg-blue-600' : 'bg-slate-400' }}"></span>
                                     {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
                                 </button>
                             </td>

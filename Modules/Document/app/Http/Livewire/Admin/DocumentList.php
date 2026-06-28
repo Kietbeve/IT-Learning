@@ -74,7 +74,8 @@ class DocumentList extends Component
         $categories = Category::where('is_active', true)->get();
 
         // Query
-        $query = Document::withTrashed(); // Include soft deleted documents
+        $query = Document::withTrashed() // Include soft deleted documents
+            ->whereNull('parent_document_id'); // Only show root documents, not drafts
 
         if (!empty($this->search)) {
             $query->where(function($q) {
@@ -98,14 +99,14 @@ class DocumentList extends Component
             $query->where('category_id', $this->categoryFilter);
         }
 
-        $documents = $query->with(['author', 'category', 'product', 'reviewer'])
+        $documents = $query->with(['author', 'category', 'product', 'reviewer', 'pendingDrafts'])
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
         // Counts for overall stats
-        $totalCount = Document::withTrashed()->count();
-        $approvedCount = Document::where('status', 'approved')->count();
-        $pendingCount = Document::where('status', 'pending')->count();
+        $totalCount = Document::withTrashed()->whereNull('parent_document_id')->count();
+        $approvedCount = Document::where('status', 'approved')->whereNull('parent_document_id')->count();
+        $pendingCount = Document::where('status', 'pending')->whereNull('parent_document_id')->count();
         $totalDownloads = Document::sum('download_count');
 
         return view('document::livewire.admin.document-list', [

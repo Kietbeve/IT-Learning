@@ -5,6 +5,7 @@ namespace Modules\Document\Http\Livewire\Contributor;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Document\Models\Document;
+use Modules\Document\Models\DocumentRelationship;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,9 +69,16 @@ class DocumentList extends Component
 
     public function dismissRejectedDraft($documentId)
     {
-        Document::where('parent_document_id', $documentId)
+        $rejectedDrafts = Document::where('parent_document_id', $documentId)
             ->where('status', 'rejected')
-            ->forceDelete();
+            ->get();
+
+        foreach ($rejectedDrafts as $draft) {
+            DocumentRelationship::where('draft_document_id', $draft->id)
+                ->where('status', 'rejected')
+                ->forceDelete();
+            $draft->forceDelete();
+        }
         
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa cảnh báo.']);
     }
@@ -78,10 +86,16 @@ class DocumentList extends Component
     public function dismissRejection($documentId, $type)
     {
         if ($type === 'draft') {
-            // Delete rejected drafts
-            Document::where('parent_document_id', $documentId)
+            $rejectedDrafts = Document::where('parent_document_id', $documentId)
                 ->where('status', 'rejected')
-                ->forceDelete();
+                ->get();
+
+            foreach ($rejectedDrafts as $draft) {
+                DocumentRelationship::where('draft_document_id', $draft->id)
+                    ->where('status', 'rejected')
+                    ->forceDelete();
+                $draft->forceDelete();
+            }
             
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa cảnh báo bản nháp bị từ chối.']);
         } elseif ($type === 'direct') {
@@ -106,11 +120,9 @@ class DocumentList extends Component
         // Query only contributor's own documents
         $query = Document::where('author_id', $authorId)->withTrashed();
 
-        // Hide rejected drafts (show only original docs or non-rejected drafts)
-        $query->where(function($q) {
-            $q->whereNull('parent_document_id') // Always show original documents
-              ->orWhere('status', '!=', 'rejected'); // Only show non-rejected drafts
-        });
+        // Show only root documents (exclude all drafts)
+        // Rejected drafts and pending drafts appear as badges/warnings on parent docs
+        $query->whereNull('parent_document_id');
 
         if (!empty($this->search)) {
             $query->where(function($q) {
@@ -131,7 +143,7 @@ class DocumentList extends Component
             $query->where('category_id', $this->categoryFilter);
         }
 
-        $documents = $query->with(['category', 'product', 'reviewer', 'rejectedDrafts'])
+        $documents = $query->with(['category', 'product', 'reviewer', 'rejectedDrafts', 'pendingDrafts'])
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 

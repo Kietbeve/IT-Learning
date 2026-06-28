@@ -4,7 +4,9 @@ namespace Modules\Document\Http\Livewire\Admin;
 
 use Livewire\Component;
 use Modules\Document\Models\Document;
+use Modules\Document\Models\DocumentRelationship;
 use Modules\Document\Models\DocumentDownload;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,7 +14,19 @@ class DocumentDetail extends Component
 {
     public $documentId;
     public $rejectionReason = '';
-    public $from = 'moderation'; // Nguồn truy cập: 'moderation' hoặc 'list'
+    public $from = 'moderation';
+    
+    public $showHistoryModal = false;
+    public $submissionHistory = [];
+    
+    public $editMode = false;
+    public $editTitle;
+    public $editCategoryId;
+    public $editShortDescription;
+    public $editDescription;
+    public $editVisibility;
+    public $editIsDownloadable;
+    public $editPrice;
 
     public function mount($id)
     {
@@ -22,6 +36,14 @@ class DocumentDetail extends Component
         if (!$doc) {
             abort(404);
         }
+        
+        $this->editTitle = $doc->title;
+        $this->editCategoryId = $doc->category_id;
+        $this->editShortDescription = $doc->short_description;
+        $this->editDescription = $doc->description;
+        $this->editVisibility = $doc->visibility;
+        $this->editIsDownloadable = $doc->is_downloadable;
+        $this->editPrice = $doc->product?->price ?? 0;
     }
 
     public function approve()
@@ -190,10 +212,158 @@ class DocumentDetail extends Component
             echo "Nội dung gốc tài liệu kiểm duyệt: " . $doc->title . "\n";
         }, $fileName);
     }
+    
+    public function showHistory()
+    {
+        $doc = Document::withTrashed()->find($this->documentId);
+        if (!$doc) {
+            $this->submissionHistory = collect();
+            $this->showHistoryModal = true;
+            return;
+        }
+        
+        // Walk UP to find root document
+        $root = $doc;
+        while ($root->parent_document_id) {
+            $parent = Document::withTrashed()->find($root->parent_document_id);
+            if (!$parent) break;
+            $root = $parent;
+        }
+        
+        // Collect all document IDs in the chain
+        $documentIds = [$root->id];
+        $children = Document::withTrashed()
+            ->where('parent_document_id', $root->id)
+            ->pluck('id')
+            ->toArray();
+        $documentIds = array_merge($documentIds, $children);
+        
+        // Query all relationships for documents in the chain
+        $relationships = DocumentRelationship::whereIn('draft_document_id', $documentIds)
+            ->with(['submittedByUser', 'reviewedByUser'])
+            ->orderBy('submitted_at', 'asc')
+            ->get();
+        
+        // Transform into separate events
+        $timeline = collect();
+        foreach ($relationships as $rel) {
+            $timeline->push((object)[
+                'type' => 'submission',
+                'timestamp' => $rel->submitted_at,
+                'user' => $rel->submittedByUser,
+                'status' => null,
+            ]);
+            
+            if ($rel->reviewed_at) {
+                $timeline->push((object)[
+                    'type' => 'review',
+                    'timestamp' => $rel->reviewed_at,
+                    'user' => $rel->reviewedByUser,
+                    'status' => $rel->status,
+                    'details' => $rel->rejected_reason,
+                ]);
+            }
+        }
+        
+        $this->submissionHistory = $timeline->sortBy('timestamp')->values();
+        $this->showHistoryModal = true;
+    }
+    
+    public function closeHistoryModal()
+    {
+        $this->showHistoryModal = false;
+        $this->submissionHistory = [];
+    }
+    
+    public function editDocument()
+    {
+        $this->editMode = true;
+    }
+    
+    public function saveChanges()
+    {
+        $this->validate([
+            'editTitle' => 'required|string|max:255',
+            'editCategoryId' => 'nullable|exists:categories,id',
+            'editShortDescription' => 'nullable|string|max:500',
+            'editDescription' => 'required|string',
+            'editVisibility' => 'required|in:public,private,unlisted',
+            'editIsDownloadable' => 'required|boolean',
+            'editPrice' => 'nullable|numeric|min:0|max:999999999',
+        ]);
+        
+        $doc = Document::find($this->documentId);
+        if ($doc) {
+            $doc->update([
+                'title' => $this->editTitle,
+                'category_id' => $this->editCategoryId,
+                'short_description' => $this->editShortDescription,
+                'description' => $this->editDescription,
+                'visibility' => $this->editVisibility,
+                'is_downloadable' => $this->editIsDownloadable,
+            ]);
+            
+            // Update price
+            if ((int)$this->editPrice > 0) {
+                \Modules\Payment\Models\Product::updateOrCreate(
+                    ['document_id' => $doc->id],
+                    [
+                        'name' => $doc->title,
+                        'price' => (int)$this->editPrice,
+                        'is_active' => true,
+                    ]
+                );
+            } else {
+                \Modules\Payment\Models\Product::where('document_id', $doc->id)->delete();
+            }
+            
+            $this->editMode = false;
+            session()->flash('success', 'Đã cập nhật tài liệu thành công.');
+        }
+    }
+    
+    public function cancelEdit()
+    {
+        $doc = Document::find($this->documentId);
+        if ($doc) {
+            $this->editTitle = $doc->title;
+            $this->editCategoryId = $doc->category_id;
+            $this->editShortDescription = $doc->short_description;
+            $this->editDescription = $doc->description;
+            $this->editVisibility = $doc->visibility;
+            $this->editIsDownloadable = $doc->is_downloadable;
+            $this->editPrice = $doc->product?->price ?? 0;
+        }
+        $this->editMode = false;
+    }
+    
+    protected function getFileSizeFromStorage($path)
+    {
+        if (!$path) return null;
+        
+        try {
+            if (Storage::disk('r2')->exists($path)) {
+                return Storage::disk('r2')->size($path);
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Failed to get file size from storage", ['path' => $path, 'error' => $e->getMessage()]);
+        }
+        
+        return null;
+    }
+    
+    protected function formatFileSize($bytes)
+    {
+        if (!$bytes) return null;
+        
+        $mb = $bytes / 1024 / 1024;
+        return number_format($mb, 2) . ' MB';
+    }
 
     public function render()
     {
         $doc = Document::with(['author', 'category', 'product', 'reviewer'])->find($this->documentId);
+        $categories = Category::orderBy('name')->get();
 
         // Check if this is a draft and build comparison with original
         $original = null;
@@ -257,10 +427,17 @@ class DocumentDetail extends Component
             }
         }
 
+        $previewFileSize = $doc->preview_file_path ? $this->getFileSizeFromStorage($doc->preview_file_path) : null;
+        $watermarkedFileSize = $doc->file_watermarked_path ? $this->getFileSizeFromStorage($doc->file_watermarked_path) : null;
+        
         return view('document::livewire.admin.document-detail', [
             'doc' => $doc,
             'original' => $original,
-            'changes' => $changes
+            'changes' => $changes,
+            'categories' => $categories,
+            'originalFileSize' => $this->formatFileSize($doc->file_size),
+            'previewFileSize' => $this->formatFileSize($previewFileSize),
+            'watermarkedFileSize' => $this->formatFileSize($watermarkedFileSize),
         ])->layout('layouts.admin', [
             'pageTitle' => 'Chi tiết tài liệu',
             'breadcrumb' => new \Illuminate\Support\HtmlString('<span class="mx-2">/</span> Kiểm duyệt <span class="mx-2">/</span> Chi tiết')

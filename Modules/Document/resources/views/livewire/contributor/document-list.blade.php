@@ -1,7 +1,22 @@
-<div id="contributor-document-list"
+<div id="contributor-document-list" wire:poll.10s.keep-alive
      x-data="{ notification: null }" 
      x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      class="space-y-8 font-sans pb-10">
+
+    <style>
+        #contributor-document-list, 
+        #contributor-document-list.wire-loading,
+        #contributor-document-list * { 
+            transition: none !important; 
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            visibility: visible !important;
+        }
+        [wire\:loading], [wire\:loading] * {
+            opacity: 1 !important;
+        }
+    </style>
 
     <!-- Notification Toast -->
     <div x-show="notification" 
@@ -208,6 +223,23 @@
                                 </div>
                             @endif
 
+                            @if($doc->status === 'approved' && $doc->pendingDrafts->isNotEmpty())
+                                <a href="{{ route('contributor.documents.edit', ['id' => $doc->pendingDrafts->first()->id]) }}" class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg hover:bg-indigo-100 transition-colors block">
+                                    <div class="flex items-start gap-2">
+                                        <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        <div class="flex-1 text-[11px] min-w-0 leading-snug">
+                                            <span class="font-bold text-indigo-900">Đang cập nhật:</span>
+                                            <span class="text-indigo-800 ml-1">Có bản cập nhật đang chờ phê duyệt. Nhấn để xem chi tiết.</span>
+                                        </div>
+                                        <svg class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                    </div>
+                                </a>
+                            @endif
+
                             @if($doc->tags->isNotEmpty())
                                 <div class="flex flex-wrap gap-1 mt-1">
                                     @foreach($doc->tags as $tag)
@@ -401,6 +433,23 @@
                                                 </button>
                                             </div>
                                         </div>
+                                    @endif
+
+                                    @if($doc->status === 'approved' && $doc->pendingDrafts->isNotEmpty())
+                                        <a href="{{ route('contributor.documents.edit', ['id' => $doc->pendingDrafts->first()->id]) }}" class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg hover:bg-indigo-100 transition-colors block">
+                                            <div class="flex items-start gap-2">
+                                                <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                <div class="flex-1 text-[11px] min-w-0 leading-snug">
+                                                    <span class="font-bold text-indigo-900">Đang cập nhật:</span>
+                                                    <span class="text-indigo-800 ml-1">Có bản cập nhật đang chờ phê duyệt. Nhấn để xem chi tiết.</span>
+                                                </div>
+                                                <svg class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                </svg>
+                                            </div>
+                                        </a>
                                     @endif
 
                                     @if($doc->tags->isNotEmpty())

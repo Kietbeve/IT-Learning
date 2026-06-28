@@ -5,6 +5,7 @@ namespace Modules\Document\Http\Livewire\Contributor;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Modules\Document\Models\Document;
+use Modules\Document\Models\DocumentRelationship;
 use App\Models\Category;
 use Modules\Payment\Models\Product;
 use Illuminate\Support\Facades\Auth;
@@ -130,6 +131,16 @@ class DocumentUpload extends Component
             'is_downloadable' => $this->is_downloadable,
             'watermark_status' => $watermarkStatus,
             'status' => 'pending',
+        ]);
+
+        // 5.2. Create DocumentRelationship for new submission
+        DocumentRelationship::create([
+            'parent_document_id' => null,
+            'draft_document_id' => $document->id,
+            'relationship_type' => 'new_submission',
+            'status' => 'pending',
+            'submitted_by' => Auth::id(),
+            'submitted_at' => now(),
         ]);
 
         // 5.1. Dispatch async job to process watermark

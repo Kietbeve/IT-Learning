@@ -22,4 +22,38 @@ class PayoutRequest extends Model
 
     public function user() { return $this->belongsTo(User::class); }
     public function processor() { return $this->belongsTo(User::class, 'processed_by'); }
+    
+    public function walletTransactions()
+    {
+        return $this->hasMany(WalletTransaction::class, 'reference_id')
+            ->where('reference_type', 'payout_request');
+    }
+    
+    public function rejectionTransaction()
+    {
+        return $this->hasOne(WalletTransaction::class, 'reference_id')
+            ->where('reference_type', 'payout_request')
+            ->where('type', 'payout_rejected');
+    }
+    
+    public function getRejectionReasonAttribute()
+    {
+        if ($this->status !== 'rejected') {
+            return null;
+        }
+        
+        return $this->rejectionTransaction?->note;
+    }
+
+    public function getReceiptUrlAttribute()
+    {
+        if (!$this->receipt_image) return null;
+        if (str_starts_with($this->receipt_image, 'http')) return $this->receipt_image;
+        if (str_starts_with($this->receipt_image, 'payout_receipts/')) {
+            $publicUrl = config('filesystems.disks.r2.url');
+            $bucket = config('filesystems.disks.r2.bucket');
+            return rtrim($publicUrl, '/') . '/' . $bucket . '/' . ltrim($this->receipt_image, '/');
+        }
+        return asset('storage/' . $this->receipt_image);
+    }
 }
