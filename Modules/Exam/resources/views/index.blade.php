@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
 @section('content')
-    <div class="max-w-7xl mx-auto pb-8 pt-4">
+    <div class="max-w-10xl mx-auto pb-8 pt-2">
 
         <!-- Search Bar -->
         @include('exam::partials._search_form')
