@@ -7,7 +7,7 @@
         @if ($question)
             <div class="space-y-4">
 
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 ql-editor">
                     {!! $question->content !!}
                 </div>
 
@@ -109,9 +109,9 @@
                 @endforeach
             </x-native-select>
 
-            <x-textarea label="Nội dung" wire:model="content" />
+            <x-text-editor label="Nội dung" wire:model="content" />
 
-            <x-textarea
+            <x-text-editor
                 label="Giải thích"
                 wire:model="explanation"
                 placeholder="Giải thích đáp án hoặc kiến thức liên quan (không bắt buộc)"
@@ -193,7 +193,7 @@
             @elseif ($type === 'essay')
                 <div class="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
                     <div class="text-sm font-semibold text-slate-700">Đáp án tự luận</div>
-                    <x-textarea 
+                    <x-text-editor
                         wire:model="answer_text"
                         placeholder="Nhập gợi ý đáp án"
                         rows="5"
@@ -225,9 +225,9 @@
                     @endforeach
                 </x-native-select>
 
-                <x-textarea label="Nội dung" wire:model="content" />
+                <x-text-editor label="Nội dung" wire:model="content" />
 
-                <x-textarea
+                <x-text-editor
                     label="Giải thích"
                     wire:model="explanation"
                     placeholder="Giải thích đáp án hoặc kiến thức liên quan (không bắt buộc)"
@@ -309,7 +309,7 @@
                 @elseif ($type === 'essay')
                     <div class="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
                         <div class="text-sm font-semibold text-slate-700">Đáp án tự luận</div>
-                        <x-textarea 
+                        <x-text-editor 
                             wire:model="answer_text"
                             placeholder="Nhập gợi ý đáp án"
                             rows="5"
