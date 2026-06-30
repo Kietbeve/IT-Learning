@@ -303,16 +303,30 @@
                                                     />
 
                                                     {{-- Nút Đồng ý: Submit form bắt đầu làm bài
-                                                         - x-bind:disabled: Vô hiệu hóa khi đang submit
-                                                         - x-on:click: Set submitting=true rồi submit form
+                                                         CÁC TÍNH NĂNG LOADING:
+                                                         - x-text: Đổi text động "Đồng ý" → "Đang xử lý..." khi submitting
+                                                         - x-bind:disabled: Vô hiệu hóa nút khi đang submit (không click được nhiều lần)
+                                                         - x-on:click: Khi click sẽ:
+                                                           1. Set submitting=true (kích hoạt loading state)
+                                                           2. Submit form để chuyển sang trang exam.attempt.start
+                                                         
+                                                         KẾT QUẢ: Text nút sẽ đổi thành "Đang xử lý..." 
+                                                         và vô hiệu hóa trong khi chờ trang mới load
                                                     --}}
-                                                    <x-button
+                                                    <button
                                                         type="button"
-                                                        indigo
-                                                        label="Đồng ý"
+                                                        class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                                                         x-bind:disabled="submitting"
                                                         x-on:click="submitting = true; $refs.examForm.submit()"
-                                                    />
+                                                    >
+                                                        {{-- Spinner icon - chỉ hiện khi đang submit --}}
+                                                        <svg x-show="submitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        {{-- Text động: "Đồng ý" hoặc "Đang xử lý..." --}}
+                                                        <span x-text="submitting ? 'Đang xử lý...' : 'Đồng ý'"></span>
+                                                    </button>
 
                                                 </div>
 
