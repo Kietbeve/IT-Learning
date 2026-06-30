@@ -1,10 +1,23 @@
 # ============================================
-# Stage 1: Build Frontend Assets with Node
+# Stage 1: Build Frontend Assets with Node + Composer
 # ============================================
 FROM node:20-alpine AS node-builder
 
 # Set working directory
 WORKDIR /app
+
+# Install PHP and Composer (needed for WireUI vendor assets)
+RUN apk add --no-cache php82 php82-phar php82-mbstring php82-openssl
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+# Install PHP dependencies first (WireUI needs vendor/)
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --prefer-dist \
+    --no-interaction \
+    --no-scripts \
+    --optimize-autoloader
 
 # Copy package files
 COPY package*.json ./
