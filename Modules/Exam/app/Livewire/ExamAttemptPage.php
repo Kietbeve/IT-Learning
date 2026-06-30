@@ -91,6 +91,14 @@ class ExamAttemptPage extends Component
             if($this->attempt->exam->mode=='official'){
                 $this->showFullscreenModal=true;
             }
+
+            // Hiển thị thông báo nếu vừa đăng nhập và link attempts thành công
+            if (session()->has('success')) {
+                $this->notification()->success(
+                    title: 'Thành công',
+                    description: session('success')
+                );
+            }
             
         } catch (\Exception $e) {
             $this->notification()->error(
