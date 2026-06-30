@@ -1,7 +1,7 @@
 # ============================================
-# Stage 1: Build Frontend Assets with Node
+# Stage 1: Install Node Dependencies
 # ============================================
-FROM node:20-alpine AS node-builder
+FROM node:20-alpine AS node-dependencies
 
 # Set working directory
 WORKDIR /app
@@ -11,17 +11,8 @@ COPY package*.json ./
 
 # Install Node dependencies
 # Using --production=false to include devDependencies (needed for Vite build)
+# NOTE: We don't build here - build happens in stage 2 after composer install
 RUN npm ci --production=false
-
-# Copy all source files needed for Vite build
-COPY . .
-
-# Ensure public/build directory exists with correct permissions
-RUN mkdir -p public/build
-
-# Build Vite assets (this generates public/build directory)
-# Using production mode for optimized builds
-RUN npm run build
 
 # ============================================
 # Stage 2: PHP Runtime with Composer
@@ -88,9 +79,18 @@ RUN composer install \
 # Copy application code
 COPY . .
 
-# Copy built frontend assets from node-builder stage
-# This includes the manifest.json and all compiled JS/CSS
-COPY --from=node-builder /app/public/build ./public/build
+# Copy node_modules from stage 1
+COPY --from=node-dependencies /app/node_modules ./node_modules
+
+# Ensure public/build directory exists
+RUN mkdir -p public/build
+
+# Build Vite assets NOW (after composer install and source copy)
+# Laravel Vite plugin needs both PHP packages (vendor/) and source code to build correctly
+RUN npm run build
+
+# Clean up node_modules (not needed for production runtime)
+RUN rm -rf node_modules
 
 # Set correct permissions for Laravel directories
 # storage: Logs, cache, sessions, uploaded files
