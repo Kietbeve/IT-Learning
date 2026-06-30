@@ -35,6 +35,10 @@ DB_PORT=3306
 DB_DATABASE=your_database_name
 DB_USERNAME=your_username
 DB_PASSWORD=your_secure_password
+
+# Character set (required by this project - see README.md)
+DB_CHARSET=utf8mb3
+DB_COLLATION=utf8mb3_unicode_ci
 ```
 
 **MySQL Options:**
@@ -49,6 +53,10 @@ SESSION_LIFETIME=120
 
 CACHE_DRIVER=file
 QUEUE_CONNECTION=sync
+
+# Seeders (optional - set to true to run db:seed on deployment)
+# WARNING: Only enable for initial deployment or staging environments
+RUN_SEEDERS=false
 ```
 
 ### Mail Configuration (Optional)

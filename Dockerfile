@@ -16,6 +16,9 @@ RUN npm ci --production=false
 # Copy all source files needed for Vite build
 COPY . .
 
+# Ensure public/build directory exists with correct permissions
+RUN mkdir -p public/build
+
 # Build Vite assets (this generates public/build directory)
 # Using production mode for optimized builds
 RUN npm run build
