@@ -109,6 +109,119 @@ php artisan serve
 
 Nếu gặp bất kỳ vấn đề nào trong quá trình cài đặt, vui lòng liên hệ với team hoặc tham khảo tài liệu chính thức của [Laravel](https://laravel.com/docs).
 
+## Deploy demo lên Render
+
+Project này đã có sẵn `Dockerfile` và `docker/entrypoint.sh`, nên cách deploy ổn nhất trên Render là dùng **Web Service -> Docker**.
+
+### 1. Cách tạo service trên Render
+
+1. Vào Render Dashboard
+2. Chọn **New +** -> **Web Service**
+3. Kết nối repository GitHub/GitLab
+4. Chọn:
+   - **Environment**: `Docker`
+   - **Branch**: `main` hoặc nhánh bạn muốn deploy
+   - **Region**: gần người dùng nhất
+
+### 2. Build command và Start command
+
+Nếu bạn chọn **Docker** trên Render thì:
+
+- **Build Command**: để trống
+- **Start Command**: để trống
+
+Render sẽ tự build image từ `Dockerfile` và chạy `ENTRYPOINT` trong container.
+
+Nếu bạn muốn deploy theo kiểu **Native Web Service** thay vì Docker, có thể dùng:
+
+```bash
+Build Command: composer install --no-dev --optimize-autoloader && npm ci && npm run build
+Start Command: php artisan serve --host=0.0.0.0 --port=$PORT
+```
+
+Khuyến nghị vẫn là dùng Docker vì repo đã tối ưu sẵn cho kiểu deploy này.
+
+### 3. Các ENV cần khai báo trên Render
+
+Vào tab **Environment** của service và khai báo các biến sau:
+
+```env
+APP_NAME=IT-Learning
+APP_ENV=production
+APP_KEY=base64:your_app_key_here
+APP_DEBUG=false
+APP_URL=https://your-app-name.onrender.com
+APP_TIMEZONE=Asia/Ho_Chi_Minh
+
+DB_CONNECTION=mysql
+DB_HOST=your-mysql-host
+DB_PORT=3306
+DB_DATABASE=your_database_name
+DB_USERNAME=your_database_user
+DB_PASSWORD=your_database_password
+
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+QUEUE_CONNECTION=sync
+CACHE_STORE=database
+FILESYSTEM_DISK=local
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=https://your-app-name.onrender.com/google/callback
+
+PAYOS_CLIENT_ID=your_payos_client_id
+PAYOS_API_KEY=your_payos_api_key
+PAYOS_CHECKSUM_KEY=your_payos_checksum_key
+PAYOS_RETURN_URL=https://your-app-name.onrender.com/payment/return
+PAYOS_CANCEL_URL=https://your-app-name.onrender.com/payment/cancel
+
+PLATFORM_FEE_PERCENT=10
+```
+
+### 4. APP_KEY
+
+Nếu chưa có `APP_KEY`, tạo local bằng:
+
+```bash
+php artisan key:generate --show
+```
+
+Copy toàn bộ output và dán vào biến `APP_KEY` trên Render.
+
+### 5. Lưu ý quan trọng khi deploy
+
+- `APP_URL` phải là domain thật của Render, không dùng `localhost`
+- `GOOGLE_REDIRECT_URI`, `PAYOS_RETURN_URL`, `PAYOS_CANCEL_URL` cũng phải đổi sang domain Render
+- Nếu dùng database riêng, nhớ mở quyền kết nối từ Render
+- Nếu muốn seed dữ liệu lúc khởi động container, đặt thêm:
+
+```env
+RUN_SEEDERS=true
+```
+
+### 6. Migrate và seed
+
+Container đã tự chạy migrate trong `docker/entrypoint.sh`.
+Nếu muốn nạp seed data, bật `RUN_SEEDERS=true`.
+
+### 7. Tóm tắt nhanh cho Render
+
+- **Environment**: `Docker`
+- **Build Command**: để trống
+- **Start Command**: để trống
+- **APP_ENV**: `production`
+- **APP_DEBUG**: `false`
+- **APP_URL**: domain Render
+- **DB_***: trỏ về MySQL thật
+
+### 8. Nếu Render báo lỗi
+
+- `No application encryption key`: thiếu `APP_KEY`
+- `Database connection failed`: sai `DB_HOST`, `DB_USERNAME`, `DB_PASSWORD`
+- `Vite manifest not found`: kiểm tra Docker build có chạy `npm run build`
+- `Permission denied`: kiểm tra quyền thư mục `storage` và `bootstrap/cache`
+
 ## Luồng xử lý trong module
 
 Trong dự án Laravel 11 dùng `nwidart/laravel-modules`, mỗi module hoạt động theo luồng chính như sau:
