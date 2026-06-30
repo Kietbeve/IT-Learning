@@ -172,10 +172,12 @@
                                 @endif
 
                                 <form
+                                    x-ref="examForm"
                                     method="POST"
                                     action="{{ route('exam.attempt.start', $exam->slug) }}"
                                     x-data="{confirmModal:false,submitting:false}"
                                     @keydown.escape.window="confirmModal = false"
+                                    onsubmit="console.log('submit');"
                                 >
                                     @csrf
 
@@ -239,11 +241,11 @@
                                                     />
 
                                                     <x-button
-                                                        type="submit"
+                                                        type="button"
                                                         indigo
                                                         label="Đồng ý"
                                                         x-bind:disabled="submitting"
-                                                        x-on:click="submitting = true; confirmModal = false;"
+                                                        x-on:click="submitting = true; $refs.examForm.submit()"
                                                     />
 
                                                 </div>

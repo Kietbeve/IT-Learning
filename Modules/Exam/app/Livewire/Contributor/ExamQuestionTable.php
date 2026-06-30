@@ -95,6 +95,11 @@ final class ExamQuestionTable extends PowerGridComponent
         return PowerGrid::fields()
         ->add('id')
         ->add('content')
+        ->add('content_preview', function ($question) {
+            // Strip HTML tags and truncate to 100 characters
+            $plainText = strip_tags($question->content);
+            return str($plainText)->limit(100);
+        })
         ->add('type')
         ->add('type_label', fn ($question) => match ($question->type) {
             'single_choice'   => 'Một đáp án',
@@ -126,7 +131,7 @@ final class ExamQuestionTable extends PowerGridComponent
             Column::make('Thứ tự', 'sort_order')
                 ->sortable(),
 
-            Column::make('Câu hỏi', 'content')
+            Column::make('Câu hỏi', 'content_preview', 'content')
                 ->searchable(),
 
             Column::make('Loại câu hỏi', 'type_label', 'type'),

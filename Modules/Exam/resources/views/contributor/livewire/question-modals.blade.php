@@ -6,9 +6,18 @@
     <x-modal-card title="Chi tiết câu hỏi" blur wire:model="showViewModal" max-width="2xl">
         @if ($question)
             <div class="space-y-4">
-
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 ql-editor">
-                    {!! $question->content !!}
+                
+                <div class="flex gap-2">
+                    <x-icon name="document-text" class="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+                    <span class="font-semibold text-slate-900 text-sm ">Nội dung câu hỏi:</span>
+                </div>
+                
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <div class="flex gap-3">
+                        <div>
+                            <div class="text-sm text-slate-700 ql-editor">{!! $question->content !!}</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 text-sm">
@@ -65,26 +74,28 @@
                 @endif
 
                 @if ($question->type === 'essay')
-    <div class="rounded-lg border border-green-200 bg-green-50 p-4">
-        <h3 class="mb-2 font-semibold text-green-700">
-            Đáp án mẫu
-        </h3>
-
-        <div class="text-sm text-slate-700">
-            {!! $question->answer_text ?: '<em>Chưa có đáp án mẫu</em>' !!}
-        </div>
-    </div>
-@endif
+                    <div class="rounded-lg border border-green-200 bg-green-50 p-4">
+                        <div class="flex gap-3">
+                            <x-icon name="check-circle" class="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                            <div>
+                                <h4 class="font-semibold text-green-900 text-sm mb-1">Đáp án mẫu:</h4>
+                                <div class="text-sm text-green-800">
+                                    {!! $question->answer_text ?: '<em class="text-gray-500">Chưa có đáp án mẫu</em>' !!}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                 {{-- Explanation --}}
                 @if (!empty($question->explanation))
                     <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                        <h3 class="mb-2 font-semibold text-blue-700">
-                            Giải thích
-                        </h3>
-
-                        <div class="text-sm text-slate-700">
-                            {!! $question->explanation !!}
+                        <div class="flex gap-3">
+                            <x-icon name="information-circle" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                            <div>
+                                <h4 class="font-semibold text-blue-900 text-sm mb-1">Giải thích đáp án:</h4>
+                                <div class="text-sm text-blue-800 ql-editor">{!! $question->explanation !!}</div>
+                            </div>
                         </div>
                     </div>
                 @endif

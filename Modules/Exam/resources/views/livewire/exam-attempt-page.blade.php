@@ -254,7 +254,7 @@
                                 @endif
                             </div>
                             <h2 class="text-lg md:text-xl font-semibold text-gray-900 leading-relaxed">
-                                {{ $question->content }}
+                                <div class="ql-editor">{!! $question->content !!}</div>
                             </h2>
                         </div>
                     </div>
@@ -315,7 +315,7 @@
                         @elseif($question->type === 'essay')
                             {{-- Essay: Textarea with character counter --}}
                             <div>
-                                <x-textarea 
+                                <x-text-editor 
                                     wire:model.live.debounce.500ms="userAnswers.{{ $question->id }}"
                                     placeholder="Nhập câu trả lời của bạn (tối đa 100 ký tự)..."
                                     rows="6"

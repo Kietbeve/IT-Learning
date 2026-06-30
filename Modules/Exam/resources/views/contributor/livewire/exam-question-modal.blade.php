@@ -241,7 +241,7 @@
                                         {{-- Question Content --}}
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm text-gray-900 line-clamp-2">
-                                                {{ $question->content }}
+                                                {{ Str::limit(strip_tags($question->content), 150) }}
                                             </p>
 
                                             {{-- Meta info --}}
@@ -344,7 +344,7 @@
                                         <div class="flex items-start gap-2">
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs text-gray-900 line-clamp-2">
-                                                    {{ $question->content }}
+                                                    {{ Str::limit(strip_tags($question->content), 100) }}
                                                 </p>
                                                 <div class="mt-1 flex flex-wrap gap-1 text-xs">
                                                     <span
@@ -402,7 +402,7 @@
                                         <div class="flex items-start justify-between gap-2">
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs text-gray-900 line-clamp-2">
-                                                    {{ $question->content }}
+                                                    {{ Str::limit(strip_tags($question->content), 100) }}
                                                 </p>
                                                 <div class="mt-1 flex flex-wrap gap-1 text-xs">
                                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded
@@ -507,7 +507,7 @@
 
                 <div class="p-3 bg-gray-50 rounded border">
                     <p class="text-xs text-gray-500">Thứ tự: {{ $questionToRemove['sort_order'] }}</p>
-                    <p class="text-sm text-gray-900 mt-1">{{ Str::limit($questionToRemove['content'], 150) }}</p>
+                    <p class="text-sm text-gray-900 mt-1">{{ Str::limit(strip_tags($questionToRemove['content']), 150) }}</p>
                 </div>
             </div>
         @endif
