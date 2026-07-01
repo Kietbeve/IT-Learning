@@ -1,18 +1,31 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Learning\Http\Controllers\LearningController;
 use Livewire\Livewire;
+
+// Các Controller và Component
+use Modules\Learning\Http\Controllers\LearningController;
 use Modules\Learning\Livewire\Manage\RoadmapManagement;
+use Modules\Learning\Livewire\Manage\ManagementDetail;
+use Modules\Learning\Livewire\Manage\ManagementLesson;
 use Modules\Learning\Livewire\Admin\Collaborators\Index as CollabIndex;
 use Modules\Learning\Livewire\Admin\Collaborators\Create as CollabCreate;
 use Modules\Learning\Livewire\Admin\Collaborators\Edit as CollabEdit;
 
-// Registered Livewire Components
+/*
+|--------------------------------------------------------------------------
+| Livewire Component Registration
+|--------------------------------------------------------------------------
+*/
 Livewire::component('modules.learning.livewire.admin.collaborators', CollabIndex::class);
 Livewire::component('modules.learning.livewire.admin.collaborators.create', CollabCreate::class);
 Livewire::component('modules.learning.livewire.admin.collaborators.edit', CollabEdit::class);
 
+/*
+|--------------------------------------------------------------------------
+| Admin Collaborator Routes
+|--------------------------------------------------------------------------
+*/
 Route::get('/admin/collaborators', CollabIndex::class);
 Route::get('/admin/collaborators/create', CollabCreate::class);
 Route::get('/admin/collaborators/edit/{id}', CollabEdit::class);
@@ -24,89 +37,47 @@ Route::get('/admin/collaborators/edit/{id}', CollabEdit::class);
 |--------------------------------------------------------------------------
 */
 
-// ==========================================
-// 1. NHÓM PUBLIC (Không cần đăng nhập)
-// ==========================================
-
-// Trang 1: Danh sách các lộ trình học tập
-Route::get('/roadmaps', [LearningController::class, 'index'])
-    ->name('learning.roadmaps.index');
-
-// Trang 2: Chi tiết một lộ trình
-Route::get('/roadmaps/{id}', [LearningController::class, 'show'])
-    ->name('learning.roadmaps.show');
-
-// Trang 3: Chi tiết một bài học cụ thể thuộc lộ trình
-Route::get('/roadmaps/{roadmap_id}/lessons/{lesson_id}', [LearningController::class, 'showLesson'])
-    ->name('learning.lessons.show');
+// 1. NHÓM PUBLIC
+Route::get('/roadmaps', [LearningController::class, 'index'])->name('learning.roadmaps.index');
+Route::get('/roadmaps/{id}', [LearningController::class, 'show'])->name('learning.roadmaps.show');
+Route::get('/roadmaps/{roadmap_id}/lessons/{lesson_id}', [LearningController::class, 'showLesson'])->name('learning.lessons.show');
 
 
-// ==========================================
-// 2. NHÓM STUDENT (Bắt buộc phải đăng nhập)
-// ==========================================
+// 2. NHÓM STUDENT
 Route::middleware(['auth'])->group(function () {
-    
-    // Không gian học tập - Learning workspace với lessonId tùy chọn
-    Route::get('/roadmaps/{roadmapId}/learn/{lessonId?}', [LearningController::class, 'learn'])
-        ->name('learning.roadmaps.learn');
-
-    // Đăng ký vào lộ trình
-    Route::post('/roadmaps/{id}/enroll', [LearningController::class, 'enroll'])
-        ->name('learning.roadmaps.enroll');
-
-    // Đánh dấu bài học hoàn thành và chuyển sang bài tiếp theo
-    Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/complete', [LearningController::class, 'completeLesson'])
-        ->name('learning.lessons.complete');
-
-    // Lưu ghi chú bài học
-    Route::post('/lessons/{lesson_id}/note', [LearningController::class, 'saveNote'])
-        ->name('learning.lessons.note');
-
-    // Đặt câu hỏi thảo luận
-    Route::post('/lessons/{lesson_id}/question', [LearningController::class, 'postQuestion'])
-        ->name('learning.lessons.question');
-
-    // Route xóa bình luận câu hỏi thảo luận
-    Route::delete('/questions/{question_id}', [LearningController::class, 'destroyQuestion'])
-        ->name('learning.questions.destroy');
-
-    // Nộp dự án (project submission)
-    Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/submit-project', [LearningController::class, 'submitProject'])
-        ->name('learning.roadmaps.lessons.submit-project');
+    Route::get('/roadmaps/{roadmapId}/learn/{lessonId?}', [LearningController::class, 'learn'])->name('learning.roadmaps.learn');
+    Route::post('/roadmaps/{id}/enroll', [LearningController::class, 'enroll'])->name('learning.roadmaps.enroll');
+    Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/complete', [LearningController::class, 'completeLesson'])->name('learning.lessons.complete');
+    Route::post('/lessons/{lesson_id}/note', [LearningController::class, 'saveNote'])->name('learning.lessons.note');
+    Route::post('/lessons/{lesson_id}/question', [LearningController::class, 'postQuestion'])->name('learning.lessons.question');
+    Route::delete('/questions/{question_id}', [LearningController::class, 'destroyQuestion'])->name('learning.questions.destroy');
+    Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/submit-project', [LearningController::class, 'submitProject'])->name('learning.roadmaps.lessons.submit-project');
 });
 
 
-// ==========================================
-// 3. NHÓM ADMIN (Quản lý submissions)
-// ==========================================
+// 3. NHÓM ADMIN
 Route::middleware(['auth'])->prefix('admin/learning')->name('admin.learning.')->group(function () {
-    
-    // Danh sách tất cả submissions
-    Route::get('/submissions', \Modules\Learning\Livewire\Admin\ProjectSubmissionList::class)
-        ->name('submissions.index');
-    
-    // Review chi tiết một submission
-    Route::get('/submissions/{submissionId}/review', \Modules\Learning\Livewire\Admin\ProjectSubmissionReview::class)
-        ->name('submissions.review');
+    Route::get('/submissions', \Modules\Learning\Livewire\Admin\ProjectSubmissionList::class)->name('submissions.index');
+    Route::get('/submissions/{submissionId}/review', \Modules\Learning\Livewire\Admin\ProjectSubmissionReview::class)->name('submissions.review');
 });
 
 
-// ==========================================
-// 4. NHÓM MANAGE (Quản lý nội dung lộ trình)
-// ==========================================
-Route::get('/manage', function () {
-    return view('learning::manage.management-dashboard');
+// 4. NHÓM MANAGE
+Route::prefix('manage')->group(function () {
+    Route::get('/', function () {
+        return view('learning::manage.management-dashboard');
+    })->name('manage.dashboard');
+
+    Route::get('/roadmap', RoadmapManagement::class)->name('manage.roadmap');
+    Route::get('/detail', ManagementDetail::class)->name('manage.detail');
+    
+    Route::get('/lesson', function () {
+        return redirect()->route('manage.detail');
+    })->name('manage.lesson');
+
+    Route::get('/lessons/{section_id}', ManagementLesson::class)->name('management.lessons.index');
+    
+    Route::get('/sections', function () {
+        return view('learning::manage.management-section');
+    })->name('management.sections.index');
 });
-
-// ĐÃ SỬA: Chỉ giữ lại duy nhất route này cho Roadmap để chạy qua Livewire Component thực tế
-Route::get('/manage/roadmap', RoadmapManagement::class)->name('manage.roadmap');
-
-// Route cho trang Chi tiết/Danh sách bài học
-Route::get('/manage/detail', function () {
-    return view('learning::manage.namagement-detail');
-})->name('manage.detail');
-
-// Route cho trang Quản lý Chi tiết bài học
-Route::get('/manage/lesson', function () {
-    return view('learning::manage.management-lesson');
-})->name('manage.lesson');

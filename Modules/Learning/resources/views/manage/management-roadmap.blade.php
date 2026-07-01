@@ -105,7 +105,7 @@
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lộ Trình Đào Tạo</th>
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-28">Cấp Độ</th>
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-32">Trạng Thái</th>
-                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-28 text-center">Hành Động</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-36 text-center">Hành Động</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -114,7 +114,7 @@
                         <td class="px-6 py-4 text-xs font-mono font-bold text-slate-400">{{ $roadmap->public_id }}</td>
                         <td class="px-6 py-4">
                             <span class="block text-xs font-black text-slate-800 group-hover:text-blue-600 transition-colors">{{ $roadmap->title }}</span>
-                            <span class="block text-[11px] text-slate-400 font-medium mt-0.5 max-w-md truncate">{{ $roadmap->short_description ?? 'Chưa cấu hình mô tả ngắn.' }}</span>
+                            <span class="block text-[11px] text-slate-400 font-medium mt-0.5 max-w-md truncate">{{ $roadmap->description ?? 'Chưa cấu hình mô tả ngắn.' }}</span>
                         </td>
                         <td class="px-6 py-4">
                             <span class="inline-flex px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold capitalize">
@@ -138,6 +138,12 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-center gap-1.5">
+                                <a href="{{ url('/manage/detail?id=' . $roadmap->id) }}" title="Quản lý danh sách bài học" class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                                    </svg>
+                                </a>
+
                                 <button wire:click="openEditForm({{ $roadmap->id }})" class="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                                 </button>
