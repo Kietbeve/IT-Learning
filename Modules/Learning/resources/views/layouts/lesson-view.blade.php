@@ -27,7 +27,7 @@
              x-transition:leave="transition-opacity ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"></div>
+             class="fixed inset-0 bg-opacity-50 z-30 md:hidden"></div>
         
         <aside x-show="sidebarOpen"
                x-transition:enter="transition-transform ease-out duration-200"
@@ -101,6 +101,17 @@
             </div>
         </aside>
 
+        {{-- NÚT TOGGLE SIDEBAR - FIXED BUTTON --}}
+        <button @click="toggleSidebar" 
+                class="fixed top-20 left-4 z-50 bg-white border-2 border-gray-300 rounded-xl p-3 shadow-lg hover:bg-gray-50 transition-all">
+            <svg x-show="!sidebarOpen" class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <svg x-show="sidebarOpen" class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+
         {{-- MAIN CONTENT KHÔNG GIAN HỌC --}}
         <main class="flex-1 flex flex-col overflow-y-auto bg-gray-50/50 px-4 md:px-8 pb-32 scroll-smooth" id="main-scroll-area" @scroll="checkScroll">
             
@@ -113,64 +124,548 @@
                         {{ $currentLesson->title }}
                     </h1>
 
-                    <div class="mt-4">
-                        {{-- 1. BÀI HỌC DẠNG VIDEO (NHÚNG EMBED CHUẨN - KHÔNG BỊ THANH CUỘN CHI TIẾT VIDEO) --}}
-                        @if(($currentLesson->lesson_type ?? 'text') == 'video')
-                            @if($currentLesson->video_url)
-                                @php
-                                    // Tự động chuyển đổi link youtube thường thành link embed để nhúng trực tiếp
-                                    $embedUrl = $currentLesson->video_url;
-                                    if (str_contains($embedUrl, 'youtube.com/watch?v=')) {
-                                        $embedUrl = str_replace('watch?v=', 'embed/', $embedUrl);
-                                        if (str_contains($embedUrl, '&')) { $embedUrl = explode('&', $embedUrl)[0]; }
-                                    } elseif (str_contains($embedUrl, 'youtu.be/')) {
-                                        $embedUrl = str_replace('youtu.be/', 'youtube.com/embed/', $embedUrl);
-                                    }
-                                @endphp
-                                <div class="aspect-video w-full bg-black rounded-xl overflow-hidden shadow-md border border-gray-300 mb-4 relative">
-                                    <iframe src="{{ $embedUrl }}" 
-                                            class="absolute top-0 left-0 w-full h-full border-0" 
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                                            allowfullscreen>
-                                    </iframe>
+                    {{-- TÀI NGUYÊN BÀI HỌC - HIỂN THỊ TẤT CẢ TÀI NGUYÊN CÓ SẴN --}}
+                    
+                    {{-- 1. BANNER NỘI DUNG TEXT (Content) --}}
+                    @if(!empty($currentLesson->content))
+                        <div class="mt-4 bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-2xl p-6 mb-6 shadow-sm">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 bg-cyan-600 rounded-xl flex items-center justify-center text-2xl">
+                                    📝
                                 </div>
-                            @endif
-                            <div class="text-sm font-medium text-green-700 bg-green-50 p-3 rounded-xl border border-green-200">
-                                💡 Hệ thống nhận diện bài học Video. Bạn có thể nhấn nút "Hoàn thành" ngay lập tức mà không cần thực hiện thao tác cuộn trang.
+                                <div>
+                                    <h3 class="font-bold text-cyan-900 text-lg">Nội dung bài học</h3>
+                                    <p class="text-xs text-cyan-700">Tài liệu học tập chi tiết</p>
+                                </div>
                             </div>
-
-                        {{-- 2. BÀI HỌC DẠNG TEXT (CHỈ CÓ BÀI NÀY MỚI CẦN HIỂN THỊ THANH CUỘN VÀ ĐIỂM NEO) --}}
-                        @elseif(($currentLesson->lesson_type ?? 'text') == 'text')
-                            <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-4 flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xl">📖</span>
-                                    <div>
-                                        <h3 class="font-bold text-blue-900 text-sm">Tài liệu học tập đính kèm</h3>
-                                        <p class="text-xs text-blue-700">Vui lòng cuộn xem hết toàn bộ tài liệu PDF bên dưới để được tính hoàn thành bài học này.</p>
-                                    </div>
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-cyan-100">
+                                <div class="ql-editor prose max-w-none">
+                                    {!! $currentLesson->content !!}
                                 </div>
-                                @if($currentLesson->document || !empty($pdfFile))
-    @php $pdfLink = $currentLesson->document ? asset('storage/' . $currentLesson->document->file_path) : asset('storage/learning/' . $pdfFile); @endphp
-                                    <a href="{{ $pdfLink }}" download class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors whitespace-nowrap shadow-sm">
-                                        Tải PDF
-                                    </a>
-                                @endif
                             </div>
-
-                            @if($currentLesson->document || !empty($pdfFile))
-                                <div class="bg-gray-200 rounded-xl overflow-hidden border border-gray-300 shadow-inner mb-4">
-                                    <iframe src="{{ $pdfLink }}#toolbar=0" width="100%" height="650px" class="border-none block"></iframe>
-                                </div>
-                            @endif
-
-                            {{-- ĐIỂM NEO THEO DÕI CUỘN - CHỈ DÀNH RIÊNG CHO BÀI DẠNG TEXT/PDF --}}
-                            <div id="scroll-anchor" class="h-10 mt-2 flex items-center justify-center text-gray-400 text-xs border-t border-dashed border-gray-300 pt-4">
+                            
+                            {{-- ĐIỂM NEO THEO DÕI CUỘN CHỈ CHO CONTENT --}}
+                            <div id="scroll-anchor" class="h-10 mt-4 flex items-center justify-center text-cyan-600 text-xs border-t border-dashed border-cyan-300 pt-4">
                                 <span x-show="!canComplete" class="flex items-center gap-1 animate-pulse">⬇️ Đang đọc tài liệu... Vui lòng cuộn xuống hết trang</span>
                                 <span x-show="canComplete" class="text-green-600 font-bold flex items-center gap-1">✓ Hệ thống xác nhận đã hoàn thành đọc tài liệu!</span>
                             </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
+
+                    {{-- 2. BANNER VIDEO --}}
+                    @if(!empty($currentLesson->video_url))
+                        <div class="mt-4 bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-2xl">
+                                    ▶️
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 text-lg">Video bài giảng</h3>
+                                    <p class="text-xs text-gray-600">Xem video để hiểu rõ hơn</p>
+                                </div>
+                            </div>
+                            @php
+                                // Tự động chuyển đổi link youtube thường thành link embed
+                                $embedUrl = $currentLesson->video_url;
+                                if (str_contains($embedUrl, 'youtube.com/watch?v=')) {
+                                    $embedUrl = str_replace('watch?v=', 'embed/', $embedUrl);
+                                    if (str_contains($embedUrl, '&')) { $embedUrl = explode('&', $embedUrl)[0]; }
+                                } elseif (str_contains($embedUrl, 'youtu.be/')) {
+                                    $embedUrl = str_replace('youtu.be/', 'youtube.com/embed/', $embedUrl);
+                                }
+                            @endphp
+                            <div class="aspect-video w-full bg-black rounded-xl overflow-hidden shadow-md border border-gray-300 relative">
+                                <iframe src="{{ $embedUrl }}" 
+                                        class="absolute top-0 left-0 w-full h-full border-0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        allowfullscreen>
+                                </iframe>
+                            </div>
+                            <div class="mt-4 text-sm font-medium text-green-700 bg-green-50 p-3 rounded-xl border border-green-200">
+                                💡 Hệ thống nhận diện bài học Video. Bạn có thể nhấn nút "Hoàn thành" ngay lập tức.
+                            </div>
+                        </div>
+                    @endif
                 </div>
+
+                {{-- 3. BANNER BÀI KIỂM TRA (EXAM) --}}
+                @if($currentLesson->exam_id && $currentLesson->exam)
+                    <div class="bg-white border border-blue-100 rounded-2xl overflow-hidden shadow-lg mb-6">
+                        
+                        {{-- Header Exam --}}
+                        <div class="bg-gradient-to-r from-blue-700 to-blue-500 p-6 text-white">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="text-blue-100 text-sm mb-1">Bài kiểm tra</div>
+                                    <h3 class="text-2xl font-bold">{{ $currentLesson->exam->title }}</h3>
+                                    <p class="text-blue-100 text-sm mt-2">{{ $currentLesson->exam->description }}</p>
+                                </div>
+                                <div class="hidden md:block text-6xl opacity-20">📝</div>
+                            </div>
+                        </div>
+
+                        {{-- Thông tin Exam --}}
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div class="rounded-2xl bg-slate-50 p-4">
+                                    <div class="text-slate-500 text-xs mb-1">Thời gian</div>
+                                    <div class="font-bold text-slate-900 text-lg">{{ $currentLesson->exam->duration_minutes }} phút</div>
+                                </div>
+
+                                <div class="rounded-2xl bg-slate-50 p-4">
+                                    <div class="text-slate-500 text-xs mb-1">Số câu hỏi</div>
+                                    <div class="font-bold text-slate-900 text-lg">{{ $currentLesson->exam->questions->count() }}</div>
+                                </div>
+
+                                <div class="rounded-2xl bg-slate-50 p-4">
+                                    <div class="text-slate-500 text-xs mb-1">Điểm đạt</div>
+                                    <div class="font-bold text-slate-900 text-lg">{{ rtrim(rtrim($currentLesson->exam->pass_percent, '0'), '.') }}%</div>
+                                </div>
+
+                                <div class="rounded-2xl bg-slate-50 p-4">
+                                    <div class="text-slate-500 text-xs mb-1">Hình thức</div>
+                                    <div class="font-bold text-slate-900 text-lg">{{ ucfirst($currentLesson->exam->type) }}</div>
+                                </div>
+                            </div>
+
+                            {{-- Nút bắt đầu làm bài --}}
+                            <form method="POST"
+                                x-ref="examForm" 
+                                  action="{{ route('exam.attempt.start', $currentLesson->exam->slug) }}"
+                                  x-data="{confirmModal:false,submitting:false}"
+                                  @keydown.escape.window="confirmModal = false">
+                                @csrf
+
+                                <button type="button"
+                                        @click="confirmModal = true"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg px-8 py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3">
+                                    <span>Bắt đầu làm bài</span>
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                    </svg>
+                                </button>
+
+                                {{-- Modal xác nhận --}}
+                                <div x-show="confirmModal"
+                                     x-cloak
+                                     class="fixed inset-0 z-50"
+                                     style="display:none;">
+                                    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+                                         x-transition.opacity
+                                         @click="confirmModal = false"></div>
+
+                                    <div class="relative flex min-h-screen items-center justify-center p-4">
+                                        <div @click.stop
+                                             x-transition
+                                             class="w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl">
+                                            
+                                            <div class="p-8">
+                                                <div class="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center mb-5">
+                                                    <svg class="w-8 h-8 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    </svg>
+                                                </div>
+
+                                                <h3 class="text-xl font-bold text-slate-900 mb-2">
+                                                    Xác nhận làm bài kiểm tra
+                                                </h3>
+
+                                                <p class="text-slate-600 mb-4">
+                                                    Bạn có chắc chắn muốn bắt đầu bài kiểm tra này? Bài kiểm tra có thời gian giới hạn {{ $currentLesson->exam->duration_minutes }} phút.
+                                                </p>
+
+                                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+                                                    💡 <strong>Lưu ý:</strong> Hoàn thành tối thiểu {{ rtrim(rtrim($currentLesson->exam->pass_percent, '0'), '.') }}% số điểm để vượt qua bài thi.
+                                                </div>
+                                            </div>
+
+                                            <div class="px-6 py-4 bg-slate-50 flex justify-end gap-3">
+                                                <button type="button"
+                                                        @click="confirmModal = false"
+                                                        class="px-6 py-2.5 border border-gray-300 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
+                                                    Hủy
+                                                </button>
+
+    <button
+                                                        type="button"
+                                                        class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        x-bind:disabled="submitting"
+                                                        x-on:click="submitting = true; $refs.examForm.submit()"
+                                                    >
+                                                        {{-- Spinner icon - chỉ hiện khi đang submit --}}
+                                                        <svg x-show="submitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        {{-- Text động: "Đồng ý" hoặc "Đang xử lý..." --}}
+                                                        <span x-text="submitting ? 'Đang xử lý...' : 'Đồng ý'"></span>
+                                                    </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+
+                            {{-- Lưu ý --}}
+                            <div class="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3">
+                                <svg class="w-6 h-6 text-blue-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div>
+                                    <div class="font-semibold text-blue-900 text-sm">Lưu ý quan trọng</div>
+                                    <div class="text-sm text-blue-700 mt-1">
+                                        • Bài kiểm tra có thời gian giới hạn {{ $currentLesson->exam->duration_minutes }} phút<br>
+                                        • Cần đạt tối thiểu {{ rtrim(rtrim($currentLesson->exam->pass_percent, '0'), '.') }}% để hoàn thành<br>
+                                        • Hãy đọc kỹ câu hỏi trước khi trả lời
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- 4. BANNER TÀI LIỆU (DOCUMENT) - REFACTORED --}}
+                @if($currentLesson->document_id && $currentLesson->document)
+                @php
+                    $doc = $currentLesson->document;
+                    $fileType = strtolower($doc->file_type ?? '');
+                    $documentId = $doc->id;
+                    //KIETBEVE
+                    //File  Hiện tại dc đọc từ file URL = $doc->file_original_url với $doc thuộc bẳng document
+                    $fileUrl = $doc->file_original_url ?? '';
+                    
+                    // Fix: Loại bỏ bucket name khỏi URL nếu có
+                    // VD: https://pub-xxx.r2.dev/it-learning-documents/path -> https://pub-xxx.r2.dev/path
+                    $bucket = config('filesystems.disks.r2.bucket');
+                    if ($bucket && str_contains($fileUrl, "/{$bucket}/")) {
+                        $fileUrl = str_replace("/{$bucket}/", '/', $fileUrl);
+                    }
+                    
+                    $zipFiles = [];
+                    if ($fileType === 'zip') {
+                        $activeVer = $doc->currentVersion ?? $doc->latestVersion;
+                        if ($activeVer) {
+                            $zipFiles = \Illuminate\Support\Facades\Cache::rememberForever('zip_structure_lesson_' . $activeVer->id, function() use ($doc, $activeVer) {
+                                $zipPath = ($doc->watermark_status === 'success' && $activeVer->file_watermarked_path)
+                                    ? $activeVer->file_watermarked_path
+                                    : $activeVer->file_original_path;
+                                
+                                $localZip = null;
+                                $zipFiles = [];
+                                
+                                $localPath = storage_path('app/public/' . $zipPath);
+                                if (file_exists($localPath)) {
+                                    $localZip = $localPath;
+                                }
+                                
+                                if (!$localZip && $zipPath && \Illuminate\Support\Facades\Storage::disk('r2')->exists($zipPath)) {
+                                    $tempZip = storage_path('app/temp/' . uniqid('zip_') . '.zip');
+                                    $dir = dirname($tempZip);
+                                    if (!is_dir($dir)) mkdir($dir, 0755, true);
+                                    file_put_contents($tempZip, \Illuminate\Support\Facades\Storage::disk('r2')->get($zipPath));
+                                    $localZip = $tempZip;
+                                }
+                                
+                                if ($localZip) {
+                                    $zip = new ZipArchive();
+                                    if ($zip->open($localZip) === TRUE) {
+                                        for ($i = 0; $i < $zip->numFiles; $i++) {
+                                            $filename = $zip->getNameIndex($i);
+                                            if (substr($filename, -1) !== '/' && !str_contains($filename, '__MACOSX')) {
+                                                $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                                                $allowedExts = ['php','js','jsx','ts','tsx','py','java','css','scss','html','json','xml','md','sql','yml','yaml','txt'];
+                                                if (in_array($ext, $allowedExts)) {
+                                                    $content = $zip->getFromIndex($i);
+                                                    if ($content !== false && mb_strlen($content) < 500000) {
+                                                        $zipFiles[$filename] = ['content' => $content];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        $zip->close();
+                                    }
+                                    if (isset($tempZip) && file_exists($tempZip)) @unlink($tempZip);
+                                }
+                                
+                                return $zipFiles;
+                            });
+                        }
+                    }
+                @endphp
+
+                    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg mb-6">
+                        
+                        <div class="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200 p-6">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center text-2xl">
+                                        @if($fileType === 'zip') 📦 @else 📄 @endif
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-lg">{{ $doc->title }}</h3>
+                                        <p class="text-xs text-gray-600 mt-1">
+                                            {{ strtoupper($fileType) }} • {{ number_format($doc->file_size / 1024 / 1024, 2) }} MB
+                                        </p>
+                                    </div>
+                                </div>
+                                @if($doc->is_downloadable && !empty($fileUrl))
+                                    <a href="{{ $fileUrl }}" 
+                                       download 
+                                       class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors whitespace-nowrap shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        Tải xuống
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            @if($fileType === 'zip' && count($zipFiles) > 0)
+                                <div x-data="{ 
+                                    isFullscreen: false,
+                                    selectedFile: null, 
+                                    showTree: true,
+                                    selectFile(path) {
+                                        this.selectedFile = path;
+                                        this.$nextTick(() => {
+                                            let container = document.getElementById('lesson-code-preview-{{ $documentId }}');
+                                            if (container) {
+                                                let el = container.querySelector('[data-path=\'' + path + '\'] code');
+                                                if (el && !el.classList.contains('prism-highlighted')) {
+                                                    Prism.highlightElement(el);
+                                                    el.classList.add('prism-highlighted');
+                                                }
+                                            }
+                                        });
+                                    }
+                                }">
+                                    
+                                    <div class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 p-5 flex items-center justify-between gap-4 hover:shadow-md transition-shadow">
+                                        <div class="flex items-center gap-3">
+                                            <div class="p-3 bg-blue-600 text-white rounded-xl shrink-0">
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 text-sm">Xem cấu trúc source code</h4>
+                                                <p class="text-xs text-gray-600 mt-0.5">{{ count($zipFiles) }} files trong ZIP</p>
+                                            </div>
+                                        </div>
+                                        <button @click="isFullscreen = true" 
+                                                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-bold rounded-xl shadow-sm transition-colors whitespace-nowrap">
+                                            Xem source code
+                                        </button>
+                                    </div>
+
+                                    <div x-show="isFullscreen" 
+                                         class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40" 
+                                         style="display: none;" 
+                                         @click="isFullscreen = false"></div>
+
+                                    <div x-show="isFullscreen" 
+                                         class="fixed inset-4 md:inset-8 z-50 rounded-2xl bg-white border border-slate-200 p-6 flex flex-col shadow-2xl"
+                                         style="display: none;"
+                                         x-transition>
+                                         
+                                        <div class="flex items-center justify-between mb-4 shrink-0">
+                                            <div class="flex items-center gap-3">
+                                                <h3 class="text-lg font-bold text-gray-900">Xem source code</h3>
+                                                <span class="rounded-lg bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">ZIP</span>
+                                            </div>
+                                            <button @click="isFullscreen = false" 
+                                                    class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div class="flex-1 min-h-0">
+                                            <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+                                            
+                                            <div class="rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex h-full">
+                                                <div x-show="showTree" class="w-64 border-r border-gray-200 bg-white overflow-y-auto shrink-0">
+                                                    <div class="p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+                                                        <h4 class="font-bold text-gray-900 text-sm flex items-center gap-2">
+                                                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                                                            </svg>
+                                                            Cấu trúc project
+                                                        </h4>
+                                                        <p class="text-xs text-gray-500 mt-1">{{ count($zipFiles) }} files</p>
+                                                    </div>
+                                                    <div class="p-3">
+                                                        @php
+                                                            $tree = [];
+                                                            foreach($zipFiles as $path => $file) {
+                                                                $parts = explode('/', $path);
+                                                                $current = &$tree;
+                                                                foreach($parts as $i => $part) {
+                                                                    if($i === count($parts) - 1) {
+                                                                        $current[$part] = ['path' => $path, 'isFile' => true];
+                                                                    } else {
+                                                                        if(!isset($current[$part])) $current[$part] = [];
+                                                                        $current = &$current[$part];
+                                                                    }
+                                                                }
+                                                            }
+                                                            
+                                                            function renderLessonTree($tree, $depth = 0) {
+                                                                foreach($tree as $name => $item) {
+                                                                    if(isset($item['isFile'])) {
+                                                                        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                                                                        $iconClass = match($ext) {
+                                                                            'php' => 'text-indigo-600',
+                                                                            'js', 'jsx' => 'text-yellow-600',
+                                                                            'ts', 'tsx' => 'text-blue-600',
+                                                                            'py' => 'text-green-600',
+                                                                            'java' => 'text-red-600',
+                                                                            'css', 'scss' => 'text-pink-600',
+                                                                            'html' => 'text-orange-600',
+                                                                            'json', 'xml' => 'text-purple-600',
+                                                                            default => 'text-gray-500'
+                                                                        };
+                                                                        echo '<div @click="selectFile('.htmlspecialchars(json_encode($item['path'])).')" 
+                                                                              class="flex items-center gap-2 px-3 py-1.5 hover:bg-blue-50 cursor-pointer rounded-lg text-xs transition-all"
+                                                                              :class="selectedFile === '.htmlspecialchars(json_encode($item['path'])).' ? \'bg-blue-100 text-blue-800 font-bold\' : \'text-gray-700\'"
+                                                                              style="margin-left: '.($depth * 12).'px">
+                                                                              <svg class="w-3.5 h-3.5 '.$iconClass.'" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+                                                                              <span class="truncate">'.htmlspecialchars($name).'</span>
+                                                                        </div>';
+                                                                    } else {
+                                                                        echo '<div class="mt-1">';
+                                                                        echo '<div class="flex items-center gap-1.5 px-2 py-1 text-xs font-bold text-gray-700" style="margin-left: '.($depth * 12).'px">
+                                                                              <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
+                                                                              '.htmlspecialchars($name).'
+                                                                        </div>';
+                                                                        renderLessonTree($item, $depth + 1);
+                                                                        echo '</div>';
+                                                                    }
+                                                                }
+                                                            }
+                                                            renderLessonTree($tree);
+                                                        @endphp
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="flex-1 bg-white overflow-hidden flex flex-col" id="lesson-code-preview-{{ $documentId }}">
+                                                    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between shrink-0">
+                                                        <div class="flex items-center gap-2">
+                                                            <button @click="showTree = !showTree" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                                                                </svg>
+                                                            </button>
+                                                            <div x-show="!selectedFile" class="text-gray-500 text-xs">Chọn file để xem code</div>
+                                                            <div x-show="selectedFile" class="font-mono text-xs text-gray-800 font-bold truncate max-w-md" x-text="selectedFile"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-1 overflow-y-auto overflow-x-auto">
+                                                        <div x-show="!selectedFile" class="h-full flex items-center justify-center bg-gray-50">
+                                                            <div class="text-center p-6">
+                                                                <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                                                                </svg>
+                                                                <p class="text-xs font-bold text-gray-600">Chưa chọn file</p>
+                                                            </div>
+                                                        </div>
+                                                        @foreach($zipFiles as $path => $fileData)
+                                                            @php
+                                                                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                                                                $lang = match($ext) {
+                                                                    'php' => 'php',
+                                                                    'js', 'jsx' => 'javascript',
+                                                                    'ts', 'tsx' => 'typescript',
+                                                                    'py' => 'python',
+                                                                    'java' => 'java',
+                                                                    'css' => 'css',
+                                                                    'scss' => 'scss',
+                                                                    'html' => 'markup',
+                                                                    'json' => 'json',
+                                                                    'xml' => 'xml',
+                                                                    'md' => 'markdown',
+                                                                    'sql' => 'sql',
+                                                                    'yml', 'yaml' => 'yaml',
+                                                                    default => 'markup'
+                                                                };
+                                                            @endphp
+                                                            <div x-show="selectedFile === '{{ $path }}'" data-path="{{ $path }}" style="display: none;">
+                                                                <pre class="!m-0 !rounded-none" style="font-size: 13px; line-height: 1.6; padding: 1.5rem; background: #fafafa;"><code class="language-{{ $lang }}" style="font-size: 13px; line-height: 1.6;">{{ $fileData['content'] }}</code></pre>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup-templating.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @elseif($fileType === 'pdf' && !empty($fileUrl))
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-3 pb-4 border-b border-gray-200">
+                                        <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900 text-sm">Xem trước tài liệu PDF</h4>
+                                            <p class="text-xs text-gray-500 mt-0.5">Hỗ trợ đọc trực tuyến trên trình duyệt</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="rounded-xl overflow-hidden border border-gray-300 shadow-inner bg-gray-100" style="height: 750px;">
+                                        <iframe src="{{ $fileUrl }}#toolbar=0" 
+                                                class="w-full h-full border-0"
+                                                id="pdf-frame-{{ $documentId }}">
+                                        </iframe>
+                                    </div>
+
+                                    <div class="text-xs text-gray-600 bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                                        💡 <strong>Mẹo:</strong> Nếu tài liệu không hiển thị, hãy thử tải xuống để xem đầy đủ.
+                                    </div>
+                                </div>
+
+                            @else
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center">
+                                    <div class="text-5xl mb-4">📄</div>
+                                    <h4 class="font-bold text-yellow-800 text-lg mb-2">Tài liệu không hỗ trợ xem trực tuyến</h4>
+                                    <p class="text-yellow-700 text-sm mb-4">
+                                        File {{ strtoupper($fileType) }} không thể hiển thị trên trình duyệt.<br>
+                                        Vui lòng tải xuống để xem.
+                                    </p>
+                                    @if($doc->is_downloadable && !empty($fileUrl))
+                                        <a href="{{ $fileUrl }}" 
+                                           download
+                                           class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-3 rounded-xl transition-colors shadow-md">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            Tải xuống tài liệu
+                                        </a>
+                                    @endif
+                                </div>
+                            @endif
+                    </div>
+                @endif
 
                 {{-- PROJECT SUBMISSION SECTION --}}
                 @if($currentLesson->project_id && isset($currentLesson->project))
@@ -399,16 +894,17 @@
 <script>
     function lessonController() {
         return {
-            lessonType: '{{ $currentLesson->lesson_type ?? "text" }}',
+            // Logic mới: Check theo tài nguyên có sẵn, không theo lesson_type
+            hasContent: {{ !empty($currentLesson->content) ? 'true' : 'false' }},
             canComplete: false,
             sidebarOpen: window.innerWidth >= 768,
             
             init() {
-                // Nếu là bài học dạng video, canComplete lập tức chuyển thành true (không ép cuộn trang)
-                if (this.lessonType !== 'text') {
+                // Nếu KHÔNG có content text editor, không cần scroll tracking
+                if (!this.hasContent) {
                     this.canComplete = true;
                 } else {
-                    // Nếu là bài text, cài đặt IntersectionObserver theo dõi điểm neo
+                    // Nếu có content, cài đặt IntersectionObserver theo dõi điểm neo
                     this.$nextTick(() => {
                         this.setupScrollObserver();
                     });
@@ -433,7 +929,8 @@
             },
 
             checkScroll(e) {
-                if (this.lessonType === 'text' && !this.canComplete) {
+                // Chỉ check scroll nếu có content và chưa hoàn thành
+                if (this.hasContent && !this.canComplete) {
                     const el = e.target;
                     if (el.scrollHeight - el.scrollTop <= el.clientHeight + 60) {
                         this.canComplete = true;
