@@ -88,18 +88,25 @@ class DocumentDownloadController extends Controller
             ', 403);
         }
 
-        $isPaid = (bool)$doc->product;
+        $isPaid = (bool)($doc->product && $doc->product->is_active);
 
-        // 3. Log download
-        DocumentDownload::create([
-            'document_id' => $doc->id,
-            'user_id' => $userId,
-            'order_item_id' => $orderItemId,
-            'ip_address' => $ip,
-            'user_agent' => $request->userAgent(),
-            'source' => $isPaid ? 'paid' : ($userId ? 'free' : 'guest'),
-            'downloaded_at' => now(),
-        ]);
+        // 3. Log download (skip if already logged in last 30 seconds to avoid duplicates)
+        $recentDownload = DocumentDownload::where('document_id', $doc->id)
+            ->where('user_id', $userId)
+            ->where('downloaded_at', '>', now()->subSeconds(30))
+            ->exists();
+        
+        if (!$recentDownload) {
+            DocumentDownload::create([
+                'document_id' => $doc->id,
+                'user_id' => $userId,
+                'order_item_id' => $orderItemId,
+                'ip_address' => $ip,
+                'user_agent' => $request->userAgent(),
+                'source' => $isPaid ? 'paid' : ($userId ? 'free' : 'guest'),
+                'downloaded_at' => now(),
+            ]);
+        }
 
         // 4. Increment download count (without updating updated_at timestamp)
         \Illuminate\Support\Facades\DB::table('documents')
@@ -114,11 +121,32 @@ class DocumentDownloadController extends Controller
         }
         $fileName = $doc->slug . '.' . ($doc->file_type ?? 'pdf');
 
-        // R2 path — stream via temporary signed URL
+        // R2 path — generate presigned URL (15 minutes expiry) with forced download
         if ($filePath && !str_starts_with($filePath, 'documents/') && !str_starts_with($filePath, 'http')) {
             try {
-                return redirect()->away($doc->file_watermarked_url ?? $doc->file_original_url);
-            } catch (\Exception $e) {}
+                $bucket = config('filesystems.disks.r2.bucket');
+                $key = $filePath;
+                
+                // Smart check: if the path doesn't exist, try prepending the bucket prefix for legacy files
+                if (!Storage::disk('r2')->exists($key)) {
+                    $legacyKey = $bucket . '/' . ltrim($key, '/');
+                    if (Storage::disk('r2')->exists($legacyKey)) {
+                        $key = $legacyKey;
+                    }
+                }
+                
+                $client = Storage::disk('r2')->getClient();
+                $command = $client->getCommand('GetObject', [
+                    'Bucket' => $bucket,
+                    'Key' => $key,
+                    'ResponseContentDisposition' => 'attachment; filename="' . addslashes($fileName) . '"',
+                ]);
+                $request = $client->createPresignedRequest($command, '+15 minutes');
+                $presignedUrl = (string) $request->getUri();
+                return redirect()->away($presignedUrl);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to generate presigned URL: ' . $e->getMessage());
+            }
         }
 
         // Local path (legacy)

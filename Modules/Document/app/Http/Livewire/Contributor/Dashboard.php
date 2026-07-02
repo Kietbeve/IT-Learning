@@ -30,7 +30,7 @@ class Dashboard extends Component
                     ->whereColumn('order_items.document_id', 'documents.id')
                     ->where('orders.payment_status', 'paid');
             }, 'total_sales')
-            ->with(['category', 'product'])
+            ->with(['currentVersion.category', 'product'])
             ->orderByDesc('total_sales')
             ->limit(5)
             ->get();

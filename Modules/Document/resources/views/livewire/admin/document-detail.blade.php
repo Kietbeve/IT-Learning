@@ -24,7 +24,11 @@
             <!-- Status Badge -->
             <div>
                 <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-2">Trạng thái</span>
-                @if($doc->status === 'pending')
+                @if($doc->pendingVersion)
+                    <span class="inline-flex rounded-full bg-amber-100 px-4 py-1.5 text-xs font-bold text-amber-800">
+                        Chờ duyệt
+                    </span>
+                @elseif($doc->status === 'pending')
                     <span class="inline-flex rounded-full bg-amber-100 px-4 py-1.5 text-xs font-bold text-amber-800">
                         Chờ kiểm duyệt
                     </span>
@@ -65,7 +69,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         Sửa
                     </button>
-                    @if($doc->status === 'pending')
+                    @if($doc->status === 'pending' || $doc->pendingVersion)
                         <button wire:click="approve" class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 text-sm font-bold shadow-md transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             Phê duyệt
@@ -80,6 +84,36 @@
         </div>
     </div>
 
+    <!-- Version Changes Comparison -->
+    @if(isset($changes) && count($changes) > 0)
+        <div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm space-y-3">
+            <h3 class="text-sm font-bold text-amber-900 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Bản cập nhật này có sự thay đổi so với phiên bản đã duyệt trước đó:
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-700">
+                    <thead class="text-[10px] text-slate-500 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-4 py-2">Trường thay đổi</th>
+                            <th class="px-4 py-2">Giá trị trước đó (Đã duyệt)</th>
+                            <th class="px-4 py-2">Giá trị mới (Chờ duyệt)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        @foreach($changes as $field => $change)
+                            <tr>
+                                <td class="px-4 py-2.5 font-bold uppercase text-slate-500">{{ $field }}</td>
+                                <td class="px-4 py-2.5 text-slate-600 line-through bg-rose-50/50 break-words max-w-xs">{{ $change['old'] }}</td>
+                                <td class="px-4 py-2.5 text-slate-900 font-semibold bg-emerald-50/50 break-words max-w-xs">{{ $change['new'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     <!-- Layout 2 Columns -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Left Column (70%) -->
@@ -92,45 +126,58 @@
                         <!-- Category -->
                         <div>
                             <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Danh mục</label>
-                            <select wire:model="editCategoryId" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
+                            <select wire:model.live="editCategoryId" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
                                 <option value="">-- Chọn danh mục --</option>
                                 @foreach($categories as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                 @endforeach
                             </select>
+                            @error('editCategoryId') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Subject -->
+                        <div>
+                            <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Môn học</label>
+                            <select wire:model.live="editSubjectId" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
+                                <option value="">-- Chọn môn học --</option>
+                                @foreach($subjectsForEdit as $sub)
+                                    <option value="{{ $sub->id }}">{{ $sub->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('editSubjectId') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
                         </div>
                         
                         <!-- Title -->
                         <div>
                             <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Tiêu đề</label>
-                            <input type="text" wire:model="editTitle" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-lg font-bold text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
+                            <input type="text" wire:model.blur="editTitle" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-lg font-bold text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
                             @error('editTitle') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         
                         <!-- Short Description -->
                         <div>
                             <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Mô tả ngắn</label>
-                            <textarea wire:model="editShortDescription" rows="3" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none"></textarea>
+                            <textarea wire:model.blur="editShortDescription" rows="3" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none"></textarea>
                         </div>
                         
                         <!-- Description -->
                         <div>
                             <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Nội dung chi tiết</label>
-                            <textarea wire:model="editDescription" rows="8" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none"></textarea>
+                            <textarea wire:model.blur="editDescription" rows="8" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none"></textarea>
                             @error('editDescription') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         
                         <!-- Price -->
                         <div>
                             <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Giá (VND) - 0 là miễn phí</label>
-                            <input type="number" wire:model="editPrice" min="0" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none" placeholder="0">
+                            <input type="number" wire:model.blur="editPrice" min="0" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none" placeholder="0">
                             @error('editPrice') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         
                         <!-- Visibility -->
                         <div>
                             <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Chế độ hiển thị</label>
-                            <select wire:model="editVisibility" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
+                            <select wire:model.live="editVisibility" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
                                 <option value="public">Công khai (Public)</option>
                                 <option value="private">Riêng tư (Private)</option>
                                 <option value="unlisted">Không liệt kê (Unlisted)</option>
@@ -142,13 +189,148 @@
                             <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Quyền tải xuống</label>
                             <div class="flex items-center gap-4">
                                 <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" wire:model="editIsDownloadable" value="1" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                    <input type="radio" wire:model.live="editIsDownloadable" value="1" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                     <span class="text-sm text-slate-700">Cho phép tải xuống</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" wire:model="editIsDownloadable" value="0" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                    <input type="radio" wire:model.live="editIsDownloadable" value="0" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                     <span class="text-sm text-slate-700">Không cho phép</span>
                                 </label>
+                            </div>
+                        </div>
+
+                        <!-- Tags Selection -->
+                        <div class="col-span-2 space-y-3" x-data="{ showCustom: @entangle('editCustomTagsInput').defer !== '' }">
+                            <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+                            <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+                            
+                            <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block">Tags (Thẻ)</label>
+                            
+                            <!-- Tom-Select for predefined tags -->
+                            <div wire:ignore x-init="
+                                $nextTick(() => {
+                                    if ($refs.select.tomselect) $refs.select.tomselect.destroy();
+                                    const ts = new TomSelect($refs.select, {
+                                        maxItems: null,
+                                        plugins: ['remove_button'],
+                                        placeholder: 'Chọn tags...',
+                                        items: {{ Js::from($editSelectedTags ?? []) }},
+                                        onChange: (values) => { 
+                                            $wire.call('setEditTags', values);
+                                        },
+                                    });
+                                    window.addEventListener('tags-updated', (e) => {
+                                        if (ts) {
+                                            ts.clear(true);
+                                            const tags = Array.isArray(e.detail) ? e.detail : (e.detail.tags || []);
+                                            ts.setValue(tags, true);
+                                        }
+                                    });
+                                });
+                            ">
+                                <select multiple x-ref="select" class="w-full text-xs font-semibold">
+                                    @foreach($allTags as $tag)
+                                        <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Custom tags toggle -->
+                            <div class="flex items-center gap-2 pt-2">
+                                <input type="checkbox" id="customTagsToggle" x-model="showCustom" class="rounded border-slate-300">
+                                <label for="customTagsToggle" class="text-xs font-bold text-slate-600 cursor-pointer">Tag không có trong danh sách? Nhập tại đây</label>
+                            </div>
+
+                            <!-- Custom tags input -->
+                            <div x-show="showCustom" x-transition class="space-y-1">
+                                <input type="text" wire:model="editCustomTagsInput" placeholder="VD: tag tùy chỉnh 1, tag tùy chỉnh 2" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none transition-colors" />
+                                <p class="text-[10px] text-slate-400 font-bold">Nhập các tag tùy chỉnh, cách nhau bằng dấu phẩy</p>
+                            </div>
+
+                            @error('editSelectedTags') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
+                            @error('editCustomTagsInput') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="col-span-2 space-y-1">
+                            <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block">Thay đổi file tài liệu (Bỏ trống nếu giữ nguyên)</label>
+                            @if($doc->file_original_path)
+                                <div class="text-xs bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center justify-between text-slate-600 mb-2 gap-2">
+                                    <span class="truncate font-mono">Tệp hiện tại: {{ basename($doc->file_original_path) }} ({{ strtoupper($doc->file_type) }})</span>
+                                    <a href="{{ $doc->file_original_url }}" target="_blank" class="text-blue-600 hover:underline font-semibold whitespace-nowrap">Xem tệp cũ</a>
+                                </div>
+                            @endif
+
+                            @if($editFile)
+                                <div class="text-xs bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between text-emerald-800 mb-2 gap-2">
+                                    <span class="truncate font-medium flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                        Tệp mới đã chọn: {{ $editFile->getClientOriginalName() }}
+                                    </span>
+                                    <button type="button" wire:click="removeSelectedFile" class="text-rose-600 hover:text-rose-800 font-bold whitespace-nowrap">Hủy chọn</button>
+                                </div>
+                            @endif
+
+                            <input type="file" wire:model="editFile" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-blue-400 focus:outline-none">
+                            <div wire:loading wire:target="editFile" class="text-xs text-blue-600 mt-1 font-semibold">⏳ Đang tải file lên... vui lòng đợi</div>
+                            @error('editFile') <span class="text-xs text-red-500 mt-1 block font-semibold">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Images (Thumbnail + Gallery) -->
+                        <div class="col-span-2 space-y-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block">Ảnh bìa (Bỏ trống nếu giữ nguyên)</label>
+                                @if($doc->thumbnail)
+                                    <div class="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-xl p-2.5 mb-2">
+                                        <img src="{{ $doc->thumbnail_url }}" class="h-10 w-16 object-cover rounded-lg border border-slate-200" alt="Current thumb">
+                                        <span class="text-xs text-slate-500 truncate">Ảnh bìa hiện tại</span>
+                                    </div>
+                                @endif
+
+                                @if($editThumbnail)
+                                    <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 mb-2 gap-2">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <img src="{{ $editThumbnail->temporaryUrl() }}" class="h-10 w-16 object-cover rounded-lg border border-emerald-250 shrink-0" alt="New thumb preview">
+                                            <span class="text-xs text-emerald-800 font-medium truncate">Ảnh bìa mới đã chọn</span>
+                                        </div>
+                                        <button type="button" wire:click="removeSelectedThumbnail" class="text-rose-600 hover:text-rose-800 font-bold whitespace-nowrap text-xs">Hủy chọn</button>
+                                    </div>
+                                @endif
+
+                                <input type="file" wire:model="editThumbnail" accept="image/*" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-blue-400 focus:outline-none">
+                                <div wire:loading wire:target="editThumbnail" class="text-xs text-blue-600 mt-1 font-semibold">⏳ Đang tải ảnh lên... vui lòng đợi</div>
+                                @error('editThumbnail') <span class="text-xs text-red-500 mt-1 block font-semibold">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block">Ảnh mô tả <span class="text-slate-400 font-medium">(có thể bỏ trống)</span></label>
+                                @if(!$editGalleryFiles && $activeVersion && $activeVersion->gallery_images && is_array($activeVersion->gallery_images))
+                                    <div class="grid grid-cols-5 gap-2 mb-2">
+                                        @foreach($activeVersion->gallery_images as $img)
+                                            <div class="rounded-lg overflow-hidden border border-slate-200 aspect-square">
+                                                <img src="{{ Storage::disk('r2')->url($img['path']) }}" class="w-full h-full object-cover" loading="lazy" />
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <input type="file" wire:model="editGalleryFiles" accept="image/*" multiple class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-blue-400 focus:outline-none">
+                                <div wire:loading wire:target="editGalleryFiles" class="text-xs text-blue-600 mt-1 font-semibold">⏳ Đang tải ảnh lên... vui lòng đợi</div>
+                                @if($editGalleryFiles && count($editGalleryFiles) > 0)
+                                    <div class="grid grid-cols-5 gap-2 mt-2">
+                                        @foreach($editGalleryFiles as $index => $galleryFile)
+                                            @if ($galleryFile && !in_array($index, $this->excludedEditGalleryIndices))
+                                                <div class="relative rounded-lg overflow-hidden border border-slate-200 aspect-square group">
+                                                    <img src="{{ $galleryFile->temporaryUrl() }}" class="w-full h-full object-cover" alt="Gallery {{ $index + 1 }}" />
+                                                    <button type="button" wire:click="removeEditGalleryImage({{ $index }})" class="absolute top-1 right-1 rounded-full bg-rose-600 text-white p-0.5 hover:bg-rose-700 shadow-md transition-all opacity-0 group-hover:opacity-100" title="Xóa ảnh này">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    </button>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @endif
+                                @error('editGalleryFiles') <span class="text-xs text-red-500 mt-1 block font-semibold">{{ $message }}</span> @enderror
+                                @error('editGalleryFiles.*') <span class="text-xs text-red-500 mt-1 block font-semibold">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>
@@ -156,22 +338,40 @@
                     <!-- View Mode -->
                     <div>
                         <span class="rounded-xl px-2.5 py-1 text-xs font-semibold bg-slate-100 text-slate-800">
-                            {{ $doc->category?->name ?? 'Tài liệu' }}
+                            {{ $activeVersion->category?->name ?? 'Tài liệu' }}
                         </span>
+                        @if($activeVersion->subject)
+                            <span class="rounded-xl px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-800 ml-2">
+                                Môn: {{ $activeVersion->subject->name }}
+                            </span>
+                        @endif
                         <h1 class="mt-4 text-2xl font-bold tracking-tight text-slate-900">
-                            {{ $doc->title }}
+                            {{ $activeVersion->title }}
                         </h1>
                     </div>
 
                     <div class="border-t border-slate-100 pt-6 space-y-3">
                         <h2 class="text-base font-bold text-slate-900">Mô tả ngắn</h2>
-                        <p class="text-sm text-slate-600 leading-relaxed">{{ $doc->short_description }}</p>
+                        <p class="text-sm text-slate-600 leading-relaxed break-words">{{ $activeVersion->short_description }}</p>
                     </div>
 
                     <div class="border-t border-slate-100 pt-6 space-y-3">
                         <h2 class="text-base font-bold text-slate-900">Nội dung chi tiết</h2>
-                        <div class="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{{ $doc->description }}</div>
+                        <div class="text-sm text-slate-600 leading-relaxed whitespace-pre-line break-words">{{ $activeVersion->description }}</div>
                     </div>
+
+                    @if($doc->tags && $doc->tags->isNotEmpty())
+                        <div class="border-t border-slate-100 pt-6 space-y-3">
+                            <h2 class="text-base font-bold text-slate-900">Tags / Thẻ</h2>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($doc->tags as $tag)
+                                    <span class="inline-flex items-center rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                                        #{{ $tag->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 @endif
             </div>
 
@@ -183,51 +383,284 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
                         <div class="min-w-0 flex-1">
                             <span class="font-bold text-slate-900 block">Tệp gốc (Original File):</span>
-                            @if($doc->file_type && $originalFileSize)
-                                <span class="text-xs text-slate-600 font-semibold block mt-1">{{ strtoupper($doc->file_type) }} • {{ $originalFileSize }}</span>
+                            @if($activeVersion->file_type && $originalFileSize)
+                                <span class="text-xs text-slate-600 font-semibold block mt-1">{{ strtoupper($activeVersion->file_type) }} • {{ $originalFileSize }}</span>
                             @endif
-                            <span class="text-xs text-slate-500 font-mono break-all block mt-0.5">{{ $doc->file_original_path ?? 'Không có tệp gốc' }}</span>
+                            <span class="text-xs text-slate-500 font-mono break-all block mt-0.5">{{ $activeVersion->file_original_path ?? 'Không có tệp gốc' }}</span>
                         </div>
-                        @if($doc->file_original_path)
-                            <a href="{{ $doc->file_original_url }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
+                        @if($activeVersion->file_original_path)
+                            <a href="{{ $activeVersion->file_original_view_url }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
                                 Xem tệp
                             </a>
                         @endif
                     </div>
 
-                    <!-- Preview File -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm pt-4 border-t border-slate-50">
-                        <div class="min-w-0 flex-1">
-                            <span class="font-bold text-slate-900 block">Tệp xem trước (Preview File):</span>
-                            @if($previewFileSize)
-                                <span class="text-xs text-slate-600 font-semibold block mt-1">PDF • {{ $previewFileSize }}</span>
+                    @if(in_array(strtolower($activeVersion->file_type), ['pdf', 'doc', 'docx']))
+                        <!-- Preview File -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm pt-4 border-t border-slate-50">
+                            <div class="min-w-0 flex-1">
+                                <span class="font-bold text-slate-900 block">Tệp xem trước (Preview File):</span>
+                                @if($previewFileSize)
+                                    <span class="text-xs text-slate-600 font-semibold block mt-1">PDF • {{ $previewFileSize }}</span>
+                                @endif
+                                <span class="text-xs text-slate-500 font-mono break-all block mt-0.5">{{ $activeVersion->preview_file_path ?? 'Không có tệp xem trước' }}</span>
+                            </div>
+                            @if($activeVersion->preview_file_path)
+                                <a href="{{ $activeVersion->preview_file_view_url }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
+                                    Xem tệp
+                                </a>
                             @endif
-                            <span class="text-xs text-slate-500 font-mono break-all block mt-0.5">{{ $doc->preview_file_path ?? 'Không có tệp xem trước' }}</span>
                         </div>
-                        @if($doc->preview_file_path)
-                            <a href="{{ $doc->preview_file_url }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
-                                Xem tệp
-                            </a>
-                        @endif
+
+                        <!-- Watermarked File -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm pt-4 border-t border-slate-50">
+                            <div class="min-w-0 flex-1">
+                                <span class="font-bold text-slate-900 block">Tệp đóng dấu (Watermarked File):</span>
+                                @if($watermarkedFileSize)
+                                    <span class="text-xs text-slate-600 font-semibold block mt-1">{{ strtoupper(pathinfo($activeVersion->file_watermarked_path, PATHINFO_EXTENSION)) }} • {{ $watermarkedFileSize }}</span>
+                                @endif
+                                <span class="text-xs text-slate-500 font-mono break-all block mt-0.5">{{ $activeVersion->file_watermarked_path ?? 'Chưa tạo tệp đóng dấu' }}</span>
+                            </div>
+                            @if($activeVersion->file_watermarked_path)
+                                <a href="{{ $activeVersion->file_watermarked_view_url }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
+                                    Xem tệp
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Preview Section (Modal Trigger & Fullscreen Viewer) -->
+            @if(strtolower($activeVersion->file_type) === 'zip')
+            <div x-data="{ 
+                     isFullscreen: false,
+                     selectedFile: null, 
+                     copied: false, 
+                     showTree: true,
+                     selectFile(path) {
+                         this.selectedFile = path;
+                         this.$nextTick(() => {
+                             let container = document.getElementById('admin-code-preview-container');
+                             if (container) {
+                                 let el = container.querySelector('[data-path=\'' + path + '\'] code');
+                                 if (el && !el.classList.contains('prism-highlighted')) {
+                                     Prism.highlightElement(el);
+                                     el.classList.add('prism-highlighted');
+                                 }
+                             }
+                         });
+                     }
+                 }">
+                 
+                <!-- Compact Trigger Card -->
+                <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between gap-4 mt-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="font-bold text-slate-900 text-sm">Xem trước nội dung (Preview)</h3>
+                            <p class="text-xs text-slate-500 mt-0.5 truncate">Hỗ trợ đọc thử PDF và duyệt cây thư mục code của tệp ZIP</p>
+                        </div>
+                    </div>
+                    <button @click="isFullscreen = true" class="inline-flex rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 text-xs font-semibold shadow-sm transition-all whitespace-nowrap">
+                        Xem thử tài liệu
+                    </button>
+                </div>
+
+                <!-- Backdrop when Fullscreen -->
+                <div x-show="isFullscreen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 transition-opacity duration-300" style="display: none;" @click="isFullscreen = false"></div>
+
+                <!-- Fullscreen Modal Container -->
+                <div x-show="isFullscreen" 
+                     class="fixed inset-4 md:inset-8 z-50 rounded-3xl bg-white border border-slate-200 p-6 md:p-8 flex flex-col h-[calc(100vh-64px)] shadow-2xl space-y-4"
+                     style="display: none;"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 scale-95">
+                     
+                    <div class="flex items-center justify-between shrink-0">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-lg font-bold text-slate-900">Xem trước nội dung (Preview)</h2>
+                            <span class="rounded-xl bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600">Định dạng {{ strtoupper($activeVersion?->file_type ?? 'PDF') }}</span>
+                        </div>
+                        <button @click="isFullscreen = false" class="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1.5 text-xs font-bold border border-slate-200 bg-slate-50 shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            Đóng
+                        </button>
                     </div>
 
-                    <!-- Watermarked File -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm pt-4 border-t border-slate-50">
-                        <div class="min-w-0 flex-1">
-                            <span class="font-bold text-slate-900 block">Tệp đóng dấu (Watermarked File):</span>
-                            @if($watermarkedFileSize)
-                                <span class="text-xs text-slate-600 font-semibold block mt-1">PDF • {{ $watermarkedFileSize }}</span>
+                    <!-- Content Area -->
+                    <div class="flex-1 min-h-0 w-full">
+                        @if($activeVersion && strtolower($activeVersion->file_type) === 'pdf')
+                            @php
+                                $watermarkedUrl = ($activeVersion->watermark_status === 'success' && $activeVersion->file_watermarked_path) ? $activeVersion->file_watermarked_url : null;
+                                $pdfUrl = $watermarkedUrl ?? $activeVersion->file_original_url;
+                            @endphp
+
+                            @if($pdfUrl && $originalFileExists)
+                                <div class="rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-full w-full">
+                                    <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0"></iframe>
+                                </div>
+                            @else
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500 h-full w-full flex items-center justify-center">
+                                    <p class="text-sm font-semibold">⚠️ Tệp PDF chưa được đóng dấu hoặc không tồn tại trên Cloudflare.</p>
+                                </div>
                             @endif
-                            <span class="text-xs text-slate-500 font-mono break-all block mt-0.5">{{ $doc->file_watermarked_path ?? 'Chưa tạo tệp đóng dấu' }}</span>
-                        </div>
-                        @if($doc->file_watermarked_path)
-                            <a href="{{ $doc->file_watermarked_url }}" target="_blank" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
-                                Xem tệp
-                            </a>
+
+                        @elseif($activeVersion && strtolower($activeVersion->file_type) === 'docx')
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500 h-full w-full flex items-center justify-center">
+                                <p class="text-sm font-semibold">Tài liệu DOCX không hỗ trợ xem trực tiếp. Vui lòng tải xuống để xem.</p>
+                            </div>
+
+                        @elseif($activeVersion && strtolower($activeVersion->file_type) === 'zip')
+                            <!-- Prism.js CSS - LIGHT THEME -->
+                            <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+                            
+                            <div class="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white shadow-md overflow-hidden flex h-full w-full">
+                                <!-- File Tree (Left Panel) -->
+                                <div x-show="showTree" class="w-64 border-r border-slate-200 bg-gradient-to-b from-white to-slate-50 overflow-y-auto shrink-0 h-full">
+                                    <div class="p-4 border-b border-slate-200 bg-white sticky top-0 z-10">
+                                        <div class="flex items-center justify-between">
+                                            <h3 class="font-bold text-slate-900 flex items-center gap-2 text-sm">
+                                                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                                Cấu trúc Project
+                                            </h3>
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-1">{{ count($zipFiles) }} files</p>
+                                    </div>
+                                    <div class="p-3">
+                                        @php
+                                            $tree = [];
+                                            foreach($zipFiles as $path => $file) {
+                                                $parts = explode('/', $path);
+                                                $current = &$tree;
+                                                foreach($parts as $i => $part) {
+                                                    if($i === count($parts) - 1) {
+                                                        $current[$part] = ['path' => $path, 'isFile' => true];
+                                                    } else {
+                                                        if(!isset($current[$part])) $current[$part] = [];
+                                                        $current = &$current[$part];
+                                                    }
+                                                }
+                                            }
+                                            if (!function_exists('renderAdminTree')) {
+                                                function renderAdminTree($tree, $prefix = '', $depth = 0) {
+                                                    foreach($tree as $name => $item) {
+                                                        if(isset($item['isFile'])) {
+                                                            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                                                            $iconClass = match($ext) {
+                                                                'php' => 'text-indigo-600',
+                                                                'js', 'jsx' => 'text-yellow-600',
+                                                                'ts', 'tsx' => 'text-blue-600',
+                                                                'py' => 'text-green-600',
+                                                                'java' => 'text-red-600',
+                                                                'css', 'scss' => 'text-pink-600',
+                                                                'html' => 'text-orange-600',
+                                                                'json', 'xml' => 'text-purple-600',
+                                                                'md' => 'text-slate-600',
+                                                                default => 'text-slate-500'
+                                                            };
+                                                            echo '<div @click="selectFile('.htmlspecialchars(json_encode($item['path'])).')" 
+                                                                  class="flex items-center gap-2 px-3 py-1.5 hover:bg-blue-50 cursor-pointer rounded-lg text-xs transition-all group"
+                                                                  :class="selectedFile === '.htmlspecialchars(json_encode($item['path'])).' ? \'bg-blue-100 text-blue-800 font-semibold shadow-sm\' : \'text-slate-700 hover:text-blue-700\'"
+                                                                  style="margin-left: '.($depth * 12).'px">
+                                                                  <svg class="w-3.5 h-3.5 '.$iconClass.'" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+                                                                  <span class="truncate flex-1">'.htmlspecialchars($name).'</span>
+                                                            </div>';
+                                                        } else {
+                                                            echo '<div class="mt-1">';
+                                                            echo '<div class="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-slate-700" style="margin-left: '.($depth * 12).'px">
+                                                                  <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
+                                                                  '.htmlspecialchars($name).'
+                                                            </div>';
+                                                            renderAdminTree($item, $prefix.$name.'/', $depth + 1);
+                                                            echo '</div>';
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            renderAdminTree($tree);
+                                        @endphp
+                                    </div>
+                                </div>
+
+                                 <!-- Code Preview (Right Panel) -->
+                                <div class="flex-1 bg-white overflow-hidden flex flex-col h-full" id="admin-code-preview-container">
+                                    <div class="px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white sticky top-0 z-10 flex items-center justify-between shrink-0">
+                                        <div class="flex items-center gap-2">
+                                            <button @click="showTree = !showTree" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors shrink-0">
+                                                <svg x-show="showTree" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                                                <svg x-show="!showTree" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                                            </button>
+                                            <div x-show="!selectedFile" class="text-slate-500 text-xs">Chọn file để xem thử code</div>
+                                            <div x-show="selectedFile" class="flex items-center truncate max-w-xs md:max-w-md">
+                                                <span class="font-mono text-xs text-slate-800 font-semibold truncate" x-text="selectedFile"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 overflow-y-auto overflow-x-auto bg-white min-h-0">
+                                        <div x-show="!selectedFile" class="h-full flex items-center justify-center text-slate-400 bg-gradient-to-br from-slate-50 to-slate-100">
+                                            <div class="text-center p-6">
+                                                <svg class="w-12 h-12 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                                                <p class="text-xs font-semibold text-slate-600">Chưa chọn file</p>
+                                            </div>
+                                        </div>
+                                        @foreach($zipFiles as $path => $fileData)
+                                            @php
+                                                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                                                $lang = match($ext) {
+                                                    'php' => 'php',
+                                                    'js', 'jsx' => 'javascript',
+                                                    'ts', 'tsx' => 'typescript',
+                                                    'py' => 'python',
+                                                    'java' => 'java',
+                                                    'css' => 'css',
+                                                    'scss' => 'scss',
+                                                    'html' => 'markup',
+                                                    'json' => 'json',
+                                                    'xml' => 'xml',
+                                                    'md' => 'markdown',
+                                                    'sql' => 'sql',
+                                                    'yml', 'yaml' => 'yaml',
+                                                    default => 'markup'
+                                                };
+                                            @endphp
+                                            <div x-show="selectedFile === '{{ $path }}'" data-path="{{ $path }}" style="display: none;">
+                                                <pre class="!m-0 !rounded-none" style="font-size: 14px !important; line-height: 1.8 !important; padding: 1.5rem !important; background: #fafafa !important;"><code class="language-{{ $lang }}" style="font-size: 14px !important; line-height: 1.8 !important;">{{ $fileData['content'] }}</code></pre>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Prism.js Scripts -->
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup-templating.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+                            <script>
+                                document.addEventListener('alpine:initialized', () => {
+                                    // Prism.js managed manually
+                                });
+                            </script>
                         @endif
                     </div>
                 </div>
             </div>
+            @endif
         </div>
 
         <!-- Right Column (30%) -->
@@ -246,6 +679,23 @@
                     </div>
                 @endif
             </div>
+
+            <!-- Gallery Images -->
+            @if(!$editMode && $activeVersion && $activeVersion->gallery_images && is_array($activeVersion->gallery_images) && count($activeVersion->gallery_images) > 0)
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block">Ảnh gallery</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach($activeVersion->gallery_images as $image)
+                            <div class="rounded-xl overflow-hidden border border-slate-200 aspect-video">
+                                <img src="{{ Storage::disk('r2')->url($image['path']) }}" 
+                                     alt="Gallery" 
+                                     class="w-full h-full object-cover"
+                                     loading="lazy" />
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <!-- Moderation Panel -->
             @if($doc->status !== 'pending')

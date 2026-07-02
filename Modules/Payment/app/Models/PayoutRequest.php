@@ -49,10 +49,9 @@ class PayoutRequest extends Model
     {
         if (!$this->receipt_image) return null;
         if (str_starts_with($this->receipt_image, 'http')) return $this->receipt_image;
-        if (str_starts_with($this->receipt_image, 'payout_receipts/')) {
+        if (str_contains($this->receipt_image, 'payout_receipts/')) {
             $publicUrl = config('filesystems.disks.r2.url');
-            $bucket = config('filesystems.disks.r2.bucket');
-            return rtrim($publicUrl, '/') . '/' . $bucket . '/' . ltrim($this->receipt_image, '/');
+            return rtrim($publicUrl, '/') . '/' . ltrim($this->receipt_image, '/');
         }
         return asset('storage/' . $this->receipt_image);
     }

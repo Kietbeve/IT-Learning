@@ -155,23 +155,31 @@
                                 {{ $doc->title }}
                             </span>
                             
-                            <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-bold">
+                            <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 font-bold">
                                 <span class="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 uppercase text-slate-500 font-bold">
                                     {{ $doc->file_type }}
                                 </span>
                                 <span>{{ number_format($doc->file_size / 1024 / 1024, 2) }} MB</span>
-                                <span class="text-indigo-200/60">•</span>
-                                <span class="text-slate-500">Danh mục: {{ $doc->category?->name ?? 'Mặc định' }}</span>
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-0.5 font-bold text-blue-700">
+                                    <svg class="w-3 h-3 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                    {{ $doc->category?->name ?? 'Mặc định' }}
+                                </span>
+                                @if($doc->subject)
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2 py-0.5 font-bold text-indigo-700">
+                                    <svg class="w-3 h-3 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                    {{ $doc->subject->name }}
+                                </span>
+                                @endif
                             </div>
 
-                            @if(($doc->status === 'rejected' && $doc->rejected_reason) || (!$doc->parent_document_id && $doc->rejectedDrafts->isNotEmpty()))
+                            @if(($doc->status === 'rejected' && $doc->rejected_reason) || ($doc->status === 'approved' && $doc->rejectedVersion))
                                 @php 
-                                    $isDraftRejection = !$doc->parent_document_id && $doc->rejectedDrafts->isNotEmpty();
+                                    $isEditRejection = $doc->status === 'approved' && $doc->rejectedVersion;
+                                    $rejectedV = $doc->rejectedVersion;
                                     
-                                    if ($isDraftRejection) {
-                                        $rejectedDoc = $doc->rejectedDrafts->first();
-                                        $reason = $rejectedDoc->rejected_reason;
-                                        $date = $rejectedDoc->created_at->format('d/m/Y H:i');
+                                    if ($isEditRejection) {
+                                        $reason = $rejectedV->rejected_reason;
+                                        $date = $rejectedV->updated_at->format('d/m/Y H:i');
                                         $title = 'Bản cập nhật bị từ chối';
                                         $bgColor = 'bg-amber-50';
                                         $borderColor = 'border-amber-400';
@@ -179,7 +187,6 @@
                                         $textColorLight = 'text-amber-800';
                                         $textColorLighter = 'text-amber-600';
                                         $iconColor = 'text-amber-600';
-                                        $dismissType = 'draft';
                                     } else {
                                         $reason = $doc->rejected_reason;
                                         $date = $doc->updated_at->format('d/m/Y H:i');
@@ -190,7 +197,6 @@
                                         $textColorLight = 'text-rose-800';
                                         $textColorLighter = 'text-rose-600';
                                         $iconColor = 'text-rose-600';
-                                        $dismissType = 'direct';
                                     }
                                 @endphp
                                 <div class="mt-3 p-2 {{ $bgColor }} border-l-4 {{ $borderColor }} rounded-r-lg" x-data="{ expanded: false }">
@@ -213,7 +219,7 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        <button wire:click="dismissRejection({{ $doc->id }}, '{{ $dismissType }}')" 
+                                        <button wire:click="dismissRejectedVersion({{ $doc->id }})" 
                                                 class="shrink-0 {{ $textColor }} hover:{{ $textColorLight }} transition-colors mt-0.5">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -223,8 +229,8 @@
                                 </div>
                             @endif
 
-                            @if($doc->status === 'approved' && $doc->pendingDrafts->isNotEmpty())
-                                <a href="{{ route('contributor.documents.edit', ['id' => $doc->pendingDrafts->first()->id]) }}" class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg hover:bg-indigo-100 transition-colors block">
+                            @if($doc->status === 'approved' && $doc->pendingVersion)
+                                <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg hover:bg-indigo-100 transition-colors block">
                                     <div class="flex items-start gap-2">
                                         <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -251,7 +257,7 @@
 
                         <!-- Price tag -->
                         <div class="shrink-0 text-right space-y-2">
-                            @if($doc->product)
+                            @if($doc->product && $doc->product->is_active)
                                 <span class="text-indigo-650 font-extrabold text-sm">{{ number_format($doc->product->price) }} VND</span>
                             @else
                                 <span class="inline-flex rounded-lg bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-100">Miễn phí</span>
@@ -304,7 +310,7 @@
                                 {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
                             </span>
                             
-                            @if(!$doc->trashed())
+                            @if(!$doc->trashed() && $doc->status !== 'pending')
                                 <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 text-xs font-bold transition-all">
                                     Sửa
                                 </a>
@@ -356,15 +362,23 @@
                                         {{ $doc->title }}
                                     </span>
                                     
-                                    <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-bold">
+                                    <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 font-bold">
                                         <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-500 font-bold">
                                             {{ $doc->file_type }}
                                         </span>
                                         <span>{{ number_format($doc->file_size / 1024 / 1024, 2) }} MB</span>
-                                        <span class="text-indigo-200/50">•</span>
-                                        <span class="text-slate-400">Danh mục: {{ $doc->category?->name ?? 'Mặc định' }}</span>
-                                        <span class="text-indigo-200/50">•</span>
-                                        <span class="text-slate-400 inline-flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center gap-1 rounded bg-blue-50 px-1.5 py-0.5 font-bold text-blue-700">
+                                            <svg class="w-3 h-3 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                            {{ $doc->category?->name ?? 'Mặc định' }}
+                                        </span>
+                                        @if($doc->subject)
+                                        <span class="inline-flex items-center gap-1 rounded bg-indigo-50 px-1.5 py-0.5 font-bold text-indigo-700">
+                                            <svg class="w-3 h-3 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                            {{ $doc->subject->name }}
+                                        </span>
+                                        @endif
+                                        <span class="text-slate-300">|</span>
+                                        <span class="inline-flex items-center gap-1.5 flex-wrap">
                                             <span>Tải về: <strong class="text-slate-600 font-extrabold">{{ number_format($doc->download_count) }}</strong></span>
                                             <span class="text-slate-300">|</span>
                                             <span>Xem thử: <strong class="text-slate-600 font-extrabold">{{ number_format($doc->view_count) }}</strong></span>
@@ -376,14 +390,14 @@
                                         </span>
                                     </div>
 
-                                    @if(($doc->status === 'rejected' && $doc->rejected_reason) || (!$doc->parent_document_id && $doc->rejectedDrafts->isNotEmpty()))
+                                    @if(($doc->status === 'rejected' && $doc->rejected_reason) || ($doc->status === 'approved' && $doc->rejectedVersion))
                                         @php 
-                                            $isDraftRejection = !$doc->parent_document_id && $doc->rejectedDrafts->isNotEmpty();
+                                            $isEditRejection = $doc->status === 'approved' && $doc->rejectedVersion;
+                                            $rejectedV = $doc->rejectedVersion;
                                             
-                                            if ($isDraftRejection) {
-                                                $rejectedDoc = $doc->rejectedDrafts->first();
-                                                $reason = $rejectedDoc->rejected_reason;
-                                                $date = $rejectedDoc->created_at->format('d/m/Y H:i');
+                                            if ($isEditRejection) {
+                                                $reason = $rejectedV->rejected_reason;
+                                                $date = $rejectedV->updated_at->format('d/m/Y H:i');
                                                 $title = 'Bản cập nhật bị từ chối';
                                                 $bgColor = 'bg-amber-50';
                                                 $borderColor = 'border-amber-400';
@@ -391,7 +405,6 @@
                                                 $textColorLight = 'text-amber-800';
                                                 $textColorLighter = 'text-amber-600';
                                                 $iconColor = 'text-amber-600';
-                                                $dismissType = 'draft';
                                             } else {
                                                 $reason = $doc->rejected_reason;
                                                 $date = $doc->updated_at->format('d/m/Y H:i');
@@ -402,7 +415,6 @@
                                                 $textColorLight = 'text-rose-800';
                                                 $textColorLighter = 'text-rose-600';
                                                 $iconColor = 'text-rose-600';
-                                                $dismissType = 'direct';
                                             }
                                         @endphp
                                         <div class="mt-3 p-2 {{ $bgColor }} border-l-4 {{ $borderColor }} rounded-r-lg" x-data="{ expanded: false }">
@@ -425,7 +437,7 @@
                                                         @endif
                                                     </div>
                                                 </div>
-                                                <button wire:click="dismissRejection({{ $doc->id }}, '{{ $dismissType }}')" 
+                                                <button wire:click="dismissRejectedVersion({{ $doc->id }})" 
                                                         class="shrink-0 {{ $textColor }} hover:{{ $textColorLight }} transition-colors mt-0.5">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -435,15 +447,15 @@
                                         </div>
                                     @endif
 
-                                    @if($doc->status === 'approved' && $doc->pendingDrafts->isNotEmpty())
-                                        <a href="{{ route('contributor.documents.edit', ['id' => $doc->pendingDrafts->first()->id]) }}" class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg hover:bg-indigo-100 transition-colors block">
+                                    @if($doc->status === 'approved' && $doc->pendingVersion)
+                                        <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg hover:bg-indigo-100 transition-colors block">
                                             <div class="flex items-start gap-2">
                                                 <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                                 <div class="flex-1 text-[11px] min-w-0 leading-snug">
                                                     <span class="font-bold text-indigo-900">Đang cập nhật:</span>
-                                                    <span class="text-indigo-800 ml-1">Có bản cập nhật đang chờ phê duyệt. Nhấn để xem chi tiết.</span>
+                                                    <span class="text-indigo-800 ml-1">Có bản cập nhật đang chờ phê duyệt.</span>
                                                 </div>
                                                 <svg class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -462,7 +474,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($doc->product)
+                                @if($doc->product && $doc->product->is_active)
                                     <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }} VND</span>
                                 @else
                                     <span class="inline-flex rounded-lg bg-emerald-50 text-[10px] font-bold text-emerald-700 border border-emerald-100">Miễn phí</span>
@@ -502,7 +514,7 @@
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-2">
-                                    @if(!$doc->trashed())
+                                    @if(!$doc->trashed() && $doc->status !== 'pending')
                                         <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 text-xs font-bold shadow-sm transition-all duration-200">
                                             Sửa
                                         </a>

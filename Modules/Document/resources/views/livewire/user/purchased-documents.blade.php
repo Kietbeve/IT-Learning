@@ -62,10 +62,17 @@
                             </div>
                         @endif
 
-                        <div class="absolute top-4 left-4">
-                            <span class="rounded-xl px-2.5 py-1 text-xs font-semibold bg-white/95 text-slate-800 shadow-sm backdrop-blur-sm">
+                        <div class="absolute top-4 left-4 flex flex-wrap items-center gap-1.5">
+                            <span class="inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold bg-white/95 text-slate-800 shadow-sm backdrop-blur-sm">
+                                <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                                 {{ $access->document->category?->name ?? 'Tài liệu' }}
                             </span>
+                            @if($access->document->subject)
+                                <span class="inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-700 shadow-sm">
+                                    <svg class="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                    {{ $access->document->subject->name }}
+                                </span>
+                            @endif
                         </div>
                     </div>
 

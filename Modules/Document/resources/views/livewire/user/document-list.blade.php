@@ -111,7 +111,7 @@
                                         </div>
                                     </div>
                                     <div class="text-right shrink-0">
-                                        @if($doc->product)
+                                        @if($doc->product && $doc->product->is_active)
                                             <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">{{ number_format($doc->product->price) }}đ</span>
                                         @else
                                             <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">Miễn phí</span>
@@ -148,14 +148,14 @@
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-500 mb-4">Danh mục</h3>
                 <div class="space-y-2">
-                    <button wire:click="$set('selectedCategory', null)" 
-                            class="w-full text-left flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 {{ is_null($selectedCategory) ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900' }}">
+                    <button wire:click="$set('category', null)" 
+                            class="w-full text-left flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 {{ is_null($category) ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900' }}">
                         <span>Tất cả danh mục</span>
                     </button>
-                    @foreach($categories as $category)
-                        <button wire:click="$set('selectedCategory', {{ $category->id }})" 
-                                class="w-full text-left flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 {{ $selectedCategory == $category->id ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900' }}">
-                            <span>{{ $category->name }}</span>
+                    @foreach($categories as $cat)
+                        <button wire:click="$set('category', '{{ $cat->slug }}')" 
+                                class="w-full text-left flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 {{ $category == $cat->slug ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900' }}">
+                            <span class="truncate pr-2">{{ $cat->name }}</span>
                         </button>
                     @endforeach
                 </div>
@@ -165,7 +165,7 @@
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-500">Bộ lọc nâng cao</h3>
-                    @if(!empty($search) || !is_null($selectedCategory) || !empty($selectedFileType) || !empty($selectedPrice) || !empty($selectedYear) || !empty($selectedResourceType) || !empty($selectedCustomCategory) || !empty($selectedSubject) || !empty($selectedLanguage))
+                    @if(!empty($search) || !is_null($category) || !empty($selectedFileType) || !empty($selectedPrice) || !empty($selectedYear) || !empty($selectedResourceType) || !empty($selectedCustomCategory) || !empty($selectedSubject) || !empty($selectedLanguage))
                         <button wire:click="resetFilters" class="text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors duration-150">
                             Xóa lọc
                         </button>
@@ -256,7 +256,7 @@
                 </div>
 
                 <!-- Reset Filters Big Button -->
-                @if(!empty($search) || !is_null($selectedCategory) || !empty($selectedFileType) || !empty($selectedPrice) || !empty($selectedYear) || !empty($selectedResourceType) || !empty($selectedCustomCategory) || !empty($selectedSubject) || !empty($selectedLanguage))
+                @if(!empty($search) || !is_null($category) || !empty($selectedFileType) || !empty($selectedPrice) || !empty($selectedYear) || !empty($selectedResourceType) || !empty($selectedCustomCategory) || !empty($selectedSubject) || !empty($selectedLanguage))
                     <button wire:click="resetFilters" class="w-full mt-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 text-sm transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         Xóa tất cả bộ lọc
@@ -312,7 +312,7 @@
 
                             <!-- Price badge top-right -->
                             <div class="absolute top-3 right-3">
-                                @if($doc->product)
+                                @if($doc->product && $doc->product->is_active)
                                     <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold bg-white/90 text-amber-600 shadow-sm backdrop-blur-sm border border-white/50">
                                         {{ number_format($doc->product->price) }}đ
                                     </span>
@@ -326,10 +326,19 @@
 
                         <!-- Card Body -->
                         <div class="flex-1 px-5 pt-4 pb-4 flex flex-col">
-                            <!-- Category badge -->
-                            <span class="inline-block self-start rounded-lg px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-600 mb-2.5">
-                                {{ $doc->category?->name ?? 'Tài liệu' }}
-                            </span>
+                            <!-- Category + Subject badges row -->
+                            <div class="flex flex-wrap items-center gap-1.5 mb-2.5">
+                                <span class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700">
+                                    <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                    {{ $doc->category?->name ?? 'Tài liệu' }}
+                                </span>
+                                @if($doc->subject)
+                                    <span class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-700">
+                                        <svg class="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                        {{ $doc->subject->name }}
+                                    </span>
+                                @endif
+                            </div>
 
                             <!-- Title -->
                             <h3 class="text-base font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">

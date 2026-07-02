@@ -138,7 +138,7 @@ class PayoutReview extends Component
             WalletTransaction::create([
                 'user_id' => $user->id,
                 'type' => 'payout',
-                'amount' => -$payout->amount,
+                'amount' => $payout->amount,
                 'balance_before' => $balanceBefore,
                 'balance_after' => $balanceAfter,
                 'reference_type' => 'payout_request',
