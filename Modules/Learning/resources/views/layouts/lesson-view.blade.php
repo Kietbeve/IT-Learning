@@ -306,68 +306,11 @@
                     </div>
                 @endif
 
-                {{-- TABS HỎI ĐÁP THẢO LUẬN & CHỨC NĂNG XOÁ BÌNH LUẬN --}}
-                <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                    <div class="bg-gray-50 border-b border-gray-200 flex text-sm font-bold">
-                        <button class="px-6 py-4 border-b-2 border-cyan-600 text-cyan-700 bg-white">💬 Hỏi đáp & Thảo luận</button>
-                    </div>
-
-                    <div class="p-5 min-h-[250px]">
-                        <div class="space-y-6">
-                            
-                            {{-- Form Thêm Bình Luận --}}
-                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                                <h4 class="font-bold text-gray-800 text-xs mb-2">Đặt câu hỏi thảo luận về bài học:</h4>
-                                <form action="{{ route('learning.lessons.question', $currentLesson->id) }}" method="POST">
-                                    @csrf
-                                    <textarea name="content" rows="3" placeholder="Nhập nội dung thắc mắc tại đây..." class="w-full bg-white border border-gray-300 rounded-xl p-3 text-gray-900 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 mb-3 shadow-sm" required></textarea>
-                                    <div class="flex justify-end">
-                                        <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs px-5 py-2 rounded-xl shadow-sm transition-colors">Gửi bình luận</button>
-                                    </div>
-                                </form>
-                            </div>
-                            
-                            {{-- Danh sách Bình luận & Nút Xóa Chính Chủ --}}
-                            @if(isset($lessonQuestions) && $lessonQuestions->count() > 0)
-                                <div class="space-y-4">
-                                    @foreach($lessonQuestions as $question)
-                                        <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow transition-shadow">
-                                            <div class="flex items-start gap-3">
-                                                <div class="w-9 h-9 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                                                    {{ strtoupper(substr($question->user->name, 0, 1)) }}
-                                                </div>
-                                                <div class="flex-1">
-                                                    <div class="flex items-center justify-between mb-1">
-                                                        <span class="text-sm font-bold text-gray-900">{{ $question->user->name }}</span>
-                                                        <span class="text-[11px] text-gray-400 font-medium">{{ $question->created_at->diffForHumans() }}</span>
-                                                    </div>
-                                                    <p class="text-sm text-gray-700 leading-relaxed">{{ $question->content }}</p>
-                                                    
-                                                    <div class="mt-2.5 flex items-center gap-3">
-                                                        @if($question->is_answered)
-                                                            <span class="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-md border border-green-100">✓ Đã trả lời</span>
-                                                        @endif
-                                                        
-                                                        {{-- KHU VỰC HIỂN THỊ NÚT XOÁ NẾU LÀ USER ĐĂNG NHẬP --}}
-                                                        @if(Auth::check() && Auth::id() === $question->user_id)
-                                                            <form action="{{ route('learning.questions.destroy', $question->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xoá vĩnh viễn bình luận này?');" class="inline">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="text-[11px] font-semibold text-red-400 hover:text-red-600 underline underline-offset-2 transition-colors">
-                                                                    Xoá bình luận
-                                                                </button>
-                                                            </form>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-
-                        </div>
-                    </div>
+                {{-- FORUM THẢO LUẬN (dùng Livewire component) --}}
+                <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm p-5">
+                    @livewire(\Modules\Learning\Livewire\Forum\LessonDiscussion::class, [
+                        'lessonId' => $currentLesson->id,
+                    ])
                 </div>
 
                 {{-- NÚT HOÀN THÀNH BÀI HỌC --}}

@@ -14,7 +14,7 @@ class LearningDatabaseSeeder extends Seeder
         // Gọi file RoadmapSeeder thực thi bơm dữ liệu vào hệ thống
         $this->call([
             RoadmapSeeder::class,
-            RoadmapLessonSeeder::class,
+            ForumSeeder::class,
         ]);
     }
 }
