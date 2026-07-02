@@ -158,7 +158,7 @@ class TransactionsExport implements \Maatwebsite\Excel\Concerns\FromCollection,
                 'Tài liệu' => $docName,
                 'Ghi chú' => $tx->note,
                 'Số dư trước' => number_format($tx->balance_before),
-                'Số tiền' => number_format($tx->amount) . ($tx->amount >= 0 ? ' (+)' : ' (-)'),
+                'Số tiền' => number_format($tx->amount) . ($tx->type === 'earning' ? ' (+)' : ' (-)'),
                 'Số dư sau' => number_format($tx->balance_after),
                 'Thời gian' => $tx->created_at->format('d/m/Y H:i:s'),
             ];

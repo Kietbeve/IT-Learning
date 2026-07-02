@@ -268,19 +268,6 @@
                     @enderror
                 </div>
 
-                <!-- Slug -->
-                <div class="space-y-1">
-                    <label for="cat-slug" class="block text-sm font-semibold text-slate-700">Đường dẫn thân thiện (Slug) <span class="text-red-500">*</span></label>
-                    <input id="cat-slug"
-                           type="text" 
-                           wire:model="slug"
-                           placeholder="lap-trinh-php" 
-                           class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:outline-none" />
-                    @error('slug')
-                        <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
-                    @enderror
-                </div>
-
                 <!-- Sort Order -->
                 <div class="space-y-1">
                     <label for="cat-sort-order" class="block text-sm font-semibold text-slate-700">Thứ tự sắp xếp ưu tiên</label>

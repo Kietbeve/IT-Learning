@@ -52,7 +52,7 @@ class PurchasedDocuments extends Component
 
         $accesses = DocumentAccess::where('user_id', $userId)
             ->where('access_type', 'purchased')
-            ->with(['document.author', 'document.category'])
+            ->with(['document.author', 'document.currentVersion.category'])
             ->paginate(15);
 
         return view('document::livewire.user.purchased-documents', [

@@ -63,9 +63,18 @@
                         @endif
 
                         <div class="absolute top-4 left-4 right-4 flex justify-between items-center">
-                            <span class="rounded-xl px-2.5 py-1 text-xs font-semibold bg-white/95 text-slate-800 shadow-sm backdrop-blur-sm">
-                                {{ $fav->document->category?->name ?? 'Tài liệu' }}
-                            </span>
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold bg-white/95 text-slate-800 shadow-sm backdrop-blur-sm">
+                                    <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                    {{ $fav->document->category?->name ?? 'Tài liệu' }}
+                                </span>
+                                @if($fav->document->subject)
+                                    <span class="inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-700 shadow-sm">
+                                        <svg class="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                        {{ $fav->document->subject->name }}
+                                    </span>
+                                @endif
+                            </div>
 
                             <button wire:click="toggleFavorite({{ $fav->document_id }})" class="h-8 w-8 rounded-full bg-white/95 flex items-center justify-center text-red-500 shadow-sm hover:text-slate-400 transition-colors duration-200">
                                 <svg class="w-5 h-5 fill-red-500 text-red-500" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>

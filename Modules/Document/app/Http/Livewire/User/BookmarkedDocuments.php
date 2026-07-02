@@ -36,7 +36,7 @@ class BookmarkedDocuments extends Component
         $userId = Auth::id();
 
         $favorites = DocumentFavorite::where('user_id', $userId)
-            ->with(['document.author', 'document.category', 'document.product'])
+            ->with(['document.author', 'document.currentVersion.category', 'document.product'])
             ->paginate(15);
 
         return view('document::livewire.user.bookmarked-documents', [

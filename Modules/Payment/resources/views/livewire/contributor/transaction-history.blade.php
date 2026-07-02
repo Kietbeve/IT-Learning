@@ -170,8 +170,9 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
                                         {{ number_format($transaction->balance_before) }}đ
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold {{ $transaction->amount >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                                        {{ $transaction->amount >= 0 ? '+' : '' }}{{ number_format($transaction->amount) }}đ
+                                    @php $isCredit = ($transaction->type === 'earning'); @endphp
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold {{ $isCredit ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $isCredit ? '+' : '-' }}{{ number_format($transaction->amount) }}đ
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
                                         {{ number_format($transaction->balance_after) }}đ

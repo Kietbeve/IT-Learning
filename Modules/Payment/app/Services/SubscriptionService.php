@@ -47,7 +47,7 @@ class SubscriptionService
             'is_active' => $isActive,
             'expires_at' => $user->vip_expires_at,
             'quota_remaining' => $user->vip_download_quota,
-            'days_remaining' => $isActive ? now()->diffInDays($user->vip_expires_at, false) : 0,
+            'days_remaining' => $isActive ? round(now()->diffInDays($user->vip_expires_at, false)) : 0,
         ];
     }
 

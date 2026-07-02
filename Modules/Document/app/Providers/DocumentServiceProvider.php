@@ -32,10 +32,15 @@ class DocumentServiceProvider extends ServiceProvider
             \Livewire\Livewire::component('user-bookmarked-documents', \Modules\Document\Http\Livewire\User\BookmarkedDocuments::class);
             \Livewire\Livewire::component('user-purchased-documents', \Modules\Document\Http\Livewire\User\PurchasedDocuments::class);
 
-            \Livewire\Livewire::component('admin-document-moderation', \Modules\Document\Http\Livewire\Admin\DocumentModeration::class);
             \Livewire\Livewire::component('admin-document-detail', \Modules\Document\Http\Livewire\Admin\DocumentDetail::class);
             \Livewire\Livewire::component('admin-document-list', \Modules\Document\Http\Livewire\Admin\DocumentList::class);
+            \Livewire\Livewire::component('admin-document-upload', \Modules\Document\Http\Livewire\Admin\DocumentUpload::class);
             \Livewire\Livewire::component('admin-category-list', \Modules\Document\Http\Livewire\Admin\CategoryList::class);
+
+            \Livewire\Livewire::component('contributor-dashboard', \Modules\Document\Http\Livewire\Contributor\Dashboard::class);
+            \Livewire\Livewire::component('contributor-document-list', \Modules\Document\Http\Livewire\Contributor\DocumentList::class);
+            \Livewire\Livewire::component('contributor-document-upload', \Modules\Document\Http\Livewire\Contributor\DocumentUpload::class);
+            \Livewire\Livewire::component('contributor-document-edit', \Modules\Document\Http\Livewire\Contributor\DocumentEdit::class);
         } else {
             \Illuminate\Support\Facades\Log::warning('Livewire class NOT found!');
         }

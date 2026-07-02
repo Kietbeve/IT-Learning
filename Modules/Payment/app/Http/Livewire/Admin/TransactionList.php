@@ -102,7 +102,7 @@ class TransactionList extends Component
         if ($this->typeFilter !== 'all') {
             $query->where('type', $this->typeFilter);
         } else {
-            $query->whereIn('type', ['purchase', 'payout', 'refund', 'adjustment', 'subscription']);
+            $query->whereIn('type', ['earning', 'purchase', 'payout', 'refund', 'adjustment', 'subscription']);
         }
 
         if (!empty($this->dateFrom)) {
@@ -117,9 +117,9 @@ class TransactionList extends Component
             ->paginate(20);
 
         $stats = [
-            'total_credit' => WalletTransaction::whereIn('type', ['purchase', 'refund', 'adjustment', 'subscription'])
-                ->where('amount', '>', 0)->sum('amount'),
-            'total_debit' => WalletTransaction::where('amount', '<', 0)->sum('amount'),
+            'total_credit' => WalletTransaction::whereIn('type', ['purchase', 'refund', 'adjustment', 'subscription', 'earning'])
+                ->sum('amount'),
+            'total_debit' => WalletTransaction::whereIn('type', ['payout'])->sum('amount'),
             'total_count' => WalletTransaction::count(),
             'purchase_count' => WalletTransaction::where('type', 'purchase')->count(),
         ];
