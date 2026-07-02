@@ -8,7 +8,7 @@ use Modules\Learning\Models\Roadmap;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth; // Thêm Facade này để sửa lỗi auth()
 
-#[Layout('learning::layouts.master')]
+#[Layout('layouts.contributor')]
 class RoadmapManagement extends Component
 {
     // FIX WARNING P1132: Thêm kiểu dữ liệu int hoặc null cho roadmapId
