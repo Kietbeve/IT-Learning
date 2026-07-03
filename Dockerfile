@@ -59,6 +59,30 @@ RUN npm run build
 # ============================================
 # Stage 3 - Runtime (Laravel)
 # ============================================
+# FROM webdevops/php-nginx:8.3
+
+# ENV WEB_DOCUMENT_ROOT=/app/public
+
+# WORKDIR /app
+
+# COPY . .
+
+# COPY --from=composer /app/vendor ./vendor
+# COPY --from=node /app/public/build ./public/build
+
+# RUN mkdir -p \
+#     storage/framework/cache \
+#     storage/framework/sessions \
+#     storage/framework/views \
+#     storage/logs
+
+# RUN chown -R application:application storage bootstrap/cache
+# RUN chmod -R 775 storage bootstrap/cache
+
+# RUN php artisan storage:link || true
+
+# EXPOSE 80
+
 FROM webdevops/php-nginx:8.3
 
 ENV WEB_DOCUMENT_ROOT=/app/public
@@ -80,5 +104,8 @@ RUN chown -R application:application storage bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache
 
 RUN php artisan storage:link || true
+
+# 🔥 FIX QUAN TRỌNG: đảm bảo php-fpm + nginx chạy đúng
+CMD ["/opt/docker/bin/entrypoint.sh"]
 
 EXPOSE 80
