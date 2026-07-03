@@ -105,7 +105,7 @@ RUN chmod -R 775 storage bootstrap/cache
 
 RUN php artisan storage:link || true
 
-# 🔥 FIX QUAN TRỌNG: đảm bảo php-fpm + nginx chạy đúng
-CMD ["/opt/docker/bin/entrypoint.sh"]
+# 🔥 QUAN TRỌNG
+USER application
 
 EXPOSE 80
