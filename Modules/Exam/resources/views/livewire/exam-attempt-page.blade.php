@@ -35,6 +35,9 @@
         document.documentElement.requestFullscreen?.()
     "
     class="min-h-screen bg-gray-50">
+
+    <x-notifications z-index="z-50" />
+    
     {{-- Modal cảnh báo chuyển tab --}}
     @if($showWarningModal)
         <div class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">

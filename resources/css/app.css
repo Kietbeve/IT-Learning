@@ -27,6 +27,11 @@ html, body {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 }
 
+/* Alpine.js FOUC prevention */
+[x-cloak] {
+  display: none !important;
+}
+
 /* Custom scrollbar utility */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;

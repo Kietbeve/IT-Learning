@@ -158,10 +158,10 @@ class ExamService
         // }
 
         // Check expiration
-        if ($attempt->isExpired()) {
-            $attempt->update(['status' => 'expired']);
-            throw new \Exception('Bài thi đã hết hạn.');
-        }
+        // if ($attempt->isExpired()) {
+        //     $attempt->update(['status' => 'expired']);
+        //     throw new \Exception('Bài thi đã hết hạn.');
+        // }
     }
 
     // Hàm kiểm tra hết hạn bài thi
