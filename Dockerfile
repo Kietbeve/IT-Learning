@@ -1,11 +1,31 @@
 # ============================================
-# Stage 1 - PHP Dependencies (Composer)
+# Stage 1 - PHP + Composer
 # ============================================
-FROM composer:2 AS composer
+FROM php:8.3-cli AS composer
+
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    zip \
+    libzip-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libicu-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+        gd \
+        zip \
+        intl \
+        pdo_mysql \
+        bcmath
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
 COPY composer.json composer.lock ./
+
 RUN composer install \
     --no-dev \
     --prefer-dist \
@@ -14,8 +34,8 @@ RUN composer install \
     --optimize-autoloader
 
 COPY . .
-RUN composer dump-autoload --optimize
 
+RUN composer dump-autoload --optimize --classmap-authoritative
 
 # ============================================
 # Stage 2 - Frontend Build (Vite)
