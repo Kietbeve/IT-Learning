@@ -28,16 +28,29 @@ if [ $ATTEMPT -gt $MAX_ATTEMPTS ]; then
     exit 1
 fi
 
-echo "Running migrations..."
-php artisan migrate --force || echo "Migration failed, continuing..."
+# echo "Running migrations..."
+# php artisan migrate --force || echo "Migration failed, continuing..."
 
-if [ "${RUN_SEEDERS}" = "true" ]; then
-    echo "Running seeders..."
-    php artisan db:seed --force || echo "Seeder failed, continuing..."
+# if [ "${RUN_SEEDERS}" = "true" ]; then
+#     echo "Running seeders..."
+#     php artisan db:seed --force || echo "Seeder failed, continuing..."
+# fi
+
+# echo "Clearing caches..."
+# php artisan optimize:clear || true
+
+if [ "${RUN_FRESH_MIGRATION}" = "true" ]; then
+    echo "Running migrate:fresh --seed..."
+    php artisan migrate:fresh --seed --force || exit 1
+else
+    echo "Running migrate..."
+    php artisan migrate --force || echo "Migration failed, continuing..."
+
+    if [ "${RUN_SEEDERS}" = "true" ]; then
+        echo "Running seeders..."
+        php artisan db:seed --force || echo "Seeder failed, continuing..."
+    fi
 fi
-
-echo "Clearing caches..."
-php artisan optimize:clear || true
 
 echo "Creating storage link..."
 php artisan storage:link || true
