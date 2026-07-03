@@ -1,5 +1,5 @@
 # ============================================
-# Stage 1 - Composer (có đầy đủ PHP extensions)
+# Stage 1 - Composer (PHP + extensions)
 # ============================================
 FROM php:8.3-cli AS composer
 
@@ -25,21 +25,21 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./
+# ⚠️ COPY FULL SOURCE TRƯỚC (fix lỗi artisan + scripts)
+COPY . .
 
 RUN composer install \
     --no-dev \
     --prefer-dist \
     --no-interaction \
-    --optimize-autoloader
-
-COPY . .
+    --optimize-autoloader \
+    --no-scripts
 
 RUN composer dump-autoload --optimize --classmap-authoritative
 
 
 # ============================================
-# Stage 2 - Node (Vite build FIXED)
+# Stage 2 - Node (Vite build)
 # ============================================
 FROM node:22-alpine AS node
 
@@ -50,7 +50,7 @@ RUN npm ci
 
 COPY . .
 
-# ❗ FIX QUAN TRỌNG: copy vendor vào node stage
+# ⚠️ QUAN TRỌNG: cần vendor để resolve wireui + powergrid
 COPY --from=composer /app/vendor ./vendor
 
 RUN npm run build
