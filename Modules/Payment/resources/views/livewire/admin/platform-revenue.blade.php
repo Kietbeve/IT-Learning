@@ -55,6 +55,48 @@
         </div>
     </div>
 
+    <!-- 3 Metrics mới -->
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Tổng số tài liệu</p>
+                <span class="rounded-xl bg-cyan-50 p-2">
+                    <svg class="h-5 w-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($totalDocuments) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tài liệu trên hệ thống</p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Tổng lượt tải tài liệu</p>
+                <span class="rounded-xl bg-emerald-50 p-2">
+                    <svg class="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($totalDownloads) }}</p>
+            <p class="mt-1 text-sm text-slate-500">Tổng số lần tải xuống</p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600">Số dư ví</p>
+                <span class="rounded-xl bg-rose-50 p-2">
+                    <svg class="h-5 w-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-bold text-slate-900">{{ number_format($totalWalletBalance) }}đ</p>
+            <p class="mt-1 text-sm text-slate-500">Tổng số dư trong ví contributor</p>
+        </div>
+    </div>
+
     <div class="rounded-2xl border border-slate-200 bg-white">
         <div class="border-b border-slate-200 p-6">
             <h2 class="text-lg font-semibold text-slate-900">Doanh thu tuần này</h2>
