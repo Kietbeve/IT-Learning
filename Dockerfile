@@ -1,13 +1,10 @@
 # ============================================
-# Stage 1 - Composer
+# Stage 1 - Composer (có đầy đủ PHP extensions)
 # ============================================
 FROM php:8.3-cli AS composer
 
 RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    zip \
-    curl \
+    git unzip zip curl \
     libzip-dev \
     libpng-dev \
     libjpeg62-turbo-dev \
@@ -29,6 +26,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 COPY composer.json composer.lock ./
+
 RUN composer install \
     --no-dev \
     --prefer-dist \
@@ -41,7 +39,7 @@ RUN composer dump-autoload --optimize --classmap-authoritative
 
 
 # ============================================
-# Stage 2 - Vite
+# Stage 2 - Node (Vite build FIXED)
 # ============================================
 FROM node:22-alpine AS node
 
@@ -51,11 +49,15 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+# ❗ FIX QUAN TRỌNG: copy vendor vào node stage
+COPY --from=composer /app/vendor ./vendor
+
 RUN npm run build
 
 
 # ============================================
-# Stage 3 - Runtime
+# Stage 3 - Runtime (Laravel)
 # ============================================
 FROM webdevops/php-nginx:8.3
 
@@ -64,6 +66,7 @@ ENV WEB_DOCUMENT_ROOT=/app/public
 WORKDIR /app
 
 COPY . .
+
 COPY --from=composer /app/vendor ./vendor
 COPY --from=node /app/public/build ./public/build
 
