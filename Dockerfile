@@ -119,3 +119,12 @@ RUN php artisan storage:link || true
 # USER application
 
 EXPOSE 80
+
+COPY docker/entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["supervisord"]
+
+EXPOSE 80
