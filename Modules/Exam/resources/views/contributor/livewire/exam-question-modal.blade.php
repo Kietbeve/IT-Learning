@@ -19,39 +19,39 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-3 gap-3">
-                {{-- Filter: Độ khó --}}
-                <div>
-                    <select wire:model.live="filterDifficulty"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Tất cả độ khó</option>
-                        <option value="easy">Dễ</option>
-                        <option value="medium">Trung bình</option>
-                        <option value="hard">Khó</option>
-                    </select>
-                </div>
+            {{-- Filter Câu hỏi--}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {{-- Độ khó --}}
+                <x-multi-filter
+                    title="Độ khó"
+                    wire:model.live="filterDifficulty"
+                    :selected="$filterDifficulty"
+                    :options="[
+                        'easy' => 'Dễ',
+                        'medium' => 'Trung bình',
+                        'hard' => 'Khó',
+                    ]"
+                />
 
-                {{-- Filter: Loại câu hỏi --}}
-                <div>
-                    <select wire:model.live="filterType"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Tất cả loại</option>
-                        <option value="single_choice">Trắc nghiệm một đáp án</option>
-                        <option value="multiple_choice">Trắc nghiệm nhiều đáp án</option>
-                        <option value="essay">Tự luận</option>
-                    </select>
-                </div>
+                {{-- Loại --}}
+                <x-multi-filter
+                    title="Loại"
+                    wire:model.live="filterType"
+                    :selected="$filterType"
+                    :options="[
+                        'single_choice' => 'Một đáp án',
+                        'multiple_choice' => 'Nhiều đáp án',
+                        'essay' => 'Tự luận',
+                    ]"
+                />
 
-                {{-- Filter: Danh mục --}}
-                <div>
-                    <select wire:model.live="filterCategoryId"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Tất cả danh mục</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                {{-- Danh mục --}}
+                <x-multi-filter
+                    title="Danh mục"
+                    wire:model.live="filterCategoryId"
+                    :selected="$filterCategoryId"
+                    :options="$categories"
+                />
             </div>
         </div>
 
