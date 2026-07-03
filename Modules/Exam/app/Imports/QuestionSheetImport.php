@@ -54,12 +54,30 @@ class QuestionSheetImport implements ToCollection
                     )
                 ) {
 
-                    $options = json_decode(
-                        $data['options'],
-                        true
-                    );
+                    // Parse semicolon-separated options format
+                    // Example: "+Bàn phím;+Chuột;Màn hình"
+                    $optionsString = trim($data['options'] ?? '');
+                    
+                    if (empty($optionsString)) {
+                        throw ValidationException::withMessages([
+                            'import' => "Dòng {$line}: Options không hợp lệ.",
+                        ]);
+                    }
 
-                    if (! is_array($options)) {
+                    $optionParts = explode(';', $optionsString);
+                    foreach ($optionParts as $optionPart) {
+                        $optionPart = trim($optionPart);
+                        if (!empty($optionPart)) {
+                            $isCorrect = str_starts_with($optionPart, '+');
+                            $content = $isCorrect ? substr($optionPart, 1) : $optionPart;
+                            $options[] = [
+                                'content' => trim($content),
+                                'is_correct' => $isCorrect,
+                            ];
+                        }
+                    }
+
+                    if (empty($options)) {
                         throw ValidationException::withMessages([
                             'import' => "Dòng {$line}: Options không hợp lệ.",
                         ]);
