@@ -105,7 +105,7 @@ RUN chmod -R 775 storage bootstrap/cache
 
 RUN php artisan storage:link || true
 
-# 🔥 QUAN TRỌNG
-USER application
+# # 🔥 QUAN TRỌNG
+# USER application
 
 EXPOSE 80
