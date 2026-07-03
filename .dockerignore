@@ -1,52 +1,21 @@
-# Dependencies
-node_modules/
-vendor/
+.git
+.github
 
-# Environment files
+node_modules
+vendor
+
 .env
 .env.*
-!.env.example
 
-# Git
-.git/
-.github/
-.gitignore
-.gitattributes
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Laravel storage (will be created at runtime)
-storage/logs/*.log
+storage/logs/*
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
 
-# Testing
-tests/
-phpunit.xml
-.phpunit.result.cache
+tests
 
-# Build artifacts
-public/hot
-public/storage
-
-# Documentation
-*.md
-!README.md
-
-# Misc
-.editorconfig
-.php_cs
-.php_cs.cache
-.phpstorm.meta.php
-_ide_helper.php
 docker-compose.yml
+
+Dockerfile.old
+
+README.md
