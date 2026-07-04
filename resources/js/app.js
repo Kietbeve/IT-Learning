@@ -14,3 +14,4 @@ Font.whitelist = [
 Quill.register(Font, true);
 
 window.Quill = Quill;
+

@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             \Modules\Exam\database\seeders\QuestionSeeder::class,
             \Modules\Exam\database\seeders\ExamTagMapSeeder::class,
             \Modules\Document\database\seeders\DocumentDatabaseSeeder::class,
+            \Modules\Learning\Database\Seeders\LearningDatabaseSeeder::class,
             //seeder orders và dashboard
             OrderSeeder::class,
             DashboardSeeder::class,

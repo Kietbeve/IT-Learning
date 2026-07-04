@@ -15,8 +15,9 @@
     {{-- Vite CSS & JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    {{-- Alpine.js for interactive components --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Livewire Styles --}}
+    @livewireStyles
+
 </head>
 
 <body class="antialiased">
@@ -93,6 +94,9 @@
     </header>
 
     @yield('content')
+    
+    {{-- Livewire Scripts --}}
+    @livewireScripts
 </body>
 
 </html>
