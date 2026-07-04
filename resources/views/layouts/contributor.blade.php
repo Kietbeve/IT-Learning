@@ -4,7 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Kênh Người Đăng Tải' }}</title>
+    <title>{{ $title ?? 'Contributor' }}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('Image/logo.png') }}" type="image/png">
+    
     @vite([
         'resources/css/app.css',
         'resources/js/app.js'
@@ -13,7 +17,7 @@
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-[#f3f5fc] via-white to-[#f9f8ff] text-slate-700 antialiased font-sans">
-    <div class="flex min-h-screen">
+    <div x-data="{ sidebarHidden: true }" class="flex min-h-screen">
         @include('layouts.patials.contributor_sidebar')
 
         <div class="flex-1 flex flex-col min-w-0">
