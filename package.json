@@ -14,6 +14,7 @@
         "vite": "^5.0"
     },
     "dependencies": {
+        "quill": "^2.0.3",
         "tom-select": "^2.6.1"
     }
 }

@@ -29,16 +29,7 @@ class QuestionTemplateSheet implements FromArray, WithEvents
                 'medium',
                 'single_choice',
                 '',
-                json_encode([
-                    [
-                        'content' => 'RAM',
-                        'is_correct' => false,
-                    ],
-                    [
-                        'content' => 'CPU',
-                        'is_correct' => true,
-                    ],
-                ], JSON_UNESCAPED_UNICODE),
+                'RAM;+CPU',
             ],
 
             [
@@ -48,20 +39,7 @@ class QuestionTemplateSheet implements FromArray, WithEvents
                 'medium',
                 'multiple_choice',
                 '',
-                json_encode([
-                    [
-                        'content' => 'Bàn phím',
-                        'is_correct' => true,
-                    ],
-                    [
-                        'content' => 'Chuột',
-                        'is_correct' => true,
-                    ],
-                    [
-                        'content' => 'Màn hình',
-                        'is_correct' => false,
-                    ],
-                ], JSON_UNESCAPED_UNICODE),
+                '+Bàn phím;+Chuột;Màn hình',
             ],
 
             [
@@ -71,7 +49,7 @@ class QuestionTemplateSheet implements FromArray, WithEvents
                 'medium',
                 'essay',
                 'Thuật toán là tập hữu hạn các bước...',
-                '[]',
+                '',
             ],
         ];
     }
