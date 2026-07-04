@@ -1,13 +1,18 @@
 @extends('layouts.user')
 
 @section('content')
-    <div class="max-w-7xl mx-auto pb-8 pt-4">
+    <div class="max-w-10xl mx-auto pb-8 pt-2">
 
         <!-- Search Bar -->
         @include('exam::partials._search_form')
 
-        {{-- List Exams --}}
+        <div class="px-4 sm:px-6 lg:px-8 mt-6 mb-4">
+            <h2 class="text-2xl font-bold text-gray-800">
+                Danh sách đề thi
+            </h2>
+        </div>
 
+        {{-- List Exams --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8">
           @forelse ( $exams as $exam )
             @include('exam::partials.exam_card',

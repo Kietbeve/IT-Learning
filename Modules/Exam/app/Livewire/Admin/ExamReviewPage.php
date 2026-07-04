@@ -7,12 +7,18 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use WireUi\Traits\WireUiActions;
 
+use Modules\Exam\Services\ExamService;
+
 use Modules\Exam\Models\Exam;
 #[Layout("layouts.admin")]
 class ExamReviewPage extends Component
 {
     use WireUiActions;
-
+    protected ExamService $examService;
+    public function boot(ExamService $examService)
+    {
+        $this->examService = $examService;
+    }
     public Exam $exam;
 
     public string $rejectedReason = '';
@@ -71,20 +77,14 @@ class ExamReviewPage extends Component
 
     public function approve()
     {
-        $this->exam->update([
-            'status' => 'approved',
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-            'rejected_reason' => null,
-        ]);
+        $this->examService->approveExam($this->exam, auth()->user());
 
-        // $this->redirectRoute(
-        //     'contributor.exams.index'
-        // );
         $this->notification()->success(//tạm thời chỉ thông báo
             title: 'Thành công',
             description: 'Đề thi đã được duyệt.'
         );
+
+        $this->redirectRoute('admin.moderation.exam');
     }
 
     public function reject()
@@ -96,20 +96,14 @@ class ExamReviewPage extends Component
             ],
         ]);
 
-        $this->exam->update([
-            'status' => 'rejected',
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-            'rejected_reason' => $this->rejectedReason,
-        ]);
+        $this->examService->rejectExam($this->exam, auth()->user(), $this->rejectedReason);
 
-        // $this->redirectRoute(
-        //     'contributor.exams.index'
-        // );
         $this->notification()->success(
             title: 'Thành công',
             description: 'Đề thi đã bị từ chối.'
         );
+
+        $this->redirectRoute('admin.moderation.exam');
     }
 
     public function render()

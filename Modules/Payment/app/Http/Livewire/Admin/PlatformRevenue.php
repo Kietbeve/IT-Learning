@@ -6,6 +6,8 @@ use Livewire\Component;
 use Modules\Payment\Models\WalletTransaction;
 use Modules\Payment\Models\PayoutRequest;
 use Modules\Auth\Models\User;
+use Modules\Document\Models\Document;
+use Modules\Document\Models\DocumentDownload;
 use Illuminate\Support\Facades\DB;
 
 class PlatformRevenue extends Component
@@ -78,6 +80,11 @@ class PlatformRevenue extends Component
             ? round(($revenueThisMonth - $lastMonthRevenue) / $lastMonthRevenue * 100)
             : ($revenueThisMonth > 0 ? 100 : 0);
 
+        // Thêm 3 metrics mới
+        $totalDocuments = Document::count();
+        $totalDownloads = DocumentDownload::count();
+        $totalWalletBalance = User::sum('contributor_balance');
+
         $topContributors = User::where('contributor_balance', '>', 0)
             ->orWhereHas('walletTransactions', function($q) {
                 $q->where('type', 'earning');
@@ -100,6 +107,10 @@ class PlatformRevenue extends Component
             'netProfit' => $netProfit,
             'revenueGrowth' => $revenueGrowth,
             'topContributors' => $topContributors,
+            // 3 metrics mới
+            'totalDocuments' => $totalDocuments,
+            'totalDownloads' => $totalDownloads,
+            'totalWalletBalance' => $totalWalletBalance,
         ])->layout('layouts.admin', [
             'pageTitle' => 'Dashboard',
         ]);

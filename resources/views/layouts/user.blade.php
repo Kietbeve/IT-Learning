@@ -77,7 +77,7 @@
                 </div>
             @endif
         @endauth
-
+        
         <main class="flex-1 p-8-4 bg-gray-50">
             @yield('content')
             {{ $slot ?? '' }}
@@ -87,7 +87,7 @@
         @include('layouts.patials.user_footer')
     </div>
     @livewireScripts
-    @wireUiScripts 
+    @wireUiScripts
 </body>
 
 </html>
