@@ -30,9 +30,9 @@ class ExamQuestionModal extends Component
 
     // Filters
     public string $searchTerm = '';
-    public ?string $filterDifficulty = null;
-    public ?string $filterType = null;
-    public ?int $filterCategoryId = null;
+    public array $filterDifficulty = [];
+    public array $filterType = [];
+    public array $filterCategoryId = [];
 
     // Pagination
     public int $currentPage = 1;
@@ -67,13 +67,17 @@ class ExamQuestionModal extends Component
     public function mount(): void
     {
         // Load categories cho dropdown filter
+        // $this->categories = Category::query()
+        //     ->orderBy('name')
+        //     ->get(['id', 'name'])
+        //     ->map(fn($category) => [
+        //         'id' => $category->id,
+        //         'name' => $category->name,
+        //     ])
+        //     ->toArray();
         $this->categories = Category::query()
             ->orderBy('name')
-            ->get(['id', 'name'])
-            ->map(fn($category) => [
-                'id' => $category->id,
-                'name' => $category->name,
-            ])
+            ->pluck('name', 'id')
             ->toArray();
     }
 
@@ -138,17 +142,17 @@ class ExamQuestionModal extends Component
 
         // Apply difficulty filter
         if (!empty($this->filterDifficulty)) {
-            $query->where('difficulty', $this->filterDifficulty);
+            $query->whereIn('difficulty', $this->filterDifficulty);
         }
 
         // Apply type filter
         if (!empty($this->filterType)) {
-            $query->where('type', $this->filterType);
+            $query->whereIn('type', $this->filterType);
         }
 
         // Apply category filter
         if (!empty($this->filterCategoryId)) {
-            $query->where('category_id', $this->filterCategoryId);
+            $query->whereIn('category_id', $this->filterCategoryId);
         }
 
         // Get paginated results
@@ -225,19 +229,37 @@ class ExamQuestionModal extends Component
         }
         
         if (!empty($this->filterType)) {
-            $query->where('type', $this->filterType);
+            $query->whereIn('type', $this->filterType);
         }
         
         if (!empty($this->filterCategoryId)) {
-            $query->where('category_id', $this->filterCategoryId);
+            $query->whereIn('category_id', $this->filterCategoryId);
         }
         
         // Đếm theo từng độ khó
-        $counts = [
-            'easy' => (clone $query)->where('difficulty', 'easy')->count(),
-            'medium' => (clone $query)->where('difficulty', 'medium')->count(),
-            'hard' => (clone $query)->where('difficulty', 'hard')->count(),
-        ];
+        if (!empty($this->filterDifficulty)) {
+            // Có filter độ khó -> chỉ đếm các độ khó đang được chọn
+            $counts = [
+                'easy' => in_array('easy', $this->filterDifficulty)
+                    ? (clone $query)->where('difficulty', 'easy')->count()
+                    : 0,
+
+                'medium' => in_array('medium', $this->filterDifficulty)
+                    ? (clone $query)->where('difficulty', 'medium')->count()
+                    : 0,
+
+                'hard' => in_array('hard', $this->filterDifficulty)
+                    ? (clone $query)->where('difficulty', 'hard')->count()
+                    : 0,
+            ];
+        } else {
+            // Không filter độ khó -> đếm cả 3
+            $counts = [
+                'easy' => (clone $query)->where('difficulty', 'easy')->count(),
+                'medium' => (clone $query)->where('difficulty', 'medium')->count(),
+                'hard' => (clone $query)->where('difficulty', 'hard')->count(),
+            ];
+        }
         
         // Tổng số câu available
         $counts['total'] = $counts['easy'] + $counts['medium'] + $counts['hard'];
@@ -323,10 +345,10 @@ class ExamQuestionModal extends Component
                 $query->where('content', 'like', '%' . $this->searchTerm . '%');
             }
             if (!empty($this->filterType)) {
-                $query->where('type', $this->filterType);
+                $query->whereIn('type', $this->filterType);
             }
             if (!empty($this->filterCategoryId)) {
-                $query->where('category_id', $this->filterCategoryId);
+                $query->whereIn('category_id', $this->filterCategoryId);
             }
             
             // Random select
@@ -407,10 +429,10 @@ class ExamQuestionModal extends Component
                 $baseQuery->where('content', 'like', '%' . $this->searchTerm . '%');
             }
             if (!empty($this->filterType)) {
-                $baseQuery->where('type', $this->filterType);
+                $baseQuery->whereIn('type', $this->filterType);
             }
             if (!empty($this->filterCategoryId)) {
-                $baseQuery->where('category_id', $this->filterCategoryId);
+                $baseQuery->whereIn('category_id', $this->filterCategoryId);
             }
             
             $totalAdded = 0;
@@ -726,6 +748,21 @@ class ExamQuestionModal extends Component
         if ($page >= 1 && $page <= $availableQuestions['totalPages']) {
             $this->currentPage = $page;
         }
+    }
+
+    //xóa tag filter cho cả 3 loại filter
+    public function removeFilter(string $property, $value): void
+    {
+        if (!property_exists($this, $property)) {
+            return;
+        }
+
+        $this->{$property} = array_values(
+            array_filter(
+                $this->{$property},
+                fn ($item) => (string) $item !== (string) $value
+            )
+        );
     }
 
     public function render()

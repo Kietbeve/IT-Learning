@@ -1,5 +1,17 @@
 import './bootstrap';
-import flatpickr from 'flatpickr';
-import 'flatpickr/dist/flatpickr.min.css';
 import '../../vendor/power-components/livewire-powergrid/resources/js/powergrid';
-window.flatpickr = flatpickr;
+import Quill from 'quill';
+import 'quill/dist/quill.snow.css';
+
+const Font = Quill.import('formats/font');
+
+Font.whitelist = [
+    'sans-serif',
+    'serif',
+    'monospace',
+];
+
+Quill.register(Font, true);
+
+window.Quill = Quill;
+

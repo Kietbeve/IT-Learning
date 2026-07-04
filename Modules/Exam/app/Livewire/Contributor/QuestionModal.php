@@ -327,7 +327,16 @@ class QuestionModal extends Component
     {
         $validated = $this->validate([
             'category_id' => ['required', 'integer', 'exists:categories,id'],
-            'content' => ['required', 'string'],
+            'content' => ['required',  function ($attribute, $value, $fail) {
+                $text = strip_tags($value);
+                $text = html_entity_decode($text);
+                $text = str_replace("\xC2\xA0", ' ', $text);
+                $text = preg_replace('/\s+/u', ' ', $text);
+
+                if (trim($text) === '') {
+                    $fail('Nội dung câu hỏi không được để trống.');
+                }
+            },],
             'explanation' => ['nullable', 'string'],
             'difficulty' => ['required', 'in:easy,medium,hard'],
             'type' => ['required', 'in:single_choice,multiple_choice,essay'],
@@ -339,6 +348,20 @@ class QuestionModal extends Component
                 'string',
             ],
         ]);
+
+        // Kiểm tra nội dung câu hỏi trùng lặp
+        $content = $this->normalizeContent($validated['content']);
+        $exists = Question::where('author_id', Auth::id())
+            ->get()
+            ->contains(fn ($question) =>
+                $this->normalizeContent($question->content) === $content
+            );
+
+        if ($exists) {
+            throw ValidationException::withMessages([
+                'content' => 'Bạn đã có một câu hỏi với nội dung này.',
+            ]);
+        }
 
         // Validate options for choice questions
         if (in_array($this->type, ['single_choice', 'multiple_choice'])) {
@@ -477,6 +500,15 @@ class QuestionModal extends Component
         );
 
         $this->dispatch('pg:eventRefresh-question-table');
+    }
+
+    private function normalizeContent(string $content): string
+    {
+        $content = strip_tags($content);
+        $content = html_entity_decode($content);
+        $content = preg_replace('/\s+/', ' ', $content);
+
+        return mb_strtolower(trim($content));
     }
 
     public function render()

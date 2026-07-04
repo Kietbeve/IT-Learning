@@ -7,10 +7,18 @@ use Livewire\Attributes\On;
 use Modules\Exam\Models\Exam;
 use WireUi\Traits\WireUiActions;
 
+use Modules\Exam\Services\ExamService;
+
 class ExamReviewModal extends Component
 {
     use WireUiActions;
 
+    protected ExamService $examService;
+    //inject exam service
+    public function boot(ExamService $examService)
+    {
+        $this->examService = $examService;
+    }
     public bool $showModal = false;
 
     public ?Exam $exam = null;
@@ -33,12 +41,7 @@ class ExamReviewModal extends Component
 
     public function approve(): void
     {
-        $this->exam->update([
-            'status' => 'approved',
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-            'rejected_reason' => null,
-        ]);
+        $this->examService->approveExam($this->exam, auth()->user());
 
         $this->notification()->success(//tạm thời chỉ thông báo
             title: 'Thành công',
@@ -60,12 +63,7 @@ class ExamReviewModal extends Component
             ],
         ]);
 
-        $this->exam->update([
-            'status' => 'rejected',
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-            'rejected_reason' => $this->rejectedReason,
-        ]);
+        $this->examService->rejectExam($this->exam, auth()->user(), $this->rejectedReason);
 
         
         $this->notification()->success(
