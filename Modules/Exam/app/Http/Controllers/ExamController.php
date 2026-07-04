@@ -12,7 +12,7 @@ use Modules\Exam\Models\AttemptAnswer;
 use Modules\Exam\Models\ExamAttempt;
 use Maatwebsite\Excel\Facades\Excel;
 use Modules\Exam\Exports\QuestionTemplateExport;
-
+use Modules\Exam\Jobs\SendAttemptResultEmailJob;
 class ExamController extends Controller
 {
     /*
@@ -200,6 +200,9 @@ class ExamController extends Controller
         try {
             // Call service to finalize grading
             $stats = $this->examService->finalizeAttemptGrading($attemptId);
+
+            // Đẩy vào Queue để gửi email đến người làm
+            SendAttemptResultEmailJob::dispatch($attemptId, $stats);
 
             // Redirect back with success message
             return redirect()

@@ -20,6 +20,7 @@ use Modules\Auth\Models\User;
 use Modules\Exam\Jobs\GradeExamAttemptJob;
 use App\Models\Category;
 use App\Models\Tag;
+use Modules\Exam\Jobs\SendExamReviewEmailJob;
 
 class ExamService
 {
@@ -158,10 +159,10 @@ class ExamService
         // }
 
         // Check expiration
-        if ($attempt->isExpired()) {
-            $attempt->update(['status' => 'expired']);
-            throw new \Exception('Bài thi đã hết hạn.');
-        }
+        // if ($attempt->isExpired()) {
+        //     $attempt->update(['status' => 'expired']);
+        //     throw new \Exception('Bài thi đã hết hạn.');
+        // }
     }
 
     // Hàm kiểm tra hết hạn bài thi
@@ -626,5 +627,29 @@ class ExamService
                 'is_passed' => $isPassed,
             ];
         });
+    }
+
+    public function approveExam(Exam $exam, User $reviewer): void
+    {
+        $exam->update([
+            'status' => 'approved',
+            'reviewed_by' => $reviewer->id,
+            'reviewed_at' => now(),
+            'rejected_reason' => null,
+        ]);
+
+        SendExamReviewEmailJob::dispatch($exam->id);
+    }
+
+    public function rejectExam(Exam $exam, User $reviewer, string $reason): void
+    {
+        $exam->update([
+            'status' => 'rejected',
+            'reviewed_by' => $reviewer->id,
+            'reviewed_at' => now(),
+            'rejected_reason' => $reason,
+        ]);
+
+        SendExamReviewEmailJob::dispatch($exam->id);
     }
 }

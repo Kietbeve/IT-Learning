@@ -51,6 +51,20 @@
                 <div class="bg-white rounded-2xl border border-gray-200 p-6 sticky top-6">
                     <h2 class="text-lg font-bold text-gray-900 mb-4">Yêu cầu rút tiền</h2>
 
+                    @if($hasPendingRequest)
+                        <div class="mb-4 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+<div wire:poll.10s>
+                                    <p class="text-sm font-semibold text-yellow-800">Không thể gửi yêu cầu mới</p>
+                                    <p class="text-xs text-yellow-700 mt-1">Bạn có yêu cầu rút tiền đang chờ xử lý. Vui lòng đợi Admin xử lý trước khi tạo yêu cầu mới.</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <form wire:submit.prevent="submitPayoutRequest">
                         <div class="space-y-4">
                             <!-- Balance Info -->
@@ -67,7 +81,7 @@
                                        min="{{ $minimumAmount }}" max="{{ $availableBalance }}"
                                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
                                        placeholder="Nhập số tiền"
-                                       :disabled="$hasPendingRequest">
+                                       @disabled($hasPendingRequest)>
                                 @error('amount') <span class="text-xs text-red-600 mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
@@ -76,7 +90,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Ngân hàng *</label>
                                 <select wire:model="bank_name" 
                                         class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
-                                        :disabled="$hasPendingRequest">
+                                        @disabled($hasPendingRequest)>
                                     <option value="">Chọn ngân hàng</option>
                                     <option value="Vietcombank">Vietcombank</option>
                                     <option value="VietinBank">VietinBank</option>
@@ -103,7 +117,7 @@
                                 <input type="text" wire:model="bank_account_number" 
                                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
                                        placeholder="Nhập số tài khoản"
-                                       :disabled="$hasPendingRequest">
+                                       @disabled($hasPendingRequest)>
                                 @error('bank_account_number') <span class="text-xs text-red-600 mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
@@ -113,7 +127,7 @@
                                 <input type="text" wire:model="bank_account_name" 
                                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
                                        placeholder="Nguyễn Văn A"
-                                       :disabled="$hasPendingRequest">
+                                       @disabled($hasPendingRequest)>
                                 @error('bank_account_name') <span class="text-xs text-red-600 mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
@@ -123,12 +137,12 @@
                                 <textarea wire:model="note" rows="3"
                                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
                                           placeholder="Ghi chú cho admin..."
-                                          :disabled="$hasPendingRequest"></textarea>
+                                          @disabled($hasPendingRequest)></textarea>
                             </div>
 
                             <!-- Submit Button -->
                             <button type="submit" 
-                                    :disabled="$hasPendingRequest || $availableBalance < $minimumAmount"
+                                    @disabled($hasPendingRequest || $availableBalance < $minimumAmount)
                                     class="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-colors">
                                 Gửi yêu cầu
                             </button>
@@ -152,7 +166,7 @@
                             <p class="text-gray-500 font-medium">Chưa có yêu cầu rút tiền nào</p>
                         </div>
                     @else
-                        <div class="overflow-x-auto">
+                        <div class="max-h-[600px] overflow-y-auto">
                             <table class="w-full">
                                 <thead class="bg-gray-50 border-b border-gray-200">
                                     <tr>
@@ -203,9 +217,14 @@
                                                         {{ ucfirst($payout->status) }}
                                                     </span>
                                                 @endif
+                                                @if($payout->status === 'rejected' && $payout->rejection_reason)
+                                                    <p class="text-xs text-red-600 mt-1" title="{{ $payout->rejection_reason }}">
+                                                        <span class="font-medium">Lý do từ chối:</span> {{ Str::limit($payout->rejection_reason, 50) }}
+                                                    </p>
+                                                @endif
                                                 @if($payout->note)
                                                     <p class="text-xs text-gray-600 mt-1" title="{{ $payout->note }}">
-                                                        <span class="font-medium">Ghi chú:</span> {{ Str::limit($payout->note, 50) }}
+                                                        <span class="font-medium">Ghi chú của bạn:</span> {{ Str::limit($payout->note, 50) }}
                                                     </p>
                                                 @endif
                                                 @if($payout->processed_at)
@@ -216,15 +235,14 @@
                                                         @endif
                                                     </p>
                                                 @endif
-                                                @if($payout->receipt_image && in_array($payout->status, ['completed', 'approved']))
-                                                    <a href="{{ asset('storage/' . $payout->receipt_image) }}" 
-                                                       target="_blank"
+                                                @if($payout->receipt_image && $payout->status === 'completed')
+                                                    <button wire:click="showReceipt('{{ $payout->receipt_url }}')" 
                                                        class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mt-1 font-medium">
                                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                                         </svg>
                                                         Xem chứng từ
-                                                    </a>
+                                                    </button>
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -253,4 +271,16 @@
             </div>
         </div>
     </div>
+
+    <!-- Receipt Modal -->
+    @if($showReceiptModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+             wire:click="closeReceiptModal">
+            <div class="relative max-w-4xl max-h-full" onclick="event.stopPropagation()">
+                <img src="{{ $selectedReceiptUrl }}" 
+                     class="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
+                     alt="Chứng từ rút tiền">
+            </div>
+        </div>
+    @endif
 </div>

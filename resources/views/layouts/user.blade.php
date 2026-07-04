@@ -19,6 +19,7 @@
     {{-- Vite CSS & JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
 
 <body>
@@ -41,6 +42,7 @@
                         setTimeout(() => localStorage.removeItem('vip_banner_dismissed'), 86400000); // 24h
                     }
                 }" 
+                     x-cloak
                      x-show="show"
                      x-transition:enter="transition ease-out duration-300"
                      x-transition:enter-start="opacity-0 -translate-y-4"
@@ -75,7 +77,7 @@
                 </div>
             @endif
         @endauth
-
+        
         <main class="flex-1 p-8-4 bg-gray-50">
             @yield('content')
             {{ $slot ?? '' }}
@@ -85,7 +87,7 @@
         @include('layouts.patials.user_footer')
     </div>
     @livewireScripts
-    @wireUiScripts 
+    @wireUiScripts
 </body>
 
 </html>

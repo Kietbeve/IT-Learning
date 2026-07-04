@@ -101,32 +101,7 @@ class WatermarkService
 
     protected function watermarkDocx($originalPath, $document)
     {
-        try {
-            $tempPdfPath = $this->tempDir() . '/' . uniqid('docx2pdf_') . '.pdf';
-
-            // Try LibreOffice first (better font support)
-            if ($this->convertDocxToPdfWithLibreOffice($originalPath, $tempPdfPath)) {
-                $r2Path = $this->watermarkPdf($tempPdfPath, $document);
-                if (file_exists($tempPdfPath)) @unlink($tempPdfPath);
-                return $r2Path;
-            }
-
-            // Fallback to PHPWord + TCPDF
-            $phpWord = IOFactory::load($originalPath);
-            Settings::setPdfRendererName(Settings::PDF_RENDERER_TCPDF);
-            Settings::setPdfRendererPath(base_path('vendor/tecnickcom/tcpdf'));
-
-            $pdfWriter = IOFactory::createWriter($phpWord, 'PDF');
-            $pdfWriter->save($tempPdfPath);
-
-            $r2Path = $this->watermarkPdf($tempPdfPath, $document);
-            if (file_exists($tempPdfPath)) @unlink($tempPdfPath);
-            return $r2Path;
-
-        } catch (\Exception $e) {
-            \Log::warning("DOCX to PDF conversion failed: " . $e->getMessage());
-            return $this->fallbackDocxWatermark($originalPath, $document);
-        }
+        return $this->fallbackDocxWatermark($originalPath, $document);
     }
 
     protected function convertDocxToPdfWithLibreOffice($docxPath, $outputPdfPath)
@@ -240,8 +215,8 @@ class WatermarkService
             
             // Calculate preview pages based on document length
             if ($pageCount < 4) {
-                // Too short, no preview
-                return null;
+                // Short documents: just 1 page
+                $previewPages = 1;
             } elseif ($pageCount <= 6) {
                 // Short documents: only 1 page
                 $previewPages = 1;
@@ -269,6 +244,33 @@ class WatermarkService
             return null;
         } finally {
             if (file_exists($tempPath)) @unlink($tempPath);
+        }
+    }
+
+    public function convertDocxToPdfForPreview($docxPath)
+    {
+        $tempPdfPath = $this->tempDir() . '/' . uniqid('docx2pdf_preview_') . '.pdf';
+
+        try {
+            // Try LibreOffice first
+            if ($this->convertDocxToPdfWithLibreOffice($docxPath, $tempPdfPath)) {
+                return $tempPdfPath;
+            }
+
+            // Fallback to PHPWord + TCPDF
+            $phpWord = IOFactory::load($docxPath);
+            Settings::setPdfRendererName(Settings::PDF_RENDERER_TCPDF);
+            Settings::setPdfRendererPath(base_path('vendor/tecnickcom/tcpdf'));
+
+            $pdfWriter = IOFactory::createWriter($phpWord, 'PDF');
+            $pdfWriter->save($tempPdfPath);
+
+            return $tempPdfPath;
+
+        } catch (\Exception $e) {
+            \Log::warning("DOCX to PDF conversion for preview failed: " . $e->getMessage());
+            if (file_exists($tempPdfPath)) @unlink($tempPdfPath);
+            return null;
         }
     }
 

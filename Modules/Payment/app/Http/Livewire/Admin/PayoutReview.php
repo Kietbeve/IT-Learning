@@ -10,6 +10,7 @@ use Modules\Payment\Models\WalletTransaction;
 use Modules\Auth\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use WireUi\Traits\WireUiActions;
 
 class PayoutReview extends Component
@@ -24,6 +25,10 @@ class PayoutReview extends Component
     public $selectedPayoutId = null;
     public $rejectionReason = '';
     public $receiptImage = null;
+    public $showApproveModal = false;
+    public $showRejectModal = false;
+    public $showDetailModal = false;
+    public $detailPayout = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -54,14 +59,26 @@ class PayoutReview extends Component
     {
         $this->selectedPayoutId = $id;
         $this->receiptImage = null;
-        $this->dispatch('open-modal', 'approve-modal');
+        $this->showApproveModal = true;
     }
 
     public function openRejectModal($id)
     {
         $this->selectedPayoutId = $id;
         $this->rejectionReason = '';
-        $this->dispatch('open-modal', 'reject-modal');
+        $this->showRejectModal = true;
+    }
+
+    public function openDetailModal($id)
+    {
+        $this->detailPayout = PayoutRequest::with(['user', 'processor', 'rejectionTransaction'])->find($id);
+        $this->showDetailModal = true;
+    }
+
+    public function closeDetailModal()
+    {
+        $this->showDetailModal = false;
+        $this->detailPayout = null;
     }
 
     public function approvePayout()
@@ -79,7 +96,7 @@ class PayoutReview extends Component
             $payout = PayoutRequest::with('user')->find($this->selectedPayoutId);
             
             if (!$payout || $payout->status !== 'pending') {
-                $this->dispatch('close-modal', 'approve-modal');
+                $this->showApproveModal = false;
                 $this->notification()->error(
                     title: 'Lỗi',
                     description: 'Yêu cầu không hợp lệ hoặc đã được xử lý.'
@@ -90,7 +107,7 @@ class PayoutReview extends Component
             $user = $payout->user;
 
             if ($user->contributor_balance < $payout->amount) {
-                $this->dispatch('close-modal', 'approve-modal');
+                $this->showApproveModal = false;
                 $this->notification()->error(
                     title: 'Lỗi',
                     description: 'Số dư contributor không đủ.'
@@ -102,7 +119,8 @@ class PayoutReview extends Component
             $receiptPath = null;
             if ($this->receiptImage) {
                 $receiptName = 'receipt_' . $payout->id . '_' . time() . '.' . $this->receiptImage->extension();
-                $receiptPath = $this->receiptImage->storeAs('payout_receipts', $receiptName, 'public');
+                $receiptPath = 'payout_receipts/' . $receiptName;
+                Storage::disk('r2')->put($receiptPath, file_get_contents($this->receiptImage->getRealPath()));
             }
 
             $balanceBefore = $user->contributor_balance;
@@ -120,7 +138,7 @@ class PayoutReview extends Component
             WalletTransaction::create([
                 'user_id' => $user->id,
                 'type' => 'payout',
-                'amount' => -$payout->amount,
+                'amount' => $payout->amount,
                 'balance_before' => $balanceBefore,
                 'balance_after' => $balanceAfter,
                 'reference_type' => 'payout_request',
@@ -132,7 +150,7 @@ class PayoutReview extends Component
 
             DB::commit();
 
-            $this->dispatch('close-modal', 'approve-modal');
+            $this->showApproveModal = false;
             $this->notification()->success(
                 title: 'Thành công',
                 description: 'Đã duyệt yêu cầu rút tiền thành công.'
@@ -143,7 +161,7 @@ class PayoutReview extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('close-modal', 'approve-modal');
+            $this->showApproveModal = false;
             $this->notification()->error(
                 title: 'Lỗi',
                 description: 'Lỗi: ' . $e->getMessage()
@@ -161,10 +179,12 @@ class PayoutReview extends Component
         ]);
 
         try {
-            $payout = PayoutRequest::find($this->selectedPayoutId);
+            DB::beginTransaction();
+
+            $payout = PayoutRequest::with('user')->find($this->selectedPayoutId);
             
             if (!$payout || $payout->status !== 'pending') {
-                $this->dispatch('close-modal', 'reject-modal');
+                $this->showRejectModal = false;
                 $this->notification()->error(
                     title: 'Lỗi',
                     description: 'Yêu cầu không hợp lệ hoặc đã được xử lý.'
@@ -172,14 +192,30 @@ class PayoutReview extends Component
                 return;
             }
 
+            $user = $payout->user;
+
             $payout->update([
                 'status' => 'rejected',
-                'note' => $this->rejectionReason,
                 'processed_by' => Auth::id(),
                 'processed_at' => now(),
             ]);
 
-            $this->dispatch('close-modal', 'reject-modal');
+            WalletTransaction::create([
+                'user_id' => $user->id,
+                'type' => 'payout_rejected',
+                'amount' => 0,
+                'balance_before' => $user->contributor_balance,
+                'balance_after' => $user->contributor_balance,
+                'reference_type' => 'payout_request',
+                'reference_id' => $payout->id,
+                'note' => $this->rejectionReason,
+                'created_by' => Auth::id(),
+                'created_at' => now(),
+            ]);
+
+            DB::commit();
+
+            $this->showRejectModal = false;
             $this->notification()->success(
                 title: 'Thành công',
                 description: 'Đã từ chối yêu cầu rút tiền.'
@@ -189,7 +225,8 @@ class PayoutReview extends Component
             $this->rejectionReason = '';
 
         } catch (\Exception $e) {
-            $this->dispatch('close-modal', 'reject-modal');
+            DB::rollBack();
+            $this->showRejectModal = false;
             $this->notification()->error(
                 title: 'Lỗi',
                 description: 'Lỗi: ' . $e->getMessage()
@@ -199,7 +236,7 @@ class PayoutReview extends Component
 
     public function render()
     {
-        $query = PayoutRequest::with('user');
+        $query = PayoutRequest::with('user', 'rejectionTransaction');
 
         if (!empty($this->search)) {
             $query->whereHas('user', function($q) {

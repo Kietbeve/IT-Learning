@@ -117,7 +117,7 @@ class DocumentReport extends Component
 
         if (!empty($this->search)) {
             $query->where(function($q) {
-                $q->whereHas('document', function($q2) {
+                $q->whereHas('document.currentVersion', function($q2) {
                     $q2->where('title', 'like', '%' . $this->search . '%');
                 })
                 ->orWhereHas('user', function($q2) {

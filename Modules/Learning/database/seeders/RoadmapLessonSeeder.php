@@ -125,6 +125,7 @@ class RoadmapLessonSeeder extends Seeder
                 ['title' => $data['title']],
                 [
                     'public_id' => Str::uuid()->toString(),
+                    'author_id' => 1,
                     'description' => 'Khóa học nền tảng dành cho ' . $data['title'],
                     'category' => $data['category'],
                     'level' => 'beginner',

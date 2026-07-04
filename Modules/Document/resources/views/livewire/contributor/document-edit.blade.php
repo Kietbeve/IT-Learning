@@ -39,13 +39,25 @@
                 <!-- Category -->
                 <div class="space-y-1.5">
                     <label for="category_id" class="text-xs font-extrabold text-slate-700">Danh mục <span class="text-rose-500">*</span></label>
-                    <select id="category_id" wire:model.change="category_id" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-700 focus:border-indigo-400 focus:outline-none bg-white transition-colors">
+                    <select id="category_id" wire:model.live="category_id" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-700 focus:border-indigo-400 focus:outline-none bg-white transition-colors">
                         <option value="">-- Chọn danh mục tài liệu --</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                         @endforeach
                     </select>
                     @error('category_id') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
+                </div>
+
+                <!-- Subject (Môn học) -->
+                <div class="space-y-1.5">
+                    <label for="subject_id" class="text-xs font-extrabold text-slate-700">Môn học <span class="text-rose-500">*</span></label>
+                    <select id="subject_id" wire:model.live="subject_id" wire:key="subject-select-{{ $category_id }}" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-700 focus:border-indigo-400 focus:outline-none bg-white transition-colors">
+                        <option value="">-- Chọn môn học --</option>
+                        @foreach($subjects as $sub)
+                            <option value="{{ $sub->id }}">{{ $sub->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('subject_id') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Short Description -->
@@ -60,6 +72,48 @@
                     <label for="description" class="text-xs font-extrabold text-slate-700">Mô tả chi tiết <span class="text-rose-500">*</span></label>
                     <textarea id="description" wire:model.blur="description" rows="6" placeholder="Mô tả cụ thể tài liệu gồm những phần nào, kiến thức gì..." class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-none transition-colors"></textarea>
                     @error('description') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
+                </div>
+
+                <!-- Tags -->
+                <div class="space-y-1.5" x-data="{ showCustom: false }">
+                    <label class="text-xs font-extrabold text-slate-700">Thẻ (Tags)</label>
+
+                    <!-- Tom-Select for predefined tags -->
+                    <div wire:ignore x-init="
+                        $nextTick(() => {
+                            if ($refs.select.tomselect) $refs.select.tomselect.destroy();
+                            const ts = new TomSelect($refs.select, {
+                                maxItems: null,
+                                plugins: ['remove_button'],
+                                placeholder: 'Chọn tags...',
+                                items: {{ Js::from($selectedTags ?? []) }},
+                                onChange: (values) => { 
+                                    $wire.call('setTags', values);
+                                },
+                            });
+                        });
+                    ">
+                        <select multiple x-ref="select" class="w-full text-xs font-semibold">
+                            @foreach($allTags as $tag)
+                                <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Custom tags toggle -->
+                    <div class="flex items-center gap-2 pt-2">
+                        <input type="checkbox" id="customTagsToggle" x-model="showCustom" class="rounded border-slate-300">
+                        <label for="customTagsToggle" class="text-xs font-bold text-slate-600 cursor-pointer">Tag không có trong danh sách? Nhập tại đây</label>
+                    </div>
+
+                    <!-- Custom tags input (shown when checkbox is checked) -->
+                    <div x-show="showCustom" x-transition class="space-y-1">
+                        <input type="text" wire:model="customTagsInput" placeholder="VD: tag tùy chỉnh 1, tag tùy chỉnh 2" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none transition-colors" />
+                        <p class="text-[10px] text-slate-400 font-bold">Nhập các tag tùy chỉnh, cách nhau bằng dấu phẩy</p>
+                    </div>
+
+                    @error('selectedTags') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
+                    @error('customTagsInput') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
                 </div>
             </div>
 
@@ -83,7 +137,7 @@
                 <div class="space-y-3">
                     <label class="text-xs font-extrabold text-slate-350">Thay thế bằng tệp mới (tùy chọn)</label>
                     <div class="relative group border-2 border-dashed border-slate-200 rounded-3xl p-6 text-center hover:border-indigo-400 transition-colors bg-slate-50/50">
-                        <input type="file" id="newFile" wire:model="newFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.docx,.zip" />
+                        <input type="file" id="newFile" wire:model="newFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.doc,.docx,.zip" />
                         
                         <div class="space-y-2">
                             <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
@@ -92,7 +146,7 @@
                             <div class="text-xs font-medium text-slate-500">
                                 <span class="font-extrabold text-indigo-400 hover:text-indigo-300">Nhấn để chọn tệp mới</span> hoặc kéo thả vào đây
                             </div>
-                            <p class="text-[10px] text-slate-450 font-bold">PDF, DOCX, ZIP tối đa 50MB</p>
+                            <p class="text-[10px] text-slate-450 font-bold">PDF, DOC, DOCX, ZIP tối đa 50MB</p>
                         </div>
                     </div>
 
@@ -114,7 +168,7 @@
                                     <p class="text-[9px] text-slate-450 font-bold uppercase mt-0.5">{{ number_format($newFile->getSize() / 1024 / 1024, 2) }} MB</p>
                                 </div>
                             </div>
-                            <button type="button" wire:click="$set('newFile', null)" class="text-rose-600 hover:text-rose-700 font-extrabold px-3 py-1.5 uppercase text-[9px] tracking-wider bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors shrink-0">Hủy</button>
+                            <button type="button" wire:click="removeSelectedFile" class="text-rose-600 hover:text-rose-700 font-extrabold px-3 py-1.5 uppercase text-[9px] tracking-wider bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors shrink-0">Hủy</button>
                         </div>
                     @endif
 
@@ -159,7 +213,7 @@
                 <!-- Visibility -->
                 <div class="space-y-1.5">
                     <label for="visibility" class="text-xs font-extrabold text-slate-700">Quyền riêng tư</label>
-                    <select id="visibility" wire:model.change="visibility" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-700 focus:border-indigo-400 focus:outline-none bg-white transition-colors">
+                    <select id="visibility" wire:model.live="visibility" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-700 focus:border-indigo-400 focus:outline-none bg-white transition-colors">
                         <option value="public">Công khai (Mọi học viên đều thấy)</option>
                         <option value="private">Riêng tư (Chỉ mình bạn xem)</option>
                     </select>
@@ -172,17 +226,18 @@
                         <span class="text-[10px] text-slate-450 font-bold block">Cho phép học viên download file</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model="is_downloadable" class="sr-only peer">
+                        <input type="checkbox" wire:model.live="is_downloadable" class="sr-only peer">
                         <div class="w-11 h-6 bg-slate-250 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-650"></div>
                     </label>
                 </div>
             </div>
 
-            <!-- Cover Image Card -->
+            <!-- Images Card (Thumbnail + Gallery) -->
             <div class="rounded-[2rem] border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md space-y-5">
-                <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3 uppercase tracking-wider">Ảnh bìa tài liệu</h3>
+                <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3 uppercase tracking-wider">Hình ảnh tài liệu</h3>
                 
                 <div class="space-y-3">
+                    <label class="text-xs font-extrabold text-slate-700">Ảnh bìa</label>
                     <div class="relative group border-2 border-dashed border-slate-200 rounded-3xl p-4 text-center hover:border-indigo-400 transition-colors bg-slate-50/50">
                         <input type="file" id="newThumbnailFile" wire:model="newThumbnailFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" />
                         <div class="space-y-1.5">
@@ -192,15 +247,13 @@
                         </div>
                     </div>
 
-                    <!-- Livewire preview of new thumbnail -->
                     @if ($newThumbnailFile)
                         <div class="relative rounded-2xl overflow-hidden border border-slate-255">
                             <img src="{{ $newThumbnailFile->temporaryUrl() }}" class="w-full h-32 object-cover" alt="New Cover preview" />
-                            <button type="button" wire:click="$set('newThumbnailFile', null)" class="absolute top-2 right-2 rounded-full bg-rose-600 text-white p-1 hover:bg-rose-700 shadow-md transition-colors">
+                            <button type="button" wire:click="removeSelectedThumbnail" class="absolute top-2 right-2 rounded-full bg-rose-600 text-white p-1 hover:bg-rose-700 shadow-md transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>
-                    <!-- Existing thumbnail -->
                     @elseif ($existingThumbnailPath)
                         <div class="relative rounded-2xl overflow-hidden border border-slate-200">
                             <img src="{{ $doc->thumbnail_url }}" class="w-full h-32 object-cover" alt="Current Cover" />
@@ -208,6 +261,51 @@
                     @endif
 
                     @error('newThumbnailFile') <span class="text-xs text-rose-600 font-semibold block">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="border-t border-slate-100 pt-4 space-y-3">
+                    <label class="text-xs font-extrabold text-slate-700">Ảnh mô tả <span class="text-slate-400 font-medium">(có thể bỏ trống)</span></label>
+                    <div class="relative group border-2 border-dashed border-slate-200 rounded-3xl p-4 text-center hover:border-indigo-400 transition-colors bg-slate-50/50">
+                        <input type="file" id="galleryFiles" wire:model="galleryFiles" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" multiple />
+                        <div class="space-y-1.5">
+                            <svg class="mx-auto h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a1 1 0 011.414 0L15 17m0 0l-3-3m3 3l3-3m0 0l-3-3m3 3V4"/></svg>
+                            <div class="text-xs font-bold text-indigo-600 hover:text-indigo-500">Thay đổi ảnh mô tả</div>
+                            <p class="text-[9px] text-slate-400 font-bold">JPG, PNG - tối đa 10 ảnh, mỗi ảnh 5MB.</p>
+                        </div>
+                    </div>
+
+                    <div wire:loading wire:target="galleryFiles" class="w-full text-center">
+                        <div class="inline-flex items-center gap-2 text-xs text-indigo-650 font-bold bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
+                            <svg class="animate-spin h-3.5 w-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                            Đang tải ảnh lên...
+                        </div>
+                    </div>
+
+                    @if ($galleryFiles && count($galleryFiles) > 0)
+                        <div class="grid grid-cols-5 gap-2">
+                            @foreach($galleryFiles as $index => $galleryFile)
+                                @if ($galleryFile && !in_array($index, $this->excludedGalleryIndices))
+                                    <div class="relative rounded-xl overflow-hidden border border-slate-250 aspect-square group">
+                                        <img src="{{ $galleryFile->temporaryUrl() }}" class="w-full h-full object-cover" alt="Gallery {{ $index + 1 }}" />
+                                        <button type="button" wire:click="removeGalleryImage({{ $index }})" class="absolute top-1 right-1 rounded-full bg-rose-600 text-white p-0.5 hover:bg-rose-700 shadow-md transition-all opacity-0 group-hover:opacity-100" title="Xóa ảnh này">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @elseif ($doc->gallery_images && is_array($doc->gallery_images) && count($doc->gallery_images) > 0)
+                        <div class="grid grid-cols-5 gap-2">
+                            @foreach($doc->gallery_images as $index => $galleryImage)
+                                <div class="relative rounded-xl overflow-hidden border border-slate-250 aspect-square">
+                                    <img src="{{ Storage::disk('r2')->url($galleryImage['path']) }}" class="w-full h-full object-cover" alt="Gallery {{ $index + 1 }}" />
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @error('galleryFiles') <span class="text-xs text-rose-600 font-semibold block">{{ $message }}</span> @enderror
+                    @error('galleryFiles.*') <span class="text-xs text-rose-600 font-semibold block">{{ $message }}</span> @enderror
                 </div>
             </div>
 

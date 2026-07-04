@@ -10,4 +10,8 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    optimizeDeps: {
+        noDiscovery: true,
+        include: ['flatpickr', 'flatpickr/dist/l10n/'],
+    },
 });
