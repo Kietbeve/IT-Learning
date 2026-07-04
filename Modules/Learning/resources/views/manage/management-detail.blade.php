@@ -66,7 +66,7 @@
                         </label>
 
                         <select
-                            wire:model="section_id"
+                            wire:model.live="section_id"
                             class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
                         >
                             <option value="">-- Không thuộc chương nào --</option>
@@ -85,6 +85,24 @@
                         @enderror
                     </div>
                 </div>
+
+                @if(empty($section_id))
+        <div class="mt-3 animate-fade-in" wire:key="new-section-input">
+            <label class="block text-[11px] font-bold text-blue-600 uppercase mb-1">
+                Tên chương mới (Nếu muốn tạo tự động)
+            </label>
+            <input 
+                type="text" 
+                wire:model="new_section_title" 
+                placeholder="Nhập tên chương mới... (Bỏ trống nếu muốn để mặc định)" 
+                class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500 placeholder-slate-400"
+            >
+            @error('new_section_title') 
+                <span class="text-[10px] text-rose-500 font-bold mt-1 block">{{ $message }}</span> 
+            @enderror
+        </div>
+    @endif
+</div>
 
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Trạng thái hiển thị</label>
@@ -209,9 +227,14 @@
                 </div>
 
                 <div class="md:col-span-3 flex items-center justify-end gap-2 mt-2">
-                    <button type="button" wire:click="closeForm" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition-colors">Hủy</button>
-                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/10 transition-colors">Lưu Dữ Liệu</button>
-                </div>
+    <button type="button" wire:click="closeForm" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition-colors">
+        Hủy
+    </button>
+    
+    <button type="button" wire:click="save" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/10 transition-colors">
+        Lưu Dữ Liệu
+    </button>
+</div>
             </form>
         </div>
         @endif
@@ -227,13 +250,18 @@
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-28 text-center">Hành Động</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-slate-700">
+               <tbody class="divide-y divide-slate-100 text-slate-700">
+                    @php $lessonIndex = 1; @endphp
+                    
+                    {{-- Vòng lặp các phần (Chương) --}}
                     @forelse($sections as $section)
-                        @forelse($section->lessons as $lesson)
+                        
+                        {{-- ĐÃ SỬA THÀNH @foreach (Không dùng forelse nữa) --}}
+                        @foreach($section->lessons as $lesson)
                         <tr class="hover:bg-slate-50/60 transition-colors group">
                             
                             <td class="px-6 py-4 text-xs font-mono font-bold text-slate-400 text-center">
-                                {{ $loop->iteration }}
+                                {{ $lessonIndex++ }}
                             </td>
                             
                             <td class="px-6 py-4">
@@ -260,9 +288,8 @@
                             
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-1.5">
-                                    
-                                    {{-- Nút chuyển trang (Mới thêm) --}}
-                                    <a href="{{ route('management.lessons.index', ['section_id' => $lesson->id]) }}" title="Quản lý bài học" class="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all">
+                                    {{-- Nút chuyển trang --}}
+                                    <a href="{{ route('manage.lesson', ['sectionId' => $lesson->id]) }}" title="Quản lý bài học" class="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                     </a>
 
@@ -278,17 +305,13 @@
                                 </div>
                             </td>
                         </tr>
-                        @empty
+                        @endforeach
+                        {{-- ĐÃ XÓA TOÀN BỘ KHỐI @empty CỦA BÀI HỌC Ở KHÚC NÀY --}}
+
+                    @empty
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center text-xs font-semibold text-slate-400">
-                                📭 Chưa có bài học nào trong phần này.
-                            </td>
-                        </tr>
-                        @endforelse
-                        @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-xs font-semibold text-slate-400">
-                                📭 Chưa có phần nào. Hãy bấm "Thêm Phần Mới"!
+                                📭 Lộ trình này hiện chưa có bài học nào. Hãy bấm "Thêm Bài Học Mới"!
                             </td>
                         </tr>
                     @endforelse

@@ -835,10 +835,10 @@
 </div>
 
 <script>
-    function lessonController() {
+    function lessonController(hasContent = false) {
         return {
-            // Logic mới: Check theo tài nguyên có sẵn, không theo lesson_type
-            hasContent: {{ !empty($currentLesson->content) ? 'true' : 'false' }},
+            // Nhận giá trị được truyền từ x-data ngoài HTML vào
+            hasContent: hasContent,
             canComplete: false,
             sidebarOpen: window.innerWidth >= 768,
             

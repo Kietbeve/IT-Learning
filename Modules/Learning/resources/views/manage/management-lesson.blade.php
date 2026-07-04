@@ -10,10 +10,12 @@
                 <p class="text-xs text-slate-500 font-bold mt-0.5">Chương ID: <span class="text-blue-600 font-black">#{{ $section_id ?? 'N/A' }}</span> • Lộ trình DevAcademy Pro</p>
             </div>
         </div>
-        <button onclick="history.back()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-black rounded-xl hover:bg-slate-100 hover:text-blue-600 transition-all active:scale-95 shadow-sm">
+        
+        {{-- 🔥 ĐÃ SỬA: Đổi từ history.back() sang Route chuẩn để tránh kẹt trạng thái Livewire --}}
+        <a href="{{ route('manage.detail', ['id' => $roadmap_id ?? 1]) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-black rounded-xl hover:bg-slate-100 hover:text-blue-600 transition-all active:scale-95 shadow-sm">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
             Quay lại
-        </button>
+        </a>
     </div>
 
     @if (session()->has('message'))
@@ -71,7 +73,6 @@
 
                         @error('pdf_file') <p class="text-[11px] font-bold text-red-600 mt-1">⚠️ {{ $message }}</p> @enderror
                         
-                        {{-- ✨ SỬA LỖI 1: Tự động hiển thị tên tệp vừa chọn hoặc tệp hiện tại --}}
                         @if($pdf_file)
                             <div class="mt-2 p-2 rounded-lg bg-emerald-50 border border-emerald-100 text-[11px] font-bold text-emerald-700 flex items-center gap-1.5 animate-fade-in">
                                 <span>📎 Tệp vừa chọn:</span>

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Learning\Http\Controllers\LearningController;
 use Livewire\Livewire;
 use Modules\Learning\Livewire\Manage\RoadmapManagement;
+use Modules\Learning\Livewire\Manage\ManagementDetail;
 use Modules\Learning\Livewire\Admin\Collaborators\Index as CollabIndex;
 use Modules\Learning\Livewire\Admin\Collaborators\Create as CollabCreate;
 use Modules\Learning\Livewire\Admin\Collaborators\Edit as CollabEdit;
@@ -140,9 +141,7 @@ Route::get('/manage', function () {
 Route::get('/manage/roadmap', RoadmapManagement::class)->name('manage.roadmap');
 
 // Route cho trang Chi tiết/Danh sách bài học
-Route::get('/manage/detail', function () {
-    return view('learning::manage.namagement-detail');
-})->name('manage.detail');
+Route::get('/manage/detail', ManagementDetail::class)->name('manage.detail');
 
 // Route cho trang Quản lý Chi tiết bài học
 Route::get('/manage/lesson', function () {

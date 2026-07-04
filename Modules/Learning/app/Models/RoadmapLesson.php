@@ -10,11 +10,15 @@ use Modules\Document\Models\Document;
 
 class RoadmapLesson extends Model
 {
-protected $fillable = [
+    protected $table = 'roadmap_lessons';
+
+    
+    protected $fillable = [
         'roadmap_id',
         'section_id',
         'title',
         'slug',
+       
         'lesson_type',
         'content',
         'video_url',
@@ -43,33 +47,21 @@ protected $fillable = [
 
     public function section(): BelongsTo
     {
-        return $this->belongsTo(
-            RoadmapSection::class,
-            'section_id'
-        );
+        return $this->belongsTo(RoadmapSection::class, 'section_id');
     }
 
     public function document(): BelongsTo
     {
-        return $this->belongsTo(
-            Document::class,
-            'document_id'
-        );
+        return $this->belongsTo(Document::class, 'document_id');
     }
 
     public function exam(): BelongsTo
     {
-        return $this->belongsTo(
-            Exam::class,
-            'exam_id'
-        );
+        return $this->belongsTo(Exam::class, 'exam_id');
     }
 
     public function project(): BelongsTo
     {
-        return $this->belongsTo(
-            Project::class,
-            'project_id'
-        );
+        return $this->belongsTo(Project::class, 'project_id');
     }
 }
