@@ -48,7 +48,7 @@ class CheckoutModal extends Component
 
     protected function loadDocument(): void
     {
-        $doc = Document::with(['author', 'category', 'product'])->find($this->documentId);
+        $doc = Document::with(['author', 'product', 'currentVersion', 'latestVersion'])->find($this->documentId);
 
         if (!$doc || !$doc->product || !$doc->product->is_active) {
             $this->notification()->error(

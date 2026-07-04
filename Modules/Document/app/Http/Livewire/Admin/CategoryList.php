@@ -33,7 +33,7 @@ class CategoryList extends Component
 
     protected $rules = [
         'name' => 'required|string|max:255',
-        'slug' => 'required|string|max:255',
+        'slug' => 'nullable|string|max:255',
         'description' => 'nullable|string|max:1000',
         'sort_order' => 'required|integer|min:0',
         'is_active' => 'boolean',
@@ -105,15 +105,27 @@ class CategoryList extends Component
     {
         $this->validate();
 
-        // Enforce uniqueness of slug within document type categories
+        // Auto-generate slug from name if empty
+        if (empty($this->slug)) {
+            $this->slug = \Illuminate\Support\Str::slug($this->name);
+        }
+
+        // Handle duplicate slugs with numeric suffix
+        $baseSlug = $this->slug;
+        $count = 1;
         $duplicateCheck = Category::where('slug', $this->slug)
             ->where('type', 'document');
         if ($this->categoryId) {
             $duplicateCheck->where('id', '!=', $this->categoryId);
         }
-        if ($duplicateCheck->exists()) {
-            $this->addError('slug', 'Đường dẫn (Slug) này đã tồn tại.');
-            return;
+        while ($duplicateCheck->exists()) {
+            $this->slug = $baseSlug . '-' . $count;
+            $count++;
+            $duplicateCheck = Category::where('slug', $this->slug)
+                ->where('type', 'document');
+            if ($this->categoryId) {
+                $duplicateCheck->where('id', '!=', $this->categoryId);
+            }
         }
 
         $data = [

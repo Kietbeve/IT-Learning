@@ -1,7 +1,22 @@
-<div id="admin-document-list"
+<div id="admin-document-list" wire:poll.10s.keep-alive
      x-data="{ notification: null }" 
      x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      class="space-y-6">
+
+    <style>
+        #admin-document-list, 
+        #admin-document-list.wire-loading,
+        #admin-document-list * { 
+            transition: none !important; 
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            visibility: visible !important;
+        }
+        [wire\:loading], [wire\:loading] * {
+            opacity: 1 !important;
+        }
+    </style>
 
     <!-- Notification Toast -->
     <div x-show="notification" 
@@ -87,23 +102,44 @@
     <!-- Main List Card -->
     <section class="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <!-- Filter Header -->
-        <div class="p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-50/50">
-            <div>
-                <h2 class="text-lg font-semibold text-slate-900">Quản lý toàn bộ tài liệu</h2>
-                <p class="text-sm text-slate-500 mt-1">Tìm kiếm, lọc trạng thái, thay đổi chế độ hiển thị hoặc xóa tài liệu.</p>
+        <div class="p-6 border-b border-slate-200 bg-slate-50/50 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-900">Quản lý toàn bộ tài liệu</h2>
+                    <p class="text-sm text-slate-500 mt-1">Tìm kiếm, lọc trạng thái, thay đổi chế độ hiển thị hoặc xóa tài liệu.</p>
+                </div>
+                <a href="{{ route('admin.documents.create') }}" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 text-xs font-bold shadow-lg transition-all shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Đăng tài liệu
+                </a>
             </div>
-            
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-                <!-- Status Filter -->
-                <select wire:model.live="statusFilter" aria-label="Lọc theo trạng thái" class="w-full sm:w-auto rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:outline-none">
-                    <option value="all">Tất cả trạng thái</option>
-                    <option value="approved">Đã phê duyệt</option>
-                    <option value="pending">Chờ phê duyệt</option>
-                    <option value="rejected">Bị từ chối</option>
-                    <option value="draft">Bản nháp</option>
-                    <option value="deleted">Đã xóa mềm</option>
-                </select>
 
+            <!-- Navigation Tabs -->
+            <div class="flex flex-wrap items-center gap-6 border-b border-slate-200 pb-3">
+                <button wire:click="$set('activeTab', 'pending')" 
+                        class="inline-flex items-center gap-1.5 pb-2 text-sm font-semibold transition-all border-b-2 {{ $activeTab === 'pending' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
+                    Chờ duyệt
+                    @if($pendingCount > 0)
+                        <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full">
+                            {{ $pendingCount }}
+                        </span>
+                    @endif
+                </button>
+                <button wire:click="$set('activeTab', 'approved')" 
+                        class="inline-flex items-center gap-1.5 pb-2 text-sm font-semibold transition-all border-b-2 {{ $activeTab === 'approved' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
+                    Đã duyệt
+                </button>
+                <button wire:click="$set('activeTab', 'rejected')" 
+                        class="inline-flex items-center gap-1.5 pb-2 text-sm font-semibold transition-all border-b-2 {{ $activeTab === 'rejected' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
+                    Bị từ chối
+                </button>
+                <button wire:click="$set('activeTab', 'all')" 
+                        class="inline-flex items-center gap-1.5 pb-2 text-sm font-semibold transition-all border-b-2 {{ $activeTab === 'all' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
+                    Tất cả
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full pt-1">
                 <!-- Category Filter -->
                 <select wire:model.live="categoryFilter" aria-label="Lọc theo danh mục" class="w-full sm:w-auto rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:outline-none">
                     <option value="all">Tất cả danh mục</option>
@@ -113,7 +149,7 @@
                 </select>
 
                 <!-- Search Input -->
-                <div class="relative flex-1 sm:w-64 sm:flex-initial">
+                <div class="relative w-full sm:flex-1">
                     <input type="search" 
                            id="search-admin-documents"
                            aria-label="Tìm kiếm tài liệu"
@@ -135,9 +171,47 @@
                 <div class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-4">
                         <div class="space-y-1.5 flex-1 min-w-0">
-                            <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" class="hover:text-blue-600 font-bold text-slate-900 block leading-tight text-base truncate" title="{{ $doc->title }}">
-                                {{ \Illuminate\Support\Str::limit($doc->title, 45) }}
+                            <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" class="hover:text-blue-600 font-bold text-slate-900 block leading-tight text-base truncate" title="{{ $doc->pending_version_data->title ?? $doc->title }}">
+                                {{ \Illuminate\Support\Str::limit($doc->pending_version_data->title ?? $doc->title, 45) }}
                             </a>
+                            
+                            @if($activeTab === 'pending' && isset($doc->badge_type))
+                                <div class="space-y-2 mt-2">
+                                    @if($doc->badge_type === 'new')
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold">
+                                            🆕 ĐĂNG MỚI
+                                        </span>
+                                    @elseif($doc->badge_type === 'update')
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 text-purple-700 text-xs font-bold">
+                                            📝 XIN CẬP NHẬT
+                                        </span>
+                                        @if(isset($doc->original_version))
+                                            <div class="pl-3 border-l-2 border-blue-200 bg-blue-50/50 p-2 rounded-r-lg">
+                                                <p class="text-[10px] text-slate-500 font-semibold mb-0.5">Bản gốc đang live:</p>
+                                                <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" 
+                                                   class="text-xs font-semibold text-blue-600 hover:text-blue-700 underline">
+                                                    {{ \Illuminate\Support\Str::limit($doc->original_version->title, 40) }}
+                                                </a>
+                                            </div>
+                                        @endif
+                                        @if(isset($doc->was_rejected) && $doc->was_rejected)
+                                            <div class="text-[10px] text-amber-600 font-semibold">
+                                                ⚠️ Đã bị từ chối trước đó
+                                            </div>
+                                        @endif
+                                    @elseif($doc->badge_type === 'resubmit')
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-700 text-xs font-bold">
+                                            🔄 GỬI LẠI
+                                        </span>
+                                        @if(isset($doc->rejection_info))
+                                            <div class="pl-3 border-l-2 border-rose-200 bg-rose-50/50 p-2 rounded-r-lg">
+                                                <p class="text-[10px] text-slate-500 font-semibold mb-0.5">Lý do từ chối lần trước:</p>
+                                                <p class="text-xs text-rose-700">{{ \Illuminate\Support\Str::limit($doc->rejection_info, 80) }}</p>
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
+                            @endif
                             
                             <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
                                 <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-700 font-bold">
@@ -177,6 +251,10 @@
                                 <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
                                     Đã xóa mềm
                                 </span>
+                            @elseif($activeTab === 'pending' && $doc->pendingVersion)
+                                <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                                    Chờ duyệt
+                                </span>
                             @elseif($doc->status === 'approved')
                                 <span class="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
                                     Đã duyệt
@@ -196,18 +274,34 @@
                             @endif
                         </div>
 
-                        <div class="flex items-center gap-2">
-                            <button wire:click="toggleVisibility({{ $doc->id }})" 
-                                    @if($doc->trashed()) disabled @endif
-                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors {{ $doc->visibility === 'public' ? 'bg-blue-50 text-blue-600 hover:bg-blue-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100' }}">
-                                {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
-                            </button>
-                            @if(!$doc->trashed())
-                                <button onclick="confirm('Bạn có chắc chắn muốn xóa mềm tài liệu này không?') || event.stopImmediatePropagation()" 
-                                        wire:click="deleteDocument({{ $doc->id }})" 
-                                        class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 text-xs font-bold transition-all shadow-sm">
-                                    Xóa
+                        <div class="flex flex-col items-stretch gap-1.5">
+                            @if($activeTab === 'pending' && $doc->pendingVersion)
+                                <!-- Approve button -->
+                                <button wire:click="approve({{ $doc->id }})" 
+                                        class="inline-flex items-center justify-center gap-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2.5 py-1.5 text-[11px] font-bold transition-all shadow-sm">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                    Duyệt
                                 </button>
+                                
+                                <!-- Reject button -->
+                                <button wire:click="openRejectionModal({{ $doc->id }})" 
+                                        class="inline-flex items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 px-2.5 py-1.5 text-[11px] font-bold transition-all shadow-sm">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    Từ chối
+                                </button>
+                            @else
+                                <button wire:click="toggleVisibility({{ $doc->id }})" 
+                                        @if($doc->trashed()) disabled @endif
+                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors {{ $doc->visibility === 'public' ? 'bg-blue-50 text-blue-600 hover:bg-blue-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100' }}">
+                                    {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
+                                </button>
+                                @if(!$doc->trashed())
+                                    <button onclick="confirm('Bạn có chắc chắn muốn xóa mềm tài liệu này không?') || event.stopImmediatePropagation()" 
+                                            wire:click="deleteDocument({{ $doc->id }})" 
+                                            class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 text-xs font-bold transition-all shadow-sm">
+                                        Xóa
+                                    </button>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -220,17 +314,17 @@
         </div>
 
         <!-- Desktop Table View (hidden on mobile) -->
-        <div class="hidden md:block overflow-hidden">
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left border-collapse table-fixed">
                 <thead>
                     <tr class="border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/70">
-                        <th class="px-4 py-4 cursor-pointer hover:bg-slate-100 transition-colors w-[30%]" wire:click="sortBy('title')">
+                        <th class="px-4 py-4 cursor-pointer hover:bg-slate-100 transition-colors w-[32%]" wire:click="sortBy('title')">
                             Tài liệu
                             @if($sortField === 'title')
                                 <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             @endif
                         </th>
-                        <th class="px-4 py-4 hidden md:table-cell w-[14%]">Tác giả</th>
+                        <th class="px-4 py-4 hidden md:table-cell w-[15%]">Tác giả</th>
                         <th class="px-4 py-4 w-[10%]">Hình thức</th>
                         <th class="px-4 py-4 w-[10%]">Trạng thái</th>
                         <th class="px-4 py-4 hidden sm:table-cell w-[10%]">Hiển thị</th>
@@ -240,7 +334,7 @@
                                 <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             @endif
                         </th>
-                        <th class="px-4 py-4 text-right w-[10%]">Thao tác</th>
+                        <th class="px-4 py-4 text-right w-[13%]">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
@@ -248,9 +342,47 @@
                         <tr class="hover:bg-slate-50/50 transition-colors">
                             <td class="px-4 py-4 overflow-hidden">
                                 <div class="space-y-1.5">
-                                    <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" class="hover:text-blue-600 font-bold text-slate-900 block leading-tight truncate" title="{{ $doc->title }}">
-                                        {{ \Illuminate\Support\Str::limit($doc->title, 45) }}
+                                    <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" class="hover:text-blue-600 font-bold text-slate-900 block leading-tight truncate" title="{{ $doc->pending_version_data->title ?? $doc->title }}">
+                                        {{ \Illuminate\Support\Str::limit($doc->pending_version_data->title ?? $doc->title, 45) }}
                                     </a>
+                                    
+                                    @if($activeTab === 'pending' && isset($doc->badge_type))
+                                        <div class="space-y-1.5 mt-2">
+                                            @if($doc->badge_type === 'new')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-[10px] font-bold">
+                                                    🆕 ĐĂNG MỚI
+                                                </span>
+                                            @elseif($doc->badge_type === 'update')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-purple-50 text-purple-700 text-[10px] font-bold">
+                                                    📝 XIN CẬP NHẬT
+                                                </span>
+                                                @if(isset($doc->original_version))
+                                                    <div class="pl-2 border-l-2 border-blue-200 bg-blue-50/50 p-1.5 rounded-r-lg">
+                                                        <p class="text-[9px] text-slate-500 font-semibold mb-0.5">Bản gốc đang live:</p>
+                                                        <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" 
+                                                           class="text-[10px] font-semibold text-blue-600 hover:text-blue-700 underline block truncate">
+                                                            {{ \Illuminate\Support\Str::limit($doc->original_version->title, 35) }}
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                                @if(isset($doc->was_rejected) && $doc->was_rejected)
+                                                    <div class="text-[9px] text-amber-600 font-semibold">
+                                                        ⚠️ Đã bị từ chối trước
+                                                    </div>
+                                                @endif
+                                            @elseif($doc->badge_type === 'resubmit')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-[10px] font-bold">
+                                                    🔄 GỬI LẠI
+                                                </span>
+                                                @if(isset($doc->rejection_info))
+                                                    <div class="pl-2 border-l-2 border-rose-200 bg-rose-50/50 p-1.5 rounded-r-lg">
+                                                        <p class="text-[9px] text-slate-500 font-semibold mb-0.5">Lý do từ chối:</p>
+                                                        <p class="text-[10px] text-rose-700">{{ \Illuminate\Support\Str::limit($doc->rejection_info, 60) }}</p>
+                                                    </div>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    @endif
                                     
                                     <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
                                         <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-700 font-bold">
@@ -287,6 +419,10 @@
                                     <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
                                         Đã xóa mềm
                                     </span>
+                                @elseif($activeTab === 'pending' && $doc->pendingVersion)
+                                    <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                                        Chờ duyệt
+                                    </span>
                                 @elseif($doc->status === 'approved')
                                     <span class="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
                                         Đã duyệt
@@ -309,7 +445,6 @@
                                 <button wire:click="toggleVisibility({{ $doc->id }})" 
                                         @if($doc->trashed()) disabled @endif
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors {{ $doc->visibility === 'public' ? 'bg-blue-50 text-blue-600 hover:bg-blue-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100' }}">
-                                    <span class="h-1.5 w-1.5 rounded-full {{ $doc->visibility === 'public' ? 'bg-blue-600' : 'bg-slate-400' }}"></span>
                                     {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
                                 </button>
                             </td>
@@ -318,20 +453,36 @@
                                 <span class="block text-[10px] text-slate-400 mt-0.5">{{ $doc->created_at->format('H:i') }}</span>
                             </td>
                             <td class="px-4 py-4 text-right whitespace-nowrap">
-                                <div class="flex items-center justify-end gap-2">
-                                    <!-- Visibility toggle on smallest screens where the column is hidden -->
-                                    <button wire:click="toggleVisibility({{ $doc->id }})" 
-                                            @if($doc->trashed()) disabled @endif
-                                            class="sm:hidden inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-2 text-xs font-semibold">
-                                        {{ $doc->visibility === 'public' ? 'Ẩn' : 'Hiện' }}
-                                    </button>
-
-                                    @if(!$doc->trashed())
-                                        <button onclick="confirm('Bạn có chắc chắn muốn xóa mềm tài liệu này không?') || event.stopImmediatePropagation()" 
-                                                wire:click="deleteDocument({{ $doc->id }})" 
-                                                class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 px-3.5 py-2 text-xs font-bold transition-all shadow-sm">
-                                            Xóa
+                                <div class="flex flex-col items-end justify-end gap-1.5">
+                                    @if($activeTab === 'pending' && $doc->pendingVersion)
+                                        <!-- Approve button -->
+                                        <button wire:click="approve({{ $doc->id }})" 
+                                                class="inline-flex items-center justify-center gap-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2.5 py-1.5 text-[11px] font-bold transition-all shadow-sm min-w-[90px]">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                            Duyệt
                                         </button>
+                                        
+                                        <!-- Reject button -->
+                                        <button wire:click="openRejectionModal({{ $doc->id }})" 
+                                                class="inline-flex items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 px-2.5 py-1.5 text-[11px] font-bold transition-all shadow-sm min-w-[90px]">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            Từ chối
+                                        </button>
+                                    @else
+                                        <!-- Visibility toggle on smallest screens where the column is hidden -->
+                                        <button wire:click="toggleVisibility({{ $doc->id }})" 
+                                                @if($doc->trashed()) disabled @endif
+                                                class="sm:hidden inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-2 text-xs font-semibold">
+                                            {{ $doc->visibility === 'public' ? 'Ẩn' : 'Hiện' }}
+                                        </button>
+
+                                        @if(!$doc->trashed())
+                                            <button onclick="confirm('Bạn có chắc chắn muốn xóa mềm tài liệu này không?') || event.stopImmediatePropagation()" 
+                                                    wire:click="deleteDocument({{ $doc->id }})" 
+                                                    class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 px-3.5 py-2 text-xs font-bold transition-all shadow-sm">
+                                                Xóa
+                                            </button>
+                                        @endif
                                     @endif
                                 </div>
                             </td>

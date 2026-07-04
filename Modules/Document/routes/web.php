@@ -16,8 +16,8 @@ use Modules\Document\Http\Controllers\DocumentController;
 
 // User Routes
 Route::get('/documents', \Modules\Document\Http\Livewire\User\DocumentList::class)->name('documents.index');
-Route::get('/documents/{id}/{slug?}', \Modules\Document\Http\Livewire\User\DocumentDetail::class)->name('documents.show');
 Route::get('/documents/download/{token}', [\Modules\Document\Http\Controllers\DocumentDownloadController::class, 'download'])->name('documents.download');
+Route::get('/documents/{id}/{slug?}', \Modules\Document\Http\Livewire\User\DocumentDetail::class)->name('documents.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/student/bookmarks', \Modules\Document\Http\Livewire\User\BookmarkedDocuments::class)->name('student.bookmarks');
@@ -26,9 +26,9 @@ Route::middleware('auth')->group(function () {
 
 // Admin Routes
 Route::prefix('admin')->group(function () {
-    Route::get('/moderation/documents', \Modules\Document\Http\Livewire\Admin\DocumentModeration::class)->name('admin.moderation.documents.index');
     Route::get('/moderation/documents/{id}', \Modules\Document\Http\Livewire\Admin\DocumentDetail::class)->name('admin.moderation.documents.show');
     Route::get('/documents', \Modules\Document\Http\Livewire\Admin\DocumentList::class)->name('admin.documents.index');
+    Route::get('/documents/create', \Modules\Document\Http\Livewire\Admin\DocumentUpload::class)->name('admin.documents.create');
     Route::get('/reports/documents', \Modules\Document\Http\Livewire\Admin\DocumentReport::class)->name('admin.reports.documents');
     Route::get('/categories/documents', \Modules\Document\Http\Livewire\Admin\CategoryList::class)->name('admin.categories.documents.index');
 });

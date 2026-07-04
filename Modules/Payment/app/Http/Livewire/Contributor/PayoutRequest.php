@@ -31,32 +31,69 @@ class PayoutRequest extends Component
     public $totalWithdrawn;
     public $pendingPayouts;
 
+    // Receipt modal
+    public $selectedReceiptUrl = null;
+    public $showReceiptModal = false;
+
     protected function rules()
     {
         return [
             'amount' => [
                 'required',
-                'numeric',
+                'integer',
                 'min:' . $this->minimumAmount,
                 'max:' . $this->availableBalance,
             ],
-            'bank_name' => 'required|string|max:100',
-            'bank_account_number' => 'required|string|max:50',
-            'bank_account_name' => 'required|string|max:100',
+            'bank_name' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[a-zA-Z0-9\s\-\/]+$/u',
+            ],
+            'bank_account_number' => [
+                'required',
+                'string',
+                'min:6',
+                'max:50',
+                'regex:/^[0-9]+$/',
+            ],
+            'bank_account_name' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[a-zA-ZÀ-ỹ\s]+$/u',
+            ],
             'note' => 'nullable|string|max:500',
         ];
     }
 
-    protected $messages = [
-        'amount.required' => 'Vui lòng nhập số tiền muốn rút',
-        'amount.min' => 'Số tiền tối thiểu là :min đ',
-        'amount.max' => 'Số tiền không được vượt quá số dư khả dụng',
-        'bank_name.required' => 'Vui lòng chọn ngân hàng',
-        'bank_account_number.required' => 'Vui lòng nhập số tài khoản',
-        'bank_account_name.required' => 'Vui lòng nhập tên chủ tài khoản',
-    ];
+    protected function messages()
+    {
+        return [
+            'amount.required' => 'Vui lòng nhập số tiền muốn rút',
+            'amount.integer' => 'Số tiền phải là số nguyên',
+            'amount.min' => 'Số tiền tối thiểu là ' . number_format($this->minimumAmount) . 'đ',
+            'amount.max' => 'Số tiền không được vượt quá số dư khả dụng (' . number_format($this->availableBalance) . 'đ)',
+            'bank_name.required' => 'Vui lòng chọn ngân hàng',
+            'bank_name.min' => 'Tên ngân hàng phải có ít nhất 3 ký tự',
+            'bank_name.regex' => 'Tên ngân hàng chỉ được chứa chữ, số, dấu cách, và dấu gạch ngang',
+            'bank_account_number.required' => 'Vui lòng nhập số tài khoản',
+            'bank_account_number.min' => 'Số tài khoản phải có ít nhất 6 ký tự',
+            'bank_account_number.regex' => 'Số tài khoản chỉ được chứa chữ số',
+            'bank_account_name.required' => 'Vui lòng nhập tên chủ tài khoản',
+            'bank_account_name.min' => 'Tên chủ tài khoản phải có ít nhất 3 ký tự',
+            'bank_account_name.regex' => 'Tên chủ tài khoản chỉ được chứa chữ cái và dấu cách',
+        ];
+    }
 
     public function mount()
+    {
+        $this->loadData();
+    }
+
+    public function hydrate()
     {
         $this->loadData();
     }
@@ -67,7 +104,6 @@ class PayoutRequest extends Component
         $this->availableBalance = $user->contributor_balance ?? 0;
         $this->minimumAmount = config('payment.contributor.payout.minimum_amount', 50000);
         
-        // Stats calculations
         $this->totalEarnings = WalletTransaction::where('user_id', $user->id)
             ->where('type', 'earning')
             ->sum('amount');
@@ -77,44 +113,38 @@ class PayoutRequest extends Component
             ->sum('amount');
         
         $this->pendingPayouts = PayoutRequestModel::where('user_id', $user->id)
-            ->whereIn('status', ['pending', 'approved'])
+            ->where('status', 'pending')
             ->sum('amount');
         
-        // Allow multiple pending requests
-        $this->hasPendingRequest = false;
+        $this->hasPendingRequest = PayoutRequestModel::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
     }
 
     public function submitPayoutRequest()
     {
+        if ($this->hasPendingRequest) {
+            $this->notification()->error(
+                'Không thể gửi yêu cầu',
+                'Bạn có yêu cầu rút tiền đang chờ xử lý. Vui lòng đợi Admin xử lý trước khi tạo yêu cầu mới.'
+            );
+            return;
+        }
+
         $this->validate();
 
         try {
-            DB::transaction(function() {
-                $user = Auth::user();
-                
-                // Create payout request
-                $payout = PayoutRequestModel::create([
-                    'user_id' => $user->id,
-                    'amount' => $this->amount,
-                    'bank_name' => $this->bank_name,
-                    'bank_account_number' => $this->bank_account_number,
-                    'bank_account_name' => $this->bank_account_name,
-                    'note' => $this->note,
-                    'status' => 'pending',
-                ]);
-                
-                // Create pending transaction record
-                WalletTransaction::create([
-                    'user_id' => $user->id,
-                    'type' => 'payout_pending',
-                    'amount' => -$this->amount,
-                    'balance_before' => $user->contributor_balance,
-                    'balance_after' => $user->contributor_balance, // Not deducted yet
-                    'reference_type' => 'payout_request',
-                    'reference_id' => $payout->id,
-                    'note' => 'Yêu cầu rút tiền #' . $payout->id,
-                ]);
-            });
+            $user = Auth::user();
+            
+            PayoutRequestModel::create([
+                'user_id' => $user->id,
+                'amount' => $this->amount,
+                'bank_name' => $this->bank_name,
+                'bank_account_number' => $this->bank_account_number,
+                'bank_account_name' => $this->bank_account_name,
+                'note' => $this->note,
+                'status' => 'pending',
+            ]);
 
             // Reset form
             $this->reset(['amount', 'bank_name', 'bank_account_number', 'bank_account_name', 'note']);
@@ -149,19 +179,9 @@ class PayoutRequest extends Component
         }
 
         try {
-            DB::transaction(function() use ($payout) {
-                $payout->update([
-                    'status' => 'cancelled',
-                    'note' => 'Người dùng tự hủy',
-                ]);
-
-                // Update the pending transaction
-                WalletTransaction::where('reference_type', 'payout_request')
-                    ->where('reference_id', $payout->id)
-                    ->update([
-                        'note' => 'Yêu cầu rút tiền #' . $payout->id . ' (Đã hủy)',
-                    ]);
-            });
+            $payout->update([
+                'status' => 'cancelled',
+            ]);
 
             $this->loadData();
             $this->notification()->success('Đã hủy yêu cầu rút tiền');
@@ -171,9 +191,22 @@ class PayoutRequest extends Component
         }
     }
 
+    public function showReceipt($url)
+    {
+        $this->selectedReceiptUrl = $url;
+        $this->showReceiptModal = true;
+    }
+
+    public function closeReceiptModal()
+    {
+        $this->showReceiptModal = false;
+        $this->selectedReceiptUrl = null;
+    }
+
     public function getPayoutHistoryProperty()
     {
-        return PayoutRequestModel::where('user_id', Auth::id())
+        return PayoutRequestModel::with('rejectionTransaction')
+            ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
     }

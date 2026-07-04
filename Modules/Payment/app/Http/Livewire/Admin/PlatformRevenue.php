@@ -22,10 +22,11 @@ class PlatformRevenue extends Component
 
     public function loadChartData()
     {
-        $dailyTotals = WalletTransaction::whereIn('type', ['purchase', 'subscription'])
-            ->where('amount', '>', 0)
-            ->where('created_at', '>=', now()->subDays(7))
-            ->selectRaw('DATE(created_at) as date, SUM(amount) as total')
+        $dailyTotals = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.payment_status', 'paid')
+            ->where('orders.created_at', '>=', now()->subDays(7))
+            ->selectRaw('DATE(orders.created_at) as date, SUM(order_items.platform_amount) as total')
             ->groupBy('date')
             ->orderBy('date')
             ->pluck('total', 'date')
@@ -44,26 +45,36 @@ class PlatformRevenue extends Component
 
     public function render()
     {
-        $totalRevenue = WalletTransaction::whereIn('type', ['purchase', 'subscription'])
-            ->where('amount', '>', 0)->sum('amount');
+        $totalRevenue = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.payment_status', 'paid')
+            ->sum('order_items.subtotal');
 
-        $revenueThisMonth = WalletTransaction::whereIn('type', ['purchase', 'subscription'])
-            ->where('amount', '>', 0)
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->sum('amount');
+        $revenueThisMonth = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.payment_status', 'paid')
+            ->whereMonth('orders.created_at', now()->month)
+            ->whereYear('orders.created_at', now()->year)
+            ->sum('order_items.subtotal');
 
         $pendingPayouts = PayoutRequest::where('status', 'pending')->sum('amount');
 
-        $totalPaid = PayoutRequest::where('status', 'completed')->sum('amount');
+        $totalPaid = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.payment_status', 'paid')
+            ->sum('order_items.contributor_amount');
 
-        $netProfit = $totalRevenue - $totalPaid;
+        $netProfit = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.payment_status', 'paid')
+            ->sum('order_items.platform_amount');
 
-        $lastMonthRevenue = WalletTransaction::whereIn('type', ['purchase', 'subscription'])
-            ->where('amount', '>', 0)
-            ->whereMonth('created_at', now()->subMonth()->month)
-            ->whereYear('created_at', now()->subMonth()->year)
-            ->sum('amount');
+        $lastMonthRevenue = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.payment_status', 'paid')
+            ->whereMonth('orders.created_at', now()->subMonth()->month)
+            ->whereYear('orders.created_at', now()->subMonth()->year)
+            ->sum('order_items.subtotal');
 
         $revenueGrowth = $lastMonthRevenue > 0
             ? round(($revenueThisMonth - $lastMonthRevenue) / $lastMonthRevenue * 100)
@@ -76,13 +87,13 @@ class PlatformRevenue extends Component
 
         $topContributors = User::where('contributor_balance', '>', 0)
             ->orWhereHas('walletTransactions', function($q) {
-                $q->where('type', 'purchase');
+                $q->where('type', 'earning');
             })
             ->withCount(['walletTransactions as earnings_total' => function($q) {
-                $q->whereIn('type', ['purchase', 'subscription']);
+                $q->where('type', 'earning');
             }])
             ->withSum(['walletTransactions as total_earned' => function($q) {
-                $q->whereIn('type', ['purchase', 'subscription']);
+                $q->where('type', 'earning');
             }], 'amount')
             ->orderByDesc('total_earned')
             ->take(10)

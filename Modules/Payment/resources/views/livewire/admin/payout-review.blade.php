@@ -1,6 +1,4 @@
-<div class="space-y-6" x-data="{ showApproveModal: false, showRejectModal: false }"
-     @open-modal.window="$event.detail === 'approve-modal' ? showApproveModal = true : showRejectModal = true"
-     @close-modal.window="$event.detail === 'approve-modal' ? showApproveModal = false : showRejectModal = false">
+<div class="space-y-6" wire:poll.10s>
 
     @if(session('success'))
         <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
@@ -117,8 +115,11 @@
                                 @elseif($payout->status === 'rejected')
                                     <span class="inline-flex rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800">Từ chối</span>
                                 @endif
+                                @if($payout->status === 'rejected' && $payout->rejection_reason)
+                                    <p class="mt-1 text-xs text-rose-600">Lý do: {{ Str::limit($payout->rejection_reason, 50) }}</p>
+                                @endif
                                 @if($payout->note)
-                                    <p class="mt-1 text-xs text-slate-500">{{ Str::limit($payout->note, 50) }}</p>
+                                    <p class="mt-1 text-xs text-slate-500">Contributor: {{ Str::limit($payout->note, 50) }}</p>
                                 @endif
                                 @if($payout->processed_at)
                                     <p class="mt-1 text-xs text-slate-400">{{ $payout->processed_at->format('d/m/Y H:i') }}</p>
@@ -130,6 +131,10 @@
                             <td class="px-6 py-4 text-center">
                                 @if($payout->status === 'pending')
                                     <div class="flex justify-center gap-2">
+                                        <button wire:click="openDetailModal({{ $payout->id }})"
+                                                class="rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">
+                                            Xem chi tiết
+                                        </button>
                                         <button wire:click="openApproveModal({{ $payout->id }})"
                                                 class="rounded-xl bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700">
                                             Duyệt
@@ -140,7 +145,7 @@
                                         </button>
                                     </div>
                                 @elseif($payout->receipt_image)
-                                    <a href="{{ asset('storage/' . $payout->receipt_image) }}" target="_blank"
+                                    <a href="{{ $payout->receipt_url }}" target="_blank"
                                        class="text-xs text-blue-600 hover:underline">
                                         Xem chứng từ
                                     </a>
@@ -167,52 +172,213 @@
         @endif
     </div>
 
-    <div x-show="showApproveModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div @click.away="showApproveModal = false" class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h3 class="text-lg font-semibold text-slate-900">Duyệt yêu cầu rút tiền</h3>
-            <p class="mt-2 text-sm text-slate-600">Xác nhận duyệt và chuyển khoản cho contributor</p>
+    @if($showApproveModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                <h3 class="text-lg font-semibold text-slate-900">Duyệt yêu cầu rút tiền</h3>
+                <p class="mt-2 text-sm text-slate-600">Xác nhận duyệt và chuyển khoản cho contributor</p>
 
-            <div class="mt-4">
-                <label class="block text-sm font-medium text-slate-700">Chứng từ chuyển khoản (tùy chọn)</label>
-                <input type="file" wire:model="receiptImage" accept="image/*"
-                       class="mt-1 w-full rounded-xl border-slate-300 text-sm">
-                @error('receiptImage') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
-            </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Chứng từ chuyển khoản (tùy chọn)</label>
+                    <div class="flex items-center gap-3">
+                        <label for="receiptUpload" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl text-sm font-medium text-slate-700 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            Chọn tệp
+                        </label>
+                        <input type="file" id="receiptUpload" wire:model="receiptImage" accept="image/*" class="hidden">
+                        <span class="text-sm text-slate-500">
+                            <span wire:loading.remove wire:target="receiptImage">
+                                @if(!$receiptImage)
+                                    Chưa chọn tệp
+                                @endif
+                            </span>
+                            <span wire:loading wire:target="receiptImage" class="text-blue-600">
+                                Đang tải lên...
+                            </span>
+                        </span>
+                    </div>
+                    
+                    @if($receiptImage)
+                        <div class="mt-3" x-data="{ showPreview: false }">
+                            <p class="text-xs text-slate-600 mb-2">Xem trước ảnh đã chọn:</p>
+                            <div class="relative inline-block">
+                                <img src="{{ $receiptImage->temporaryUrl() }}" 
+                                     @click="showPreview = true"
+                                     class="w-32 h-32 object-cover rounded-lg border-2 border-slate-200 cursor-pointer hover:border-blue-500 transition-colors"
+                                     alt="Preview">
+                                <div class="absolute top-1 right-1">
+                                    <button type="button" wire:click="$set('receiptImage', null)" 
+                                            class="bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-lg">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Lightbox -->
+                            <div x-show="showPreview" 
+                                 x-cloak
+                                 @click="showPreview = false"
+                                 class="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4">
+                                <div class="relative max-w-4xl max-h-full">
+                                    <img src="{{ $receiptImage->temporaryUrl() }}" 
+                                         class="max-w-full max-h-[90vh] rounded-lg"
+                                         @click.stop
+                                         alt="Full preview">
+                                    <button @click="showPreview = false" 
+                                            class="absolute top-2 right-2 bg-white text-slate-900 rounded-full p-2 hover:bg-slate-100">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    @error('receiptImage') <span class="text-xs text-rose-600 mt-1 block">{{ $message }}</span> @enderror
+                </div>
 
-            <div class="mt-6 flex gap-3">
-                <button @click="showApproveModal = false"
-                        class="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                    Hủy
-                </button>
-                <button wire:click="approvePayout"
-                        class="flex-1 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">
-                    Xác nhận duyệt
-                </button>
+                <div class="mt-6 flex gap-3">
+                    <button wire:click="$set('showApproveModal', false)"
+                            class="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        Hủy
+                    </button>
+                    <button wire:click="approvePayout"
+                            class="flex-1 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">
+                        Xác nhận duyệt
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    @endif
 
-    <div x-show="showRejectModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div @click.away="showRejectModal = false" class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h3 class="text-lg font-semibold text-slate-900">Từ chối yêu cầu</h3>
-            <p class="mt-2 text-sm text-slate-600">Nhập lý do từ chối yêu cầu rút tiền</p>
+    @if($showRejectModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                <h3 class="text-lg font-semibold text-slate-900">Từ chối yêu cầu</h3>
+                <p class="mt-2 text-sm text-slate-600">Nhập lý do từ chối yêu cầu rút tiền</p>
 
-            <div class="mt-4">
-                <textarea wire:model="rejectionReason" rows="4" placeholder="Nhập lý do từ chối..."
-                          class="w-full rounded-xl border-slate-300 text-sm"></textarea>
-                @error('rejectionReason') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
-            </div>
+                <div class="mt-4">
+                    <textarea wire:model="rejectionReason" rows="4" placeholder="Nhập lý do từ chối..."
+                              class="w-full rounded-xl border-slate-300 text-sm"></textarea>
+                    @error('rejectionReason') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
+                </div>
 
-            <div class="mt-6 flex gap-3">
-                <button @click="showRejectModal = false"
-                        class="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                    Hủy
-                </button>
-                <button wire:click="rejectPayout"
-                        class="flex-1 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
-                    Xác nhận từ chối
-                </button>
+                <div class="mt-6 flex gap-3">
+                    <button wire:click="$set('showRejectModal', false)"
+                            class="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        Hủy
+                    </button>
+                    <button wire:click="rejectPayout"
+                            class="flex-1 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
+                        Xác nhận từ chối
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    @endif
+
+    @if($showDetailModal && $detailPayout)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+                <style>
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 8px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: #f1f5f9;
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background: #cbd5e1;
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                        background: #94a3b8;
+                    }
+                </style>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Chi tiết yêu cầu rút tiền #{{ $detailPayout->id }}</h3>
+                    <button wire:click="closeDetailModal" class="text-slate-400 hover:text-slate-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+<div class="space-y-6">
+                    <!-- Thông tin Contributor -->
+                    <div class="bg-blue-50 rounded-xl p-4">
+                        <h4 class="text-sm font-semibold text-blue-900 mb-3">Thông tin Contributor</h4>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <span class="text-blue-700 font-medium">Tên:</span>
+                                <span class="text-blue-900">{{ $detailPayout->user->name }}</span>
+                            </div>
+                            <div>
+                                <span class="text-blue-700 font-medium">Email:</span>
+                                <span class="text-blue-900">{{ $detailPayout->user->email }}</span>
+                            </div>
+                            <div class="col-span-2">
+                                <span class="text-blue-700 font-medium">Số dư hiện tại:</span>
+                                <span class="text-blue-900 font-bold text-lg">{{ number_format($detailPayout->user->contributor_balance) }}đ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin yêu cầu -->
+                    <div class="bg-slate-50 rounded-xl p-4">
+                        <h4 class="text-sm font-semibold text-slate-900 mb-3">Thông tin yêu cầu rút tiền</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between py-2 border-b border-slate-200">
+                                <span class="text-slate-600">Số tiền rút:</span>
+                                <span class="font-bold text-slate-900 text-lg">{{ number_format($detailPayout->amount) }}đ</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-slate-200">
+                                <span class="text-slate-600">Ngân hàng:</span>
+                                <span class="font-medium text-slate-900">{{ $detailPayout->bank_name }}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-slate-200">
+                                <span class="text-slate-600">Số tài khoản:</span>
+                                <span class="font-mono text-slate-900">{{ $detailPayout->bank_account_number }}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-slate-200">
+                                <span class="text-slate-600">Tên chủ TK:</span>
+                                <span class="font-medium text-slate-900">{{ $detailPayout->bank_account_name }}</span>
+                            </div>
+                            @if($detailPayout->note)
+                                <div class="py-2">
+                                    <span class="text-slate-600 block mb-1">Ghi chú của contributor:</span>
+                                    <p class="text-slate-900 bg-white p-2 rounded border border-slate-200">{{ $detailPayout->note }}</p>
+                                </div>
+                            @endif
+                            <div class="flex justify-between py-2">
+                                <span class="text-slate-600">Ngày tạo:</span>
+                                <span class="text-slate-900">{{ $detailPayout->created_at->format('d/m/Y H:i') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-6 flex gap-3">
+                    <button wire:click="closeDetailModal"
+                            class="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        Đóng
+                    </button>
+                    <button wire:click="closeDetailModal; openApproveModal({{ $detailPayout->id }})"
+                            class="flex-1 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">
+                        Duyệt ngay
+                    </button>
+                    <button wire:click="closeDetailModal; openRejectModal({{ $detailPayout->id }})"
+                            class="flex-1 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
+                        Từ chối
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

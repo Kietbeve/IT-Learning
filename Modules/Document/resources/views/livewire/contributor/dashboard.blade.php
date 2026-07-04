@@ -125,11 +125,22 @@
                                     </span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-slate-500">
-                                {{ $doc->category?->name ?? 'Chưa phân loại' }}
+                            <td class="px-6 py-4">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="inline-flex items-center gap-1 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">
+                                        <svg class="w-3 h-3 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                        {{ $doc->category?->name ?? 'Chưa phân loại' }}
+                                    </span>
+                                    @if($doc->subject)
+                                    <span class="inline-flex items-center gap-1 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700">
+                                        <svg class="w-3 h-3 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                        {{ $doc->subject->name }}
+                                    </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($doc->product)
+                                @if($doc->product && $doc->product->is_active)
                                     <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }} VND</span>
                                 @else
                                     <span class="inline-flex rounded-lg bg-emerald-50 text-[10px] font-bold text-emerald-700 border border-emerald-100">Miễn phí</span>

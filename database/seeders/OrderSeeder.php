@@ -65,112 +65,17 @@ class OrderSeeder extends Seeder
                 ]);
             }
 
-            $category = DB::table('categories')->where('name', 'Lập trình')->where('type', 'document')->first();
-            if (!$category) {
-                $categoryId = DB::table('categories')->insertGetId([
-                    'name' => 'Lập trình',
-                    'slug' => 'lap-trinh',
-                    'type' => 'document',
-                    'description' => 'Tài liệu lập trình',
-                    'is_active' => true,
-                    'sort_order' => 0,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            } else {
-                $categoryId = $category->id;
+                                    $products = \Modules\Payment\Models\Product::with('document.latestVersion')->where('is_active', true)->whereHas('document')->take(2)->get();
+            if ($products->count() < 2) {
+                $this->command->error('Not enough products seeded. Please run DocumentDatabaseSeeder first.');
+                return;
             }
-
-            $doc1 = Document::where('title', 'Source code Website bán hàng PHP thuần cực đẹp')->first();
-            if (!$doc1) {
-                $doc1 = Document::create([
-                    'public_id' => 'doc_' . \Illuminate\Support\Str::random(12),
-                    'title' => 'Source code Website bán hàng PHP thuần cực đẹp',
-                    'slug' => 'source-code-website-ban-hang-php',
-                    'description' => 'Mã nguồn website bán hàng hoàn chỉnh với PHP thuần, không dùng framework',
-                    'author_id' => $contributor1->id,
-                    'category_id' => $categoryId,
-                    'file_type' => 'zip',
-                    'file_original_path' => 'documents/php-shop.zip',
-                    'file_size' => 5242880,
-                    'status' => 'approved',
-                    'visibility' => 'public',
-                    'is_downloadable' => true,
-                    'view_count' => 150,
-                    'download_count' => 45,
-                ]);
-            }
-
-            $product1 = Product::where('document_id', $doc1->id)->first();
-            if (!$product1) {
-                $product1 = Product::create([
-                    'document_id' => $doc1->id,
-                    'name' => 'Source code Website bán hàng PHP',
-                    'price' => 150000,
-                    'is_active' => true,
-                ]);
-            }
-
-            $doc2 = Document::where('title', 'Đồ án quản lý thư viện Laravel Vue.js')->first();
-            if (!$doc2) {
-                $doc2 = Document::create([
-                    'public_id' => 'doc_' . \Illuminate\Support\Str::random(12),
-                    'title' => 'Đồ án quản lý thư viện Laravel Vue.js',
-                    'slug' => 'do-an-quan-ly-thu-vien-laravel-vuejs',
-                    'description' => 'Hệ thống quản lý thư viện đầy đủ với Laravel backend và Vue.js frontend',
-                    'author_id' => $contributor2->id,
-                    'category_id' => $categoryId,
-                    'file_type' => 'zip',
-                    'file_original_path' => 'documents/library-laravel-vue.zip',
-                    'file_size' => 8388608,
-                    'status' => 'approved',
-                    'visibility' => 'public',
-                    'is_downloadable' => true,
-                    'view_count' => 230,
-                    'download_count' => 67,
-                ]);
-            }
-
-            $product2 = Product::where('document_id', $doc2->id)->first();
-            if (!$product2) {
-                $product2 = Product::create([
-                    'document_id' => $doc2->id,
-                    'name' => 'Đồ án quản lý thư viện',
-                    'price' => 200000,
-                    'is_active' => true,
-                ]);
-            }
-
-            $doc3 = Document::where('title', 'App mobile Flutter bán hàng online')->first();
-            if (!$doc3) {
-                $doc3 = Document::create([
-                    'public_id' => 'doc_' . \Illuminate\Support\Str::random(12),
-                    'title' => 'App mobile Flutter bán hàng online',
-                    'slug' => 'app-mobile-flutter-ban-hang',
-                    'description' => 'Ứng dụng mobile bán hàng với Flutter, tích hợp payment gateway',
-                    'author_id' => $contributor1->id,
-                    'category_id' => $categoryId,
-                    'file_type' => 'zip',
-                    'file_original_path' => 'documents/flutter-shop.zip',
-                    'file_size' => 12582912,
-                    'status' => 'approved',
-                    'visibility' => 'public',
-                    'is_downloadable' => true,
-                    'view_count' => 180,
-                    'download_count' => 52,
-                ]);
-            }
-
-            $product3 = Product::where('document_id', $doc3->id)->first();
-            if (!$product3) {
-                $product3 = Product::create([
-                    'document_id' => $doc3->id,
-                    'name' => 'App mobile Flutter',
-                    'price' => 250000,
-                    'is_active' => true,
-                ]);
-            }
-
+            $product1 = $products[0];
+            $doc1 = $product1->document;
+            $product2 = $products[1];
+            $doc2 = $product2->document;
+            $product3 = $products[0];
+            $doc3 = $product3->document;
             $this->command->info('✅ Users & Documents created');
             $this->command->newLine();
 
