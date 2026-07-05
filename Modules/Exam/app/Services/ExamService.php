@@ -652,4 +652,23 @@ class ExamService
 
         SendExamReviewEmailJob::dispatch($exam->id);
     }
+
+    //Hàm lưu (tạo hoặc cập nhật) Exam
+    public function saveExam(array $validated, ?int $examId=null,int $authorId){
+        $exam = $examId
+            ? Exam::findOrFail($examId)
+            : new Exam();
+
+        $exam->fill($validated);
+
+        if (! $exam->exists) {
+            $exam->slug=Exam::generateUniqueSlug($validated['title']);
+            $exam->author_id = $authorId;
+            $exam->public_id = (string) Str::uuid();
+        }
+
+        $exam->save();
+
+        return $exam;
+    }
 }

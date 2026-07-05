@@ -82,6 +82,7 @@ class ExamController extends Controller
     public function examManager()
     {
         $stats = Exam::query()
+        ->where('author_id',auth()->id())
         ->selectRaw('COUNT(*) as total')
         ->selectRaw("SUM(status = 'approved') as approved")
         ->selectRaw("SUM(status = 'pending') as pending")
