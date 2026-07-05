@@ -10,8 +10,11 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
-    optimizeDeps: {
-        noDiscovery: true,
-        include: ['flatpickr', 'flatpickr/dist/l10n/'],
-    },
+    // Không dùng `noDiscovery`.
+    // Vì Vite sẽ chỉ optimize các package trong `include`,
+    // khiến Quill/PowerGrid không được xử lý đúng và gây lỗi JS.
+    // optimizeDeps: {
+    //     noDiscovery: true,
+    //     include: ['flatpickr', 'flatpickr/dist/l10n/'],
+    // },
 });
