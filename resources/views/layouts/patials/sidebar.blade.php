@@ -18,6 +18,7 @@
                 ['label' => 'Quản lý tài liệu', 'route' => 'admin.documents.index', 'icon' => 'M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2'],
                 ['label' => 'Báo cáo vi phạm', 'route' => 'admin.reports.documents', 'icon' => 'M3 3v18h18'],
                 ['label' => 'Danh mục tài liệu', 'route' => 'admin.categories.documents.index', 'icon' => 'M4 6h16M4 12h16M4 18h16'],
+                ['label' => 'Quản lý Môn học', 'route' => 'admin.subjects', 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5A4.5 4.5 0 003 9.5v9A4.5 4.5 0 017.5 14c1.746 0 3.332.477 4.5 1.253m0-9C13.168 5.477 14.754 5 16.5 5A4.5 4.5 0 0121 9.5v9a4.5 4.5 0 00-4.5-4.5c-1.746 0-3.332.477-4.5 1.253'],
                 ['label' => 'Diễn đàn', 'route' => 'admin.learning.forum', 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'],
                 ['label' => 'Courses', 'route' => 'admin.dashboard', 'icon' => 'M12 6v6l4 2'],
                 ['label' => 'Lessons', 'route' => 'admin.dashboard', 'icon' => 'M9 12l2 2 4-4'],
