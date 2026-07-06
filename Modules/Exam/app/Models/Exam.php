@@ -24,6 +24,7 @@ class Exam extends Model
         'public_id',
         'author_id',
         'category_id',
+        'subject_id',
         'title',
         'slug',
         'short_description',
