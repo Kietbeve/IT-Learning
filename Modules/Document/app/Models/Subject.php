@@ -5,6 +5,8 @@ namespace Modules\Document\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Category;
 
+use Modules\Exam\Models\Exam;
+
 class Subject extends Model
 {
 
@@ -32,7 +34,15 @@ class Subject extends Model
      */
     public function documents()
     {
-        return $this->hasMany(Document::class);
+        return $this->hasMany(DocumentVersion::class)->where('status', 'approved');
+    }
+
+        /**
+     * 1 môn học có nhiều đề thi
+     */
+    public function exams()
+    {
+        return $this->hasMany(Exam::class);
     }
 
     /**
@@ -49,5 +59,25 @@ class Subject extends Model
     public function scopeByCategory($query, $categoryId)
     {
         return $query->where('category_id', $categoryId);
+    }
+
+    /**
+     * Tạo slug duy nhất từ tên môn học
+     * 
+     * @param string $name Tên môn học
+     * @return string Slug duy nhất
+     */
+    public static function generateUniqueSlug(string $name): string
+    {
+        $slug = \Illuminate\Support\Str::slug($name);
+        $originalSlug = $slug;
+        $counter = 1;
+
+        while (static::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }

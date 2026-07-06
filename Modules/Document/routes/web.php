@@ -31,6 +31,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/documents/create', \Modules\Document\Http\Livewire\Admin\DocumentUpload::class)->name('admin.documents.create');
     Route::get('/reports/documents', \Modules\Document\Http\Livewire\Admin\DocumentReport::class)->name('admin.reports.documents');
     Route::get('/categories/documents', \Modules\Document\Http\Livewire\Admin\CategoryList::class)->name('admin.categories.documents.index');
+    Route::get('/subjects', \Modules\Document\Livewire\Admin\SubjectManagement::class)->name('admin.subjects.index');
 });
 
 // Contributor Routes
