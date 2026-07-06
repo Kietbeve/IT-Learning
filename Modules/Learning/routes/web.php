@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Learning\Http\Controllers\LearningController;
+use Modules\Learning\Http\Controllers\QuizController;
 use Livewire\Livewire;
 use Modules\Learning\Livewire\Manage\RoadmapManagement;
 use Modules\Learning\Livewire\Manage\ManagementDetail;
@@ -78,6 +79,26 @@ Route::middleware(['auth'])->group(function () {
     // Nộp dự án (project submission)
     Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/submit-project', [LearningController::class, 'submitProject'])
         ->name('learning.roadmaps.lessons.submit-project');
+
+    // ==========================================
+    // QUIZ ROUTES - Làm quiz trong lesson
+    // ==========================================
+    
+    // Bắt đầu làm quiz
+    Route::post('/lessons/{lessonId}/quiz/start', [QuizController::class, 'startQuiz'])
+        ->name('learning.lessons.quiz.start');
+    
+    // Submit câu trả lời
+    Route::post('/quiz/attempts/{attemptId}/answer', [QuizController::class, 'submitQuizAnswer'])
+        ->name('learning.quiz.answer');
+    
+    // Nộp bài quiz
+    Route::post('/quiz/attempts/{attemptId}/submit', [QuizController::class, 'submitQuizAttempt'])
+        ->name('learning.quiz.submit');
+    
+    // Xem kết quả quiz
+    Route::get('/quiz/attempts/{attemptId}/result', [QuizController::class, 'showQuizResult'])
+        ->name('learning.quiz.result');
 });
 
 
@@ -124,6 +145,14 @@ Route::middleware(['auth'])->prefix('admin/learning')->name('admin.learning.')->
     Route::get('/submissions/{submissionId}/review', \Modules\Learning\Livewire\Admin\ProjectSubmissionReview::class)
         ->name('submissions.review');
 
+    // Project Management (CRUD)
+    Route::get('/projects', \Modules\Learning\Livewire\Admin\ProjectCrud::class)
+        ->name('projects.index');
+    Route::get('/projects/create', \Modules\Learning\Livewire\Admin\ProjectForm::class)
+        ->name('projects.create');
+    Route::get('/projects/{projectId}/edit', \Modules\Learning\Livewire\Admin\ProjectForm::class)
+        ->name('projects.edit');
+
     // Quản lý diễn đàn
     Route::get('/forum', \Modules\Learning\Livewire\Admin\ForumManagement::class)
         ->name('forum');
@@ -147,3 +176,18 @@ Route::get('/manage/detail', ManagementDetail::class)->name('manage.detail');
 Route::get('/manage/lesson', function () {
     return view('learning::manage.management-lesson');
 })->name('manage.lesson');
+
+
+// ==========================================
+// 7. NHÓM QUIZ MANAGEMENT (Contributor)
+// ==========================================
+Route::middleware(['auth'])->prefix('manage/lessons/{lessonId}/quiz')->name('manage.lessons.quiz.')->group(function () {
+    
+    // Quản lý quiz của lesson
+    Route::get('/', \Modules\Learning\Livewire\Manage\LessonQuizManagement::class)
+        ->name('index');
+    
+    // Quản lý câu hỏi của quiz
+    Route::get('/{quizId}/questions', \Modules\Learning\Livewire\Manage\QuizQuestionManagement::class)
+        ->name('questions');
+});

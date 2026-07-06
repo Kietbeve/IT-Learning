@@ -4,6 +4,7 @@ namespace Modules\Learning\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use Modules\Exam\Models\Exam;
 use Modules\Document\Models\Document;
@@ -63,5 +64,10 @@ class RoadmapLesson extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
+    }
+
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(LessonQuiz::class, 'lesson_id');
     }
 }

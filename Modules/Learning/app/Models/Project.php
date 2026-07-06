@@ -17,6 +17,10 @@ class Project extends Model
         'starter_code_url',
         'deadline_at',
         'max_resubmissions',
+        'max_score',
+        'grading_criteria',
+        'passing_score',
+        'required_completion_percentage',
         'sort_order',
     ];
 
@@ -24,6 +28,10 @@ class Project extends Model
     {
         return [
             'deadline_at' => 'datetime',
+            'grading_criteria' => 'array',
+            'max_score' => 'decimal:2',
+            'passing_score' => 'decimal:2',
+            'required_completion_percentage' => 'decimal:2',
         ];
     }
 
@@ -53,5 +61,12 @@ class Project extends Model
             RoadmapLesson::class,
             'project_id'
         );
+    }
+
+    public function rubricCriteria(): HasMany
+    {
+        return $this->hasMany(
+            ProjectRubricCriteria::class
+        )->orderBy('sort_order');
     }
 }

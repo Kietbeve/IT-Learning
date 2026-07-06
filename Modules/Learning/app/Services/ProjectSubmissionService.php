@@ -5,7 +5,9 @@ namespace Modules\Learning\Services;
 use Modules\Learning\Models\Project;
 use Modules\Learning\Models\ProjectSubmission;
 use Modules\Learning\Models\RoadmapLesson;
-use Modules\Learning\Models\Enrollment;
+use Modules\Learning\Models\RoadmapSection;
+use Modules\Learning\Models\RoadmapLessonProgress;
+use Modules\Learning\Models\RoadmapEnrollment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
@@ -13,16 +15,15 @@ use Illuminate\Http\UploadedFile;
 class ProjectSubmissionService
 {
     /**
-     * Submit a project for a lesson
+     * Submit a project for a lesson (file + optional videos)
      */
     public function submitProject(
         int $userId,
         int $lessonId,
         int $roadmapId,
-        string $githubUrl,
-        ?string $liveDemoUrl = null,
-        ?string $note = null,
-        ?UploadedFile $attachment = null
+        string $note,
+        ?UploadedFile $attachment = null,
+        array $videos = []
     ): ProjectSubmission {
         // Find the lesson and verify it has a project
         $lesson = RoadmapLesson::findOrFail($lessonId);
@@ -34,9 +35,18 @@ class ProjectSubmissionService
         $project = Project::findOrFail($lesson->project_id);
 
         // Verify user is enrolled in the roadmap
-        $enrollment = Enrollment::where('user_id', $userId)
+        $enrollment = RoadmapEnrollment::where('user_id', $userId)
             ->where('roadmap_id', $roadmapId)
             ->firstOrFail();
+
+        // Check lesson completion prerequisite
+        $prerequisiteCheck = $this->checkLessonCompletionPrerequisite($userId, $project->id);
+        if (!$prerequisiteCheck['passed']) {
+            throw new \Exception(
+                "Bạn cần hoàn thành {$prerequisiteCheck['required']}% bài học trong chương này trước khi nộp project. " .
+                "Hiện tại: {$prerequisiteCheck['current']}% ({$prerequisiteCheck['completed']}/{$prerequisiteCheck['total']} bài)."
+            );
+        }
 
         // Get existing submission if any
         $existingSubmission = ProjectSubmission::where('project_id', $project->id)
@@ -48,14 +58,30 @@ class ProjectSubmissionService
             $this->validateResubmissionLimit($existingSubmission, $project);
         }
 
-        // Handle file upload
+        // Handle file attachment (ZIP/RAR) - REQUIRED
         $attachmentPath = null;
         if ($attachment) {
-            $attachmentPath = $this->storeAttachment($attachment);
+            $attachmentPath = $attachment->store('project-files', 'public');
             
             // Delete old attachment if exists
             if ($existingSubmission && $existingSubmission->attachment_path) {
                 Storage::disk('public')->delete($existingSubmission->attachment_path);
+            }
+        }
+
+        // Handle multiple video uploads (OPTIONAL)
+        $videoPaths = [];
+        if (!empty($videos)) {
+            foreach ($videos as $video) {
+                $path = $video->store('project-videos', 'public');
+                $videoPaths[] = $path;
+            }
+            
+            // Delete old videos if exists
+            if ($existingSubmission && $existingSubmission->video_files) {
+                foreach ($existingSubmission->video_files as $oldPath) {
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
         }
 
@@ -67,19 +93,31 @@ class ProjectSubmissionService
             ? 'resubmitted' 
             : 'submitted';
 
+        // Calculate late submission status
+        $isLate = false;
+        $daysLate = 0;
+        
+        if ($project->deadline_at && now()->isAfter($project->deadline_at)) {
+            $isLate = true;
+            $daysLate = (int) now()->diffInDays($project->deadline_at, false);
+        }
+
         // Create or update submission
         if ($existingSubmission) {
             $existingSubmission->update([
-                'github_url' => $githubUrl,
-                'live_demo_url' => $liveDemoUrl,
                 'attachment_path' => $attachmentPath ?? $existingSubmission->attachment_path,
+                'video_files' => !empty($videoPaths) ? $videoPaths : $existingSubmission->video_files,
                 'note' => $note,
                 'submission_no' => $submissionNo,
                 'status' => $status,
                 'submitted_at' => now(),
+                'is_late' => $isLate,
+                'days_late' => $daysLate,
                 'reviewed_by' => null,
                 'reviewed_at' => null,
                 'feedback' => null,
+                'score' => null,
+                'grading_notes' => null,
             ]);
             
             return $existingSubmission->fresh();
@@ -89,13 +127,14 @@ class ProjectSubmissionService
             'project_id' => $project->id,
             'user_id' => $userId,
             'enrollment_id' => $enrollment->id,
-            'github_url' => $githubUrl,
-            'live_demo_url' => $liveDemoUrl,
             'attachment_path' => $attachmentPath,
+            'video_files' => $videoPaths,
             'note' => $note,
             'submission_no' => $submissionNo,
             'status' => $status,
             'submitted_at' => now(),
+            'is_late' => $isLate,
+            'days_late' => $daysLate,
         ]);
     }
 
@@ -106,7 +145,9 @@ class ProjectSubmissionService
         int $submissionId,
         int $reviewerId,
         string $status,
-        ?string $feedback = null
+        ?string $feedback = null,
+        ?float $score = null,
+        ?array $gradingNotes = null
     ): ProjectSubmission {
         if (!in_array($status, ['passed', 'failed', 'in_review'])) {
             throw new \Exception('Trạng thái không hợp lệ.');
@@ -114,11 +155,26 @@ class ProjectSubmissionService
 
         $submission = ProjectSubmission::findOrFail($submissionId);
 
+        // Validate score if provided
+        if ($score !== null) {
+            $project = $submission->project;
+            if ($score < 0 || $score > $project->max_score) {
+                throw new \Exception("Điểm số phải nằm trong khoảng 0 - {$project->max_score}.");
+            }
+
+            // Auto-determine status based on score if not explicitly set to in_review
+            if ($status !== 'in_review') {
+                $status = $score >= $project->passing_score ? 'passed' : 'failed';
+            }
+        }
+
         $submission->update([
             'status' => $status,
             'reviewed_by' => $reviewerId,
             'reviewed_at' => now(),
             'feedback' => $feedback,
+            'score' => $score,
+            'grading_notes' => $gradingNotes,
         ]);
 
         return $submission->fresh();
@@ -219,10 +275,23 @@ class ProjectSubmissionService
         $submission = $this->getUserSubmission($userId, $projectId);
         
         if (!$submission) {
+            // Check prerequisites for first-time submission
+            $prerequisiteCheck = $this->checkLessonCompletionPrerequisite($userId, $projectId);
+            
+            if (!$prerequisiteCheck['passed']) {
+                return [
+                    'can_submit' => false,
+                    'reason' => "Cần hoàn thành {$prerequisiteCheck['required']}% bài học (hiện tại: {$prerequisiteCheck['current']}%)",
+                    'submission_no' => 0,
+                    'prerequisite' => $prerequisiteCheck,
+                ];
+            }
+            
             return [
                 'can_submit' => true,
                 'reason' => null,
                 'submission_no' => 0,
+                'prerequisite' => $prerequisiteCheck,
             ];
         }
 
@@ -267,6 +336,63 @@ class ProjectSubmissionService
             'can_submit' => true,
             'reason' => null,
             'submission_no' => $submission->submission_no,
+        ];
+    }
+
+    /**
+     * Check if user has completed required % of lessons before submitting project
+     */
+    public function checkLessonCompletionPrerequisite(int $userId, int $projectId): array
+    {
+        $project = Project::with('section.lessons')->findOrFail($projectId);
+        
+        // If project has no section, no prerequisite check needed
+        if (!$project->section) {
+            return [
+                'passed' => true,
+                'current' => 100,
+                'required' => 0,
+                'completed' => 0,
+                'total' => 0,
+            ];
+        }
+        
+        // Count total published lessons in the section (excluding project lessons)
+        $totalLessons = $project->section->lessons()
+            ->where('is_published', true)
+            ->where('lesson_type', '!=', 'project') // Don't count project lessons
+            ->count();
+        
+        if ($totalLessons === 0) {
+            return [
+                'passed' => true,
+                'current' => 100,
+                'required' => $project->required_completion_percentage,
+                'completed' => 0,
+                'total' => 0,
+            ];
+        }
+        
+        // Count completed lessons by user
+        $lessonIds = $project->section->lessons()
+            ->where('is_published', true)
+            ->where('lesson_type', '!=', 'project')
+            ->pluck('id');
+        
+        $completedLessons = RoadmapLessonProgress::where('user_id', $userId)
+            ->whereIn('roadmap_lesson_id', $lessonIds)
+            ->where('status', 'completed')
+            ->count();
+        
+        $completionRate = ($completedLessons / $totalLessons) * 100;
+        $required = $project->required_completion_percentage;
+        
+        return [
+            'passed' => $completionRate >= $required,
+            'current' => round($completionRate, 2),
+            'required' => $required,
+            'completed' => $completedLessons,
+            'total' => $totalLessons,
         ];
     }
 }

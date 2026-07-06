@@ -737,6 +737,90 @@
                                 </div>
                             @endif
 
+
+                            {{-- Quiz & Exercise Section - DYNAMIC FROM DATABASE --}}
+                            @php
+                                $lessonQuiz = $currentLesson->quizzes->where('is_published', true)->first();
+                            @endphp
+                            
+                            @if($lessonQuiz && $lessonQuiz->questions->count() > 0)
+                                <div x-data="{ 
+                                    quizCompleted: false, 
+                                    answers: {},
+                                    correctAnswers: @js($lessonQuiz->questions->pluck('correct_answer', 'id')->toArray()),
+                                    checkAnswers() {
+                                        let correct = 0;
+                                        let total = Object.keys(this.correctAnswers).length;
+                                        
+                                        Object.keys(this.correctAnswers).forEach(qid => {
+                                            if (this.answers[qid] && this.answers[qid] === this.correctAnswers[qid]) {
+                                                correct++;
+                                            }
+                                        });
+                                        
+                                        // Pass if 70% or more correct
+                                        this.quizCompleted = (correct / total) >= 0.7;
+                                        
+                                        if (this.quizCompleted) {
+                                            alert('✅ Chính xác! Bạn đã trả lời đúng ' + correct + '/' + total + ' câu. Bạn có thể nộp project bên dưới.');
+                                        } else {
+                                            alert('❌ Chưa đạt! Bạn chỉ đúng ' + correct + '/' + total + ' câu. Cần ít nhất ' + Math.ceil(total * 0.7) + ' câu đúng để tiếp tục.');
+                                        }
+                                    }
+                                }" class="mb-6">
+                                
+                                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-2xl p-6">
+                                    <h3 class="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+                                        📝 Hoàn thành Quiz trước khi nộp Project
+                                    </h3>
+                                    <p class="text-sm text-blue-700 mb-4">
+                                        💡 <strong>{{ $lessonQuiz->title }}</strong> - Cần đạt ít nhất 70% để tiếp tục
+                                    </p>
+                                    
+                                    {{-- Quiz Questions from Database --}}
+                                    <div class="space-y-4 mb-6">
+                                        @foreach($lessonQuiz->questions as $index => $question)
+                                            <div class="bg-white rounded-xl p-4 border-2">
+                                                <p class="font-bold text-sm mb-3">{{ $index + 1 }}. {{ $question->content }}</p>
+                                                @php
+                                                    $options = is_array($question->options) ? $question->options : json_decode($question->options, true);
+                                                @endphp
+                                                @if($options)
+                                                    @foreach($options as $optKey => $optValue)
+                                                        <label class="flex items-center gap-2 mb-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                                            <input type="radio" 
+                                                                   name="q{{ $question->id }}" 
+                                                                   value="{{ $optValue }}"
+                                                                   x-model="answers[{{ $question->id }}]"
+                                                                   class="text-purple-600">
+                                                            <span class="text-sm">{{ $optValue }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- Check Button --}}
+                                    <button @click="checkAnswers()"
+                                            type="button"
+                                            :class="quizCompleted ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'"
+                                            class="w-full text-white font-bold py-3 rounded-xl transition-colors">
+                                        <span x-show="!quizCompleted">Kiểm tra câu trả lời</span>
+                                        <span x-show="quizCompleted">✓ Hoàn thành! Bạn có thể nộp project bên dưới.</span>
+                                    </button>
+                                </div>
+
+                                {{-- Submission Form (only show when quiz completed) --}}
+                                <div x-show="quizCompleted" x-transition class="mt-6">
+                            @else
+                                {{-- No quiz required - show form directly --}}
+                                <div class="text-sm text-gray-600 mb-4 flex items-center gap-2">
+                                    <span>💡</span>
+                                    <span>Bài học này không yêu cầu quiz. Bạn có thể nộp project trực tiếp.</span>
+                                </div>
+                                <div>
+                            @endif
                             {{-- Submission Form --}}
                             @if($canSubmit['can_submit'])
                                 <form action="{{ route('learning.roadmaps.lessons.submit-project', [$roadmap->id, $currentLesson->id]) }}" 
@@ -745,44 +829,55 @@
                                       class="space-y-4">
                                     @csrf
 
+                                    {{-- File Upload ZIP/RAR - BẮT BUỘC --}}
                                     <div>
-                                        <label class="block text-sm font-bold text-gray-800 mb-2">GitHub Repository URL <span class="text-red-500">*</span></label>
-                                        <input type="url" 
-                                               name="github_url" 
-                                               value="{{ old('github_url', $projectSubmission->github_url ?? '') }}"
-                                               placeholder="https://github.com/username/project-name" 
-                                               class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                                               required>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-800 mb-2">Live Demo URL (không bắt buộc)</label>
-                                        <input type="url" 
-                                               name="live_demo_url" 
-                                               value="{{ old('live_demo_url', $projectSubmission->live_demo_url ?? '') }}"
-                                               placeholder="https://your-project-demo.com" 
-                                               class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-800 mb-2">File đính kèm (ZIP, PDF, PNG, JPG - Max 100MB)</label>
+                                        <label class="block text-sm font-bold text-gray-800 mb-2">
+                                            File Project (ZIP/RAR) <span class="text-red-500">*</span>
+                                        </label>
                                         <input type="file" 
                                                name="attachment" 
-                                               accept=".zip,.pdf,.png,.jpg,.jpeg"
-                                               class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
-                                        @if($projectSubmission && $projectSubmission->attachment_path)
-                                            <p class="text-xs text-gray-500 mt-1">
-                                                📎 File hiện tại: <a href="{{ asset('storage/' . $projectSubmission->attachment_path) }}" target="_blank" class="text-purple-600 hover:underline">Xem file</a>
-                                            </p>
-                                        @endif
+                                               accept=".zip,.rar"
+                                               class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                                               required>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            📦 Upload file project (ZIP hoặc RAR, tối đa 100MB)
+                                        </p>
+                                        @error('attachment') 
+                                            <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
+                                    {{-- Video Demo - KHÔNG BẮT BUỘC --}}
                                     <div>
-                                        <label class="block text-sm font-bold text-gray-800 mb-2">Ghi chú cho giảng viên</label>
+                                        <label class="block text-sm font-bold text-gray-800 mb-2">
+                                            Video Demo <span class="text-gray-400 text-xs">(không bắt buộc)</span>
+                                        </label>
+                                        <input type="file" 
+                                               name="videos[]" 
+                                               multiple
+                                               accept="video/mp4,video/quicktime,video/x-msvideo,video/x-ms-wmv"
+                                               class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            📹 Tùy chọn: Upload 1-5 video demo (MP4, MOV, AVI, WMV). Tối đa 500MB/video.
+                                        </p>
+                                        @error('videos') 
+                                            <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    {{-- Mô tả Project --}}
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-800 mb-2">Mô tả Project <span class="text-red-500">*</span></label>
                                         <textarea name="note" 
-                                                  rows="4" 
-                                                  placeholder="Mô tả ngắn về project của bạn, những khó khăn gặp phải, hoặc những điểm bạn muốn giảng viên lưu ý..."
+                                                  rows="5" 
+                                                  required
+                                                  minlength="10"
+                                                  placeholder="Mô tả chi tiết: công nghệ sử dụng, tính năng, cách chạy, những điểm đặc biệt... (tối thiểu 10 ký tự)"
                                                   class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500">{{ old('note', $projectSubmission->note ?? '') }}</textarea>
+                                        <p class="text-xs text-gray-500 mt-1">💡 Giúp giảng viên hiểu và đánh giá project</p>
+                                        @error('note')
+                                            <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     <div class="flex justify-end">
@@ -792,6 +887,10 @@
                                         </button>
                                     </div>
                                 </form>
+                                </div> {{-- End x-show quizCompleted / no-quiz form container --}}
+                            @if(isset($lessonQuiz) && $lessonQuiz && $lessonQuiz->questions->count() > 0)
+                                </div> {{-- End x-data quiz section --}}
+                            @endif
                             @else
                                 <div class="bg-yellow-50 border border-yellow-300 rounded-xl p-4 text-center">
                                     <p class="text-sm font-bold text-yellow-800">⚠️ {{ $canSubmit['reason'] }}</p>

@@ -12,11 +12,15 @@ class ProjectSubmissionReview extends Component
     public ProjectSubmission $submission;
     public string $status = '';
     public string $feedback = '';
+    public ?float $score = null;
+    public array $gradingNotes = [];
     public bool $showReviewForm = false;
 
     protected $rules = [
         'status' => 'required|in:in_review,passed,failed',
         'feedback' => 'nullable|string|max:2000',
+        'score' => 'nullable|numeric|min:0',
+        'gradingNotes' => 'nullable|array',
     ];
 
     public function mount($submissionId)
@@ -26,6 +30,8 @@ class ProjectSubmissionReview extends Component
         
         $this->status = $this->submission->status;
         $this->feedback = $this->submission->feedback ?? '';
+        $this->score = $this->submission->score;
+        $this->gradingNotes = $this->submission->grading_notes ?? [];
     }
 
     public function toggleReviewForm()
@@ -44,7 +50,9 @@ class ProjectSubmissionReview extends Component
                 submissionId: $this->submission->id,
                 reviewerId: Auth::id(),
                 status: $this->status,
-                feedback: $this->feedback
+                feedback: $this->feedback,
+                score: $this->score,
+                gradingNotes: $this->gradingNotes
             );
 
             session()->flash('success', 'Đã đánh giá project thành công!');
@@ -66,7 +74,9 @@ class ProjectSubmissionReview extends Component
                 submissionId: $this->submission->id,
                 reviewerId: Auth::id(),
                 status: 'in_review',
-                feedback: null
+                feedback: null,
+                score: null,
+                gradingNotes: null
             );
 
             session()->flash('success', 'Đã đánh dấu đang review!');

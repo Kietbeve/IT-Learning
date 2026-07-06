@@ -3,13 +3,36 @@
 namespace Modules\Learning\Providers;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Modules\Learning\Models\SectionProgress;
+use Modules\Learning\Models\AssignmentSubmission;
+use Modules\Learning\Observers\SectionProgressObserver;
+use Modules\Learning\Observers\AssignmentSubmissionObserver;
 
 class LearningServiceProvider extends ServiceProvider
 {
     protected string $moduleName = 'Learning';
 
     protected string $moduleNameLower = 'learning';
+
+    /**
+     * Event listener mappings
+     */
+    protected $listen = [
+        \Modules\Learning\Events\LessonCompleted::class => [
+            \Modules\Learning\Listeners\UpdateSectionProgressListener::class,
+        ],
+        \Modules\Learning\Events\SectionCompleted::class => [
+            \Modules\Learning\Listeners\CheckCourseCompletionListener::class,
+        ],
+        \Modules\Learning\Events\CourseCompleted::class => [
+            \Modules\Learning\Listeners\IssueCertificateListener::class,
+        ],
+        \Modules\Learning\Events\AssignmentSubmitted::class => [
+            \Modules\Learning\Listeners\NotifyInstructorListener::class,
+        ],
+    ];
 
     /**
      * Boot the application events.
@@ -22,7 +45,33 @@ class LearningServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'database/migrations'));
-
+        
+        // Register model observers
+        $this->registerObservers();
+        
+        // Register event listeners
+        $this->registerEventListeners();
+    }
+    
+    /**
+     * Register model observers
+     */
+    protected function registerObservers(): void
+    {
+        SectionProgress::observe(SectionProgressObserver::class);
+        AssignmentSubmission::observe(AssignmentSubmissionObserver::class);
+    }
+    
+    /**
+     * Register event listeners
+     */
+    protected function registerEventListeners(): void
+    {
+        foreach ($this->listen as $event => $listeners) {
+            foreach ($listeners as $listener) {
+                Event::listen($event, $listener);
+            }
+        }
     }
 
     /**
