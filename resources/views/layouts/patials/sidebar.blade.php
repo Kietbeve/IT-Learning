@@ -22,6 +22,7 @@
                 ['label' => 'Courses', 'route' => 'admin.dashboard', 'icon' => 'M12 6v6l4 2'],
                 ['label' => 'Lessons', 'route' => 'admin.dashboard', 'icon' => 'M9 12l2 2 4-4'],
                 ['label' => 'Orders', 'route' => 'admin.dashboard', 'icon' => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5'],
+                ['label' => 'Quản lý Tags', 'route' => 'admin.tags','icon' => 'M4 9h16M3 15h16M10 3L8 21M16 3l-2 18'],
                 ['label' => 'Settings', 'route' => 'admin.settings.revenue', 'icon' => 'M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z'],
             ];
         @endphp

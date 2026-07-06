@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\Exam;
+use Modules\Document\Models\Document;
+use Illuminate\Support\Str;
+
 class Tag extends Model
 {
     use SoftDeletes;
@@ -16,7 +19,11 @@ class Tag extends Model
         'name',
         'slug',
     ];
-   public function questions(): BelongsToMany
+   
+    /**
+     * Quan hệ với Questions (câu hỏi)
+     */
+    public function questions(): BelongsToMany
     {
         return $this->belongsToMany(
             Question::class,
@@ -26,6 +33,9 @@ class Tag extends Model
         );
     }
 
+    /**
+     * Quan hệ với Exams (đề thi)
+     */
     public function exams(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -34,5 +44,34 @@ class Tag extends Model
             'tag_id',
             'exam_id'
         );
+    }
+
+    /**
+     * Quan hệ với Documents (tài liệu)
+     */
+    public function documents(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Document::class,
+            'document_tag_maps',
+            'tag_id',
+            'document_id'
+        );
+    }
+
+    protected static function generateUniqueSlug(string $title): string
+    {
+        $slug = Str::slug($title);
+        $originalSlug = $slug;
+        $counter = 1;
+
+        while (
+            static::where('slug', $slug)->exists()
+        ) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }
