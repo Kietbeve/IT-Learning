@@ -24,6 +24,11 @@ return new class extends Migration
                 ->constrained('categories')
                 ->cascadeOnDelete();
 
+            $table->foreignId('subject_id')
+                ->nullable()
+                ->constrained('subjects')
+                ->nullOnDelete();
+
             $table->string('title');
 
             $table->string('slug')
