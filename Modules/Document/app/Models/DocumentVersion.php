@@ -2,9 +2,10 @@
 
 namespace Modules\Document\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
 use App\Models\Category;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentVersion extends Model
 {
@@ -27,6 +28,7 @@ class DocumentVersion extends Model
         'is_downloadable',
         'watermark_status',
         'price',
+        'sale_price',
         'status',
         'rejected_reason',
         'submitted_by',
@@ -37,9 +39,9 @@ class DocumentVersion extends Model
 
     protected $casts = [
         'is_downloadable' => 'boolean',
-        'submitted_at'   => 'datetime',
-        'reviewed_at'    => 'datetime',
-        'price'          => 'decimal:2',
+        'submitted_at' => 'datetime',
+        'reviewed_at' => 'datetime',
+        'price' => 'decimal:2',
         'gallery_images' => 'array',
     ];
 
@@ -109,31 +111,37 @@ class DocumentVersion extends Model
 
     protected function resolveFileUrl($path)
     {
-        if (!$path) return null;
-        if (str_starts_with($path, 'http')) return $path;
+        if (! $path) {
+            return null;
+        }
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
         if (str_starts_with($path, 'documents/')) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+            return Storage::disk('public')->url($path);
         }
         $publicUrl = config('filesystems.disks.r2.url');
-        $url = rtrim($publicUrl, '/') . '/' . ltrim($path, '/');
-        
+        $url = rtrim($publicUrl, '/').'/'.ltrim($path, '/');
+
         // Force inline viewing for PDFs instead of download
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if (in_array($extension, ['pdf'])) {
             $url .= '?response-content-disposition=inline';
         }
-        
+
         return $url;
     }
 
     protected function resolveViewUrl($path)
     {
         $url = $this->resolveFileUrl($path);
-        if (!$url) return null;
+        if (! $url) {
+            return null;
+        }
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if (in_array($extension, ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'])) {
-            return 'https://view.officeapps.live.com/op/view.aspx?src=' . urlencode($url);
+            return 'https://view.officeapps.live.com/op/view.aspx?src='.urlencode($url);
         }
 
         return $url;
@@ -141,13 +149,35 @@ class DocumentVersion extends Model
 
     /* ──────────── Helpers ──────────── */
 
-    public function isPending(): bool  { return $this->status === 'pending'; }
-    public function isApproved(): bool { return $this->status === 'approved'; }
-    public function isRejected(): bool { return $this->status === 'rejected'; }
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
+    }
 
     /* ──────────── Scopes ──────────── */
 
-    public function scopePending($query)  { return $query->where('status', 'pending'); }
-    public function scopeApproved($query) { return $query->where('status', 'approved'); }
-    public function scopeRejected($query) { return $query->where('status', 'rejected'); }
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
+    }
 }

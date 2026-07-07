@@ -71,7 +71,7 @@ Route::group(['prefix' => 'exam', 'middleware' => 'auth'], function () {
 |
 */
 
-Route::group(['prefix' => 'contributor', 'middleware' => ['auth']], function () {
+Route::group(['prefix' => 'contributor', 'middleware' => ['auth', 'role:contributor']], function () {
     // Quản lý câu hỏi - Danh sách câu hỏi của contributor
     Route::get('questions', [ExamController::class, 'questionManager'])->name('contributor.questions');
 

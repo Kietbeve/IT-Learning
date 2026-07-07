@@ -111,8 +111,13 @@
                                         </div>
                                     </div>
                                     <div class="text-right shrink-0">
-                                        @if($doc->product && $doc->product->is_active)
+                                        @if($doc->product && $doc->product->price > 0)
+                                        @if($doc->product->sale_price)
+                                            <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">{{ number_format($doc->product->sale_price) }}đ</span>
+                                            <span class="text-[10px] text-slate-400 line-through ml-1">{{ number_format($doc->product->price) }}đ</span>
+                                        @else
                                             <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">{{ number_format($doc->product->price) }}đ</span>
+                                        @endif
                                         @else
                                             <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">Miễn phí</span>
                                         @endif
@@ -143,125 +148,72 @@
     <!-- Main Content Layout -->
     <div id="document-list-container" class="grid grid-cols-1 lg:grid-cols-4 gap-8 scroll-mt-24">
         <!-- Sidebar Filters -->
-        <div class="space-y-6 lg:col-span-1">
-            <!-- Filter Category Card -->
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-500 mb-4">Danh mục</h3>
-                <div class="space-y-2">
-                    <button wire:click="$set('category', null)" 
-                            class="w-full text-left flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 {{ is_null($category) ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900' }}">
-                        <span>Tất cả danh mục</span>
-                    </button>
-                    @foreach($categories as $cat)
-                        <button wire:click="$set('category', '{{ $cat->slug }}')" 
-                                class="w-full text-left flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 {{ $category == $cat->slug ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900' }}">
-                            <span class="truncate pr-2">{{ $cat->name }}</span>
-                        </button>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Filter Attributes Card -->
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-500">Bộ lọc nâng cao</h3>
-                    @if(!empty($search) || !is_null($category) || !empty($selectedFileType) || !empty($selectedPrice) || !empty($selectedYear) || !empty($selectedResourceType) || !empty($selectedCustomCategory) || !empty($selectedSubject) || !empty($selectedLanguage))
-                        <button wire:click="resetFilters" class="text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors duration-150">
+        <div class="space-y-4 lg:col-span-1">
+            <!-- Compact Filters Card -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800">Bộ lọc tài liệu</h3>
+                    @if(!empty($search) || !is_null($category) || !empty($selectedPrice) || !empty($selectedYear) || !empty($selectedResourceType) || !empty($selectedCustomCategory) || !empty($selectedSubject))
+                        <button wire:click="resetFilters" class="text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors">
                             Xóa lọc
                         </button>
                     @endif
                 </div>
 
                 <!-- Loại tài nguyên -->
-                <div>
-                    <label for="filter-resource-type" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Loại tài nguyên</label>
-                    <select id="filter-resource-type" wire:model.live="selectedResourceType" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả tài nguyên</option>
-                        <option value="pdf">Tài liệu PDF</option>
-                        <option value="docx">Văn bản DOCX</option>
+                <div class="space-y-1.5">
+                    <label for="filter-resource-type" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Loại tài nguyên</label>
+                    <select id="filter-resource-type" wire:model.live="selectedResourceType" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-colors">
+                        <option value="">Tất cả</option>
+                        <option value="pdf">PDF</option>
+                        <option value="docx">Word (DOCX)</option>
                         <option value="source_code">Source Code</option>
-                        <option value="do_an">Đồ án</option>
-                        <option value="ebook">Ebook / Sách</option>
                     </select>
                 </div>
 
-                <!-- Danh mục -->
-                <div>
-                    <label for="filter-custom-category" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Chủ đề / Lĩnh vực</label>
-                    <select id="filter-custom-category" wire:model.live="selectedCustomCategory" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả chủ đề</option>
-                        <option value="web">Web Development</option>
-                        <option value="mobile">Mobile App</option>
-                        <option value="ai_ml">Trí tuệ nhân tạo (AI/ML)</option>
-                        <option value="devops">DevOps & Cloud</option>
-                        <option value="database">Cơ sở dữ liệu (Database)</option>
+                <!-- Danh mục (Category) -->
+                <div class="space-y-1.5">
+                    <label for="filter-category" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Danh mục</label>
+                    <select id="filter-category" wire:model.live="category" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-colors">
+                        <option value="">Tất cả</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->slug }}">{{ $cat->name }}</option>
+                        @endforeach
                     </select>
                 </div>
 
-                <!-- Môn học -->
-                <div>
-                    <label for="filter-subject" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Môn học</label>
-                    <select id="filter-subject" wire:model.live="selectedSubject" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả môn học</option>
-                        <option value="lap_trinh_web">Lập trình Web</option>
-                        <option value="csdl">Cơ sở dữ liệu</option>
-                        <option value="mang_may_tinh">Mạng máy tính</option>
+                <!-- Môn học (Subject) -->
+                <div class="space-y-1.5">
+                    <label for="filter-subject" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Môn học</label>
+                    <select id="filter-subject" wire:model.live="selectedSubject" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-colors">
+                        <option value="">Tất cả</option>
+                        @foreach($subjects as $sub)
+                            <option value="{{ $sub->id }}">{{ $sub->name }}</option>
+                        @endforeach
                     </select>
                 </div>
 
-                <!-- Ngôn ngữ lập trình -->
-                <div>
-                    <label for="filter-language" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Ngôn ngữ lập trình</label>
-                    <select id="filter-language" wire:model.live="selectedLanguage" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả ngôn ngữ</option>
-                        <option value="php">PHP</option>
-                        <option value="python">Python</option>
-                        <option value="javascript">JavaScript</option>
-                        <option value="java">Java</option>
-                    </select>
-                </div>
-
-                <!-- Định dạng tệp -->
-                <div>
-                    <label for="filter-file-type" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Định dạng tệp</label>
-                    <select id="filter-file-type" wire:model.live="selectedFileType" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả định dạng</option>
-                        <option value="pdf">Tài liệu (PDF)</option>
-                        <option value="docx">Văn bản (DOCX)</option>
-                        <option value="zip">Nén (ZIP)</option>
-                    </select>
-                </div>
-
-                <!-- Giá thành -->
-                <div>
-                    <label for="filter-price" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Giá tài liệu</label>
-                    <select id="filter-price" wire:model.live="selectedPrice" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả giá</option>
+                <!-- Giá -->
+                <div class="space-y-1.5">
+                    <label for="filter-price" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Giá</label>
+                    <select id="filter-price" wire:model.live="selectedPrice" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-colors">
+                        <option value="">Tất cả</option>
                         <option value="free">Miễn phí</option>
                         <option value="paid">Có phí</option>
                     </select>
                 </div>
 
                 <!-- Năm đăng tải -->
-                <div>
-                    <label for="filter-year" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Năm đăng tải</label>
-                    <select id="filter-year" wire:model.live="selectedYear" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả các năm</option>
-                        <option value="2026">2026</option>
+                <div class="space-y-1.5">
+                    <label for="filter-year" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Năm đăng tải</label>
+                    <select id="filter-year" wire:model.live="selectedYear" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-colors">
+                        <option value="">Tất cả</option>
                         <option value="2025">2025</option>
                         <option value="2024">2024</option>
                         <option value="2023">2023</option>
                         <option value="2022">2022</option>
                     </select>
                 </div>
-
-                <!-- Reset Filters Big Button -->
-                @if(!empty($search) || !is_null($category) || !empty($selectedFileType) || !empty($selectedPrice) || !empty($selectedYear) || !empty($selectedResourceType) || !empty($selectedCustomCategory) || !empty($selectedSubject) || !empty($selectedLanguage))
-                    <button wire:click="resetFilters" class="w-full mt-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 text-sm transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        Xóa tất cả bộ lọc
-                    </button>
-                @endif
             </div>
         </div>
 
@@ -312,9 +264,14 @@
 
                             <!-- Price badge top-right -->
                             <div class="absolute top-3 right-3">
-                                @if($doc->product && $doc->product->is_active)
+                                @if($doc->product && $doc->product->price > 0)
                                     <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold bg-white/90 text-amber-600 shadow-sm backdrop-blur-sm border border-white/50">
-                                        {{ number_format($doc->product->price) }}đ
+                                        @if($doc->product->sale_price)
+                                            {{ number_format($doc->product->sale_price) }}đ
+                                            <span class="text-[10px] text-slate-400 line-through ml-1 font-medium">{{ number_format($doc->product->price) }}đ</span>
+                                        @else
+                                            {{ number_format($doc->product->price) }}đ
+                                        @endif
                                     </span>
                                 @else
                                     <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold bg-white/90 text-emerald-600 shadow-sm backdrop-blur-sm border border-white/50">
@@ -370,31 +327,27 @@
                             <div class="mt-auto pt-4 flex items-center justify-between border-t border-slate-100">
                                 <div class="flex items-center gap-3 text-xs text-slate-500 font-medium">
                                     <!-- Download count -->
-                                    <span class="inline-flex items-center gap-1">
+                                    <span class="inline-flex items-center gap-1" title="Lượt tải">
                                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                         {{ $doc->download_count >= 1000 ? number_format($doc->download_count / 1000, 1) . 'k' : number_format($doc->download_count) }}
                                     </span>
                                     <!-- Favorite count -->
-                                    <span class="inline-flex items-center gap-1">
+                                    <span class="inline-flex items-center gap-1" title="Lượt yêu thích">
                                         <svg class="w-3.5 h-3.5 text-rose-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                         {{ $doc->favorite_count }}
                                     </span>
+                                    <!-- Rating -->
+                                    @if($doc->reviews_avg_rating > 0)
+                                    <span class="inline-flex items-center gap-1 text-amber-500 font-bold" title="Đánh giá trung bình">
+                                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                        {{ number_format($doc->reviews_avg_rating, 1) }}
+                                    </span>
+                                    @endif
                                     <!-- Published date -->
                                     <span class="inline-flex items-center gap-1 text-slate-400">
                                         {{ $doc->published_at ? $doc->published_at->format('d/m/Y') : ($doc->created_at ? $doc->created_at->format('d/m/Y') : '') }}
                                     </span>
                                 </div>
-
-                                <!-- Favorite button -->
-                                <button wire:click.prevent="toggleFavorite({{ $doc->id }})" 
-                                        class="shrink-0 h-9 w-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
-                                        title="Lưu vào yêu thích">
-                                    @if(Auth::check() && $doc->favorites->isNotEmpty())
-                                        <svg class="w-5 h-5 fill-red-500 text-red-500" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                    @else
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                                    @endif
-                                </button>
                             </div>
                         </div>
                     </a>

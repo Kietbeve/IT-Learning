@@ -17,6 +17,21 @@
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-[#f3f5fc] via-white to-[#f9f8ff] text-slate-700 antialiased font-sans">
+    <div id="toast-wrapper">
+        <x-notifications position="top-right" />
+    </div>
+    <style>
+        /* Force WireUI notifications to top-right below header */
+        #toast-wrapper > div {
+            top: 70px !important;
+            right: 20px !important;
+            bottom: auto !important;
+            left: auto !important;
+            width: 380px !important;
+            max-width: calc(100vw - 40px) !important;
+            z-index: 99999 !important;
+        }
+    </style>
     <div x-data="{ sidebarHidden: true }" class="flex min-h-screen">
         @include('layouts.patials.contributor_sidebar')
 
@@ -54,6 +69,23 @@
     </div>
     @wireUiScripts
     @livewireScripts
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('notify', (event) => {
+                let data = Array.isArray(event) ? event[0] : event;
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: data.title || (data.type === 'success' ? 'Thành công' : (data.type === 'error' ? 'Lỗi' : 'Thông báo')),
+                        description: data.message,
+                        icon: data.type === 'error' ? 'error' : (data.type === 'success' ? 'success' : (data.type === 'warning' ? 'warning' : 'info')),
+                        timeout: 5000
+                    });
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

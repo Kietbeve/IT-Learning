@@ -26,7 +26,7 @@ class TransactionExport implements FromCollection, WithHeadings
                 'Số tiền' => number_format($tx->amount),
                 'Số dư trước' => number_format($tx->balance_before),
                 'Số dư sau' => number_format($tx->balance_after),
-                'Tham chiếu' => $tx->reference_type . ' #' . $tx->reference_id,
+                'Tham chiếu' => $tx->reference_type.' #'.$tx->reference_id,
                 'Ghi chú' => $tx->note ?? '',
             ];
         });

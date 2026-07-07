@@ -5,6 +5,8 @@ namespace Modules\Document\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Document\Models\Document;
 use Modules\Document\Models\DocumentDownload;
@@ -17,7 +19,7 @@ class DocumentDownloadController extends Controller
         $cacheKey = "doc_download_{$token}";
         $data = Cache::get($cacheKey);
 
-        if (!$data) {
+        if (! $data) {
             return response('
                 <!DOCTYPE html>
                 <html>
@@ -52,7 +54,7 @@ class DocumentDownloadController extends Controller
         $orderItemId = $data['order_item_id'] ?? null;
 
         $doc = Document::with('author')->find($docId);
-        if (!$doc) {
+        if (! $doc) {
             abort(404, 'Tài liệu không tồn tại.');
         }
 
@@ -62,7 +64,7 @@ class DocumentDownloadController extends Controller
         }
 
         // 3. Double-check authentication for download
-        if (!$userId) {
+        if (! $userId) {
             return response('
                 <!DOCTYPE html>
                 <html>
@@ -88,15 +90,15 @@ class DocumentDownloadController extends Controller
             ', 403);
         }
 
-        $isPaid = (bool)($doc->product && $doc->product->is_active);
+        $isPaid = (bool) ($doc->product && $doc->product->is_active);
 
         // 3. Log download (skip if already logged in last 30 seconds to avoid duplicates)
         $recentDownload = DocumentDownload::where('document_id', $doc->id)
             ->where('user_id', $userId)
             ->where('downloaded_at', '>', now()->subSeconds(30))
             ->exists();
-        
-        if (!$recentDownload) {
+
+        if (! $recentDownload) {
             DocumentDownload::create([
                 'document_id' => $doc->id,
                 'user_id' => $userId,
@@ -109,7 +111,7 @@ class DocumentDownloadController extends Controller
         }
 
         // 4. Increment download count (without updating updated_at timestamp)
-        \Illuminate\Support\Facades\DB::table('documents')
+        DB::table('documents')
             ->where('id', $doc->id)
             ->increment('download_count');
 
@@ -119,33 +121,34 @@ class DocumentDownloadController extends Controller
         } else {
             $filePath = $doc->file_original_path;
         }
-        $fileName = $doc->slug . '.' . ($doc->file_type ?? 'pdf');
+        $fileName = $doc->slug.'.'.($doc->file_type ?? 'pdf');
 
         // R2 path — generate presigned URL (15 minutes expiry) with forced download
-        if ($filePath && !str_starts_with($filePath, 'documents/') && !str_starts_with($filePath, 'http')) {
+        if ($filePath && ! str_starts_with($filePath, 'documents/') && ! str_starts_with($filePath, 'http')) {
             try {
                 $bucket = config('filesystems.disks.r2.bucket');
                 $key = $filePath;
-                
+
                 // Smart check: if the path doesn't exist, try prepending the bucket prefix for legacy files
-                if (!Storage::disk('r2')->exists($key)) {
-                    $legacyKey = $bucket . '/' . ltrim($key, '/');
+                if (! Storage::disk('r2')->exists($key)) {
+                    $legacyKey = $bucket.'/'.ltrim($key, '/');
                     if (Storage::disk('r2')->exists($legacyKey)) {
                         $key = $legacyKey;
                     }
                 }
-                
+
                 $client = Storage::disk('r2')->getClient();
                 $command = $client->getCommand('GetObject', [
                     'Bucket' => $bucket,
                     'Key' => $key,
-                    'ResponseContentDisposition' => 'attachment; filename="' . addslashes($fileName) . '"',
+                    'ResponseContentDisposition' => 'attachment; filename="'.addslashes($fileName).'"',
                 ]);
                 $request = $client->createPresignedRequest($command, '+15 minutes');
                 $presignedUrl = (string) $request->getUri();
+
                 return redirect()->away($presignedUrl);
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to generate presigned URL: ' . $e->getMessage());
+                Log::error('Failed to generate presigned URL: '.$e->getMessage());
             }
         }
 
@@ -164,12 +167,12 @@ class DocumentDownloadController extends Controller
             echo "=========================================================\n";
             echo "                 HỆ THỐNG IT-LEARNING\n";
             echo "=========================================================\n";
-            echo "Tên tài nguyên: " . $doc->title . "\n";
-            echo "Định dạng file: " . strtoupper($doc->file_type) . "\n";
-            echo "Đăng bởi tác giả: " . ($doc->author?->name ?? 'Uploader') . "\n";
-            echo "Năm đăng tải: " . ($doc->published_at ? $doc->published_at->year : ($doc->created_at ? $doc->created_at->year : '2026')) . "\n";
+            echo 'Tên tài nguyên: '.$doc->title."\n";
+            echo 'Định dạng file: '.strtoupper($doc->file_type)."\n";
+            echo 'Đăng bởi tác giả: '.($doc->author?->name ?? 'Uploader')."\n";
+            echo 'Năm đăng tải: '.($doc->published_at ? $doc->published_at->year : ($doc->created_at ? $doc->created_at->year : '2026'))."\n";
             echo "---------------------------------------------------------\n";
-            echo "Mô tả nội dung:\n" . $doc->description . "\n";
+            echo "Mô tả nội dung:\n".$doc->description."\n";
             echo "---------------------------------------------------------\n";
             echo "[WATERMARK]: Bản quyền tài liệu thuộc về IT-Learning. Nghiêm cấm sao chép, thương mại hóa dưới mọi hình thức.\n";
             echo "=========================================================\n";

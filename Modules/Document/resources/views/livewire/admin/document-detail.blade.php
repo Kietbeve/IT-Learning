@@ -1,9 +1,9 @@
-<div x-data="{ showRejectModal: false, showImageModal: false }" 
+<div x-data="{ showRejectModal: @entangle('showRejectModal'), showImageModal: false }" 
+     x-effect="document.body.style.overflow = (showRejectModal || showImageModal) ? 'hidden' : ''"
      @open-modal.window="let d = $event.detail; if (d === 'reject-detail-modal' || d?.[0] === 'reject-detail-modal' || d?.id === 'reject-detail-modal') showRejectModal = true"
      @close-modal.window="let d = $event.detail; if (d === 'reject-detail-modal' || d?.[0] === 'reject-detail-modal' || d?.id === 'reject-detail-modal') showRejectModal = false"
      class="space-y-6">
 
-    <!-- Back Button -->
     <div class="mb-4">
         @if($from === 'list')
             <a href="{{ route('admin.documents.index') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
@@ -11,7 +11,7 @@
                 Quay lại quản lý tài liệu
             </a>
         @else
-            <a href="{{ route('admin.moderation.documents.index') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+            <a href="{{ route('admin.documents.index') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 Quay lại hàng đợi
             </a>
@@ -24,7 +24,7 @@
             <!-- Status Badge -->
             <div>
                 <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-2">Trạng thái</span>
-                @if($doc->pendingVersion)
+                @if($pendingVersion)
                     <span class="inline-flex rounded-full bg-amber-100 px-4 py-1.5 text-xs font-bold text-amber-800">
                         Chờ duyệt
                     </span>
@@ -69,7 +69,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         Sửa
                     </button>
-                    @if($doc->status === 'pending' || $doc->pendingVersion)
+                    @if($doc->status === 'pending' || $pendingVersion)
                         <button wire:click="approve" class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 text-sm font-bold shadow-md transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             Phê duyệt
@@ -168,10 +168,31 @@
                         </div>
                         
                         <!-- Price -->
-                        <div>
-                            <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Giá (VND) - 0 là miễn phí</label>
-                            <input type="number" wire:model.blur="editPrice" min="0" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none" placeholder="0">
-                            @error('editPrice') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        <div class="space-y-3" x-data="{ paid: @entangle('editIsPaid') }">
+                            <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block">Hình thức</label>
+                            <div class="flex items-center gap-4 mb-2">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" :checked="!paid" @click="paid = false" name="editIsPaidRadio" class="h-4 w-4 border-slate-200 text-blue-600 focus:ring-blue-500" />
+                                    <span class="text-xs text-slate-700 font-bold">Miễn phí</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" :checked="paid" @click="paid = true" name="editIsPaidRadio" class="h-4 w-4 border-slate-200 text-blue-600 focus:ring-blue-500" />
+                                    <span class="text-xs text-slate-700 font-bold">Có phí</span>
+                                </label>
+                            </div>
+
+                            <div x-show="paid" x-transition class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Giá (VND)</label>
+                                    <input type="number" wire:model.blur="editPrice" min="0" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none" placeholder="10000">
+                                    @error('editPrice') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-2">Giá KM (VND) - tùy chọn</label>
+                                    <input type="number" wire:model.blur="editSalePrice" min="0" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none" placeholder="Khuyến mãi">
+                                    @error('editSalePrice') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Visibility -->
@@ -280,9 +301,9 @@
                         <div class="col-span-2 space-y-4">
                             <div class="space-y-1">
                                 <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider block">Ảnh bìa (Bỏ trống nếu giữ nguyên)</label>
-                                @if($doc->thumbnail)
+                                @if($activeVersion?->thumbnail)
                                     <div class="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-xl p-2.5 mb-2">
-                                        <img src="{{ $doc->thumbnail_url }}" class="h-10 w-16 object-cover rounded-lg border border-slate-200" alt="Current thumb">
+                                        <img src="{{ $activeVersion?->thumbnail_url }}" class="h-10 w-16 object-cover rounded-lg border border-slate-200" alt="Current thumb">
                                         <span class="text-xs text-slate-500 truncate">Ảnh bìa hiện tại</span>
                                     </div>
                                 @endif
@@ -668,9 +689,9 @@
             <!-- Thumbnail Card -->
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block">Ảnh bìa tài liệu</span>
-                @if($doc->thumbnail)
+                @if($activeVersion?->thumbnail)
                     <div @click="showImageModal = true" class="aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 relative group cursor-pointer hover:border-blue-400 hover:shadow-lg transition-all">
-                        <img src="{{ $doc->thumbnail_url }}" alt="{{ $doc->title }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <img src="{{ $activeVersion?->thumbnail_url }}" alt="{{ $doc->title }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     </div>
                 @else
                     <div class="aspect-video w-full rounded-2xl bg-slate-50 border border-slate-200 border-dashed flex flex-col items-center justify-center text-slate-400">
@@ -754,8 +775,13 @@
                 <div class="border-t border-slate-100 pt-6">
                     <span class="text-xs text-slate-400 uppercase tracking-widest block font-medium">Hình thức</span>
                     <div class="mt-2">
-                        @if($doc->product)
-                            <span class="text-lg font-bold text-blue-600">Trả phí: {{ number_format($doc->product->price) }}đ</span>
+                        @if($doc->product && $doc->product->price > 0)
+                            @if($doc->product->sale_price)
+                                <span class="text-lg font-bold text-blue-600">Trả phí: {{ number_format($doc->product->sale_price) }}đ</span>
+                                <span class="text-sm text-slate-400 line-through font-medium ml-2">{{ number_format($doc->product->price) }}đ</span>
+                            @else
+                                <span class="text-lg font-bold text-blue-600">Trả phí: {{ number_format($doc->product->price) }}đ</span>
+                            @endif
                         @else
                             <span class="text-lg font-bold text-emerald-600">Miễn phí</span>
                         @endif
@@ -766,11 +792,11 @@
                 <div class="border-t border-slate-100 pt-6 space-y-3 text-xs text-slate-500 font-medium">
                     <div class="flex items-center justify-between">
                         <span>Chế độ hiển thị:</span>
-                        <span class="font-bold text-slate-800 uppercase">{{ $doc->visibility }}</span>
+                        <span class="font-bold text-slate-800 uppercase">{{ $activeVersion?->visibility }}</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span>Được tải xuống:</span>
-                        <span class="font-bold text-slate-800">{{ $doc->is_downloadable ? 'Có' : 'Không' }}</span>
+                        <span class="font-bold text-slate-800">{{ $activeVersion?->is_downloadable ? 'Có' : 'Không' }}</span>
                     </div>
                     <div class="flex items-center justify-between pt-2 border-t border-slate-100/50">
                         <span>Lượt xem:</span>
@@ -796,11 +822,12 @@
     </div>
 
     <!-- Rejection Modal -->
-    <div x-show="showRejectModal" 
-         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" 
-         style="display: none;"
-         x-transition>
-        <div class="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl p-6 space-y-6" @click.away="showRejectModal = false">
+    <template x-teleport="body">
+        <div x-show="showRejectModal" 
+             class="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" 
+             style="display: none;"
+             x-transition>
+            <div class="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl p-6 space-y-6" @click.away="showRejectModal = false">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 class="text-lg font-bold text-slate-900">Từ chối phê duyệt tài liệu</h3>
                 <button @click="showRejectModal = false" class="text-slate-400 hover:text-slate-600">&times;</button>
@@ -827,17 +854,17 @@
                 </button>
             </div>
         </div>
-    </div>
+    </template>
 
     <!-- Image Lightbox Modal -->
-    @if($doc->thumbnail)
+    @if($activeVersion?->thumbnail)
     <div x-show="showImageModal" 
          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm" 
          style="display: none;"
          x-transition
          @click="showImageModal = false">
         <div class="relative max-w-[85vw] max-h-[85vh] flex flex-col items-center" @click.stop>
-            <img src="{{ $doc->thumbnail_url }}" alt="{{ $doc->title }}" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" />
+            <img src="{{ $activeVersion?->thumbnail_url }}" alt="{{ $doc->title }}" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" />
         </div>
     </div>
     @endif
@@ -871,7 +898,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm font-bold text-slate-800">
                                         @if($event->type === 'submission')
-                                            📤 Gửi tài liệu
+                                            @if(isset($event->version_number) && $event->version_number > 1)
+                                                {{ $event->user && $event->user->hasRole('admin') ? '🔄 Cập nhật tài liệu' : '🔄 Gửi bản cập nhật' }}
+                                            @else
+                                                {{ $event->user && $event->user->hasRole('admin') ? '📝 Đăng tài liệu' : '📤 Gửi tài liệu mới' }}
+                                            @endif
                                         @elseif($event->type === 'review')
                                             @if($event->status === 'approved')
                                                 ✅ Phê duyệt
@@ -890,7 +921,11 @@
                                         <div class="break-words">
                                             <span class="font-medium text-slate-600">{{ $event->user->name ?? 'Unknown' }}</span>
                                             @if($event->type === 'submission')
-                                                <span>đã gửi tài liệu</span>
+                                                @if(isset($event->version_number) && $event->version_number > 1)
+                                                    <span>{{ $event->user && $event->user->hasRole('admin') ? 'đã cập nhật tài liệu' : 'đã gửi bản cập nhật mới' }}</span>
+                                                @else
+                                                    <span>{{ $event->user && $event->user->hasRole('admin') ? 'đã đăng tài liệu' : 'đã gửi tài liệu' }}</span>
+                                                @endif
                                             @elseif($event->type === 'review')
                                                 <span>đã {{ $event->status === 'approved' ? 'phê duyệt' : 'từ chối' }}</span>
                                             @endif

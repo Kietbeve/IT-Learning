@@ -1,30 +1,4 @@
-<div class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
-    <!-- Notification Toast -->
-    <div x-show="notification" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform translate-y-2"
-         class="fixed bottom-5 right-5 z-50 rounded-2xl border bg-white p-4 shadow-xl border-slate-200"
-         style="display: none;">
-        <div class="flex items-center gap-3">
-            <template x-if="notification && notification.type === 'success'">
-                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                </div>
-            </template>
-            <template x-if="notification && notification.type === 'info'">
-                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-            </template>
-            <div>
-                <p class="text-sm font-semibold text-slate-900" x-text="notification ? notification.message : ''"></p>
-            </div>
-        </div>
-    </div>
+<div class="max-w-7xl mx-auto py-6" x-data x-on:start-download.window="window.location.href = Array.isArray($event.detail) ? $event.detail[0].url : $event.detail.url">
 
     <!-- Back Button -->
     <div class="mb-6">
@@ -362,8 +336,8 @@
                     <div class="h-[750px] w-full mt-4">
                         @if($doc->file_type === 'pdf')
                             @php
-                                $watermarkedUrl = ($doc->watermark_status === 'success' && $doc->file_watermarked_path) ? $doc->file_watermarked_url : null;
-                                $pdfUrl = $hasAccess ? ($watermarkedUrl ?? $doc->file_original_url) : ($doc->preview_file_url ?? $doc->file_original_url);
+                                // Preview section luôn hiện preview file (giới hạn trang), không hiện full document
+                                $pdfUrl = $doc->preview_file_url ?? $doc->file_original_url;
                             @endphp
 
                             @if($pdfUrl)
@@ -377,9 +351,27 @@
                             @endif
 
                         @elseif($doc->file_type === 'docx')
-                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500 h-full w-full flex items-center justify-center">
-                                <p class="text-sm">Tài liệu DOCX không hỗ trợ xem trực tiếp. Vui lòng tải xuống để xem đầy đủ.</p>
-                            </div>
+                            @php
+                                // DOCX được convert sang PDF để preview
+                                // Logic access control giống PDF documents
+                                $pdfUrl = $doc->preview_file_url ?? null;
+                            @endphp
+
+                            @if($pdfUrl)
+                                {{-- Preview PDF từ DOCX đã convert --}}
+                                <div class="rounded-2xl overflow-hidden border border-slate-200 shadow-inner h-full w-full bg-slate-100">
+                                    <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0"></iframe>
+                                </div>
+                                
+                            @else
+                                {{-- Fallback nếu chưa có preview (đang xử lý conversion) --}}
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500 h-full w-full flex items-center justify-center">
+                                    <div class="space-y-2">
+                                        <p class="text-sm font-medium">Đang xử lý preview tài liệu Word...</p>
+                                        <p class="text-xs text-slate-400">Vui lòng tải xuống để xem đầy đủ ngay.</p>
+                                    </div>
+                                </div>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -439,7 +431,35 @@
                                         <span>{{ $i <= $rev->rating ? '★' : '☆' }}</span>
                                     @endfor
                                 </div>
-                                <p class="text-sm text-slate-600 leading-relaxed">{{ $rev->review }}</p>
+                                
+                                @if($editReviewId === $rev->id)
+                                    <form wire:submit.prevent="updateReview" class="mt-2 space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                        <div class="flex items-center gap-1" x-data="{ r: @entangle('editRating').live }">
+                                            <template x-for="i in 5">
+                                                <button type="button" @click="r = i" class="text-lg focus:outline-none transition-transform active:scale-95">
+                                                    <span :class="i <= r ? 'text-amber-500' : 'text-slate-300'">★</span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                        <textarea wire:model="editReviewContent" rows="2" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-slate-400"></textarea>
+                                        <div class="flex gap-2 justify-end">
+                                            <button type="button" wire:click="cancelEdit" class="text-xs text-slate-500 hover:underline font-medium px-2 py-1">Hủy</button>
+                                            <button type="submit" class="text-xs text-white bg-slate-800 hover:bg-slate-900 rounded-lg px-3 py-1.5 font-bold shadow-sm">Lưu</button>
+                                        </div>
+                                    </form>
+                                @else
+                                    <p class="text-sm text-slate-600 leading-relaxed">{{ $rev->review }}</p>
+                                    @auth
+                                        @if(Auth::id() == $rev->user_id || $isAdmin)
+                                            <div class="flex items-center gap-3 mt-2 font-medium">
+                                                @if(Auth::id() == $rev->user_id)
+                                                    <button wire:click="startEdit({{ $rev->id }})" class="text-xs text-slate-500 hover:text-amber-600 transition-colors">Sửa</button>
+                                                @endif
+                                                <button wire:click="deleteReview({{ $rev->id }})" onclick="confirm('Bạn có chắc chắn muốn xóa đánh giá này?') || event.stopImmediatePropagation()" class="text-xs text-slate-500 hover:text-red-600 transition-colors">Xóa</button>
+                                            </div>
+                                        @endif
+                                    @endauth
+                                @endif
                             </div>
                         </div>
                     @empty
@@ -447,6 +467,134 @@
                             Chưa có nhận xét nào cho tài liệu này.
                         </div>
                     @endforelse
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+                <h2 class="text-lg font-bold text-slate-900">Thảo luận ({{ collect($comments)->where('status', 'visible')->count() ?? 0 }})</h2>
+
+                @auth
+                    <form wire:submit.prevent="addComment" class="flex gap-3">
+                        <div class="h-10 w-10 shrink-0 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm uppercase shadow-sm">
+                            {{ substr(Auth::user()->name, 0, 1) }}
+                        </div>
+                        <div class="flex-1 space-y-3">
+                            <textarea wire:model="newComment" rows="2" placeholder="Thêm bình luận của bạn để thảo luận về tài liệu này..." class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-colors shadow-sm"></textarea>
+                            @error('newComment')
+                                <span class="text-xs text-red-500 font-medium block">{{ $message }}</span>
+                            @enderror
+                            <div class="flex justify-end">
+                                <button type="submit" class="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 text-xs font-semibold shadow-md shadow-blue-600/20 transition-all duration-200 active:scale-[0.98]">
+                                    Bình luận
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                @else
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center text-sm text-slate-500">
+                        Vui lòng <a href="{{ route('login') }}" class="text-blue-600 font-bold hover:underline">Đăng nhập</a> để tham gia thảo luận.
+                    </div>
+                @endauth
+
+                <!-- Comments List -->
+                <div class="space-y-4">
+                    @if($comments)
+                        @forelse(collect($comments)->where('status', 'visible')->where('parent_id', null) as $comment)
+                            <div id="comment-{{ $comment->id }}" class="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex gap-3">
+                                <div class="h-9 w-9 shrink-0 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs uppercase">
+                                    {{ substr($comment->user?->name ?? 'U', 0, 1) }}
+                                </div>
+                                <div class="flex-1 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-sm font-bold text-slate-900">{{ $comment->user?->name ?? 'Người dùng' }}</h4>
+                                        <span class="text-xs text-slate-400">{{ $comment->created_at->diffForHumans() }}</span>
+                                    </div>
+                                    
+                                    @if($editingCommentId === $comment->id)
+                                        <form wire:submit.prevent="updateComment" class="space-y-2">
+                                            <textarea wire:model="editingContent" rows="2" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 shadow-sm"></textarea>
+                                            <div class="flex gap-2 justify-end">
+                                                <button type="button" wire:click="cancelEditComment" class="text-xs text-slate-500 hover:underline font-medium px-2 py-1">Hủy</button>
+                                                <button type="submit" class="text-xs text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-1.5 font-bold shadow-sm">Lưu</button>
+                                            </div>
+                                        </form>
+                                    @else
+                                        <p class="text-sm text-slate-700 leading-relaxed">{{ $comment->content }}</p>
+                                        
+                                        <div class="flex items-center gap-4 text-xs font-medium">
+                                            @auth
+                                                <button wire:click="startReply({{ $comment->id }}, '{{ addslashes($comment->user?->name ?? 'Người dùng') }}')" class="text-slate-500 hover:text-blue-600 transition-colors">Phản hồi</button>
+                                                @if(Auth::id() == $comment->user_id)
+                                                    <button wire:click="startEditComment({{ $comment->id }})" class="text-slate-500 hover:text-amber-600 transition-colors">Sửa</button>
+                                                @endif
+                                                @if(Auth::id() == $comment->user_id || $isAdmin)
+                                                    <button wire:click="deleteComment({{ $comment->id }})" onclick="confirm('Bạn có chắc chắn muốn xóa bình luận này?') || event.stopImmediatePropagation()" class="text-slate-500 hover:text-red-600 transition-colors">Xóa</button>
+                                                @endif
+                                            @endauth
+                                        </div>
+                                    @endif
+
+                                    <!-- Replies -->
+                                    @if($comment->replies && $comment->replies->where('status', 'visible')->count() > 0)
+                                        <div class="mt-4 space-y-4 pl-4 border-l-2 border-slate-200">
+                                            @foreach($comment->replies->where('status', 'visible') as $reply)
+                                                <div id="comment-{{ $reply->id }}" class="flex gap-3">
+                                                    <div class="h-7 w-7 shrink-0 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-[10px] uppercase">
+                                                        {{ substr($reply->user?->name ?? 'U', 0, 1) }}
+                                                    </div>
+                                                    <div class="flex-1 space-y-1">
+                                                        <div class="flex items-center justify-between">
+                                                            <h4 class="text-sm font-bold text-slate-900">{{ $reply->user?->name ?? 'Người dùng' }}</h4>
+                                                            <span class="text-[11px] text-slate-400">{{ $reply->created_at->diffForHumans() }}</span>
+                                                        </div>
+                                                        
+                                                        @if($editingCommentId === $reply->id)
+                                                            <form wire:submit.prevent="updateComment" class="space-y-2">
+                                                                <textarea wire:model="editingContent" rows="2" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 shadow-sm"></textarea>
+                                                                <div class="flex gap-2 justify-end">
+                                                                    <button type="button" wire:click="cancelEditComment" class="text-xs text-slate-500 hover:underline font-medium px-2 py-1">Hủy</button>
+                                                                    <button type="submit" class="text-xs text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-1.5 font-bold shadow-sm">Lưu</button>
+                                                                </div>
+                                                            </form>
+                                                        @else
+                                        <p class="text-sm text-slate-700 leading-relaxed">{!! preg_replace('/^(@.+?):\s/u', '<strong class="font-bold text-blue-600">$1</strong>: ', e($reply->content)) !!}</p>
+                                                            @auth
+                                                                <div class="flex items-center gap-3 text-xs font-medium mt-1">
+                                                                    <button wire:click="startReply({{ $comment->id }}, '{{ addslashes($reply->user?->name ?? 'Người dùng') }}', {{ $reply->id }})" class="text-slate-500 hover:text-blue-600 transition-colors">Phản hồi</button>
+                                                                    @if(Auth::id() == $reply->user_id)
+                                                                        <button wire:click="startEditComment({{ $reply->id }})" class="text-slate-500 hover:text-amber-600 transition-colors">Sửa</button>
+                                                                    @endif
+                                                                    @if(Auth::id() == $reply->user_id || $isAdmin)
+                                                                        <button wire:click="deleteComment({{ $reply->id }})" onclick="confirm('Bạn có chắc chắn muốn xóa phản hồi này?') || event.stopImmediatePropagation()" class="text-slate-500 hover:text-red-600 transition-colors">Xóa</button>
+                                                                    @endif
+                                                                </div>
+                                                            @endauth
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    <!-- Reply Form -->
+                                    @if($replyTo === $comment->id)
+                                        <form wire:submit.prevent="addReply" class="mt-3 flex gap-2 @if($comment->replies && $comment->replies->where('status', 'visible')->count() > 0) pl-4 border-l-2 border-slate-200 @endif">
+                                            <textarea wire:model="replyContent" rows="1" placeholder="Nhập phản hồi..." class="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 shadow-sm"></textarea>
+                                            <div class="flex flex-col gap-1">
+                                                <button type="submit" class="rounded-lg bg-blue-600 text-white px-3 py-1 text-xs font-bold hover:bg-blue-700 shadow-sm">Gửi</button>
+                                                <button type="button" wire:click="cancelReply" class="rounded-lg bg-slate-200 text-slate-600 px-3 py-1 text-xs font-bold hover:bg-slate-300">Hủy</button>
+                                            </div>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-6 text-slate-400 text-sm">
+                                Chưa có bình luận nào. Hãy là người đầu tiên thảo luận!
+                            </div>
+                        @endforelse
+                    @endif
                 </div>
             </div>
         </div>
@@ -458,8 +606,13 @@
                 <div>
                     <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest block">Giá tài nguyên</span>
                     <div class="mt-2 flex items-baseline gap-2">
-                        @if($doc->product)
-                            <span class="text-3xl font-bold text-blue-600">{{ number_format($doc->product->price) }}đ</span>
+                        @if($doc->product && $doc->product->price > 0)
+                            @if($doc->product->sale_price)
+                                <span class="text-3xl font-bold text-blue-600">{{ number_format($doc->product->sale_price) }}đ</span>
+                                <span class="text-lg text-slate-400 line-through font-medium ml-2">{{ number_format($doc->product->price) }}đ</span>
+                            @else
+                                <span class="text-3xl font-bold text-blue-600">{{ number_format($doc->product->price) }}đ</span>
+                            @endif
                         @else
                             <span class="text-3xl font-bold text-emerald-600">Miễn phí</span>
                         @endif
@@ -489,7 +642,7 @@
 
                 <div class="space-y-3">
                     @guest
-                        @if($doc->product)
+                        @if($doc->product && $doc->product->price > 0)
                             <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
                                 Mua tài nguyên ngay
@@ -501,14 +654,18 @@
                             </button>
                         @endif
                     @else
-                        @if(!$doc->product)
+                        @if(!$doc->product || $doc->product->price == 0 || $hasAccess)
                             <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                Tải xuống
+                                @if(Auth::id() === $doc->author_id)
+                                    Tải xuống tài liệu của bạn
+                                @else
+                                    Tải xuống
+                                @endif
                             </button>
                         @elseif($isVip)
                             <div class="space-y-3">
-                                <button wire:click="download" class="w-full rounded-2xl bg-amber-600 hover:bg-amber-700 text-white py-4 text-sm font-semibold shadow-lg shadow-amber-600/20 hover:shadow-amber-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                <button wire:click="promptVipDownload" class="w-full rounded-2xl bg-amber-600 hover:bg-amber-700 text-white py-4 text-sm font-semibold shadow-lg shadow-amber-600/20 hover:shadow-amber-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
                                     Tải xuống với gói VIP
                                 </button>
@@ -524,6 +681,14 @@
                             </button>
                         @endif
                     @endguest
+
+                    <button x-data="{ copied: false }" 
+                            @click="if (navigator.share) { navigator.share({ title: '{{ addslashes($doc->title) }}', url: window.location.href }) } else { navigator.clipboard.writeText(window.location.href); copied = true; setTimeout(() => copied = false, 2000); }"
+                            class="w-full rounded-2xl border-2 border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50 text-slate-700 hover:text-blue-600 py-3.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                        <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                        <svg x-show="copied" style="display: none;" class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span x-text="copied ? 'Đã sao chép link!' : 'Chia sẻ tài liệu'"></span>
+                    </button>
 
                     <button wire:click="toggleFavorite" class="w-full rounded-2xl border-2 border-slate-200 bg-white hover:border-rose-200 hover:bg-rose-50 text-slate-700 hover:text-rose-600 py-3.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                         @if($isBookmarked)
@@ -541,50 +706,6 @@
                     </button>
                 </div>
             </div>
-
-            {{-- VIP Suggestion Card (for Premium documents, non-VIP users) --}}
-            @auth
-                @php
-                    $isVip = Auth::user()->vip_expires_at && Auth::user()->vip_expires_at->isFuture();
-                    $isPremium = $doc->product && $doc->product->price > 0;
-                @endphp
-                
-                @if($isPremium && !$isVip && !$hasAccess)
-                    <div class="rounded-3xl border-2 border-amber-400 bg-gradient-to-br from-amber-50 to-yellow-50 p-6 shadow-lg">
-                        <div class="flex items-start gap-3 mb-4">
-                            <div class="flex-shrink-0">
-                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-md">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-gray-900 mb-1">Nâng cấp VIP Premium</h3>
-                                <p class="text-sm text-gray-600">Tiết kiệm hơn với gói VIP</p>
-                            </div>
-                        </div>
-                        
-                        <ul class="space-y-2 mb-4">
-                            <li class="flex items-start gap-2 text-sm text-gray-700">
-                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Gói <strong>1 tháng:</strong> Tải <strong>5 tài liệu</strong> Premium</span>
-                            </li>
-                            <li class="flex items-start gap-2 text-sm text-gray-700">
-                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Gói <strong>3 tháng:</strong> Tải <strong>20 tài liệu</strong> - Tiết kiệm <strong>40%</strong></span>
-                            </li>
-                            <li class="flex items-start gap-2 text-sm text-gray-700">
-                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                <span>Gói <strong>6 tháng:</strong> Tải <strong>50 tài liệu</strong> - Tiết kiệm <strong>60%</strong></span>
-                            </li>
-                        </ul>
-                        
-                        <a href="{{ route('student.subscription') }}" 
-                           class="block w-full text-center rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3 text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300">
-                            ⚡ Xem các gói VIP
-                        </a>
-                    </div>
-                @endif
-            @endauth
 
             <!-- Author Card -->
             <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -708,6 +829,61 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIP Confirm Modal -->
+    <div x-show="$wire.showVipConfirmModal" 
+         @vip-download-success.window="$wire.set('showVipConfirmModal', false)"
+         style="display: none;" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         aria-labelledby="modal-title" 
+         role="dialog" 
+         aria-modal="true">
+        
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <!-- Background backdrop -->
+            <div x-show="$wire.showVipConfirmModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-sm" 
+                 aria-hidden="true" 
+                 wire:click="$set('showVipConfirmModal', false)"></div>
+
+            <!-- Modal panel -->
+            <div x-show="$wire.showVipConfirmModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:w-full sm:max-w-md sm:align-middle p-6 border border-slate-100">
+                
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-amber-100 rounded-full mb-4">
+                    <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                
+                <h3 class="text-xl font-bold text-center text-slate-900 mb-2">Xác nhận dùng lượt tải VIP</h3>
+                
+                <p class="text-center text-slate-600 mb-6 leading-relaxed">
+                    Bạn đang có <strong class="text-amber-600 text-lg">{{ Auth::check() ? Auth::user()->vip_download_quota : 0 }}</strong> lượt tải VIP. <br>
+                    Bạn có chắc chắn muốn sử dụng 1 lượt để tải xuống tài liệu này không?
+                </p>
+
+                <div class="flex gap-3">
+                    <button wire:click="$set('showVipConfirmModal', false)" class="flex-1 rounded-2xl border-2 border-slate-200 hover:bg-slate-50 text-slate-700 py-3 text-sm font-semibold transition">
+                        Đóng
+                    </button>
+                    <button wire:click="executeVipDownload" class="flex-1 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white py-3 text-sm font-semibold shadow-lg shadow-amber-600/20 hover:shadow-amber-700/30 transition">
+                        Đồng ý tải
+                    </button>
+                </div>
             </div>
         </div>
     </div>

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('document_tag_maps', function (Blueprint $table) {
             $table->foreignId('document_id')->constrained('documents')->cascadeOnDelete();
             $table->foreignId('tag_id')->constrained('tags')->cascadeOnDelete();
-            
+
             $table->primary(['document_id', 'tag_id']);
             $table->index('tag_id');
         });

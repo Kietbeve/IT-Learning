@@ -1,11 +1,8 @@
 <div id="admin-category-list"
      x-data="{ notification: null, showFormModal: @entangle('isFormOpen') }" 
      x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
-     @open-modal.window="if ($event.detail === 'category-form-modal') showFormModal = true"
-     @close-modal.window="if ($event.detail === 'category-form-modal') showFormModal = false"
      class="space-y-6">
 
-    <!-- Notification Toast -->
     <div x-show="notification" 
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 transform translate-y-2"
@@ -32,9 +29,7 @@
         </div>
     </div>
 
-    <!-- Statistics Cards -->
     <div class="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
-        <!-- Total -->
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex items-center justify-between">
                 <p class="text-sm font-medium text-slate-600">Tổng danh mục</p>
@@ -48,7 +43,6 @@
             <p class="mt-1 text-sm text-slate-500">Danh mục tài nguyên</p>
         </div>
 
-        <!-- Active -->
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex items-center justify-between">
                 <p class="text-sm font-medium text-slate-600">Đang hoạt động</p>
@@ -62,7 +56,6 @@
             <p class="mt-1 text-sm text-slate-500">Khả dụng đăng tải</p>
         </div>
 
-        <!-- Inactive -->
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex items-center justify-between">
                 <p class="text-sm font-medium text-slate-600">Tạm khóa</p>
@@ -77,9 +70,7 @@
         </div>
     </div>
 
-    <!-- Main List Card -->
     <section class="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <!-- Filter Header -->
         <div class="p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-50/50">
             <div>
                 <h2 class="text-lg font-bold text-slate-900">Danh mục tài liệu</h2>
@@ -87,14 +78,12 @@
             </div>
             
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-                <!-- Status Filter -->
                 <select wire:model.live="statusFilter" aria-label="Bộ lọc trạng thái" class="w-full sm:w-auto rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:outline-none">
                     <option value="all">Tất cả trạng thái</option>
                     <option value="active">Đang hoạt động</option>
                     <option value="inactive">Tạm dừng</option>
                 </select>
 
-                <!-- Search Input -->
                 <div class="relative flex-1 sm:w-64 sm:flex-initial">
                     <input type="search" 
                            id="search-admin-categories"
@@ -107,7 +96,6 @@
                     </span>
                 </div>
 
-                <!-- Add Button -->
                 <button type="button" 
                         wire:click="openCreateModal"
                         class="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 text-sm font-semibold transition-all">
@@ -117,9 +105,7 @@
             </div>
         </div>
 
-        <!-- Table Content with Loading State -->
         <div wire:loading.class="opacity-60 transition-opacity duration-200" class="transition-opacity duration-200">
-            <!-- Mobile Card View (hidden on md and up) -->
             <div class="block md:hidden divide-y divide-slate-100">
             @forelse($categories as $cat)
                 <div class="p-4 space-y-3">
@@ -146,7 +132,7 @@
                                     class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 text-xs font-bold transition-all shadow-sm">
                                 Sửa
                             </button>
-                            <button onclick="confirm('Bạn có chắc chắn muốn xóa danh mục này? Thao tác không thể hoàn tác.') || event.stopImmediatePropagation()" 
+                            <button wire:confirm="Bạn có chắc chắn muốn xóa danh mục này? Thao tác không thể hoàn tác."
                                     wire:click="deleteCategory({{ $cat->id }})" 
                                     class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 text-xs font-bold transition-all shadow-sm">
                                 Xóa
@@ -159,81 +145,79 @@
                     Không tìm thấy danh mục nào.
                 </div>
             @endforelse
+            </div>
+
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-full">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/70">
+                            <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors" wire:click="sortBy('name')">
+                                Danh mục
+                                @if($sortField === 'name')
+                                    <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                @endif
+                            </th>
+                            <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors" wire:click="sortBy('sort_order')">
+                                Thứ tự ưu tiên
+                                @if($sortField === 'sort_order')
+                                    <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                @endif
+                            </th>
+                            <th class="px-6 py-4">Trạng thái</th>
+                            <th class="px-6 py-4 text-right">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+                        @forelse($categories as $cat)
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="space-y-1 max-w-sm sm:max-w-md lg:max-w-lg">
+                                        <span class="font-bold text-slate-950 block leading-tight text-base">{{ $cat->name }}</span>
+                                        <div class="text-[10px] font-mono text-slate-400">Đường dẫn: /documents?category={{ $cat->slug }}</div>
+                                        @if($cat->description)
+                                            <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ $cat->description }}</p>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center justify-center rounded-xl bg-slate-100 px-3 py-1.5 font-bold text-slate-700">
+                                        {{ $cat->sort_order }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button wire:click="toggleStatus({{ $cat->id }})" 
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors {{ $cat->is_active ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-rose-50 text-rose-700 hover:bg-rose-100' }}">
+                                        <span class="h-1.5 w-1.5 rounded-full {{ $cat->is_active ? 'bg-emerald-600' : 'bg-rose-600' }}"></span>
+                                        {{ $cat->is_active ? 'Hoạt động' : 'Tạm khóa' }}
+                                    </button>
+                                </td>
+                                <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button wire:click="editCategory({{ $cat->id }})" 
+                                                class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-bold transition-all shadow-sm">
+                                            Sửa
+                                        </button>
+                                        <button wire:confirm="Bạn có chắc chắn muốn xóa danh mục này? Thao tác không thể hoàn tác."
+                                                wire:click="deleteCategory({{ $cat->id }})" 
+                                                class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 px-3.5 py-2 text-xs font-bold transition-all shadow-sm">
+                                            Xóa
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center text-slate-400">
+                                    <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                    Không tìm thấy danh mục nào.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Desktop Table View (hidden on mobile) -->
-        <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-full">
-                <thead>
-                    <tr class="border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/70">
-                        <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors" wire:click="sortBy('name')">
-                            Danh mục
-                            @if($sortField === 'name')
-                                <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                            @endif
-                        </th>
-                        <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors" wire:click="sortBy('sort_order')">
-                            Thứ tự ưu tiên
-                            @if($sortField === 'sort_order')
-                                <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                            @endif
-                        </th>
-                        <th class="px-6 py-4">Trạng thái</th>
-                        <th class="px-6 py-4 text-right">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
-                    @forelse($categories as $cat)
-                        <tr class="hover:bg-slate-50/50 transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="space-y-1 max-w-sm sm:max-w-md lg:max-w-lg">
-                                    <span class="font-bold text-slate-950 block leading-tight text-base">{{ $cat->name }}</span>
-                                    <div class="text-[10px] font-mono text-slate-400">Đường dẫn: /documents?category={{ $cat->slug }}</div>
-                                    @if($cat->description)
-                                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ $cat->description }}</p>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center justify-center rounded-xl bg-slate-100 px-3 py-1.5 font-bold text-slate-700">
-                                    {{ $cat->sort_order }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <button wire:click="toggleStatus({{ $cat->id }})" 
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors {{ $cat->is_active ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-rose-50 text-rose-700 hover:bg-rose-100' }}">
-                                    <span class="h-1.5 w-1.5 rounded-full {{ $cat->is_active ? 'bg-emerald-600' : 'bg-rose-600' }}"></span>
-                                    {{ $cat->is_active ? 'Hoạt động' : 'Tạm khóa' }}
-                                </button>
-                            </td>
-                            <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                                <div class="flex items-center justify-end gap-2">
-                                    <button wire:click="editCategory({{ $cat->id }})" 
-                                            class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 text-xs font-bold transition-all shadow-sm">
-                                        Sửa
-                                    </button>
-                                    <button onclick="confirm('Bạn có chắc chắn muốn xóa danh mục này? Thao tác không thể hoàn tác.') || event.stopImmediatePropagation()" 
-                                            wire:click="deleteCategory({{ $cat->id }})" 
-                                            class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 px-3.5 py-2 text-xs font-bold transition-all shadow-sm">
-                                        Xóa
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-6 py-12 text-center text-slate-400">
-                                <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                                Không tìm thấy danh mục nào.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        </div>
-
-        <!-- Pagination -->
         @if($categories->hasPages())
             <div class="p-6 border-t border-slate-200 bg-slate-50/50">
                 {{ $categories->links(data: ['scrollTo' => '#admin-category-list']) }}
@@ -241,7 +225,6 @@
         @endif
     </section>
 
-    <!-- Create/Edit Form Modal -->
     <div x-show="showFormModal" 
          class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" 
          style="display: none;"
@@ -255,7 +238,6 @@
             </div>
             
             <form wire:submit.prevent="saveCategory" class="space-y-4">
-                <!-- Name -->
                 <div class="space-y-1">
                     <label for="cat-name" class="block text-sm font-semibold text-slate-700">Tên danh mục <span class="text-red-500">*</span></label>
                     <input id="cat-name"
@@ -268,7 +250,6 @@
                     @enderror
                 </div>
 
-                <!-- Sort Order -->
                 <div class="space-y-1">
                     <label for="cat-sort-order" class="block text-sm font-semibold text-slate-700">Thứ tự sắp xếp ưu tiên</label>
                     <input id="cat-sort-order"
@@ -281,7 +262,6 @@
                     @enderror
                 </div>
 
-                <!-- Description -->
                 <div class="space-y-1">
                     <label for="cat-description" class="block text-sm font-semibold text-slate-700">Mô tả danh mục</label>
                     <textarea id="cat-description"
@@ -294,7 +274,6 @@
                     @enderror
                 </div>
 
-                <!-- Active Toggle -->
                 <div class="flex items-center gap-3 py-2">
                     <input id="cat-is-active"
                            type="checkbox" 
@@ -303,7 +282,6 @@
                     <label for="cat-is-active" class="text-sm font-semibold text-slate-700 cursor-pointer">Kích hoạt hoạt động ngay</label>
                 </div>
 
-                <!-- Submit buttons -->
                 <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
                     <button type="button" @click="showFormModal = false" class="rounded-xl border border-slate-200 hover:bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-700 transition-colors">
                         Hủy bỏ

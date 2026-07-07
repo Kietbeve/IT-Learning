@@ -2,12 +2,11 @@
 
 namespace Modules\Document\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Model;
 
 class Subject extends Model
 {
-
     protected $fillable = [
         'category_id',
         'name',

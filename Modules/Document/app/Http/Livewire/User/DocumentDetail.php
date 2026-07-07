@@ -37,6 +37,84 @@ class DocumentDetail extends Component
     public $replyContent = '';
     public $editingCommentId = null;
     public $editingContent = '';
+    public $showVipConfirmModal = false;
+
+    public function promptVipDownload()
+    {
+        if (!Auth::check()) {
+            $this->dispatch('notify', ['type' => 'info', 'message' => 'Vui lòng đăng nhập để sử dụng tính năng này.']);
+            return;
+        }
+
+        $subscriptionService = app(\Modules\Payment\Services\SubscriptionService::class);
+        $user = Auth::user();
+        $isVipActive = $subscriptionService->isVipActive($user);
+        $hasQuota = $user->vip_download_quota > 0;
+
+        if ($isVipActive && $hasQuota) {
+            $this->showVipConfirmModal = true;
+        } elseif ($isVipActive && !$hasQuota) {
+            $this->dispatch('notify', ['type' => 'warning', 'message' => 'Hết lượt tải VIP. Vui lòng nạp thêm lượt hoặc mua trực tiếp tài liệu.']);
+        } else {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Gói VIP đã hết hạn. Vui lòng gia hạn để tiếp tục tải xuống bằng VIP.']);
+        }
+    }
+
+    public function executeVipDownload()
+    {
+        // Để JS tự đóng sau 1.5s
+        // $this->showVipConfirmModal = false;
+        
+        if (!Auth::check()) return;
+
+        $userId = Auth::id();
+        $doc = Document::with('product')->find($this->documentId);
+        
+        if (!$doc || !$doc->product) return;
+
+        $subscriptionService = app(\Modules\Payment\Services\SubscriptionService::class);
+        $user = Auth::user();
+        $isVipActive = $subscriptionService->isVipActive($user);
+        $hasQuota = $user->vip_download_quota > 0;
+
+        if ($isVipActive && $hasQuota) {
+            try {
+                DB::beginTransaction();
+                
+                $orderService = app(\Modules\Payment\Services\OrderService::class);
+                $orderItem = $orderService->createVipDownloadOrder($user, $doc);
+                
+                DocumentAccess::create([
+                    'user_id' => $userId,
+                    'document_id' => $doc->id,
+                    'order_item_id' => $orderItem->id,
+                    'access_type' => 'vip',
+                ]);
+                
+                $subscriptionService->decreaseQuota(Auth::user());
+                
+                DB::commit();
+                
+                // Gửi thông báo cho người mua thông qua Event
+                event(new \Modules\Payment\Events\DocumentDownloadedByVip(Auth::user(), $doc));
+
+                // Cập nhật chuông thông báo trên UI của người mua ngay lập tức (cái này sẽ tự bung toast của hệ thống)
+                $this->dispatch('new-notification');
+                
+                // Dispatch event để JS đóng modal sau 1.5s
+                $this->dispatch('vip-download-success');
+
+                $this->hasDownloaded = true; // Trigger re-render to show download button
+            } catch (\Exception $e) {
+                DB::rollBack();
+                $this->dispatch('notify', ['type' => 'error', 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+            }
+        } elseif ($isVipActive && !$hasQuota) {
+            $this->dispatch('notify', ['type' => 'warning', 'message' => 'Hết lượt tải VIP. Vui lòng nạp thêm lượt hoặc mua trực tiếp tài liệu.']);
+        } else {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Gói VIP đã hết hạn. Vui lòng gia hạn để tiếp tục tải xuống bằng VIP.']);
+        }
+    }
 
     public function mount($id, $slug = null)
     {
@@ -72,34 +150,10 @@ class DocumentDetail extends Component
             return redirect()->route('login');
         }
 
-        $userId = Auth::id();
         $doc = Document::find($this->documentId);
         if (!$doc) return;
 
-        // Check visibility
-        if ($doc->visibility === 'private' && $doc->author_id !== $userId) {
-            $this->dispatch('notify', ['type' => 'error', 'message' => 'Tài liệu này hiện đang ở chế độ riêng tư.']);
-            return;
-        }
-
-        $fav = DocumentFavorite::where('document_id', $this->documentId)->where('user_id', $userId)->first();
-
-        if ($fav) {
-            $fav->delete();
-            \Illuminate\Support\Facades\DB::table('documents')
-                ->where('id', $doc->id)
-                ->decrement('favorite_count');
-            $this->dispatch('notify', ['type' => 'info', 'message' => 'Đã bỏ lưu tài liệu']);
-        } else {
-            DocumentFavorite::create([
-                'document_id' => $this->documentId,
-                'user_id' => $userId
-            ]);
-            \Illuminate\Support\Facades\DB::table('documents')
-                ->where('id', $doc->id)
-                ->increment('favorite_count');
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã lưu tài liệu vào danh sách yêu thích']);
-        }
+        $doc->toggleFavoriteForUser(Auth::id());
     }
 
     public function download()
@@ -135,99 +189,19 @@ class DocumentDetail extends Component
         $hasAccess = false;
         $orderItemId = null;
 
-        if ($isPaid) {
+        if ($userId === $doc->author_id) {
+            $hasAccess = true;
+        } elseif ($isPaid) {
             $access = DocumentAccess::where('user_id', $userId)
                 ->where('document_id', $doc->id)
                 ->first();
 
         if ($access) {
             $orderItemId = $access->order_item_id;
-            
-            // Check loại access: 'paid' (tiền thật) hay 'vip' (quota)
-            if ($access->access_type === 'paid') {
-                // MUA BẰNG TIỀN → Quyền vĩnh viễn, không cần check VIP
-                $hasAccess = true;
-            } else {
-                // MUA BẰNG VIP QUOTA → PAY-PER-DOWNLOAD: Trừ quota MỖI LẦN tải
-                $user = Auth::user();
-                $isVipActive = $user->vip_expires_at && $user->vip_expires_at->isFuture();
-                $hasQuota = $user->vip_download_quota > 0;
-                
-                if ($isVipActive && $hasQuota) {
-                    // VIP active + còn quota → Trừ quota rồi cho tải
-                    try {
-                        DB::beginTransaction();
-                        $subscriptionService = app(SubscriptionService::class);
-                        $subscriptionService->decreaseQuota(Auth::user());
-                        DB::commit();
-                        $hasAccess = true;
-                    } catch (\Exception $e) {
-                        DB::rollBack();
-                        $this->dispatch('notify', ['type' => 'error', 'message' => 'Lỗi tải xuống: ' . $e->getMessage()]);
-                        return;
-                    }
-                } else if ($isVipActive && !$hasQuota) {
-                    // VIP còn hạn NHƯNG hết quota
-                    $this->dispatch('notify', ['type' => 'info', 'message' => 'Hết lượt tải VIP. Vui lòng nạp thêm lượt hoặc mua tài liệu.']);
-                    return;
-                } else {
-                    // VIP hết hạn
-                    $this->dispatch('notify', ['type' => 'info', 'message' => 'Gói VIP đã hết hạn. Vui lòng gia hạn VIP hoặc mua tài liệu để tải xuống.']);
-                    return;
-                }
-            }
+            $hasAccess = true;
         } else {
-            $subscriptionService = app(SubscriptionService::class);
-            if ($subscriptionService->canDownloadPremium(Auth::user())) {
-                try {
-                    DB::beginTransaction();
-                    
-                    $orderCode = now()->timestamp . rand(1000, 9999);
-                    $order = Order::create([
-                        'order_code' => (string) $orderCode,
-                        'order_type' => 'document',
-                        'user_id' => $userId,
-                        'total_amount' => 0,
-                        'payment_status' => 'paid',
-                        'order_status' => 'completed',
-                        'paid_at' => now(),
-                        'download_token' => \Illuminate\Support\Str::random(64),
-                    ]);
-                    
-                    $orderItem = OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $doc->product->id,
-                        'document_id' => $doc->id,
-                        'document_title_snapshot' => $doc->title,
-                        'unit_price' => 0,
-                        'quantity' => 1,
-                        'subtotal' => 0,
-                        'contributor_amount' => 0,
-                        'platform_amount' => 0,
-                    ]);
-                    
-                    DocumentAccess::create([
-                        'user_id' => $userId,
-                        'document_id' => $doc->id,
-                        'order_item_id' => $orderItem->id,
-                        'access_type' => 'vip',
-                    ]);
-                    
-                    $subscriptionService->decreaseQuota(Auth::user());
-                    
-                    DB::commit();
-                    
-                    $hasAccess = true;
-                    $orderItemId = $orderItem->id;
-                } catch (\Exception $e) {
-                    DB::rollBack();
-                    $this->dispatch('notify', ['type' => 'error', 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
-                    return;
-                }
-            } else {
-                $this->dispatch('notify', ['type' => 'info', 'message' => 'Bạn cần mua tài liệu này trước khi tải xuống.']);
-                return;
-            }
+            $this->dispatch('notify', ['type' => 'info', 'message' => 'Bạn cần mua tài liệu này trước khi tải xuống.']);
+            return;
         }
         } else {
             // Free document
@@ -257,6 +231,13 @@ class DocumentDetail extends Component
             $downloadUrl = route('documents.download', ['token' => $token]);
             $this->dispatch('start-download', url: $downloadUrl);
             
+            // Xóa quyền truy cập ngay sau khi tải (Pay-Per-Download)
+            if ($isPaid && $userId !== $doc->author_id) {
+                \Modules\Payment\Models\DocumentAccess::where('user_id', $userId)
+                    ->where('document_id', $doc->id)
+                    ->delete();
+            }
+
             $this->hasDownloaded = true;
         }
     }
@@ -334,10 +315,11 @@ class DocumentDetail extends Component
         ]);
 
         $this->reviewContent = '';
+        $this->newReview = '';
         $this->rating = 5;
         $this->hasReviewed = true;
 
-        $this->dispatch('notify', ['type' => 'success', 'message' => 'Gửi đánh giá thành công!']);
+        // $this->dispatch('notify', ['type' => 'success', 'message' => 'Gửi đánh giá thành công!']);
     }
 
     public function startEdit($reviewId)
@@ -424,11 +406,12 @@ class DocumentDetail extends Component
         ]);
 
         $this->newComment = '';
-
-        $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã đăng bình luận.']);
+        // $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã đăng bình luận.']);
     }
 
-    public function startReply($commentId)
+    public $replyToSpecificCommentId = null;
+
+    public function startReply($commentId, $userName = null, $replyId = null)
     {
         if (!Auth::check()) return;
 
@@ -436,12 +419,21 @@ class DocumentDetail extends Component
         if (!$comment || $comment->document_id != $this->documentId) return;
 
         $this->replyTo = $commentId;
-        $this->replyContent = '';
+        $this->replyToSpecificCommentId = $replyId;
+        
+        if ($userName) {
+            $this->replyContent = '@' . $userName . ': ';
+        } elseif ($comment->user) {
+            $this->replyContent = '@' . $comment->user->name . ': ';
+        } else {
+            $this->replyContent = '';
+        }
     }
 
     public function cancelReply()
     {
         $this->replyTo = null;
+        $this->replyToSpecificCommentId = null;
         $this->replyContent = '';
     }
 
@@ -456,13 +448,33 @@ class DocumentDetail extends Component
             'replyContent' => 'required|string|min:1|max:1000',
         ]);
 
-        DocumentComment::create([
+        $newComment = DocumentComment::create([
             'document_id' => $this->documentId,
             'user_id' => Auth::id(),
             'parent_id' => $this->replyTo,
             'content' => $this->replyContent,
             'status' => 'visible',
         ]);
+
+        // Determine the target user to notify
+        $targetUser = null;
+        if ($this->replyToSpecificCommentId) {
+            $specificReply = DocumentComment::find($this->replyToSpecificCommentId);
+            if ($specificReply && $specificReply->user) {
+                $targetUser = $specificReply->user;
+            }
+        } elseif ($parent->user) {
+            $targetUser = $parent->user;
+        }
+
+        // Send notification to the target user
+        if ($targetUser && $targetUser->id !== Auth::id()) {
+            $doc = Document::find($this->documentId);
+            if ($doc) {
+                event(new \Modules\Document\Events\CommentReplied(Auth::user(), $doc, $newComment->id, $targetUser));
+                $this->dispatch('new-notification'); // trigger bell update
+            }
+        }
 
         $this->cancelReply();
 
@@ -690,8 +702,8 @@ class DocumentDetail extends Component
         $isVip = false;
         if (Auth::check()) {
             $user = Auth::user();
-            $isVip = $user->vip_expires_at && $user->vip_expires_at->isFuture();
-            if (!$doc->product || !$doc->product->is_active) {
+            $isVip = $user->checkAndExpireVip();
+            if (!$doc->product || !$doc->product->is_active || Auth::id() === $doc->author_id) {
                 $hasAccess = true;
             } else {
                 $hasAccess = DocumentAccess::where('user_id', Auth::id())
@@ -743,16 +755,80 @@ class DocumentDetail extends Component
         $avgRating = $doc->reviews->where('status', 'visible')->avg('rating') ?? 0;
         $totalReviews = $doc->reviews->where('status', 'visible')->count();
 
-        // Related documents
-        $relatedDocuments = Document::where('status', 'approved')
-            ->whereHas('currentVersion', function($q) use ($doc) {
-                $q->where('category_id', $doc->category_id)
-                  ->where('visibility', 'public');
+        // Get current document attributes
+        $currentCategoryId = $doc->currentVersion ? $doc->currentVersion->category_id : null;
+        $currentSubjectId = $doc->currentVersion ? $doc->currentVersion->subject_id : null;
+        $currentTagIds = $doc->tags->pluck('id')->toArray();
+
+        // Fetch candidates that share at least one criteria (category, subject, or tag)
+        $candidates = Document::where('status', 'approved')
+            ->whereHas('currentVersion', function($q) {
+                $q->where('visibility', 'public');
             })
             ->where('id', '!=', $doc->id)
-            ->orderBy('download_count', 'desc')
-            ->limit(4)
+            ->where(function ($query) use ($currentCategoryId, $currentSubjectId, $currentTagIds) {
+                if ($currentCategoryId || $currentSubjectId) {
+                    $query->whereHas('currentVersion', function ($q) use ($currentCategoryId, $currentSubjectId) {
+                        $q->where(function($sq) use ($currentCategoryId, $currentSubjectId) {
+                            if ($currentCategoryId) {
+                                $sq->where('category_id', $currentCategoryId);
+                            }
+                            if ($currentSubjectId) {
+                                $sq->orWhere('subject_id', $currentSubjectId);
+                            }
+                        });
+                    });
+                }
+                
+                if (!empty($currentTagIds)) {
+                    $query->orWhereHas('tags', function ($q) use ($currentTagIds) {
+                        $q->whereIn('tags.id', $currentTagIds);
+                    });
+                }
+            })
+            ->with(['tags', 'author', 'currentVersion'])
             ->get();
+
+        // Calculate relevance score for each candidate
+        $relatedDocuments = $candidates->map(function ($related) use ($currentCategoryId, $currentSubjectId, $currentTagIds) {
+            $score = 0;
+            $relatedVer = $related->currentVersion;
+
+            // 1. Cùng danh mục: +3
+            if ($currentCategoryId && $relatedVer && $relatedVer->category_id === $currentCategoryId) {
+                $score += 3;
+                
+                // Tải nhiều trong danh mục: +2 (Give up to 2 points based on download count)
+                if ($related->download_count >= 50) {
+                    $score += 2;
+                } elseif ($related->download_count >= 20) {
+                    $score += 1;
+                }
+            }
+
+            // 2. Cùng môn học: +4
+            if ($currentSubjectId && $relatedVer && $relatedVer->subject_id === $currentSubjectId) {
+                $score += 4;
+            }
+
+            // 3. Cùng tags: +5 for each matching tag
+            if (!empty($currentTagIds)) {
+                $relatedTagIds = $related->tags->pluck('id')->toArray();
+                $matchingTags = array_intersect($currentTagIds, $relatedTagIds);
+                $score += (count($matchingTags) * 5);
+            }
+
+            $related->relevance_score = $score;
+            return $related;
+        })
+        ->filter(function ($related) {
+            return $related->relevance_score > 0;
+        })
+        ->sortByDesc(function ($related) {
+            // Sort by score first, then download_count as tie-breaker
+            return [$related->relevance_score, $related->download_count];
+        })
+        ->take(4);
 
         $isAdmin = $this->isAdmin();
         
@@ -779,85 +855,12 @@ class DocumentDetail extends Component
         if ($doc->file_type === 'zip') {
             $activeVer = $doc->currentVersion ?? $doc->latestVersion;
             if ($activeVer) {
-                $zipFilesData = \Illuminate\Support\Facades\Cache::rememberForever('zip_structure_' . $activeVer->id, function() use ($doc, $activeVer) {
-                    $zipPath = ($doc->watermark_status === 'success' && $activeVer->file_watermarked_path)
-                        ? $activeVer->file_watermarked_path
-                        : $activeVer->file_original_path;
-
-                    $localZip = null;
-                    $zipFiles = [];
-
-                    // Local path
-                    $localPath = storage_path('app/public/' . $zipPath);
-                    if (file_exists($localPath)) {
-                        $localZip = $localPath;
-                    }
-
-                    // R2 path
-                    if (!$localZip && $zipPath && Storage::disk('r2')->exists($zipPath)) {
-                        $tempZip = storage_path('app/temp/' . uniqid('zip_') . '.zip');
-                        $dir = dirname($tempZip);
-                        if (!is_dir($dir)) mkdir($dir, 0755, true);
-                        file_put_contents($tempZip, Storage::disk('r2')->get($zipPath));
-                        $localZip = $tempZip;
-                    }
-
-                    if ($localZip) {
-                        $zip = new \ZipArchive();
-                        if ($zip->open($localZip) === TRUE) {
-                            for ($i = 0; $i < $zip->numFiles; $i++) {
-                                $name = $zip->getNameIndex($i);
-                                if (substr($name, -1) === '/') continue;
-
-                                $skipExts = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'webp', 'bmp', 'tiff', 'tif',
-                                    'ttf', 'woff', 'woff2', 'eot', 'otf',
-                                    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
-                                    'zip', 'rar', '7z', 'tar', 'gz',
-                                    'mp3', 'mp4', 'avi', 'mov', 'wav', 'ogg',
-                                    'exe', 'dll', 'so', 'dylib', 'bin', 'obj'];
-                                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                                if (in_array($ext, $skipExts)) continue;
-
-                                $content = $zip->getFromIndex($i);
-                                
-                                if (!mb_check_encoding($content, 'UTF-8')) {
-                                    $detected = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true);
-                                    if ($detected && $detected !== 'UTF-8') {
-                                        $content = mb_convert_encoding($content, 'UTF-8', $detected);
-                                    } else {
-                                        $zipFiles[$name] = [
-                                            'isDir' => false,
-                                            'content' => '[Binary file - không thể preview]'
-                                        ];
-                                        continue;
-                                    }
-                                }
-                                
-                                $content = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $content);
-                                
-                                $lines = explode("\n", $content);
-                                if (count($lines) > 50) {
-                                    $content = implode("\n", array_slice($lines, 0, 50));
-                                    $content .= "\n\n// ... [Hiển thị 50 dòng đầu, vui lòng tải xuống để xem đầy đủ]";
-                                } elseif (strlen($content) > 10000) {
-                                    $content = substr($content, 0, 10000);
-                                    $content .= "\n\n// ... [Nội dung đã được cắt ngắn, vui lòng tải xuống để xem đầy đủ]";
-                                }
-
-                                $zipFiles[$name] = [
-                                    'isDir' => false,
-                                    'content' => $content
-                                ];
-                            }
-                            $zip->close();
-                        }
-                        if (isset($tempZip) && file_exists($tempZip)) @unlink($tempZip);
-                    }
-                    return $zipFiles;
-                });
+                $zipService = app(\Modules\Document\Services\ZipPreviewService::class);
+                $zipFilesData = $zipService->getZipStructure($doc, $activeVer);
             }
         }
         $this->zipFiles = $zipFilesData;
+
 
         return view('document::livewire.user.document-detail', [
             'doc' => $doc,

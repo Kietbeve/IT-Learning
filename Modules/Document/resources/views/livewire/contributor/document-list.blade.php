@@ -117,7 +117,7 @@
                     <option value="pending">Chờ phê duyệt</option>
                     <option value="rejected">Bị từ chối</option>
                     <option value="draft">Bản nháp</option>
-                    <option value="deleted">Đã ẩn</option>
+                    <option value="deleted">Đã xóa</option>
                 </select>
 
                 <!-- Category Filter -->
@@ -151,9 +151,9 @@
                 <div class="p-5 space-y-4">
                     <div class="flex items-start justify-between gap-4">
                         <div class="space-y-1.5 flex-1 min-w-0">
-                            <span class="font-bold text-slate-800 block leading-snug text-sm truncate" title="{{ $doc->title }}">
+                            <a href="{{ route('documents.show', $doc->id) }}" target="_blank" class="font-bold text-slate-800 block leading-snug text-sm truncate hover:text-blue-600 transition-colors" title="{{ $doc->title }}">
                                 {{ $doc->title }}
-                            </span>
+                            </a>
                             
                             <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 font-bold">
                                 <span class="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 uppercase text-slate-500 font-bold">
@@ -207,16 +207,8 @@
                                             </svg>
                                             <div class="flex-1 text-[11px] min-w-0 leading-snug">
                                                 <div :class="expanded ? '' : 'line-clamp-1'">
-                                                    <span class="font-bold {{ $textColor }}">{{ $title }}:</span>
-                                                    <span class="{{ $textColorLight }} ml-1 break-words">{{ $reason }}</span>
-                                                    <span class="{{ $textColorLighter }} ml-2 whitespace-nowrap">({{ $date }})</span>
+                                                    <span class="font-bold {{ $textColor }}">{{ $title }}</span>
                                                 </div>
-                                                @if(strlen($reason) > 50)
-                                                    <button @click="expanded = !expanded" class="text-[11px] font-bold {{ $textColor }} underline hover:opacity-80 mt-1 inline-flex items-center gap-1">
-                                                        <span x-show="!expanded">▼ Xem thêm</span>
-                                                        <span x-show="expanded" style="display: none;">▲ Thu gọn</span>
-                                                    </button>
-                                                @endif
                                             </div>
                                         </div>
                                         <button wire:click="dismissRejectedVersion({{ $doc->id }})" 
@@ -230,20 +222,17 @@
                             @endif
 
                             @if($doc->status === 'approved' && $doc->pendingVersion)
-                                <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg hover:bg-indigo-100 transition-colors block">
-                                    <div class="flex items-start gap-2">
+                                <div class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg flex items-center justify-between group">
+                                    <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="flex-1 flex items-start gap-2 hover:opacity-80">
                                         <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                         <div class="flex-1 text-[11px] min-w-0 leading-snug">
-                                            <span class="font-bold text-indigo-900">Đang cập nhật:</span>
-                                            <span class="text-indigo-800 ml-1">Có bản cập nhật đang chờ phê duyệt. Nhấn để xem chi tiết.</span>
+                                            <span class="font-bold text-indigo-900">Chờ duyệt cập nhật</span>
                                         </div>
-                                        <svg class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                        </svg>
-                                    </div>
-                                </a>
+                                    </a>
+                                    <button wire:click.prevent="cancelUpdate({{ $doc->id }})" class="ml-2 px-2.5 py-1 text-[10px] font-bold text-rose-600 bg-white border border-rose-200 rounded hover:bg-rose-50 transition-colors shrink-0" onclick="confirm('Bạn có chắc muốn hủy yêu cầu cập nhật này không?') || event.stopImmediatePropagation()">Hủy</button>
+                                </div>
                             @endif
 
                             @if($doc->tags->isNotEmpty())
@@ -257,8 +246,13 @@
 
                         <!-- Price tag -->
                         <div class="shrink-0 text-right space-y-2">
-                            @if($doc->product && $doc->product->is_active)
-                                <span class="text-indigo-650 font-extrabold text-sm">{{ number_format($doc->product->price) }} VND</span>
+                            @if($doc->product && $doc->product->price > 0)
+                                @if($doc->product->sale_price)
+                                    <span class="text-indigo-650 font-extrabold text-sm">{{ number_format($doc->product->sale_price) }} VND</span>
+                                    <div class="text-[10px] text-slate-400 font-bold line-through ml-1.5">{{ number_format($doc->product->price) }} VND</div>
+                                @else
+                                    <span class="text-indigo-650 font-extrabold text-sm">{{ number_format($doc->product->price) }} VND</span>
+                                @endif
                             @else
                                 <span class="inline-flex rounded-lg bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-100">Miễn phí</span>
                             @endif
@@ -284,7 +278,7 @@
                     <div class="flex items-center justify-between gap-4 pt-1">
                         <div>
                             @if($doc->trashed())
-                                <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-500">Đã ẩn</span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-500">Đã xóa</span>
                             @elseif($doc->status === 'approved')
                                 <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-xs font-bold text-emerald-700 border border-emerald-100 px-2.5 py-0.5">
                                     <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
@@ -314,10 +308,10 @@
                                 <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 text-xs font-bold transition-all">
                                     Sửa
                                 </a>
-                                <button onclick="confirm('Bạn có chắc chắn muốn ẩn tài liệu này không?') || event.stopImmediatePropagation()" 
+                                <button onclick="confirm('Bạn có chắc chắn muốn xóa tài liệu này không?') || event.stopImmediatePropagation()" 
                                         wire:click="deleteDocument({{ $doc->id }})" 
                                         class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-600 px-3 py-1.5 text-xs font-bold transition-all">
-                                    Ẩn
+                                    Xóa
                                 </button>
                         @endif
                     </div>
@@ -358,9 +352,9 @@
                         <tr class="hover:bg-indigo-50/10 transition-colors duration-200">
                             <td class="px-6 py-4 overflow-hidden">
                                 <div class="space-y-1">
-                                    <span class="font-bold text-slate-800 block leading-tight truncate" title="{{ $doc->title }}">
+                                    <a href="{{ route('documents.show', $doc->id) }}" target="_blank" class="font-bold text-slate-800 block leading-tight truncate hover:text-blue-600 transition-colors" title="{{ $doc->title }}">
                                         {{ $doc->title }}
-                                    </span>
+                                    </a>
                                     
                                     <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 font-bold">
                                         <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-500 font-bold">
@@ -425,16 +419,8 @@
                                                     </svg>
                                                     <div class="flex-1 text-[11px] min-w-0 leading-snug">
                                                         <div :class="expanded ? '' : 'line-clamp-1'">
-                                                            <span class="font-bold {{ $textColor }}">{{ $title }}:</span>
-                                                            <span class="{{ $textColorLight }} ml-1 break-words">{{ $reason }}</span>
-                                                            <span class="{{ $textColorLighter }} ml-2 whitespace-nowrap">({{ $date }})</span>
+                                                            <span class="font-bold {{ $textColor }}">{{ $title }}</span>
                                                         </div>
-                                                        @if(strlen($reason) > 50)
-                                                            <button @click="expanded = !expanded" class="text-[11px] font-bold {{ $textColor }} underline hover:opacity-80 mt-1 inline-flex items-center gap-1">
-                                                                <span x-show="!expanded">▼ Xem thêm</span>
-                                                                <span x-show="expanded" style="display: none;">▲ Thu gọn</span>
-                                                            </button>
-                                                        @endif
                                                     </div>
                                                 </div>
                                                 <button wire:click="dismissRejectedVersion({{ $doc->id }})" 
@@ -448,20 +434,17 @@
                                     @endif
 
                                     @if($doc->status === 'approved' && $doc->pendingVersion)
-                                        <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg hover:bg-indigo-100 transition-colors block">
-                                            <div class="flex items-start gap-2">
+                                        <div class="mt-3 p-2.5 bg-indigo-50 border-l-4 border-indigo-400 rounded-r-lg flex items-center justify-between group">
+                                            <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="flex-1 flex items-start gap-2 hover:opacity-80">
                                                 <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                                 <div class="flex-1 text-[11px] min-w-0 leading-snug">
-                                                    <span class="font-bold text-indigo-900">Đang cập nhật:</span>
-                                                    <span class="text-indigo-800 ml-1">Có bản cập nhật đang chờ phê duyệt.</span>
+                                                    <span class="font-bold text-indigo-900">Chờ duyệt cập nhật</span>
                                                 </div>
-                                                <svg class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                                </svg>
-                                            </div>
-                                        </a>
+                                            </a>
+                                            <button wire:click.prevent="cancelUpdate({{ $doc->id }})" class="ml-2 px-2.5 py-1 text-[10px] font-bold text-rose-600 bg-white border border-rose-200 rounded hover:bg-rose-50 transition-colors shrink-0" onclick="confirm('Bạn có chắc muốn hủy yêu cầu cập nhật này không?') || event.stopImmediatePropagation()">Hủy</button>
+                                        </div>
                                     @endif
 
                                     @if($doc->tags->isNotEmpty())
@@ -474,15 +457,20 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($doc->product && $doc->product->is_active)
-                                    <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }} VND</span>
+                                @if($doc->product && $doc->product->price > 0)
+                                    @if($doc->product->sale_price)
+                                        <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->sale_price) }} VND</span>
+                                        <div class="text-[10px] text-slate-400 font-bold line-through">{{ number_format($doc->product->price) }} VND</div>
+                                    @else
+                                        <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }} VND</span>
+                                    @endif
                                 @else
                                     <span class="inline-flex rounded-lg bg-emerald-50 text-[10px] font-bold text-emerald-700 border border-emerald-100">Miễn phí</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($doc->trashed())
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-500">Đã ẩn</span>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-500">Đã xóa</span>
                                 @elseif($doc->status === 'approved')
                                     <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-xs font-bold text-emerald-700 border border-emerald-100 px-2.5 py-0.5">
                                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
@@ -518,10 +506,10 @@
                                         <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 text-xs font-bold shadow-sm transition-all duration-200">
                                             Sửa
                                         </a>
-                                        <button onclick="confirm('Bạn có chắc chắn muốn ẩn tài liệu này không?') || event.stopImmediatePropagation()" 
+                                        <button onclick="confirm('Bạn có chắc chắn muốn xóa tài liệu này không?') || event.stopImmediatePropagation()" 
                                                 wire:click="deleteDocument({{ $doc->id }})" 
                                                 class="inline-flex rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-600 px-3.5 py-2 text-xs font-bold transition-all duration-200">
-                                            Ẩn đi
+                                            Xóa
                                         </button>
                                     @endif
                                 </div>

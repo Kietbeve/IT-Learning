@@ -2,7 +2,7 @@
 
 namespace Modules\Auth\Services;
 
-use Modules\Auth\Models\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -13,11 +13,11 @@ class AuthService
      * Check admin credentials and log the user in if valid.
      *
      * @param  array  $credentials  ['name' => string, 'password' => string]
-     * @return array ['success' => bool, 'message' => string|null, 'user' => ?\Modules\Auth\Models\User]
+     * @return array ['success' => bool, 'message' => string|null, 'user' => ?\App\Models\User]
      */
     public function checkAdminLogin(array $credentials): array
     {    
-        $user = User::where('name', $credentials['name'] ?? null)->first();
+        $user = User::where('email', $credentials['email'] ?? null)->first();
 
         if (! $user) {
             return [
@@ -43,6 +43,21 @@ class AuthService
                 'user' => null,
             ];
         }
+
+        // check if user is blocked
+        if ($user->status === 'blocked') {
+            return [
+                'success' => false,
+                'message' => 'Tài khoản của bạn đã bị khóa. ' . $user->blocked_reason,
+                'user' => null,
+            ];
+        }
+
+        // Cập nhật lịch sử đăng nhập
+        $user->update([
+            'last_login_at' => now(),
+            'last_login_IP' => request()->ip(),
+        ]);
 
         // log the user in
         Auth::login($user);
@@ -234,7 +249,7 @@ class AuthService
             'active' => User::where('status', 'active')->count(),
             'blocked' => User::where('status', 'blocked')->count(),
             'admin' => User::role('admin')->count(),
-            'student' => User::role('student')->count(),
+            'user' => User::role('user')->count(),
             'contributor' => User::role('contributor')->count(),
         ];
     }

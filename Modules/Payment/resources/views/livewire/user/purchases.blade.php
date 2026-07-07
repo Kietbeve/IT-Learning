@@ -16,12 +16,14 @@
         @else
             {{-- Document Grid --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @foreach($purchasedDocuments as $access)
+                @foreach($purchasedDocuments as $item)
+                    @php $doc = $documents[$item->document_id] ?? null; @endphp
+                    @if($doc)
                     <div class="rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
                         {{-- Thumbnail --}}
                         <div class="h-40 bg-slate-100 flex items-center justify-center border-b border-slate-100">
-                            @if(isset($access->document) && $access->document->thumbnail)
-                                <img src="{{ asset('storage/' . $access->document->thumbnail) }}" alt="{{ $access->document->title }}" class="w-full h-full object-cover">
+                            @if($doc->thumbnail)
+                                <img src="{{ $doc->thumbnail_url }}" alt="{{ $doc->title }}" class="w-full h-full object-cover">
                             @else
                                 <x-icon name="document" class="w-16 h-16 text-slate-300" />
                             @endif
@@ -29,29 +31,24 @@
 
                         <div class="p-4 flex-grow flex flex-col">
                             <div class="mb-2 text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                                {{ $access->document->category->name ?? 'Tài liệu' }}
+                                {{ $doc->currentVersion?->category?->name ?? 'Tài liệu' }}
                             </div>
 
-                            <h4 class="text-base font-bold text-slate-900 mb-2 line-clamp-2" title="{{ $access->document->title ?? 'Tài liệu bị xóa' }}">
-                                {{ $access->document->title ?? 'Tài liệu này không còn tồn tại' }}
+                            <h4 class="text-base font-bold text-slate-900 mb-2 line-clamp-2" title="{{ $doc->title }}">
+                                {{ $doc->title }}
                             </h4>
 
                             <div class="mt-auto pt-4 border-t border-slate-100">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="text-xs text-slate-500">
-                                        Đã mua: {{ $access->created_at->format('d/m/Y') }}
-                                    </span>
-                                </div>
+                                <div class="mb-3"></div>
 
-                                @if($access->document)
-                                    <a href="{{ route('documents.show', $access->document->id) }}" 
-                                       class="block w-full text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                                        Xem chi tiết
-                                    </a>
-                                @endif
+                                <a href="{{ route('documents.show', [$doc->id, \Illuminate\Support\Str::slug($doc->title)]) }}" 
+                                   class="block w-full text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                    Xem chi tiết
+                                </a>
                             </div>
                         </div>
                     </div>
+                    @endif
                 @endforeach
             </div>
 

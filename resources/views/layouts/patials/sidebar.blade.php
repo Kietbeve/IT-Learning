@@ -15,7 +15,7 @@
                 ['label' => 'Quản lý CTV', 'route' => 'admin.ctv.list', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'],
                 ['label' => 'Duyệt rút tiền', 'route' => 'admin.payouts.review', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
                 ['label' => 'Duyệt bài kiểm tra', 'route' => 'admin.moderation.exam', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.952 11.952 0 01-7.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
-                ['label' => 'Quản lý tài liệu', 'route' => 'admin.documents.index', 'icon' => 'M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2'],
+                ['label' => 'Quản lý tài liệu', 'route' => 'admin.documents.index', 'icon' => 'M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2', 'badge' => class_exists('\Modules\Document\Models\Document') ? \Modules\Document\Models\Document::whereHas('pendingVersion', function ($sq) { $sq->where('watermark_status', '!=', 'pending'); })->count() : 0],
                 ['label' => 'Báo cáo vi phạm', 'route' => 'admin.reports.documents', 'icon' => 'M3 3v18h18'],
                 ['label' => 'Danh mục tài liệu', 'route' => 'admin.categories.documents.index', 'icon' => 'M4 6h16M4 12h16M4 18h16'],
                 ['label' => 'Diễn đàn', 'route' => 'admin.learning.forum', 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'],
@@ -40,7 +40,10 @@
                         <path d="{{ $item['icon'] }}" />
                     </svg>
                 </span>
-                <span>{{ $item['label'] }}</span>
+                <span class="flex-1">{{ $item['label'] }}</span>
+                @if(isset($item['badge']) && $item['badge'] > 0)
+                    <span class="inline-flex items-center justify-center rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm ring-2 ring-white min-w-[20px]">{{ $item['badge'] }}</span>
+                @endif
             </a>
         @endforeach
     </nav>

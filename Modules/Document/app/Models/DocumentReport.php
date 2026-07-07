@@ -4,7 +4,7 @@ namespace Modules\Document\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Auth\Models\User;
+use App\Models\User;
 
 class DocumentReport extends Model
 {
@@ -16,7 +16,7 @@ class DocumentReport extends Model
         'status',
         'resolved_by',
         'resolved_at',
-        'review_note'
+        'review_note',
     ];
 
     protected $casts = [

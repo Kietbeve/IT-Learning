@@ -96,7 +96,7 @@
         {{-- Actions --}}
         @if(isset($orderType) && $orderType === 'subscription')
             <div class="space-y-3">
-                <a href="{{ route('student.subscription') }}" 
+                <a href="{{ route('user.subscription') }}" 
                    class="block w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3.5 px-6 text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 text-center">
                     ⚡ Xem trạng thái VIP của bạn
                 </a>
@@ -109,7 +109,7 @@
             <div class="space-y-3">
                 <x-button
                     primary
-                    :href="route('student.purchases')"
+                    :href="route('user.purchases')"
                     label="Tải tài nguyên ngay"
                     icon="arrow-down-tray"
                     class="w-full"

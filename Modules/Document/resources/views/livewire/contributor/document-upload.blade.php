@@ -183,6 +183,18 @@
                         </div>
                         @error('price') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
                     </div>
+
+                    <!-- Sale Price input field -->
+                    <div x-show="paid" x-transition class="space-y-1.5 pt-1.5">
+                        <label for="sale_price" class="text-[10px] font-bold text-slate-500 uppercase">Giá khuyến mãi (VND) <span class="text-slate-400 font-normal lowercase">(tùy chọn)</span></label>
+                        <div class="relative">
+                            <input type="number" id="sale_price" wire:model.blur="sale_price" placeholder="Giảm giá (nhỏ hơn giá gốc)" 
+                                x-on:input="$el.value = $el.value.replace(/^0+/, '') || ''"
+                                class="w-full rounded-2xl border border-slate-200 px-4 py-3 pr-16 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <span class="absolute inset-y-0 right-4 inline-flex items-center text-xs font-bold text-slate-400 pointer-events-none">VND</span>
+                        </div>
+                        @error('sale_price') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
+                    </div>
                 </div>
 
                 <!-- Visibility -->

@@ -2,11 +2,10 @@
 
 namespace Modules\Payment\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Payment\Database\factories\ProductStatusHistoryFactory;
 use App\Models\User;
-use Modules\Payment\Models\Product;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
 class ProductStatusHistory extends Model
 {
     use HasFactory;
@@ -15,8 +14,16 @@ class ProductStatusHistory extends Model
      * The attributes that are mass assignable.
      */
     public $timestamps = false; // Chỉ xài created_at
+
     protected $fillable = ['product_id', 'status', 'price', 'sale_price', 'changed_by', 'note', 'created_at'];
 
-    public function product() { return $this->belongsTo(Product::class); }
-    public function changedBy() { return $this->belongsTo(User::class, 'changed_by'); }
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function changedBy()
+    {
+        return $this->belongsTo(User::class, 'changed_by');
+    }
 }

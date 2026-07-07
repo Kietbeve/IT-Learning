@@ -18,6 +18,7 @@
         "phpoffice/phpword": "^1.4",
         "power-components/livewire-powergrid": "^6.10",
         "predis/predis": "^3.5",
+        "resend/resend-laravel": "*",
         "setasign/fpdf": "^1.9",
         "setasign/fpdi": "*",
         "spatie/laravel-activitylog": "^4.12",

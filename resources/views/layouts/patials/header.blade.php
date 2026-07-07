@@ -1,9 +1,9 @@
 <header class="border-b border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6 lg:px-8 font-sans">
     @php
         $isContributor = request()->is('contributor*') || request()->is('contributor');
-        $activeUser = auth()->user() ?? \Modules\Auth\Models\User::whereHas('roles', function($q) {
+        $activeUser = auth()->user() ?? \App\Models\User::whereHas('roles', function($q) {
             $q->where('name', 'contributor');
-        })->first() ?? \Modules\Auth\Models\User::first();
+        })->first() ?? \App\Models\User::first();
     @endphp
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex items-center gap-4">
