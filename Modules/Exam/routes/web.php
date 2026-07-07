@@ -56,7 +56,8 @@ Route::get('/questions/import-template', [ExamController::class, 'template'])
 |
 */
 
-Route::group(['prefix' => 'exam', 'middleware' => 'auth'], function () {
+// Route::group(['prefix' => 'exam', 'middleware' => 'auth'], function () {
+Route::group(['prefix' => 'exam'], function () {
     // Xem danh sách kết quả các bài thi đã làm
     Route::get('results', Modules\Exam\Livewire\ResultList::class)->name('exam.results');
 });
