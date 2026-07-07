@@ -2,8 +2,7 @@
 
 namespace Modules\Payment\Services;
 
-use Modules\Auth\Models\User;
-use Carbon\Carbon;
+use App\Models\User;
 
 class SubscriptionService
 {
@@ -13,8 +12,8 @@ class SubscriptionService
     public function activateVip(User $user, string $packageKey): void
     {
         $package = config("subscription.packages.{$packageKey}");
-        
-        if (!$package) {
+
+        if (! $package) {
             throw new \InvalidArgumentException("Invalid package key: {$packageKey}");
         }
 
@@ -33,7 +32,7 @@ class SubscriptionService
      */
     public function isVipActive(User $user): bool
     {
-        return $user->vip_expires_at && $user->vip_expires_at->isFuture();
+        return $user->checkAndExpireVip();
     }
 
     /**
@@ -41,7 +40,7 @@ class SubscriptionService
      */
     public function getVipStatus(User $user): array
     {
-        $isActive = $this->isVipActive($user);
+        $isActive = $user->checkAndExpireVip();
         
         return [
             'is_active' => $isActive,
@@ -56,7 +55,7 @@ class SubscriptionService
      */
     public function decreaseQuota(User $user): bool
     {
-        if (!$this->isVipActive($user)) {
+        if (! $this->isVipActive($user)) {
             return false;
         }
 
@@ -65,7 +64,7 @@ class SubscriptionService
         }
 
         $user->decrement('vip_download_quota');
-        
+
         return true;
     }
 
@@ -74,7 +73,7 @@ class SubscriptionService
      */
     public function canDownloadPremium(User $user): bool
     {
-        if (!$this->isVipActive($user)) {
+        if (! $this->isVipActive($user)) {
             return false;
         }
 
@@ -103,8 +102,8 @@ class SubscriptionService
     public function getFinalPrice(string $packageKey): int
     {
         $package = $this->getPackage($packageKey);
-        
-        if (!$package) {
+
+        if (! $package) {
             throw new \InvalidArgumentException("Invalid package key: {$packageKey}");
         }
 

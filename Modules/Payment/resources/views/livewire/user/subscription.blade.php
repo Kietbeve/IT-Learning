@@ -1,48 +1,4 @@
-<div>
-    {{-- Success Modal --}}
-    @if($showSuccessModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" wire:click.self="closeSuccessModal">
-            <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-8 text-center animate-scale-in">
-                <button wire:click="closeSuccessModal" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-
-                <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-yellow-100">
-                    <svg class="w-10 h-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-                    </svg>
-                </div>
-
-                <h2 class="mt-4 text-2xl font-bold text-gray-900">Mua gói VIP thành công!</h2>
-                <p class="mt-2 text-sm text-slate-600">Tài khoản của bạn đã được nâng cấp VIP. Hãy tận hưởng các quyền lợi đặc biệt!</p>
-
-                @php $pkg = $packages[array_key_first($packages)]; @endphp
-                @if($pkg)
-                    <div class="mt-6 rounded-xl border-2 border-amber-200 bg-amber-50 p-4 text-left space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-600">Lượt tải:</span>
-                            <span class="font-bold text-amber-700">{{ $pkg['download_quota'] }} tài liệu Premium</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-600">Hiệu lực:</span>
-                            <span class="font-bold text-amber-700">{{ $pkg['duration_days'] }} ngày</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-600">Số tiền:</span>
-                            <span class="font-bold text-amber-700">{{ number_format($successData['amount'] ?? $pkg['sale_price'] ?? $pkg['price']) }}đ</span>
-                        </div>
-                    </div>
-                @endif
-
-                <div class="mt-6 space-y-3">
-                    <x-button primary class="w-full" wire:click="closeSuccessModal" label="Bắt đầu khám phá ngay" />
-                </div>
-            </div>
-        </div>
-    @endif
-
+<div wire:poll.5s="refreshVipStatus">
     <div class="max-w-7xl mx-auto py-6">
         <div class="mb-8">
             <h2 class="text-3xl font-bold text-gray-900">Gói VIP Premium</h2>
@@ -168,4 +124,7 @@
             </div>
         </div>
     </div>
+
+    {{-- Payment Modal --}}
+    @include('payment::livewire.user._payment-modal')
 </div>

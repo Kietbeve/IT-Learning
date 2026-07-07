@@ -1,5 +1,4 @@
 <div>
-    @section('content')
     <div class="max-w-7xl mx-auto py-6">
         <h2 class="text-3xl font-bold text-gray-900 mb-6">Lịch sử giao dịch</h2>
         
@@ -63,7 +62,13 @@
                             </div>
                             
                             <div class="text-right">
-                                <p class="text-2xl font-bold text-primary-600">{{ number_format($order->total_amount) }}đ</p>
+                                @if($order->order_type === 'document' && $order->total_amount == 0)
+                                    <p class="text-xl font-bold text-amber-500">
+                                        <span class="text-sm font-semibold text-gray-500 mr-1">Dùng</span>1 lượt VIP
+                                    </p>
+                                @else
+                                    <p class="text-2xl font-bold text-primary-600">{{ number_format($order->total_amount) }}đ</p>
+                                @endif
                             </div>
                         </div>
 
@@ -84,7 +89,11 @@
                                                 {{ $item->document_title_snapshot }}
                                             </p>
                                             <p class="text-xs text-gray-500">
-                                                {{ number_format($item->unit_price) }}đ × {{ $item->quantity }}
+                                                @if($order->total_amount == 0)
+                                                    Thanh toán bằng lượt tải VIP
+                                                @else
+                                                    {{ number_format($item->unit_price) }}đ × {{ $item->quantity }}
+                                                @endif
                                             </p>
                                         </div>
                                     </div>
@@ -108,5 +117,4 @@
             </div>
         @endif
     </div>
-    @endsection
 </div>

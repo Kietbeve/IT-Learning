@@ -1,122 +1,158 @@
+{{-- Kế thừa layout chính của user --}}
 @extends('layouts.user')
 
 @section('content')
-<div x-data="{
-    examTitle: 'Đề thi Đánh giá năng lực CNTT 2024',
-    score: 85,
-    totalQuestions: 50,
-    correctAnswers: 42,
-    wrongAnswers: 5,
-    skippedAnswers: 3,
-    passed: true,
-    showDetails: false,
-    
-    getPassStatus() {
-        return this.passed ? 'Đạt' : 'Không đạt';
-    },
-    
-    getPassColor() {
-        return this.passed ? 'text-green-600' : 'text-red-600';
-    },
-    
-    getPassBgColor() {
-        return this.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
-    }
-}" 
-class="min-h-screen bg-gray-50 py-8">
-
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+{{-- Container chính với gradient background từ xanh nhạt đến trắng --}}
+<div 
+    x-data="{
+        examTitle: 'Đề thi Đánh giá năng lực CNTT 2024',
+        score: 85,
+        totalQuestions: 50,
+        correctAnswers: 42,
+        wrongAnswers: 5,
+        skippedAnswers: 3,
+        passed: true,
+        showDetails: false,
         
-        {{-- Score Display Card --}}
-        <x-card padding="p-6 sm:p-8 lg:p-10">
-            <div class="text-center">
-                <div class="mb-4">
-                    <x-badge flat gray label="Kết quả bài thi" class="text-sm" />
+        getPassStatus() {
+            return this.passed ? 'Đạt' : 'Không đạt';
+        },
+        
+        getPassColor() {
+            return this.passed ? 'text-cyan-600' : 'text-purple-600';
+        },
+        
+        getPassBgColor() {
+            return this.passed ? 'bg-cyan-50 border-cyan-200' : 'bg-purple-50 border-purple-200';
+        },
+        
+        getScoreBorderColor() {
+            return this.passed ? 'border-cyan-500' : 'border-purple-500';
+        },
+        
+        getScoreBgColor() {
+            return this.passed ? 'bg-cyan-50' : 'bg-purple-50';
+        }
+    }" 
+    class="bg-gradient-to-b from-blue-50 via-white to-slate-50 min-h-screen"
+>
+    {{-- Wrapper với max-width và padding responsive --}}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {{-- ===== KHỐI HERO: Kết quả điểm số nổi bật ===== --}}
+        <div class="relative overflow-hidden rounded-[32px] bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-500 p-8 md:p-12 shadow-2xl mb-8">
+            
+            {{-- Hiệu ứng trang trí: 2 vòng tròn mờ làm background --}}
+            <div class="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10"></div>
+            <div class="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/5"></div>
+            
+            {{-- Nội dung chính của hero --}}
+            <div class="relative">
+                {{-- Badge: Kết quả bài thi --}}
+                <div class="flex justify-center mb-6">
+                    <x-badge flat white label="Kết quả bài thi" class="text-sm" />
                 </div>
                 
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4" x-text="examTitle"></h1>
+                {{-- Tiêu đề bài thi --}}
+                <h1 class="text-3xl lg:text-4xl font-extrabold text-white text-center leading-tight mb-8" x-text="examTitle"></h1>
                 
-                {{-- Score Circle --}}
-                <div class="flex justify-center mb-6">
+                {{-- Score Circle - Hiển thị điểm số --}}
+                <div class="flex justify-center mb-8">
                     <div class="relative">
-                        <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-8 flex items-center justify-center"
-                             :class="passed ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'">
+                        <div class="w-40 h-40 sm:w-48 sm:h-48 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm border-8 border-white/40">
                             <div class="text-center">
-                                <div class="text-4xl sm:text-5xl font-bold" x-bind:class="getPassColor()" x-text="score"></div>
-                                <div class="text-sm sm:text-base text-gray-600">điểm</div>
+                                <div class="text-5xl sm:text-6xl font-extrabold text-white" x-text="score"></div>
+                                <div class="text-base sm:text-lg text-blue-100 font-medium">điểm</div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                {{-- Pass/Fail Badge --}}
-                <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full border-2" x-bind:class="getPassBgColor()">
-                    <x-icon name="check-circle" class="w-6 h-6" x-bind:class="getPassColor()" x-show="passed" />
-                    <x-icon name="x-circle" class="w-6 h-6" x-bind:class="getPassColor()" x-show="!passed" />
-                    <span class="font-bold text-lg" x-bind:class="getPassColor()" x-text="getPassStatus()"></span>
+                {{-- Pass/Fail Status Badge --}}
+                <div class="flex justify-center">
+                    <div class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/40">
+                        <template x-if="passed">
+                            <x-icon name="check-circle" class="w-7 h-7 text-white" />
+                        </template>
+                        <template x-if="!passed">
+                            <x-icon name="x-circle" class="w-7 h-7 text-white" />
+                        </template>
+                        <span class="font-bold text-xl text-white" x-text="getPassStatus()"></span>
+                    </div>
                 </div>
             </div>
-        </x-card>
+        </div>
 
-        {{-- Statistics Cards --}}
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {{-- Correct Answers --}}
-            <x-card padding="p-5 sm:p-6" class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-green-500 rounded-xl">
-                        <x-icon name="check-circle" class="w-6 h-6 text-white" />
+        {{-- ===== LƯỚI THỐNG KÊ: 3 cột hiển thị kết quả chi tiết ===== --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            
+            {{-- Card 1: Câu trả lời đúng --}}
+            <div class="bg-white rounded-[28px] p-6 border border-cyan-100 shadow-md hover:shadow-lg transition-shadow">
+                <div class="flex items-center gap-4">
+                    {{-- Icon check trong nền cyan --}}
+                    <div class="w-16 h-16 rounded-2xl bg-cyan-100 flex items-center justify-center shrink-0">
+                        <x-icon name="check-circle" class="w-8 h-8 text-cyan-700" />
                     </div>
+                    
+                    {{-- Nội dung: Số câu đúng và phần trăm --}}
                     <div class="flex-1">
-                        <div class="text-sm text-green-700 font-medium mb-1">Câu trả lời đúng</div>
-                        <div class="text-3xl font-bold text-green-900" x-text="correctAnswers"></div>
-                        <div class="text-xs text-green-600 mt-1">
+                        <div class="text-sm text-slate-500 mb-1">Câu trả lời đúng</div>
+                        <div class="text-3xl font-bold text-slate-900" x-text="correctAnswers"></div>
+                        <div class="text-xs text-cyan-600 font-medium mt-1">
                             <span x-text="((correctAnswers / totalQuestions) * 100).toFixed(1)"></span>% tổng số câu
                         </div>
                     </div>
                 </div>
-            </x-card>
+            </div>
 
-            {{-- Wrong Answers --}}
-            <x-card padding="p-5 sm:p-6" class="bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-200">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-red-500 rounded-xl">
-                        <x-icon name="x-circle" class="w-6 h-6 text-white" />
+            {{-- Card 2: Câu trả lời sai --}}
+            <div class="bg-white rounded-[28px] p-6 border border-purple-100 shadow-md hover:shadow-lg transition-shadow">
+                <div class="flex items-center gap-4">
+                    {{-- Icon x trong nền purple --}}
+                    <div class="w-16 h-16 rounded-2xl bg-purple-100 flex items-center justify-center shrink-0">
+                        <x-icon name="x-circle" class="w-8 h-8 text-purple-700" />
                     </div>
+                    
+                    {{-- Nội dung: Số câu sai và phần trăm --}}
                     <div class="flex-1">
-                        <div class="text-sm text-red-700 font-medium mb-1">Câu trả lời sai</div>
-                        <div class="text-3xl font-bold text-red-900" x-text="wrongAnswers"></div>
-                        <div class="text-xs text-red-600 mt-1">
+                        <div class="text-sm text-slate-500 mb-1">Câu trả lời sai</div>
+                        <div class="text-3xl font-bold text-slate-900" x-text="wrongAnswers"></div>
+                        <div class="text-xs text-purple-600 font-medium mt-1">
                             <span x-text="((wrongAnswers / totalQuestions) * 100).toFixed(1)"></span>% tổng số câu
                         </div>
                     </div>
                 </div>
-            </x-card>
+            </div>
 
-            {{-- Skipped Answers --}}
-            <x-card padding="p-5 sm:p-6" class="bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-gray-200">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-gray-500 rounded-xl">
-                        <x-icon name="minus-circle" class="w-6 h-6 text-white" />
+            {{-- Card 3: Câu bỏ qua --}}
+            <div class="bg-white rounded-[28px] p-6 border border-slate-100 shadow-md hover:shadow-lg transition-shadow">
+                <div class="flex items-center gap-4">
+                    {{-- Icon minus trong nền slate --}}
+                    <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0">
+                        <x-icon name="minus-circle" class="w-8 h-8 text-slate-700" />
                     </div>
+                    
+                    {{-- Nội dung: Số câu bỏ qua và phần trăm --}}
                     <div class="flex-1">
-                        <div class="text-sm text-gray-700 font-medium mb-1">Câu bỏ qua</div>
-                        <div class="text-3xl font-bold text-gray-900" x-text="skippedAnswers"></div>
-                        <div class="text-xs text-gray-600 mt-1">
+                        <div class="text-sm text-slate-500 mb-1">Câu bỏ qua</div>
+                        <div class="text-3xl font-bold text-slate-900" x-text="skippedAnswers"></div>
+                        <div class="text-xs text-slate-600 font-medium mt-1">
                             <span x-text="((skippedAnswers / totalQuestions) * 100).toFixed(1)"></span>% tổng số câu
                         </div>
                     </div>
                 </div>
-            </x-card>
+            </div>
+
         </div>
 
-        {{-- View Details Toggle --}}
-        <div class="flex justify-center">
+        {{-- ===== NÚT XEM CHI TIẾT ===== --}}
+        <div class="flex justify-center mb-8">
             <x-button 
                 outline 
                 indigo 
                 xl
                 @click="showDetails = !showDetails"
-                class="font-semibold">
+                class="font-semibold shadow-md hover:shadow-lg transition-shadow">
                 <span x-show="!showDetails">
                     <x-icon name="eye" class="w-5 h-5 mr-2 inline" />
                     Xem chi tiết đáp án
@@ -128,276 +164,383 @@ class="min-h-screen bg-gray-50 py-8">
             </x-button>
         </div>
 
-        {{-- Question Review Section --}}
+        {{-- ===== PHẦN XEM LẠI CHI TIẾT CÂU HỎI ===== --}}
         <div x-show="showDetails" x-cloak x-transition class="space-y-6">
             
-            <div class="text-center mb-6">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Chi tiết đáp án</h2>
-                <p class="text-sm text-gray-600">Xem lại các câu hỏi và đáp án chi tiết</p>
+            {{-- Header với background blue --}}
+            <div class="bg-white rounded-[28px] border border-blue-100 shadow-lg overflow-hidden">
+                <div class="px-8 py-6 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-100">
+                    <div class="flex items-center gap-3">
+                        <x-icon name="clipboard-document-list" class="w-7 h-7 text-blue-700" />
+                        <div>
+                            <h2 class="text-2xl font-bold text-blue-900">Chi tiết đáp án</h2>
+                            <p class="text-sm text-blue-600 mt-1">Xem lại các câu hỏi và đáp án chi tiết</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {{-- Question 1: Correct Answer --}}
-            <x-card padding="p-5 sm:p-6" class="border-l-4 border-green-500">
-                <div class="flex items-start gap-3 mb-4">
-                    <x-badge flat positive label="Câu 1" class="shrink-0" />
-                    <x-badge flat positive>
-                        <x-icon name="check-circle" class="w-4 h-4 mr-1 inline" />
-                        Đúng
-                    </x-badge>
-                </div>
+            {{-- ===== CÂU HỎI 1: TRẢ LỜI ĐÚNG ===== --}}
+            <div class="bg-white rounded-[32px] border-l-4 border-cyan-500 shadow-lg overflow-hidden">
                 
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                    Trong mô hình OSI, tầng nào chịu trách nhiệm định tuyến và chuyển tiếp gói tin giữa các mạng khác nhau?
-                </h3>
+                {{-- Header câu hỏi với badges --}}
+                <div class="px-6 sm:px-8 pt-6 pb-4">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <x-badge flat positive label="Câu 1" class="text-sm font-semibold" />
+                        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-50 border border-cyan-200">
+                            <x-icon name="check-circle" class="w-5 h-5 text-cyan-600" />
+                            <span class="font-bold text-cyan-700 text-sm">Đúng</span>
+                        </div>
+                    </div>
+                    
+                    {{-- Nội dung câu hỏi --}}
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 leading-relaxed">
+                        Trong mô hình OSI, tầng nào chịu trách nhiệm định tuyến và chuyển tiếp gói tin giữa các mạng khác nhau?
+                    </h3>
+                </div>
 
-                <div class="space-y-3 mb-4">
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                {{-- Danh sách đáp án --}}
+                <div class="px-6 sm:px-8 pb-6 space-y-3">
+                    
+                    {{-- Đáp án A --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                         <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                            <div class="w-6 h-6 rounded-full border-2 border-slate-300"></div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm sm:text-base text-gray-700">A. Tầng Vật lý (Physical Layer)</div>
+                            <div class="text-base text-slate-700">A. Tầng Vật lý (Physical Layer)</div>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    {{-- Đáp án B --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                         <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                            <div class="w-6 h-6 rounded-full border-2 border-slate-300"></div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm sm:text-base text-gray-700">B. Tầng Liên kết dữ liệu (Data Link Layer)</div>
+                            <div class="text-base text-slate-700">B. Tầng Liên kết dữ liệu (Data Link Layer)</div>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-green-50 border-2 border-green-500">
+                    {{-- Đáp án C - ĐÚNG (cả đáp án của bạn và đáp án đúng) --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-cyan-50 border-2 border-cyan-500 shadow-sm">
                         <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-                                <x-icon name="check" class="w-3 h-3 text-white" />
+                            <div class="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center">
+                                <x-icon name="check" class="w-4 h-4 text-white" />
                             </div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm sm:text-base font-semibold text-green-900">
-                                C. Tầng Mạng (Network Layer) 
-                                <x-badge flat positive label="Đáp án của bạn" class="ml-2" />
-                                <x-badge flat positive label="Đáp án đúng" class="ml-1" />
+                            <div class="text-base font-semibold text-cyan-900 mb-2">
+                                C. Tầng Mạng (Network Layer)
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <x-badge flat positive label="Đáp án của bạn" class="text-xs" />
+                                <x-badge flat positive label="Đáp án đúng" class="text-xs" />
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    {{-- Đáp án D --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                         <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                            <div class="w-6 h-6 rounded-full border-2 border-slate-300"></div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm sm:text-base text-gray-700">D. Tầng Vận chuyển (Transport Layer)</div>
+                            <div class="text-base text-slate-700">D. Tầng Vận chuyển (Transport Layer)</div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Explanation --}}
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                    <div class="flex gap-3">
-                        <x-icon name="information-circle" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                        <div>
-                            <h4 class="font-semibold text-blue-900 text-sm mb-1">Giải thích đáp án:</h4>
-                            <p class="text-sm text-blue-800">
-                                Tầng Mạng (Network Layer) trong mô hình OSI chịu trách nhiệm định tuyến và chuyển tiếp các gói tin giữa các mạng khác nhau. Đây là tầng thứ 3 trong mô hình 7 tầng OSI, xử lý địa chỉ logic (IP address) và quyết định đường đi tốt nhất cho dữ liệu.
-                            </p>
+                {{-- Giải thích đáp án --}}
+                <div class="px-6 sm:px-8 pb-6">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 rounded-2xl p-5">
+                        <div class="flex gap-3">
+                            <x-icon name="information-circle" class="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+                            <div class="flex-1">
+                                <h4 class="font-bold text-blue-900 text-sm mb-2">Giải thích đáp án:</h4>
+                                <p class="text-sm text-blue-800 leading-relaxed">
+                                    Tầng Mạng (Network Layer) trong mô hình OSI chịu trách nhiệm định tuyến và chuyển tiếp các gói tin giữa các mạng khác nhau. Đây là tầng thứ 3 trong mô hình 7 tầng OSI, xử lý địa chỉ logic (IP address) và quyết định đường đi tốt nhất cho dữ liệu.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </x-card>
 
-            {{-- Question 2: Wrong Answer --}}
-            <x-card padding="p-5 sm:p-6" class="border-l-4 border-red-500">
-                <div class="flex items-start gap-3 mb-4">
-                    <x-badge flat negative label="Câu 2" class="shrink-0" />
-                    <x-badge flat negative>
-                        <x-icon name="x-circle" class="w-4 h-4 mr-1 inline" />
-                        Sai
-                    </x-badge>
-                </div>
+            </div>
+
+            {{-- ===== CÂU HỎI 2: TRẢ LỜI SAI ===== --}}
+            <div class="bg-white rounded-[32px] border-l-4 border-purple-500 shadow-lg overflow-hidden">
                 
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                    Thuật toán nào sau đây có độ phức tạp thời gian trung bình tốt nhất cho bài toán sắp xếp?
-                </h3>
+                {{-- Header câu hỏi với badges --}}
+                <div class="px-6 sm:px-8 pt-6 pb-4">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <x-badge flat negative label="Câu 2" class="text-sm font-semibold" />
+                        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-50 border border-purple-200">
+                            <x-icon name="x-circle" class="w-5 h-5 text-purple-600" />
+                            <span class="font-bold text-purple-700 text-sm">Sai</span>
+                        </div>
+                    </div>
+                    
+                    {{-- Nội dung câu hỏi --}}
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 leading-relaxed">
+                        Thuật toán nào sau đây có độ phức tạp thời gian trung bình tốt nhất cho bài toán sắp xếp?
+                    </h3>
+                </div>
 
-                <div class="space-y-3 mb-4">
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                {{-- Danh sách đáp án --}}
+                <div class="px-6 sm:px-8 pb-6 space-y-3">
+                    
+                    {{-- Đáp án A --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                         <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                            <div class="w-6 h-6 rounded-full border-2 border-slate-300"></div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm sm:text-base text-gray-700">A. Bubble Sort - O(n²)</div>
+                            <div class="text-base text-slate-700">A. Bubble Sort - O(n²)</div>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-red-50 border-2 border-red-500">
+                    {{-- Đáp án B - SAI (đáp án của người dùng) --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-purple-50 border-2 border-purple-500 shadow-sm">
                         <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-                                <x-icon name="x-mark" class="w-3 h-3 text-white" />
+                            <div class="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                                <x-icon name="x-mark" class="w-4 h-4 text-white" />
                             </div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm sm:text-base font-semibold text-red-900">
+                            <div class="text-base font-semibold text-purple-900 mb-2">
                                 B. Selection Sort - O(n²)
-                                <x-badge flat negative label="Đáp án của bạn" class="ml-2" />
                             </div>
+                            <x-badge flat negative label="Đáp án của bạn" class="text-xs" />
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-green-50 border-2 border-green-500">
+                    {{-- Đáp án C - ĐÚNG (đáp án đúng) --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-cyan-50 border-2 border-cyan-500 shadow-sm">
                         <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-                                <x-icon name="check" class="w-3 h-3 text-white" />
+                            <div class="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center">
+                                <x-icon name="check" class="w-4 h-4 text-white" />
                             </div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm sm:text-base font-semibold text-green-900">
+                            <div class="text-base font-semibold text-cyan-900 mb-2">
                                 C. Quick Sort - O(n log n)
-                                <x-badge flat positive label="Đáp án đúng" class="ml-2" />
+                            </div>
+                            <x-badge flat positive label="Đáp án đúng" class="text-xs" />
+                        </div>
+                    </div>
+
+                    {{-- Đáp án D --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                        <div class="shrink-0 mt-1">
+                            <div class="w-6 h-6 rounded-full border-2 border-slate-300"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-base text-slate-700">D. Insertion Sort - O(n²)</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Giải thích đáp án --}}
+                <div class="px-6 sm:px-8 pb-6">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 rounded-2xl p-5">
+                        <div class="flex gap-3">
+                            <x-icon name="information-circle" class="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+                            <div class="flex-1">
+                                <h4 class="font-bold text-blue-900 text-sm mb-2">Giải thích đáp án:</h4>
+                                <p class="text-sm text-blue-800 leading-relaxed">
+                                    Quick Sort có độ phức tạp thời gian trung bình O(n log n), là một trong những thuật toán sắp xếp hiệu quả nhất. Các thuật toán Bubble Sort, Selection Sort và Insertion Sort đều có độ phức tạp O(n²), kém hiệu quả hơn với tập dữ liệu lớn.
+                                </p>
                             </div>
                         </div>
                     </div>
-
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
-                        <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-sm sm:text-base text-gray-700">D. Insertion Sort - O(n²)</div>
-                        </div>
-                    </div>
                 </div>
 
-                {{-- Explanation --}}
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                    <div class="flex gap-3">
-                        <x-icon name="information-circle" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                        <div>
-                            <h4 class="font-semibold text-blue-900 text-sm mb-1">Giải thích đáp án:</h4>
-                            <p class="text-sm text-blue-800">
-                                Quick Sort có độ phức tạp thời gian trung bình O(n log n), là một trong những thuật toán sắp xếp hiệu quả nhất. Các thuật toán Bubble Sort, Selection Sort và Insertion Sort đều có độ phức tạp O(n²), kém hiệu quả hơn với tập dữ liệu lớn.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </x-card>
+            </div>
 
-            {{-- Question 3: Skipped --}}
-            <x-card padding="p-5 sm:p-6" class="border-l-4 border-gray-400">
-                <div class="flex items-start gap-3 mb-4">
-                    <x-badge flat gray label="Câu 3" class="shrink-0" />
-                    <x-badge flat gray>
-                        <x-icon name="minus-circle" class="w-4 h-4 mr-1 inline" />
-                        Bỏ qua
-                    </x-badge>
-                </div>
+            {{-- ===== CÂU HỎI 3: BỎ QUA ===== --}}
+            <div class="bg-white rounded-[32px] border-l-4 border-slate-400 shadow-lg overflow-hidden">
                 
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                    Trong cơ sở dữ liệu quan hệ, khái niệm "Foreign Key" dùng để làm gì?
-                </h3>
+                {{-- Header câu hỏi với badges --}}
+                <div class="px-6 sm:px-8 pt-6 pb-4">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <x-badge flat gray label="Câu 3" class="text-sm font-semibold" />
+                        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-300">
+                            <x-icon name="minus-circle" class="w-5 h-5 text-slate-600" />
+                            <span class="font-bold text-slate-700 text-sm">Bỏ qua</span>
+                        </div>
+                    </div>
+                    
+                    {{-- Nội dung câu hỏi --}}
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 leading-relaxed">
+                        Trong cơ sở dữ liệu quan hệ, khái niệm "Foreign Key" dùng để làm gì?
+                    </h3>
+                </div>
 
-                <div class="space-y-3 mb-4">
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200 opacity-60">
+                {{-- Danh sách đáp án --}}
+                <div class="px-6 sm:px-8 pb-6 space-y-3">
+                    
+                    {{-- Đáp án A --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 opacity-60">
                         <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                            <div class="w-6 h-6 rounded-full border-2 border-slate-300"></div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm sm:text-base text-gray-700">A. Tạo index cho bảng</div>
+                            <div class="text-base text-slate-700">A. Tạo index cho bảng</div>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-green-50 border-2 border-green-500">
+                    {{-- Đáp án B - ĐÚNG (đáp án đúng) --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-cyan-50 border-2 border-cyan-500 shadow-sm">
                         <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-                                <x-icon name="check" class="w-3 h-3 text-white" />
+                            <div class="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center">
+                                <x-icon name="check" class="w-4 h-4 text-white" />
                             </div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm sm:text-base font-semibold text-green-900">
+                            <div class="text-base font-semibold text-cyan-900 mb-2">
                                 B. Liên kết dữ liệu giữa các bảng
-                                <x-badge flat positive label="Đáp án đúng" class="ml-2" />
+                            </div>
+                            <x-badge flat positive label="Đáp án đúng" class="text-xs" />
+                        </div>
+                    </div>
+
+                    {{-- Đáp án C --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 opacity-60">
+                        <div class="shrink-0 mt-1">
+                            <div class="w-6 h-6 rounded-full border-2 border-slate-300"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-base text-slate-700">C. Mã hóa dữ liệu</div>
+                        </div>
+                    </div>
+
+                    {{-- Đáp án D --}}
+                    <div class="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 opacity-60">
+                        <div class="shrink-0 mt-1">
+                            <div class="w-6 h-6 rounded-full border-2 border-slate-300"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-base text-slate-700">D. Sao lưu dữ liệu</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Thông báo đã bỏ qua --}}
+                <div class="px-6 sm:px-8 pb-6">
+                    <div class="bg-slate-50 border-l-4 border-slate-400 rounded-2xl p-5">
+                        <p class="text-sm text-slate-600 italic flex items-center gap-2">
+                            <x-icon name="information-circle" class="w-5 h-5 text-slate-500" />
+                            Bạn đã bỏ qua câu hỏi này.
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Giải thích đáp án --}}
+                <div class="px-6 sm:px-8 pb-6">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 rounded-2xl p-5">
+                        <div class="flex gap-3">
+                            <x-icon name="information-circle" class="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+                            <div class="flex-1">
+                                <h4 class="font-bold text-blue-900 text-sm mb-2">Giải thích đáp án:</h4>
+                                <p class="text-sm text-blue-800 leading-relaxed">
+                                    Foreign Key (Khóa ngoại) là một cột hoặc tập hợp các cột trong một bảng, tham chiếu đến Primary Key của bảng khác. Nó được sử dụng để thiết lập và duy trì mối quan hệ giữa các bảng trong cơ sở dữ liệu quan hệ, đảm bảo tính toàn vẹn tham chiếu của dữ liệu.
+                                </p>
                             </div>
                         </div>
                     </div>
-
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200 opacity-60">
-                        <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-sm sm:text-base text-gray-700">C. Mã hóa dữ liệu</div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200 opacity-60">
-                        <div class="shrink-0 mt-1">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-sm sm:text-base text-gray-700">D. Sao lưu dữ liệu</div>
-                        </div>
-                    </div>
                 </div>
 
-                <div class="bg-gray-50 border-l-4 border-gray-400 p-4 rounded">
-                    <p class="text-sm text-gray-600 italic">Bạn đã bỏ qua câu hỏi này.</p>
-                </div>
-
-                {{-- Explanation --}}
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mt-4">
-                    <div class="flex gap-3">
-                        <x-icon name="information-circle" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                        <div>
-                            <h4 class="font-semibold text-blue-900 text-sm mb-1">Giải thích đáp án:</h4>
-                            <p class="text-sm text-blue-800">
-                                Foreign Key (Khóa ngoại) là một cột hoặc tập hợp các cột trong một bảng, tham chiếu đến Primary Key của bảng khác. Nó được sử dụng để thiết lập và duy trì mối quan hệ giữa các bảng trong cơ sở dữ liệu quan hệ, đảm bảo tính toàn vẹn tham chiếu của dữ liệu.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </x-card>
+            </div>
 
         </div>
 
     </div>
 </div>
 
-        {{-- Guest CTA Banner (for non-logged-in users) --}}
+        {{-- ===== KHỐI THÔNG BÁO CHO GUEST ===== --}}
         @guest
-        <x-card padding="none" class="overflow-hidden mt-8">
-            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 sm:p-8 lg:p-10 text-white relative">
-                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <div class="bg-white rounded-[32px] overflow-hidden border border-blue-100 shadow-xl mt-8">
+            <div class="relative bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-500 p-8 sm:p-10 lg:p-12 text-white">
                 
-                <div class="relative z-10 text-center">
-                    <div class="mb-4">
-                        <x-icon name="bookmark" class="w-16 h-16 mx-auto text-white opacity-90" />
+                {{-- Hiệu ứng trang trí background --}}
+                <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10"></div>
+                <div class="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-white/5"></div>
+                
+                <div class="relative text-center">
+                    {{-- Icon bookmark --}}
+                    <div class="mb-6">
+                        <div class="w-20 h-20 mx-auto rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                            <x-icon name="bookmark" class="w-10 h-10 text-white" />
+                        </div>
                     </div>
-                    <h3 class="text-2xl sm:text-3xl font-bold mb-3">
+                    
+                    {{-- Tiêu đề --}}
+                    <h3 class="text-3xl sm:text-4xl font-extrabold mb-4">
                         Đăng nhập để lưu kết quả
                     </h3>
-                    <p class="text-indigo-100 mb-6 max-w-2xl mx-auto text-base sm:text-lg">
+                    
+                    {{-- Mô tả --}}
+                    <p class="text-blue-100 text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
                         Đăng nhập ngay để lưu kết quả bài thi, theo dõi tiến độ học tập và nhận được các đề xuất cá nhân hóa từ hệ thống.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                        <x-button white xl label="Đăng nhập ngay" href="{{ route('login') }}" class="font-semibold shadow-lg" />
-                        <x-button outline white xl label="Tìm hiểu thêm" />
+                    
+                    {{-- Buttons --}}
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <x-button 
+                            white 
+                            xl 
+                            label="Đăng nhập ngay" 
+                            href="{{ route('login') }}" 
+                            icon="arrow-right"
+                            class="font-semibold shadow-lg hover:shadow-xl transition-shadow" 
+                        />
+                        <x-button 
+                            outline 
+                            white 
+                            xl 
+                            label="Tìm hiểu thêm"
+                            icon="information-circle"
+                            class="font-semibold"
+                        />
                     </div>
                 </div>
             </div>
-        </x-card>
+        </div>
         @endguest
 
-        {{-- Action Buttons --}}
-        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-            <x-button outline indigo xl label="Về trang chủ" icon="home" href="/" />
-            <x-button outline indigo xl label="Làm lại bài thi" icon="arrow-path" />
-            <x-button primary xl label="Thử đề thi khác" right-icon="arrow-right" />
+        {{-- ===== NÚT HÀNH ĐỘNG ===== --}}
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8 mb-4">
+            <x-button 
+                outline 
+                indigo 
+                xl 
+                label="Về trang chủ" 
+                icon="home" 
+                href="/" 
+                class="font-semibold shadow-md hover:shadow-lg transition-shadow"
+            />
+            <x-button 
+                outline 
+                indigo 
+                xl 
+                label="Làm lại bài thi" 
+                icon="arrow-path"
+                class="font-semibold shadow-md hover:shadow-lg transition-shadow"
+            />
+            <x-button 
+                indigo 
+                xl 
+                label="Thử đề thi khác" 
+                right-icon="arrow-right"
+                class="font-semibold shadow-md hover:shadow-lg transition-shadow"
+            />
         </div>
 
     </div>
+    {{-- Kết thúc max-width wrapper --}}
 </div>
+{{-- Kết thúc container chính --}}
 
 <style>
     [x-cloak] { display: none !important; }

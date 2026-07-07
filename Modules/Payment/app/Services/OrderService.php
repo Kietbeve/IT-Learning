@@ -1,0 +1,260 @@
+<?php
+
+namespace Modules\Payment\Services;
+
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Modules\Document\Models\Document;
+use Modules\Payment\Events\DocumentPurchased;
+use Modules\Payment\Events\VipPurchased;
+use Modules\Payment\Models\DocumentAccess;
+use Modules\Payment\Models\Order;
+use Modules\Payment\Models\OrderItem;
+use Modules\Payment\Models\Payment;
+use Modules\Payment\Models\WalletTransaction;
+use Illuminate\Support\Str;
+use Modules\Payment\Notifications\DocumentPurchaseSuccessNotification;
+
+class OrderService
+{
+    public function __construct(
+        protected SubscriptionService $subscriptionService
+    ) {}
+
+    public function createDocumentOrder(User $user, int $documentId, array $productInfo, int $finalPrice, int $contributorAmount, int $platformAmount): Order
+    {
+        return DB::transaction(function () use ($user, $documentId, $productInfo, $finalPrice, $contributorAmount, $platformAmount) {
+            $orderCode = (int) (now()->timestamp . Str::random(4));
+            $order = Order::create([
+                'order_code' => (string) $orderCode,
+                'user_id' => $user->id,
+                'order_type' => 'document',
+                'total_amount' => $finalPrice,
+                'payment_status' => 'pending',
+                'order_status' => 'pending',
+                'download_token' => Str::random(64),
+                'guest_download_limit' => 0,
+                'guest_download_count' => 0,
+                'expires_at' => now()->addMinutes(10),
+            ]);
+
+            OrderItem::create([
+                'order_id' => $order->id,
+                'document_id' => $documentId,
+                'product_id' => $productInfo['id'],
+                'document_title_snapshot' => $productInfo['name'],
+                'unit_price' => $productInfo['sale_price'] ?? $productInfo['price'],
+                'quantity' => 1,
+                'subtotal' => $finalPrice,
+                'contributor_amount' => $contributorAmount,
+                'platform_amount' => $platformAmount,
+            ]);
+
+            return $order;
+        });
+    }
+
+    public function createSubscriptionOrder(User $user, string $packageKey, array $packageInfo, int $finalPrice): Order
+    {
+        return DB::transaction(function () use ($user, $packageKey, $packageInfo, $finalPrice) {
+            $orderCode = (int) (now()->timestamp . Str::random(4));
+            $order = Order::create([
+                'order_code' => (string) $orderCode,
+                'user_id' => $user->id,
+                'order_type' => 'subscription',
+                'subscription_package_key' => $packageKey,
+                'total_amount' => $finalPrice,
+                'payment_status' => 'pending',
+                'order_status' => 'pending',
+                'expires_at' => now()->addMinutes(10),
+            ]);
+
+            return $order;
+        });
+    }
+
+    public function createVipDownloadOrder(User $user, Document $doc): OrderItem
+    {
+        return DB::transaction(function () use ($user, $doc) {
+            $orderCode = now()->timestamp . rand(1000, 9999);
+            $order = Order::create([
+                'order_code' => (string) $orderCode,
+                'order_type' => 'document',
+                'user_id' => $user->id,
+                'total_amount' => 0,
+                'payment_status' => 'paid',
+                'order_status' => 'completed',
+                'paid_at' => now(),
+                'download_token' => Str::random(64),
+            ]);
+
+            return OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $doc->product->id,
+                'document_id' => $doc->id,
+                'document_title_snapshot' => $doc->title,
+                'unit_price' => 0,
+                'quantity' => 1,
+                'subtotal' => 0,
+                'contributor_amount' => 0,
+                'platform_amount' => 0,
+            ]);
+        });
+    }
+
+    /**
+     * Xử lý đơn hàng đã thanh toán thành công.
+     * Sử dụng lockForUpdate() để chống race condition khi cả Webhook và Polling
+     * cùng nhận được tín hiệu thanh toán thành công cùng một lúc.
+     *
+     * @return bool true nếu đơn được xử lý lần đầu, false nếu đã xử lý rồi
+     */
+    public function processSuccessfulPayment(int|string $orderCode, array $paymentInfo): bool
+    {
+        return DB::transaction(function () use ($orderCode, $paymentInfo) {
+            // Lock dòng dữ liệu này lại. Nếu tiến trình khác (Webhook hoặc Polling)
+            // đang xử lý đơn này, tiến trình hiện tại sẽ phải đợi đến khi lock được giải phóng.
+            $order = Order::where('order_code', (string) $orderCode)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $order) {
+                Log::warning('OrderService: Order not found', ['order_code' => $orderCode]);
+
+                return false;
+            }
+
+            // Sau khi lấy được lock, kiểm tra lại trạng thái.
+            // Nếu tiến trình kia đã xử lý xong và commit 'paid', chúng ta bỏ qua.
+            if ($order->payment_status === 'paid') {
+                Log::info('OrderService: Order already processed, skipping.', ['order_code' => $orderCode]);
+
+                return false;
+            }
+
+            $amount = $paymentInfo['amount'] ?? $order->total_amount;
+            $transactionCode = $paymentInfo['transactionDateTime'] ?? null;
+
+            // 1. Cập nhật trạng thái đơn hàng
+            $order->update([
+                'payment_status' => 'paid',
+                'order_status' => 'completed',
+                'paid_at' => now(),
+                'completed_at' => now(),
+            ]);
+
+            // 2. Tạo bản ghi thanh toán
+            Payment::create([
+                'order_id' => $order->id,
+                'provider' => 'payos',
+                'transaction_code' => $transactionCode ?? 'PROCESSED_'.$orderCode,
+                'provider_order_code' => (string) $orderCode,
+                'amount' => $amount,
+                'status' => 'success',
+                'raw_response' => $paymentInfo,
+                'paid_at' => now(),
+            ]);
+
+            // 3. Xử lý theo loại đơn hàng
+            if ($order->order_type === 'subscription' && $order->subscription_package_key) {
+                $this->handleSubscriptionOrder($order);
+            }
+
+            if ($order->order_type === 'document') {
+                $this->handleDocumentOrder($order);
+            }
+
+            Log::info('OrderService: Payment processed successfully.', [
+                'order_code' => $orderCode,
+                'type' => $order->order_type,
+                'user_id' => $order->user_id,
+            ]);
+
+            return true;
+        });
+    }
+
+    /**
+     * Kích hoạt gói VIP và bắn sự kiện sau khi transaction commit.
+     */
+    protected function handleSubscriptionOrder(Order $order): void
+    {
+        $this->subscriptionService->activateVip($order->user, $order->subscription_package_key);
+
+        // Bắn event SAU khi DB commit để tránh rollback nếu event bị lỗi
+        DB::afterCommit(function () use ($order) {
+            try {
+                event(new VipPurchased($order->user, $order, $order->subscription_package_key));
+            } catch (\Exception $e) {
+                Log::error('OrderService: VipPurchased event failed', [
+                    'order_code' => $order->order_code,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        });
+    }
+
+    /**
+     * Cấp quyền truy cập tài liệu, cộng tiền hoa hồng cho tác giả, gửi thông báo.
+     */
+    protected function handleDocumentOrder(Order $order): void
+    {
+        foreach ($order->items as $item) {
+            // Cấp quyền truy cập tài liệu
+            DocumentAccess::updateOrCreate(
+                [
+                    'user_id' => $order->user_id,
+                    'document_id' => $item->document_id,
+                ],
+                [
+                    'order_item_id' => $item->id,
+                    'access_type' => 'purchased',
+                    'expires_at' => null,
+                ]
+            );
+
+            // Cộng tiền hoa hồng cho tác giả
+            if ($item->document_id && $item->contributor_amount > 0) {
+                $document = Document::find($item->document_id);
+                if ($document && $document->author_id) {
+                    $author = User::find($document->author_id);
+                    if ($author) {
+                        $balanceBefore = $author->contributor_balance ?? 0;
+                        $balanceAfter = $balanceBefore + $item->contributor_amount;
+
+                        $author->update(['contributor_balance' => $balanceAfter]);
+
+                        WalletTransaction::create([
+                            'user_id' => $author->id,
+                            'type' => 'earning',
+                            'amount' => $item->contributor_amount,
+                            'balance_before' => $balanceBefore,
+                            'balance_after' => $balanceAfter,
+                            'reference_type' => 'order_item',
+                            'reference_id' => $item->id,
+                            'note' => 'Doanh thu từ tài liệu: '.$item->document_title_snapshot,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        // Bắn event và gửi notification SAU khi DB commit
+        DB::afterCommit(function () use ($order) {
+            try {
+                $firstItem = $order->items->first();
+                $doc = $firstItem ? Document::find($firstItem->document_id) : null;
+                    if (!$doc) {
+                        Log::warning('OrderService: Document not found for first item', ['order_code' => $order->order_code]);
+                    }
+                    event(new DocumentPurchased($order->user, $order));
+            } catch (\Exception $e) {
+                Log::error('OrderService: DocumentPurchased event failed', [
+                    'order_code' => $order->order_code,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        });
+    }
+}

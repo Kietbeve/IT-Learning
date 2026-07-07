@@ -12,7 +12,9 @@ class TransactionHistory extends Component
     use WithPagination;
 
     public $orderType = '';
+
     public $paymentStatus = '';
+
     public $selectedOrder = null;
 
     protected $queryString = [

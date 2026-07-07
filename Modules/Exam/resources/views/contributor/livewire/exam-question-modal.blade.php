@@ -19,39 +19,39 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-3 gap-3">
-                {{-- Filter: Độ khó --}}
-                <div>
-                    <select wire:model.live="filterDifficulty"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Tất cả độ khó</option>
-                        <option value="easy">Dễ</option>
-                        <option value="medium">Trung bình</option>
-                        <option value="hard">Khó</option>
-                    </select>
-                </div>
+            {{-- Filter Câu hỏi--}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {{-- Độ khó --}}
+                <x-multi-filter
+                    title="Độ khó"
+                    wire:model.live="filterDifficulty"
+                    :selected="$filterDifficulty"
+                    :options="[
+                        'easy' => 'Dễ',
+                        'medium' => 'Trung bình',
+                        'hard' => 'Khó',
+                    ]"
+                />
 
-                {{-- Filter: Loại câu hỏi --}}
-                <div>
-                    <select wire:model.live="filterType"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Tất cả loại</option>
-                        <option value="single_choice">Trắc nghiệm một đáp án</option>
-                        <option value="multiple_choice">Trắc nghiệm nhiều đáp án</option>
-                        <option value="essay">Tự luận</option>
-                    </select>
-                </div>
+                {{-- Loại --}}
+                <x-multi-filter
+                    title="Loại"
+                    wire:model.live="filterType"
+                    :selected="$filterType"
+                    :options="[
+                        'single_choice' => 'Một đáp án',
+                        'multiple_choice' => 'Nhiều đáp án',
+                        'essay' => 'Tự luận',
+                    ]"
+                />
 
-                {{-- Filter: Danh mục --}}
-                <div>
-                    <select wire:model.live="filterCategoryId"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Tất cả danh mục</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                {{-- Danh mục --}}
+                <x-multi-filter
+                    title="Danh mục"
+                    wire:model.live="filterCategoryId"
+                    :selected="$filterCategoryId"
+                    :options="$categories"
+                />
             </div>
         </div>
 
@@ -241,7 +241,7 @@
                                         {{-- Question Content --}}
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm text-gray-900 line-clamp-2">
-                                                {{ $question->content }}
+                                                {{ Str::limit(strip_tags($question->content), 150) }}
                                             </p>
 
                                             {{-- Meta info --}}
@@ -344,7 +344,7 @@
                                         <div class="flex items-start gap-2">
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs text-gray-900 line-clamp-2">
-                                                    {{ $question->content }}
+                                                    {{ Str::limit(strip_tags($question->content), 100) }}
                                                 </p>
                                                 <div class="mt-1 flex flex-wrap gap-1 text-xs">
                                                     <span
@@ -402,7 +402,7 @@
                                         <div class="flex items-start justify-between gap-2">
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs text-gray-900 line-clamp-2">
-                                                    {{ $question->content }}
+                                                    {{ Str::limit(strip_tags($question->content), 100) }}
                                                 </p>
                                                 <div class="mt-1 flex flex-wrap gap-1 text-xs">
                                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded
@@ -507,7 +507,7 @@
 
                 <div class="p-3 bg-gray-50 rounded border">
                     <p class="text-xs text-gray-500">Thứ tự: {{ $questionToRemove['sort_order'] }}</p>
-                    <p class="text-sm text-gray-900 mt-1">{{ Str::limit($questionToRemove['content'], 150) }}</p>
+                    <p class="text-sm text-gray-900 mt-1">{{ Str::limit(strip_tags($questionToRemove['content']), 150) }}</p>
                 </div>
             </div>
         @endif

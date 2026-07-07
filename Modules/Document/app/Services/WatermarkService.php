@@ -4,7 +4,6 @@ namespace Modules\Document\Services;
 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Modules\Document\Services\CustomFpdi;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\Settings;
 
@@ -13,9 +12,10 @@ class WatermarkService
     protected function tempDir()
     {
         $dir = storage_path('app/temp');
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
+
         return $dir;
     }
 
@@ -24,6 +24,7 @@ class WatermarkService
         $year = now()->format('Y');
         $month = now()->format('m');
         $uuid = Str::uuid();
+
         return "{$folder}/resources/{$year}/{$month}/{$uuid}.{$ext}";
     }
 
@@ -42,12 +43,12 @@ class WatermarkService
 
     protected function watermarkPdf($originalPath, $document)
     {
-        $tempPath = $this->tempDir() . '/' . uniqid('wm_') . '.pdf';
+        $tempPath = $this->tempDir().'/'.uniqid('wm_').'.pdf';
 
         try {
             $watermarkText = $this->getWatermarkText($document);
 
-            $pdf = new CustomFpdi();
+            $pdf = new CustomFpdi;
             $pageCount = $pdf->setSourceFile($originalPath);
 
             for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
@@ -73,29 +74,35 @@ class WatermarkService
 
             $r2Path = $this->r2Path('watermarked', 'pdf');
             $this->uploadToR2($tempPath, $r2Path);
+
             return $r2Path;
 
         } catch (\Exception $e) {
             return $this->mockWatermarkPdf($originalPath, $document);
         } finally {
-            if (file_exists($tempPath)) @unlink($tempPath);
+            if (file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
         }
     }
 
     protected function mockWatermarkPdf($originalPath, $document)
     {
-        $tempPath = $this->tempDir() . '/' . uniqid('wm_') . '.pdf';
+        $tempPath = $this->tempDir().'/'.uniqid('wm_').'.pdf';
 
         $watermarkText = $this->getWatermarkText($document);
         $pdfContent = file_get_contents($originalPath);
         $mockWatermark = "\n% Watermark: {$watermarkText}\n";
-        $pdfContent = str_replace('%%EOF', $mockWatermark . '%%EOF', $pdfContent);
+        $pdfContent = str_replace('%%EOF', $mockWatermark.'%%EOF', $pdfContent);
         file_put_contents($tempPath, $pdfContent);
 
         $r2Path = $this->r2Path('watermarked', 'pdf');
         $this->uploadToR2($tempPath, $r2Path);
 
-        if (file_exists($tempPath)) @unlink($tempPath);
+        if (file_exists($tempPath)) {
+            @unlink($tempPath);
+        }
+
         return $r2Path;
     }
 
@@ -107,59 +114,63 @@ class WatermarkService
     protected function convertDocxToPdfWithLibreOffice($docxPath, $outputPdfPath)
     {
         $libreOfficePath = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';
-        
-        if (!file_exists($libreOfficePath)) {
-            \Log::info("LibreOffice not found, will use fallback");
+
+        if (! file_exists($libreOfficePath)) {
+            \Log::info('LibreOffice not found, will use fallback');
+
             return false;
         }
 
         try {
             $outputDir = dirname($outputPdfPath);
-            $tempOutputName = uniqid('lo_') . '.pdf';
-            
+            $tempOutputName = uniqid('lo_').'.pdf';
+
             $command = sprintf(
-                '"%s" --headless --convert-to pdf --outdir "%s" "%s" 2>&1',
-                $libreOfficePath,
-                $outputDir,
-                $docxPath
+                '%s --headless --convert-to pdf --outdir %s %s 2>&1',
+                escapeshellarg($libreOfficePath),
+                escapeshellarg($outputDir),
+                escapeshellarg($docxPath)
             );
 
             exec($command, $output, $returnCode);
 
             // LibreOffice outputs to: {outputDir}/{original_basename}.pdf
             $originalBasename = pathinfo($docxPath, PATHINFO_FILENAME);
-            $libreOfficeOutput = $outputDir . '/' . $originalBasename . '.pdf';
+            $libreOfficeOutput = $outputDir.'/'.$originalBasename.'.pdf';
 
             if ($returnCode === 0 && file_exists($libreOfficeOutput)) {
                 rename($libreOfficeOutput, $outputPdfPath);
-                \Log::info("LibreOffice conversion successful");
+                \Log::info('LibreOffice conversion successful');
+
                 return true;
             }
 
-            \Log::warning("LibreOffice conversion failed", ['return_code' => $returnCode, 'output' => $output]);
+            \Log::warning('LibreOffice conversion failed', ['return_code' => $returnCode, 'output' => $output]);
+
             return false;
 
         } catch (\Exception $e) {
-            \Log::warning("LibreOffice conversion exception: " . $e->getMessage());
+            \Log::warning('LibreOffice conversion exception: '.$e->getMessage());
+
             return false;
         }
     }
 
     protected function fallbackDocxWatermark($originalPath, $document)
     {
-        $tempPath = $this->tempDir() . '/' . uniqid('fb_') . '.docx';
+        $tempPath = $this->tempDir().'/'.uniqid('fb_').'.docx';
         copy($originalPath, $tempPath);
 
         try {
             $watermarkText = $this->getWatermarkText($document);
 
-            $zip = new \ZipArchive();
-            if ($zip->open($tempPath) === TRUE) {
+            $zip = new \ZipArchive;
+            if ($zip->open($tempPath) === true) {
                 $documentXml = $zip->getFromName('word/document.xml');
 
                 if ($documentXml) {
                     $watermarkXml = $this->generateDocxWatermarkXml($watermarkText);
-                    $documentXml = str_replace('</w:body>', $watermarkXml . '</w:body>', $documentXml);
+                    $documentXml = str_replace('</w:body>', $watermarkXml.'</w:body>', $documentXml);
 
                     $zip->deleteName('word/document.xml');
                     $zip->addFromString('word/document.xml', $documentXml);
@@ -174,7 +185,10 @@ class WatermarkService
         $r2Path = $this->r2Path('watermarked', 'docx');
         $this->uploadToR2($tempPath, $r2Path);
 
-        if (file_exists($tempPath)) @unlink($tempPath);
+        if (file_exists($tempPath)) {
+            @unlink($tempPath);
+        }
+
         return $r2Path;
     }
 
@@ -190,7 +204,7 @@ class WatermarkService
                         <w:color w:val="CCCCCC"/>
                         <w:sz w:val="20"/>
                     </w:rPr>
-                    <w:t>' . htmlspecialchars($text) . '</w:t>
+                    <w:t>'.htmlspecialchars($text).'</w:t>
                 </w:r>
             </w:p>
         ';
@@ -198,7 +212,7 @@ class WatermarkService
 
     protected function getWatermarkText($document)
     {
-        return "IT-Learning - " . date('d-m-Y');
+        return 'IT-Learning - '.date('d-m-Y');
     }
 
     public function generatePreview($originalPath, $fileType)
@@ -207,12 +221,12 @@ class WatermarkService
             return null;
         }
 
-        $tempPath = $this->tempDir() . '/' . uniqid('prev_') . '.pdf';
+        $tempPath = $this->tempDir().'/'.uniqid('prev_').'.pdf';
 
         try {
-            $pdf = new CustomFpdi();
+            $pdf = new CustomFpdi;
             $pageCount = $pdf->setSourceFile($originalPath);
-            
+
             // Calculate preview pages based on document length
             if ($pageCount < 4) {
                 // Short documents: just 1 page
@@ -222,7 +236,7 @@ class WatermarkService
                 $previewPages = 1;
             } else {
                 // Longer documents: 20% of total, min 2, max 5
-                $previewPages = max(2, min(5, (int)ceil($pageCount * 0.2)));
+                $previewPages = max(2, min(5, (int) ceil($pageCount * 0.2)));
             }
 
             for ($pageNo = 1; $pageNo <= $previewPages; $pageNo++) {
@@ -237,19 +251,23 @@ class WatermarkService
 
             $r2Path = $this->r2Path('previews', 'pdf');
             $this->uploadToR2($tempPath, $r2Path);
+
             return $r2Path;
 
         } catch (\Exception $e) {
-            \Log::warning("Preview generation failed: " . $e->getMessage());
+            \Log::warning('Preview generation failed: '.$e->getMessage());
+
             return null;
         } finally {
-            if (file_exists($tempPath)) @unlink($tempPath);
+            if (file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
         }
     }
 
     public function convertDocxToPdfForPreview($docxPath)
     {
-        $tempPdfPath = $this->tempDir() . '/' . uniqid('docx2pdf_preview_') . '.pdf';
+        $tempPdfPath = $this->tempDir().'/'.uniqid('docx2pdf_preview_').'.pdf';
 
         try {
             // Try LibreOffice first
@@ -268,8 +286,11 @@ class WatermarkService
             return $tempPdfPath;
 
         } catch (\Exception $e) {
-            \Log::warning("DOCX to PDF conversion for preview failed: " . $e->getMessage());
-            if (file_exists($tempPdfPath)) @unlink($tempPdfPath);
+            \Log::warning('DOCX to PDF conversion for preview failed: '.$e->getMessage());
+            if (file_exists($tempPdfPath)) {
+                @unlink($tempPdfPath);
+            }
+
             return null;
         }
     }
@@ -280,7 +301,7 @@ class WatermarkService
             $fileContents = file_get_contents($localPath);
             Storage::disk('r2')->put($storageKey, $fileContents);
         } catch (\Exception $e) {
-            \Log::error("R2 upload failed: " . $e->getMessage());
+            \Log::error('R2 upload failed: '.$e->getMessage());
         }
     }
 }

@@ -12,14 +12,21 @@ class RevenueSettings extends Component
     use WireUiActions;
 
     public $siteName = 'IT Learning';
+
     public $commissionRate = 70;
+
     public $minPayoutAmount = 200000;
+
     public $themePrimaryColor = '#6366f1';
+
     public $smtpFromEmail = 'no-reply@myapp.com';
 
     public $platformFeePercent = 20;
+
     public $payoutMinimum = 50000;
+
     public $vipMonthlyPrice = 100000;
+
     public $vipYearlyPrice = 1000000;
 
     public function mount()

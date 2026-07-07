@@ -5,21 +5,28 @@ namespace Modules\Payment\Http\Livewire\Contributor;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Modules\Payment\Models\WalletTransaction;
-use Modules\Payment\Models\OrderItem;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Facades\Excel;
+use Modules\Payment\Models\OrderItem;
+use Modules\Payment\Models\WalletTransaction;
 
 class TransactionHistory extends Component
 {
     use WithPagination;
 
     public $filterType = 'all';
+
     public $filterDateFrom;
+
     public $filterDateTo;
+
     public $search = '';
+
     public $sortField = 'created_at';
+
     public $sortDirection = 'desc';
-    
+
     protected $queryString = ['filterType', 'search', 'sortField', 'sortDirection'];
 
     public function mount()
@@ -67,7 +74,7 @@ class TransactionHistory extends Component
 
         // Search in note
         if ($this->search) {
-            $query->where('note', 'like', '%' . $this->search . '%');
+            $query->where('note', 'like', '%'.$this->search.'%');
         }
 
         // Sort
@@ -79,23 +86,23 @@ class TransactionHistory extends Component
     public function exportToExcel()
     {
         $transactions = WalletTransaction::where('user_id', Auth::id())
-            ->when($this->filterType !== 'all', function($q) {
+            ->when($this->filterType !== 'all', function ($q) {
                 $q->where('type', $this->filterType);
             })
-            ->when($this->filterDateFrom, function($q) {
+            ->when($this->filterDateFrom, function ($q) {
                 $q->whereDate('created_at', '>=', $this->filterDateFrom);
             })
-            ->when($this->filterDateTo, function($q) {
+            ->when($this->filterDateTo, function ($q) {
                 $q->whereDate('created_at', '<=', $this->filterDateTo);
             })
-            ->when($this->search, function($q) {
-                $q->where('note', 'like', '%' . $this->search . '%');
+            ->when($this->search, function ($q) {
+                $q->where('note', 'like', '%'.$this->search.'%');
             })
             ->orderBy('created_at', 'desc')
             ->get();
 
         $documentNames = $this->getDocumentNames($transactions);
-        $filename = 'transactions_' . now()->format('YmdHis') . '.xlsx';
+        $filename = 'transactions_'.now()->format('YmdHis').'.xlsx';
 
         return Excel::download(new TransactionsExport($transactions, $documentNames), $filename);
     }
@@ -129,10 +136,10 @@ class TransactionHistory extends Component
     }
 }
 
-class TransactionsExport implements \Maatwebsite\Excel\Concerns\FromCollection, 
-                                     \Maatwebsite\Excel\Concerns\WithHeadings
+class TransactionsExport implements FromCollection, WithHeadings
 {
     protected $transactions;
+
     protected $documentNames;
 
     public function __construct($transactions, $documentNames = [])
@@ -143,7 +150,7 @@ class TransactionsExport implements \Maatwebsite\Excel\Concerns\FromCollection,
 
     public function collection()
     {
-        return $this->transactions->map(function($tx) {
+        return $this->transactions->map(function ($tx) {
             $docName = '-';
             if ($tx->reference_type === 'order_item' && isset($this->documentNames[$tx->reference_id])) {
                 $docName = $this->documentNames[$tx->reference_id];
@@ -152,13 +159,13 @@ class TransactionsExport implements \Maatwebsite\Excel\Concerns\FromCollection,
             } elseif (in_array($tx->type, ['purchase', 'earning', 'subscription'])) {
                 $docName = 'Tài liệu lập trình Python cơ bản';
             }
-            
+
             return [
                 'Loại' => $this->getTypeLabel($tx->type),
                 'Tài liệu' => $docName,
                 'Ghi chú' => $tx->note,
                 'Số dư trước' => number_format($tx->balance_before),
-                'Số tiền' => number_format($tx->amount) . ($tx->type === 'earning' ? ' (+)' : ' (-)'),
+                'Số tiền' => number_format($tx->amount).($tx->type === 'earning' ? ' (+)' : ' (-)'),
                 'Số dư sau' => number_format($tx->balance_after),
                 'Thời gian' => $tx->created_at->format('d/m/Y H:i:s'),
             ];
@@ -181,7 +188,7 @@ class TransactionsExport implements \Maatwebsite\Excel\Concerns\FromCollection,
             'purchase' => 'Mua tài liệu',
             'subscription' => 'VIP',
         ];
-        
+
         return $labels[$type] ?? ucfirst($type);
     }
 }

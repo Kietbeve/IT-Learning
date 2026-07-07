@@ -2,17 +2,19 @@
 
 namespace Modules\Payment\Http\Livewire\Contributor;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
-use Modules\Payment\Models\WalletTransaction;
-use Modules\Payment\Models\OrderItem;
 use Modules\Document\Models\Document;
+use Modules\Payment\Models\WalletTransaction;
 
 class EarningsReport extends Component
 {
     public $dateRange = '30days';
+
     public $dateFrom;
+
     public $dateTo;
 
     public function mount()
@@ -53,40 +55,40 @@ class EarningsReport extends Component
     public function getStatsProperty()
     {
         $userId = Auth::id();
-        
+
         // Earnings this month
         $earningsThisMonth = WalletTransaction::where('user_id', $userId)
             ->where('type', 'earning')
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('amount');
-        
+
         // Earnings last month
         $earningsLastMonth = WalletTransaction::where('user_id', $userId)
             ->where('type', 'earning')
             ->whereMonth('created_at', now()->subMonth()->month)
             ->whereYear('created_at', now()->subMonth()->year)
             ->sum('amount');
-        
+
         // Calculate change percent
-        $changePercent = $earningsLastMonth > 0 
-            ? (($earningsThisMonth - $earningsLastMonth) / $earningsLastMonth) * 100 
+        $changePercent = $earningsLastMonth > 0
+            ? (($earningsThisMonth - $earningsLastMonth) / $earningsLastMonth) * 100
             : 0;
-        
+
         // Average revenue per document
         $myDocuments = Document::where('author_id', $userId)->pluck('id');
         $totalEarnings = WalletTransaction::where('user_id', $userId)
             ->where('type', 'earning')
             ->sum('amount');
-        $avgRevenuePerDoc = $myDocuments->count() > 0 
-            ? $totalEarnings / $myDocuments->count() 
+        $avgRevenuePerDoc = $myDocuments->count() > 0
+            ? $totalEarnings / $myDocuments->count()
             : 0;
-        
+
         // Conversion rate (views -> downloads -> purchases)
         $totalViews = Document::where('author_id', $userId)->sum('view_count');
         $totalDownloads = Document::where('author_id', $userId)->sum('download_count');
         $conversionRate = $totalViews > 0 ? ($totalDownloads / $totalViews) * 100 : 0;
-        
+
         return [
             'earningsThisMonth' => $earningsThisMonth,
             'earningsLastMonth' => $earningsLastMonth,
@@ -99,7 +101,7 @@ class EarningsReport extends Component
     public function getChartDataProperty()
     {
         $userId = Auth::id();
-        
+
         // Daily earnings for the selected date range
         $dailyEarnings = WalletTransaction::where('user_id', $userId)
             ->where('type', 'earning')
@@ -111,10 +113,10 @@ class EarningsReport extends Component
             ->groupBy('date')
             ->orderBy('date')
             ->get();
-        
+
         return [
-            'labels' => $dailyEarnings->pluck('date')->map(function($date) {
-                return \Carbon\Carbon::parse($date)->format('d/m');
+            'labels' => $dailyEarnings->pluck('date')->map(function ($date) {
+                return Carbon::parse($date)->format('d/m');
             })->toArray(),
             'data' => $dailyEarnings->pluck('total')->toArray(),
         ];
@@ -123,17 +125,17 @@ class EarningsReport extends Component
     public function getTopDocumentsByRevenueProperty()
     {
         $userId = Auth::id();
-        
+
         return Document::where('author_id', $userId)
             ->select('documents.*')
-            ->selectSub(function($query) {
+            ->selectSub(function ($query) {
                 $query->selectRaw('COALESCE(SUM(order_items.contributor_amount), 0)')
                     ->from('order_items')
                     ->join('orders', 'orders.id', '=', 'order_items.order_id')
                     ->whereColumn('order_items.document_id', 'documents.id')
                     ->where('orders.payment_status', 'paid');
             }, 'total_revenue')
-            ->selectSub(function($query) {
+            ->selectSub(function ($query) {
                 $query->selectRaw('COUNT(*)')
                     ->from('order_items')
                     ->join('orders', 'orders.id', '=', 'order_items.order_id')

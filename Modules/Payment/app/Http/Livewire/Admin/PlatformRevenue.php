@@ -2,17 +2,18 @@
 
 namespace Modules\Payment\Http\Livewire\Admin;
 
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use App\Models\User;
 use Modules\Payment\Models\WalletTransaction;
 use Modules\Payment\Models\PayoutRequest;
-use Modules\Auth\Models\User;
 use Modules\Document\Models\Document;
 use Modules\Document\Models\DocumentDownload;
-use Illuminate\Support\Facades\DB;
 
 class PlatformRevenue extends Component
 {
     public $chartData = [];
+
     public $chartCategories = [];
 
     public function mount()
@@ -86,13 +87,13 @@ class PlatformRevenue extends Component
         $totalWalletBalance = User::sum('contributor_balance');
 
         $topContributors = User::where('contributor_balance', '>', 0)
-            ->orWhereHas('walletTransactions', function($q) {
+            ->orWhereHas('walletTransactions', function ($q) {
                 $q->where('type', 'earning');
             })
-            ->withCount(['walletTransactions as earnings_total' => function($q) {
+            ->withCount(['walletTransactions as earnings_total' => function ($q) {
                 $q->where('type', 'earning');
             }])
-            ->withSum(['walletTransactions as total_earned' => function($q) {
+            ->withSum(['walletTransactions as total_earned' => function ($q) {
                 $q->where('type', 'earning');
             }], 'amount')
             ->orderByDesc('total_earned')

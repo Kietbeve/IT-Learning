@@ -5,7 +5,7 @@ namespace Modules\Auth\Livewire\Admin;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Modules\Auth\Models\ContributorApplication;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Exportable;

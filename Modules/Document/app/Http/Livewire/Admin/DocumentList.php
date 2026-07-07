@@ -2,40 +2,63 @@
 
 namespace Modules\Document\Http\Livewire\Admin;
 
-use Livewire\Component;
-use Livewire\WithPagination;
-use Modules\Document\Models\Document;
-use Modules\Document\Models\DocumentVersion;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
+use Livewire\Component;
+use Livewire\WithPagination;
+use Modules\Document\Events\DocumentApproved;
+use Modules\Document\Events\DocumentDeletedByAdmin;
+use Modules\Document\Events\DocumentRejected;
+use Modules\Document\Services\DocumentApprovalService;
+use Modules\Document\Models\Document;
+use Modules\Document\Models\DocumentVersion;
+use Modules\Payment\Models\Product;
 
 class DocumentList extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $statusFilter = 'all';
+
     public $categoryFilter = 'all';
+
     public $sortField = 'created_at';
+
     public $sortDirection = 'desc';
 
     // Tab navigation
     public $activeTab = 'pending'; // pending | approved | rejected | all
 
-    // Rejection modal state
     public $selectedDocumentId = null;
+
     public $rejectionReason = '';
 
+    public bool $showRejectionModal = false;
+
     protected $queryString = [
-        'search'         => ['except' => ''],
-        'statusFilter'   => ['except' => 'all'],
+        'search' => ['except' => ''],
+        'statusFilter' => ['except' => 'all'],
         'categoryFilter' => ['except' => 'all'],
-        'activeTab'      => ['except' => 'pending'],
+        'activeTab' => ['except' => 'pending'],
     ];
 
-    public function updatingSearch()        { $this->resetPage(); }
-    public function updatingStatusFilter()  { $this->resetPage(); }
-    public function updatingCategoryFilter(){ $this->resetPage(); }
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingCategoryFilter()
+    {
+        $this->resetPage();
+    }
 
     public function setTab($tab)
     {
@@ -48,7 +71,7 @@ class DocumentList extends Component
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortField     = $field;
+            $this->sortField = $field;
             $this->sortDirection = 'desc';
         }
     }
@@ -56,7 +79,9 @@ class DocumentList extends Component
     public function toggleVisibility($id)
     {
         $doc = Document::find($id);
-        if (!$doc) return;
+        if (! $doc) {
+            return;
+        }
 
         $newVisibility = $doc->visibility === 'public' ? 'private' : 'public';
         $doc->update(['visibility' => $newVisibility]);
@@ -71,9 +96,17 @@ class DocumentList extends Component
 
     public function deleteDocument($id)
     {
-        $doc = Document::find($id);
+        $doc = Document::with('author')->find($id);
         if ($doc) {
+            $author = $doc->author;
+            $title = $doc->title;
             $doc->delete(); // Soft delete
+
+            // Thông báo cho Contributor
+            if ($author) {
+                event(new DocumentDeletedByAdmin($author, $title));
+            }
+
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa tài liệu thành công (Xóa mềm).']);
         }
     }
@@ -87,52 +120,19 @@ class DocumentList extends Component
      */
     public function approve($id)
     {
-        $doc = Document::with(['pendingVersion', 'currentVersion', 'product'])->find($id);
-        if (!$doc) return;
-
-        $pendingVersion = $doc->pendingVersion;
-
-        if (!$pendingVersion) {
-            $this->dispatch('notify', ['type' => 'error', 'message' => 'Không tìm thấy phiên bản đang chờ duyệt.']);
-            return;
+        try {
+            app(\Modules\Document\Services\DocumentApprovalService::class)->approve($id);
+            $this->dispatch('notify', ['type' => 'success', 'message' => 'Phê duyệt tài liệu thành công.']);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => $e->getMessage()]);
         }
-
-        if ($pendingVersion->watermark_status !== 'success') {
-            $this->dispatch('notify', ['type' => 'error', 'message' => 'File chưa được xử lý xong (watermark đang pending). Vui lòng thử lại sau.']);
-            return;
-        }
-
-        // Mark the pending version as approved
-        $pendingVersion->update([
-            'status'      => 'approved',
-            'reviewed_by' => Auth::id(),
-            'reviewed_at' => now(),
-        ]);
-
-        // Merge version data into the main document record (only identity fields)
-        $doc->update([
-            'status'             => 'approved',
-            'current_version_id' => $pendingVersion->id,
-        ]);
-
-        // Handle product based on version price
-        if ($pendingVersion->price > 0) {
-            \Modules\Payment\Models\Product::updateOrCreate(
-                ['document_id' => $doc->id],
-                ['name' => $pendingVersion->title, 'price' => $pendingVersion->price, 'is_active' => true]
-            );
-        } else {
-            \Modules\Payment\Models\Product::where('document_id', $doc->id)->delete();
-        }
-
-        $this->dispatch('notify', ['type' => 'success', 'message' => 'Phê duyệt tài liệu thành công.']);
     }
 
     public function openRejectionModal($id)
     {
         $this->selectedDocumentId = $id;
-        $this->rejectionReason    = '';
-        $this->dispatch('open-modal', 'reject-modal');
+        $this->rejectionReason = '';
+        $this->showRejectionModal = true;
     }
 
     public function confirmRejection()
@@ -143,41 +143,17 @@ class DocumentList extends Component
             'rejectionReason.min' => 'Lý do từ chối phải có ít nhất 10 ký tự.',
         ]);
 
-        $doc = Document::with(['pendingVersion'])->find($this->selectedDocumentId);
-        if (!$doc) {
-            $this->selectedDocumentId = null;
-            $this->rejectionReason    = '';
-            return;
+        try {
+            app(\Modules\Document\Services\DocumentApprovalService::class)->reject($this->selectedDocumentId, $this->rejectionReason);
+            $this->dispatch('notify', ['type' => 'success', 'message' => 'Từ chối tài liệu thành công.']);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => $e->getMessage()]);
         }
 
-        $pendingVersion = $doc->pendingVersion;
-
-        if ($pendingVersion) {
-            // Reject the pending version
-            $pendingVersion->update([
-                'status'          => 'rejected',
-                'rejected_reason' => $this->rejectionReason,
-                'reviewed_by'     => Auth::id(),
-                'reviewed_at'     => now(),
-            ]);
-
-            // If this is Version 1 (first submission), also reject the document itself
-            if ($pendingVersion->version_number === 1 && $doc->status === 'pending') {
-                $doc->update([
-                    'status' => 'rejected',
-                ]);
-            }
-            // If it's an edit version (v > 1), keep the document as approved – just the new version is rejected.
-        } else {
-            // No pending version found - fallback: reject document directly
-            $doc->update(['status' => 'rejected']);
-        }
-
-        $this->dispatch('close-modal', 'reject-modal');
-        $this->dispatch('notify', ['type' => 'success', 'message' => 'Từ chối tài liệu thành công.']);
+        $this->showRejectionModal = false;
 
         $this->selectedDocumentId = null;
-        $this->rejectionReason    = '';
+        $this->rejectionReason = '';
     }
 
     public function render()
@@ -189,26 +165,27 @@ class DocumentList extends Component
         // Đối với tài liệu đã approved, ta kiểm tra trên currentVersion hoặc latestVersion.
         $query = Document::query();
 
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $query->where(function ($q) {
                 $q->whereHas('versions', function ($vq) {
-                    $vq->where('title', 'like', '%' . $this->search . '%')
-                       ->orWhere('short_description', 'like', '%' . $this->search . '%');
+                    $vq->where('title', 'like', '%'.$this->search.'%')
+                        ->orWhere('short_description', 'like', '%'.$this->search.'%');
                 })
-                ->orWhereHas('author', fn($aq) => $aq->where('name', 'like', '%' . $this->search . '%'));
+                    ->orWhereHas('author', fn ($aq) => $aq->where('name', 'like', '%'.$this->search.'%'));
             });
         }
 
         // Filter by activeTab
         if ($this->activeTab === 'pending') {
-            $query->where(function($q) {
-                $q->where('status', 'pending')
-                  ->orWhereHas('pendingVersion', fn($sq) => $sq->where('status', 'pending'));
+            $query->whereHas('pendingVersion', function ($sq) {
+                $sq->where('watermark_status', '!=', 'pending');
             });
         } elseif ($this->activeTab === 'approved') {
             $query->where('status', 'approved');
         } elseif ($this->activeTab === 'rejected') {
             $query->where('status', 'rejected');
+        } elseif ($this->activeTab === 'deleted') {
+            $query->onlyTrashed();
         }
 
         if ($this->categoryFilter !== 'all') {
@@ -219,18 +196,25 @@ class DocumentList extends Component
 
         $documents = $query
             ->with([
-                'author', 
-                'product', 
-                'pendingVersion.category', 
+                'author',
+                'product',
+                'pendingVersion.category',
                 'pendingVersion.reviewedByUser',
-                'rejectedVersion.category', 
+                'rejectedVersion.category',
                 'rejectedVersion.reviewedByUser',
-                'currentVersion.category', 
+                'currentVersion.category',
                 'currentVersion.reviewedByUser',
                 'latestVersion.category',
-                'latestVersion.reviewedByUser'
+                'latestVersion.reviewedByUser',
             ])
-            ->orderBy($this->sortField, $this->sortDirection)
+            ->when($this->sortField === 'title', function ($q) {
+                $q->orderBy(DocumentVersion::select('title')
+                    ->whereColumn('document_versions.id', 'documents.current_version_id'),
+                    $this->sortDirection);
+            })
+            ->when($this->sortField !== 'title', function ($q) {
+                $q->orderBy($this->sortField, $this->sortDirection);
+            })
             ->paginate(15);
 
         // Annotate each document for badge display
@@ -238,54 +222,49 @@ class DocumentList extends Component
             $pendingV = $doc->pendingVersion;
             $currentV = $doc->currentVersion;
 
-            if ($pendingV) {
-                if ($pendingV->version_number > 1) {
-                    // Update request (editing live document)
-                    $doc->badge_type = 'update';
-                    $doc->original_version = $currentV; // For displaying original document info
-                    
-                    // Check if this update was rejected before (has rejected_reason while pending)
-                    if ($pendingV->rejected_reason) {
-                        $doc->was_rejected = true;
-                        $doc->rejection_info = $pendingV->rejected_reason;
-                    }
-                } elseif ($pendingV->version_number === 1) {
-                    // Version 1: Check if previously rejected (has rejected_reason while pending)
-                    if ($pendingV->rejected_reason) {
-                        $doc->badge_type = 'resubmit';
-                        $doc->rejection_info = $pendingV->rejected_reason;
-                    } else {
-                        $doc->badge_type = 'new';
-                    }
-                }
-            } else {
-                $doc->badge_type = null; // No pending version
+            $doc->pending_version_data = $pendingV;
+
+            if (!$pendingV) {
+                $doc->badge_type = null;
+                continue;
             }
 
-            $doc->pending_version_data = $pendingV;
+            // badge_type:
+            //   'new'    = first submission ever (version 1)
+            //   'update' = any revision (whether doc is live or not)
+            // live_version is only set when doc has an approved live version
+            if ($pendingV->version_number === 1) {
+                $doc->badge_type = 'new';
+            } else {
+                $doc->badge_type = 'update';
+            }
+
+            // Only attach live_version when there's actually an approved version
+            if (!is_null($currentV)) {
+                $doc->live_version = $currentV;
+            }
         }
 
         // Counts for tabs
-        $totalCount    = Document::count();
-        $pendingCount  = Document::where(function ($q) {
-            $q->where('status', 'pending')
-              ->orWhereHas('pendingVersion', fn($sq) => $sq->where('status', 'pending'));
+        $totalCount = Document::count();
+        $pendingCount = Document::whereHas('pendingVersion', function ($sq) {
+            $sq->where('watermark_status', '!=', 'pending');
         })->count();
         $approvedCount = Document::where('status', 'approved')->count();
         $rejectedCount = Document::where('status', 'rejected')->count();
         $totalDownloads = Document::sum('download_count');
 
         return view('document::livewire.admin.document-list', [
-            'documents'      => $documents,
-            'categories'     => $categories,
-            'totalCount'     => $totalCount,
-            'approvedCount'  => $approvedCount,
-            'pendingCount'   => $pendingCount,
-            'rejectedCount'  => $rejectedCount,
+            'documents' => $documents,
+            'categories' => $categories,
+            'totalCount' => $totalCount,
+            'approvedCount' => $approvedCount,
+            'pendingCount' => $pendingCount,
+            'rejectedCount' => $rejectedCount,
             'totalDownloads' => $totalDownloads,
         ])->layout('layouts.admin', [
-            'pageTitle'  => 'Quản lý tài liệu',
-            'breadcrumb' => new \Illuminate\Support\HtmlString('<span class="mx-2">/</span> Tài liệu <span class="mx-2">/</span> Danh sách'),
+            'pageTitle' => 'Quản lý tài liệu',
+            'breadcrumb' => new HtmlString('<span class="mx-2">/</span> Tài liệu <span class="mx-2">/</span> Danh sách'),
         ]);
     }
 }

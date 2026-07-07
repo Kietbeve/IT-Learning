@@ -152,9 +152,15 @@ class LearningController extends Controller
             'sections.lessons' => function($query) {
                 $query->where('is_published', true)->orderBy('sort_order');
             },
+            'sections.lessons.exam.questions.options',
+            'sections.lessons.document',
+            'sections.lessons.project',
             'lessons' => function($query) {
                 $query->where('is_published', true)->orderBy('sort_order');
-            }
+            },
+            'lessons.exam.questions.options',
+            'lessons.document',
+            'lessons.project',
         ])->findOrFail($roadmapId);
 
         $lessonsFromSections = $roadmap->sections->flatMap(function($section) {

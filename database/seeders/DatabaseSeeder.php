@@ -19,16 +19,21 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'test',
         //     'email' => 'test@example.com',
         // ]);
+        require_once base_path('Modules/Document/database/seeders/NewDocumentSeeder.php');
+        require_once base_path('Modules/Payment/database/seeders/NewPaymentSeeder.php');
+
         $this->call([
             //seeder ngoài module
             CategorySeeder::class,
             TagSeeder::class,
             SettingSeeder::class,
             //seeder từ module
-            \Modules\Auth\Database\Seeders\AuthDatabaseSeeder::class,
+            \Modules\Auth\database\seeders\AuthDatabaseSeeder::class,
             \Modules\Exam\database\seeders\QuestionSeeder::class,
             \Modules\Exam\database\seeders\ExamTagMapSeeder::class,
-            \Modules\Document\database\seeders\DocumentDatabaseSeeder::class,
+            \Modules\Document\database\seeders\NewDocumentSeeder::class,
+            \Modules\Payment\database\seeders\NewPaymentSeeder::class,
+            \Modules\Learning\Database\Seeders\LearningDatabaseSeeder::class,
             //seeder orders và dashboard
             OrderSeeder::class,
             DashboardSeeder::class,

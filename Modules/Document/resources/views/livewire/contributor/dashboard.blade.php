@@ -141,7 +141,12 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($doc->product && $doc->product->is_active)
-                                    <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }} VND</span>
+                                    @if($doc->product->sale_price)
+                                        <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->sale_price) }} VND</span>
+                                        <div class="text-xs text-slate-400 line-through">{{ number_format($doc->product->price) }} VND</div>
+                                    @else
+                                        <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }} VND</span>
+                                    @endif
                                 @else
                                     <span class="inline-flex rounded-lg bg-emerald-50 text-[10px] font-bold text-emerald-700 border border-emerald-100">Miễn phí</span>
                                 @endif

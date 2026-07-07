@@ -4,20 +4,24 @@ namespace Modules\Payment\Http\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use Modules\Payment\Models\WalletTransaction;
-use Modules\Auth\Models\User;
 use Maatwebsite\Excel\Facades\Excel;
 use Modules\Payment\Exports\TransactionExport;
+use Modules\Payment\Models\WalletTransaction;
 
 class TransactionList extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $typeFilter = 'all';
+
     public $dateFrom = '';
+
     public $dateTo = '';
+
     public $sortField = 'created_at';
+
     public $sortDirection = 'desc';
 
     protected $queryString = [
@@ -61,10 +65,10 @@ class TransactionList extends Component
     {
         $query = WalletTransaction::with('user');
 
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $query->whereHas('user', function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('email', 'like', '%' . $this->search . '%');
+                $q->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('email', 'like', '%'.$this->search.'%');
             });
         }
 
@@ -72,11 +76,11 @@ class TransactionList extends Component
             $query->where('type', $this->typeFilter);
         }
 
-        if (!empty($this->dateFrom)) {
+        if (! empty($this->dateFrom)) {
             $query->whereDate('created_at', '>=', $this->dateFrom);
         }
 
-        if (!empty($this->dateTo)) {
+        if (! empty($this->dateTo)) {
             $query->whereDate('created_at', '<=', $this->dateTo);
         }
 
@@ -84,7 +88,7 @@ class TransactionList extends Component
 
         return Excel::download(
             new TransactionExport($transactions),
-            'transactions_' . now()->format('Ymd_His') . '.xlsx'
+            'transactions_'.now()->format('Ymd_His').'.xlsx'
         );
     }
 
@@ -92,10 +96,10 @@ class TransactionList extends Component
     {
         $query = WalletTransaction::with('user');
 
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $query->whereHas('user', function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('email', 'like', '%' . $this->search . '%');
+                $q->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('email', 'like', '%'.$this->search.'%');
             });
         }
 
@@ -105,11 +109,11 @@ class TransactionList extends Component
             $query->whereIn('type', ['earning', 'purchase', 'payout', 'refund', 'adjustment', 'subscription']);
         }
 
-        if (!empty($this->dateFrom)) {
+        if (! empty($this->dateFrom)) {
             $query->whereDate('created_at', '>=', $this->dateFrom);
         }
 
-        if (!empty($this->dateTo)) {
+        if (! empty($this->dateTo)) {
             $query->whereDate('created_at', '<=', $this->dateTo);
         }
 

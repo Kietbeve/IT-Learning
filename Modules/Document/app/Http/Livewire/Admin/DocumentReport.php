@@ -2,20 +2,24 @@
 
 namespace Modules\Document\Http\Livewire\Admin;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Document\Models\DocumentReport as Report;
-use Illuminate\Support\Facades\Auth;
 
 class DocumentReport extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $statusFilter = 'pending';
+
     public $reasonFilter = 'all';
-    
+
     public $selectedReportId = null;
+
     public $reportNote = '';
 
     protected $queryString = [
@@ -42,14 +46,24 @@ class DocumentReport extends Component
     public function resolveReport($id)
     {
         $report = Report::findOrFail($id);
-        
+
         $report->update([
             'status' => 'resolved',
             'resolved_by' => Auth::id(),
             'resolved_at' => now(),
-            'review_note' => null
+            'review_note' => null,
         ]);
-        
+
+        if ($report->document) {
+            $report->document->update(['status' => 'rejected']);
+            if ($report->document->currentVersion) {
+                $report->document->currentVersion->update([
+                    'status' => 'rejected',
+                    'rejected_reason' => 'Bị ẩn do vi phạm báo cáo: ' . $report->reason,
+                ]);
+            }
+        }
+
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã phê duyệt báo cáo và gỡ bỏ tài liệu vi phạm thành công.']);
     }
 
@@ -64,7 +78,7 @@ class DocumentReport extends Component
     public function confirmDismiss()
     {
         $this->validate([
-            'reportNote' => 'required|string|min:5|max:500'
+            'reportNote' => 'required|string|min:5|max:500',
         ], [
             'reportNote.required' => 'Vui lòng nhập lý do/ghi chú bác bỏ.',
             'reportNote.min' => 'Ghi chú phải có tối thiểu 5 ký tự.',
@@ -72,12 +86,12 @@ class DocumentReport extends Component
         ]);
 
         $report = Report::findOrFail($this->selectedReportId);
-        
+
         $report->update([
             'status' => 'dismissed',
             'resolved_by' => Auth::id(),
             'resolved_at' => now(),
-            'review_note' => $this->reportNote
+            'review_note' => $this->reportNote,
         ]);
 
         $this->dispatch('close-modal', 'report-dismiss-modal');
@@ -115,15 +129,15 @@ class DocumentReport extends Component
             $query->where('reason', $this->reasonFilter);
         }
 
-        if (!empty($this->search)) {
-            $query->where(function($q) {
-                $q->whereHas('document.currentVersion', function($q2) {
-                    $q2->where('title', 'like', '%' . $this->search . '%');
+        if (! empty($this->search)) {
+            $query->where(function ($q) {
+                $q->whereHas('document.currentVersion', function ($q2) {
+                    $q2->where('title', 'like', '%'.$this->search.'%');
                 })
-                ->orWhereHas('user', function($q2) {
-                    $q2->where('name', 'like', '%' . $this->search . '%');
-                })
-                ->orWhere('details', 'like', '%' . $this->search . '%');
+                    ->orWhereHas('user', function ($q2) {
+                        $q2->where('name', 'like', '%'.$this->search.'%');
+                    })
+                    ->orWhere('details', 'like', '%'.$this->search.'%');
             });
         }
 
@@ -144,7 +158,7 @@ class DocumentReport extends Component
             'dbError' => false,
         ])->layout('layouts.admin', [
             'pageTitle' => 'Quản lý báo cáo vi phạm tài liệu',
-            'breadcrumb' => new \Illuminate\Support\HtmlString('<span class="mx-2">/</span> Admin <span class="mx-2">/</span> Báo cáo vi phạm')
+            'breadcrumb' => new HtmlString('<span class="mx-2">/</span> Admin <span class="mx-2">/</span> Báo cáo vi phạm'),
         ]);
     }
 }

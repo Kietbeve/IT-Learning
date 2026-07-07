@@ -133,9 +133,9 @@
                         class="inline-flex items-center gap-1.5 pb-2 text-sm font-semibold transition-all border-b-2 {{ $activeTab === 'rejected' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
                     Bị từ chối
                 </button>
-                <button wire:click="$set('activeTab', 'all')" 
-                        class="inline-flex items-center gap-1.5 pb-2 text-sm font-semibold transition-all border-b-2 {{ $activeTab === 'all' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
-                    Tất cả
+                <button wire:click="$set('activeTab', 'deleted')" 
+                        class="inline-flex items-center gap-1.5 pb-2 text-sm font-semibold transition-all border-b-2 {{ $activeTab === 'deleted' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
+                    Đã xóa
                 </button>
             </div>
 
@@ -175,48 +175,23 @@
                                 {{ \Illuminate\Support\Str::limit($doc->pending_version_data->title ?? $doc->title, 45) }}
                             </a>
                             
-                            @if($activeTab === 'pending' && isset($doc->badge_type))
-                                <div class="space-y-2 mt-2">
-                                    @if($doc->badge_type === 'new')
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold">
-                                            🆕 ĐĂNG MỚI
-                                        </span>
-                                    @elseif($doc->badge_type === 'update')
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 text-purple-700 text-xs font-bold">
-                                            📝 XIN CẬP NHẬT
-                                        </span>
-                                        @if(isset($doc->original_version))
-                                            <div class="pl-3 border-l-2 border-blue-200 bg-blue-50/50 p-2 rounded-r-lg">
-                                                <p class="text-[10px] text-slate-500 font-semibold mb-0.5">Bản gốc đang live:</p>
-                                                <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" 
-                                                   class="text-xs font-semibold text-blue-600 hover:text-blue-700 underline">
-                                                    {{ \Illuminate\Support\Str::limit($doc->original_version->title, 40) }}
-                                                </a>
-                                            </div>
-                                        @endif
-                                        @if(isset($doc->was_rejected) && $doc->was_rejected)
-                                            <div class="text-[10px] text-amber-600 font-semibold">
-                                                ⚠️ Đã bị từ chối trước đó
-                                            </div>
-                                        @endif
-                                    @elseif($doc->badge_type === 'resubmit')
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-700 text-xs font-bold">
-                                            🔄 GỬI LẠI
-                                        </span>
-                                        @if(isset($doc->rejection_info))
-                                            <div class="pl-3 border-l-2 border-rose-200 bg-rose-50/50 p-2 rounded-r-lg">
-                                                <p class="text-[10px] text-slate-500 font-semibold mb-0.5">Lý do từ chối lần trước:</p>
-                                                <p class="text-xs text-rose-700">{{ \Illuminate\Support\Str::limit($doc->rejection_info, 80) }}</p>
-                                            </div>
-                                        @endif
-                                    @endif
-                                </div>
-                            @endif
-                            
-                            <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
+                            <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold mt-2">
                                 <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-700 font-bold">
                                     {{ $doc->file_type }}
                                 </span>
+                                @if($activeTab === 'pending')
+                                    @if(isset($doc->badge_type))
+                                        @if($doc->badge_type === 'new')
+                                            <span class="inline-flex items-center gap-1 rounded-lg bg-emerald-100 px-2 py-0.5 text-emerald-700 font-bold text-[10px]">
+                                                🆕 Mới
+                                            </span>
+                                        @elseif($doc->badge_type === 'update')
+                                            <span class="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-2 py-0.5 text-blue-700 font-bold text-[10px]">
+                                                📝 Cập nhật
+                                            </span>
+                                        @endif
+                                    @endif
+                                @endif
                                 <span>{{ number_format($doc->file_size / 1024 / 1024, 2) }} MB</span>
                                 <span>•</span>
                                 <span class="text-slate-500">{{ $doc->category?->name ?? 'Mặc định' }}</span>
@@ -227,21 +202,21 @@
                         <!-- Price tag -->
                         <div class="shrink-0 text-right">
                             @if($doc->product)
-                                <span class="text-blue-600 font-bold text-sm">{{ number_format($doc->product->price) }}đ</span>
+                                @if($doc->product->sale_price)
+                                    <span class="text-blue-600 font-bold text-sm">{{ number_format($doc->product->sale_price) }}đ</span>
+                                    <div class="text-xs text-slate-400 line-through">{{ number_format($doc->product->price) }}đ</div>
+                                @else
+                                    <span class="text-blue-600 font-bold text-sm">{{ number_format($doc->product->price) }}đ</span>
+                                @endif
                             @else
                                 <span class="text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-xl text-xs">Miễn phí</span>
                             @endif
                         </div>
                     </div>
 
-                    <!-- Meta info (Author, Stats) -->
+                    <!-- Meta info (Author) -->
                     <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-2xl">
                         <div>Đăng bởi: <span class="font-semibold text-slate-700">{{ $doc->author?->name ?? 'Uploader' }}</span></div>
-                        <div class="flex items-center gap-2">
-                            <span>Tải: <strong class="text-slate-700">{{ number_format($doc->download_count) }}</strong></span>
-                            <span>|</span>
-                            <span>Xem: <strong class="text-slate-700">{{ number_format($doc->view_count) }}</strong></span>
-                        </div>
                     </div>
 
                     <!-- Actions & Status -->
@@ -346,55 +321,25 @@
                                         {{ \Illuminate\Support\Str::limit($doc->pending_version_data->title ?? $doc->title, 45) }}
                                     </a>
                                     
-                                    @if($activeTab === 'pending' && isset($doc->badge_type))
-                                        <div class="space-y-1.5 mt-2">
-                                            @if($doc->badge_type === 'new')
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-[10px] font-bold">
-                                                    🆕 ĐĂNG MỚI
-                                                </span>
-                                            @elseif($doc->badge_type === 'update')
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-purple-50 text-purple-700 text-[10px] font-bold">
-                                                    📝 XIN CẬP NHẬT
-                                                </span>
-                                                @if(isset($doc->original_version))
-                                                    <div class="pl-2 border-l-2 border-blue-200 bg-blue-50/50 p-1.5 rounded-r-lg">
-                                                        <p class="text-[9px] text-slate-500 font-semibold mb-0.5">Bản gốc đang live:</p>
-                                                        <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list']) }}" 
-                                                           class="text-[10px] font-semibold text-blue-600 hover:text-blue-700 underline block truncate">
-                                                            {{ \Illuminate\Support\Str::limit($doc->original_version->title, 35) }}
-                                                        </a>
-                                                    </div>
-                                                @endif
-                                                @if(isset($doc->was_rejected) && $doc->was_rejected)
-                                                    <div class="text-[9px] text-amber-600 font-semibold">
-                                                        ⚠️ Đã bị từ chối trước
-                                                    </div>
-                                                @endif
-                                            @elseif($doc->badge_type === 'resubmit')
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-[10px] font-bold">
-                                                    🔄 GỬI LẠI
-                                                </span>
-                                                @if(isset($doc->rejection_info))
-                                                    <div class="pl-2 border-l-2 border-rose-200 bg-rose-50/50 p-1.5 rounded-r-lg">
-                                                        <p class="text-[9px] text-slate-500 font-semibold mb-0.5">Lý do từ chối:</p>
-                                                        <p class="text-[10px] text-rose-700">{{ \Illuminate\Support\Str::limit($doc->rejection_info, 60) }}</p>
-                                                    </div>
-                                                @endif
-                                            @endif
-                                        </div>
+                                    {{-- Show live version info below title only when approved live version exists --}}
+                                    @if($activeTab === 'pending' && ($doc->badge_type ?? '') === 'update' && isset($doc->live_version))
+                                        <a href="{{ route('admin.moderation.documents.show', ['id' => $doc->id, 'from' => 'list', 'version' => 'current']) }}" 
+                                           target="_blank"
+                                           class="inline-flex items-center gap-1.5 text-[10px] text-slate-400 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1 mb-1 hover:bg-emerald-100 transition-colors group">
+                                            <svg class="w-3 h-3 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/></svg>
+                                            <span class="text-slate-500">Bản gốc đang live:</span>
+                                            <span class="font-semibold text-emerald-700 truncate max-w-[180px] group-hover:underline" title="{{ $doc->live_version->title }}">{{ \Illuminate\Support\Str::limit($doc->live_version->title, 35) }}</span>
+                                            <svg class="w-2.5 h-2.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                        </a>
                                     @endif
-                                    
-                                    <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold">
-                                        <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-700 font-bold">
-                                            {{ $doc->file_type }}
-                                        </span>
-                                        <span>{{ number_format($doc->file_size / 1024 / 1024, 2) }} MB</span>
-                                        <span>•</span>
+
+                                    <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 font-semibold mt-2">
+                                        @if($activeTab === 'pending' && isset($doc->badge_type))
+                                            <span class="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 font-bold text-[10px] {{ $doc->badge_type === 'new' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' }}">
+                                                {{ $doc->badge_type === 'new' ? '🆕 Mới' : '📝 Cập nhật' }}
+                                            </span>
+                                        @endif
                                         <span class="text-slate-500">Danh mục: {{ $doc->category?->name ?? 'Mặc định' }}</span>
-                                        <span>•</span>
-                                        <span class="flex items-center gap-0.5 text-slate-500">
-                                            Tải: {{ number_format($doc->download_count) }} | Xem: {{ number_format($doc->view_count) }}
-                                        </span>
                                     </div>
 
                                     <!-- Author info shown on mobile/tablet instead of dedicated column -->
@@ -408,8 +353,13 @@
                                 <div class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]" title="{{ $doc->author?->email ?? '' }}">{{ $doc->author?->email ?? '' }}</div>
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap">
-                                @if($doc->product)
-                                    <span class="text-blue-600 font-bold">{{ number_format($doc->product->price) }}đ</span>
+                                @if($doc->product && $doc->product->price > 0)
+                                    @if($doc->product->sale_price)
+                                        <span class="text-blue-600 font-bold">{{ number_format($doc->product->sale_price) }}đ</span>
+                                        <div class="text-xs text-slate-400 line-through">{{ number_format($doc->product->price) }}đ</div>
+                                    @else
+                                        <span class="text-blue-600 font-bold">{{ number_format($doc->product->price) }}đ</span>
+                                    @endif
                                 @else
                                     <span class="text-emerald-600 font-semibold bg-emerald-50 px-2 py-1 rounded-xl text-xs">Miễn phí</span>
                                 @endif
@@ -507,4 +457,41 @@
             </div>
         @endif
     </section>
+
+    <!-- Rejection Modal -->
+    <div x-data="{ showRejectionModal: @entangle('showRejectionModal') }" x-effect="document.body.style.overflow = showRejectionModal ? 'hidden' : ''">
+        <template x-teleport="body">
+            <div x-show="showRejectionModal" 
+                 class="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" 
+                 style="display: none;"
+                 x-transition>
+                <div class="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl p-6 space-y-6" @click.away="showRejectionModal = false">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-lg font-bold text-slate-900">Từ chối phê duyệt tài liệu</h3>
+                    <button @click="showRejectionModal = false" class="text-slate-400 hover:text-slate-600">&times;</button>
+                </div>
+                
+                <div class="space-y-2">
+                    <label for="list-rejection-reason" class="block text-sm font-semibold text-slate-700">Lý do từ chối <span class="text-red-500">*</span> (tối thiểu 10 ký tự):</label>
+                    <textarea id="list-rejection-reason"
+                              wire:model="rejectionReason" 
+                              rows="4" 
+                              placeholder="Ví dụ: Tài liệu tải lên bị lỗi font chữ, tài liệu có bản quyền, file bị hỏng không giải nén được..."
+                              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"></textarea>
+                    @error('rejectionReason')
+                        <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                    <button type="button" @click="showRejectionModal = false" class="rounded-xl border border-slate-200 hover:bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-700 transition-colors">
+                        Hủy bỏ
+                    </button>
+                    <button type="button" wire:click="confirmRejection" class="rounded-xl bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 text-xs font-semibold shadow-sm transition-colors">
+                        Xác nhận từ chối
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
 </div>
