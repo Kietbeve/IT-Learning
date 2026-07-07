@@ -49,11 +49,20 @@
         @endif
 
         <div class="max-w-lg mx-auto">
-            @php $package = reset($packages); $key = array_key_first($packages); @endphp
+            @php 
+                $package = reset($packages); 
+                $key = array_key_first($packages); 
+                $discountPercent = 0;
+                if ($package['price'] > 0 && $package['sale_price'] < $package['price']) {
+                    $discountPercent = round((($package['price'] - $package['sale_price']) / $package['price']) * 100);
+                }
+            @endphp
             <div class="relative flex flex-col bg-white rounded-2xl border-2 border-primary-500 p-8 hover:shadow-xl transition">
+                @if($discountPercent > 0)
                 <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <x-badge primary label="Giảm 50%" class="text-xs" />
+                    <x-badge primary label="Giảm {{ $discountPercent }}%" class="text-xs" />
                 </div>
+                @endif
 
                 <div class="text-center mb-6">
                     <h3 class="text-2xl font-semibold text-gray-900">{{ $package['name'] }}</h3>
@@ -61,18 +70,18 @@
                 </div>
 
                 <div class="text-center mb-6">
-                    @if($package['sale_price'])
+                    @if($package['sale_price'] && $package['sale_price'] < $package['price'])
                         <div class="flex items-center justify-center gap-2">
                             <span class="text-lg text-gray-400 line-through">
                                 {{ number_format($package['price']) }}đ
                             </span>
-                            <x-badge flat negative label="-50%" class="text-xs" />
+                            <x-badge flat negative label="-{{ $discountPercent }}%" class="text-xs" />
                         </div>
                         <p class="text-4xl font-bold text-primary-600 mt-2">
                             {{ number_format($package['sale_price']) }}đ
                         </p>
                     @else
-                        <p class="text-4xl font-bold text-primary-600">
+                        <p class="text-4xl font-bold text-primary-600 mt-6">
                             {{ number_format($package['price']) }}đ
                         </p>
                     @endif
@@ -96,8 +105,8 @@
                     wire:loading.attr="disabled"
                     class="w-full mt-auto inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-primary-700 disabled:opacity-60 transition"
                 >
-                    <span wire:loading.remove.delay>Mua ngay</span>
-                    <span wire:loading.delay>Đang xử lý...</span>
+                    <span wire:loading.remove.delay wire:target="purchaseVip">Mua ngay</span>
+                    <span wire:loading.delay wire:target="purchaseVip">Đang xử lý...</span>
                 </button>
             </div>
         </div>

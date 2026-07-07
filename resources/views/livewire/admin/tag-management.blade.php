@@ -1,5 +1,5 @@
 <div>
-    <x-notifications z-index="z-50" />
+
     {{-- Header --}}
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex-1 max-w-md relative">
@@ -69,16 +69,6 @@
                             <td class="px-6 py-4 text-sm text-slate-600">{{ $tag->slug }}</td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-600">{{ $tag->created_at->format('d/m/Y') }}</td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                <button 
-                                    wire:click="openDetailModal({{ $tag->id }})"
-                                    class="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
-                                >
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                    Chi tiết
-                                </button>
                                 <button 
                                     wire:click="openEditModal({{ $tag->id }})"
                                     class="ml-2 inline-flex items-center gap-1 rounded-lg bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 transition hover:bg-amber-100"
@@ -283,157 +273,5 @@
         </div>
     @endif
 
-    {{-- Modal xem chi tiết liên kết --}}
-    @if($showDetailModal && $detailTag)
-        <div class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:p-0">
-                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" wire:click="closeDetailModal"></div>
 
-                <div class="relative inline-block transform overflow-hidden rounded-2xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle">
-                    <div class="bg-white px-6 pt-6 pb-4">
-                        {{-- Header --}}
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h3 class="text-xl font-semibold text-slate-900">Chi Tiết Tag: {{ $detailTag->name }}</h3>
-                                <p class="text-sm text-slate-500 mt-1">Slug: {{ $detailTag->slug }}</p>
-                            </div>
-                            <button wire:click="closeDetailModal" class="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-500">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        {{-- Thống kê tổng quan --}}
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <div class="rounded-xl border border-blue-200 bg-blue-50 p-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="rounded-lg bg-blue-100 p-2">
-                                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-2xl font-bold text-blue-900">{{ $detailTag->documents_count }}</p>
-                                        <p class="text-sm text-blue-700">Tài liệu</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="rounded-lg bg-emerald-100 p-2">
-                                        <svg class="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-2xl font-bold text-emerald-900">{{ $detailTag->exams_count }}</p>
-                                        <p class="text-sm text-emerald-700">Đề thi</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="rounded-lg bg-amber-100 p-2">
-                                        <svg class="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-2xl font-bold text-amber-900">{{ $detailTag->questions_count }}</p>
-                                        <p class="text-sm text-amber-700">Câu hỏi</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Chi tiết liên kết --}}
-                        <div class="max-h-96 overflow-y-auto space-y-6">
-                            {{-- Danh sách Tài liệu --}}
-                            {{-- @if($detailTag->documents->count() > 0)
-                                <div>
-                                    <h4 class="text-sm font-semibold text-slate-900 mb-3">Tài liệu liên kết ({{ $detailTag->documents_count }})</h4>
-                                    <div class="space-y-2">
-                                        @foreach($detailTag->documents as $document)
-                                            <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                                                <div class="flex items-center gap-3">
-                                                    <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                                    </svg>
-                                                    <span class="text-sm font-medium text-slate-900">{{ $document->title }}</span>
-                                                </div>
-                                                <span class="text-xs text-slate-500">ID: {{ $document->id }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif --}}
-
-                            {{-- Danh sách Đề thi --}}
-                            {{-- @if($detailTag->exams->count() > 0)
-                                <div>
-                                    <h4 class="text-sm font-semibold text-slate-900 mb-3">Đề thi liên kết ({{ $detailTag->exams_count }})</h4>
-                                    <div class="space-y-2">
-                                        @foreach($detailTag->exams as $exam)
-                                            <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                                                <div class="flex items-center gap-3">
-                                                    <svg class="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                                    </svg>
-                                                    <span class="text-sm font-medium text-slate-900">{{ $exam->title }}</span>
-                                                </div>
-                                                <span class="text-xs text-slate-500">ID: {{ $exam->id }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif --}}
-
-                            {{-- Danh sách Câu hỏi --}}
-                            {{-- @if($detailTag->questions->count() > 0)
-                                <div>
-                                    <h4 class="text-sm font-semibold text-slate-900 mb-3">Câu hỏi liên kết ({{ $detailTag->questions_count }})</h4>
-                                    <div class="space-y-2">
-                                        @foreach($detailTag->questions as $question)
-                                            <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                                                <div class="flex items-center gap-3">
-                                                    <svg class="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                    </svg>
-                                                    <span class="text-sm font-medium text-slate-900">{{ Str::limit($question->question_text, 80) }}</span>
-                                                </div>
-                                                <span class="text-xs text-slate-500">ID: {{ $question->id }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif --}}
-
-                            {{-- Thông báo nếu không có liên kết --}}
-                            @if($detailTag->documents_count === 0 && $detailTag->exams_count === 0 && $detailTag->questions_count === 0)
-                                <div class="py-12 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
-                                    </svg>
-                                    <p class="mt-4 text-sm text-slate-500">Tag này chưa được liên kết với bất kỳ nội dung nào</p>
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Footer --}}
-                        <div class="mt-6 flex justify-end border-t border-slate-200 pt-4">
-                            <button 
-                                wire:click="closeDetailModal"
-                                class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
-                            >
-                                Đóng
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
 </div>

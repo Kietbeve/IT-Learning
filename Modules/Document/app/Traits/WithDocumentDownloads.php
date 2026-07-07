@@ -78,13 +78,6 @@ trait WithDocumentDownloads
                 // Gửi thông báo cho người mua thông qua Event
                 event(new \Modules\Payment\Events\DocumentDownloadedByVip(Auth::user(), $doc));
 
-                // Cập nhật chuông thông báo trên UI của người mua ngay lập tức (cái này sẽ tự bung toast của hệ thống)
-                $this->dispatch('notify', [
-                    'type' => 'success',
-                    'title' => 'Đã mua tài liệu bằng VIP',
-                    'message' => 'Bạn đã dùng 1 lượt VIP để mua tài liệu "'.\Illuminate\Support\Str::limit($doc->title, 40).'". Lượt tải còn lại: '.Auth::user()->vip_download_quota
-                ]);
-                
                 $this->dispatch('vip-download-success');
 
                 $this->hasDownloaded = true; // Trigger re-render to show download button
@@ -109,11 +102,6 @@ trait WithDocumentDownloads
         // Cần gọi lại hàm mount để reload trạng thái nếu cần
         $this->mount($this->documentId);
 
-        $this->notification()->success(
-            title: 'Thành công',
-            description: 'Thanh toán thành công! Bạn đã có thể tải tài liệu.'
-        );
-        
         // Trigger full component re-render
         $this->dispatch('$refresh');
     }

@@ -20,27 +20,7 @@
         }
     </style>
 
-    <!-- Notification Toast -->
-    <div x-show="notification" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform translate-y-2"
-         class="fixed bottom-5 right-5 z-50 rounded-2xl border bg-white p-4 shadow-xl border-slate-200"
-         style="display: none;">
-        <div class="flex items-center gap-3">
-            <template x-if="notification && notification.type === 'success'">
-                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                </div>
-            </template>
-            <div>
-                <p class="text-sm font-semibold text-slate-900" x-text="notification ? notification.message : ''"></p>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Statistics Cards -->
     <div class="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">

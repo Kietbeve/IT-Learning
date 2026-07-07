@@ -155,7 +155,7 @@ class CheckoutModal extends Component
                 Order::expirePendingOrders($user->id);
             }
 
-            $platformFeePercent = config('payment.platform_fee_percent', 10);
+            $platformFeePercent = (int) \App\Services\SettingService::get('platform_fee_percent', 20);
             $contributorAmount = $finalPrice * (100 - $platformFeePercent) / 100;
             $platformAmount = $finalPrice * $platformFeePercent / 100;
 

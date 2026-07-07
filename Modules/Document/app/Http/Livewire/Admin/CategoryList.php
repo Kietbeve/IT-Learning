@@ -140,8 +140,9 @@ class CategoryList extends Component
         $category = Category::find($id);
         if ($category) {
             $hasDocs = \Modules\Document\Models\DocumentVersion::where('category_id', $id)->exists();
-            if ($hasDocs) {
-                $this->dispatch('notify', type: 'error', message: 'Không thể xóa vì đang có tài liệu thuộc danh mục.');
+            $hasSubjects = \Modules\Document\Models\Subject::where('category_id', $id)->exists();
+            if ($hasDocs || $hasSubjects) {
+                $this->dispatch('notify', type: 'error', message: 'Không thể xóa vì đang có môn học hoặc tài liệu thuộc danh mục.');
                 return;
             }
 
@@ -152,12 +153,9 @@ class CategoryList extends Component
 
     public function render()
     {
-        // TỐI ƯU: Gộp 3 câu query đếm thành 1 câu duy nhất
-        $stats = Category::where('type', 'document')
-            ->selectRaw('count(*) as total')
-            ->selectRaw('sum(case when is_active = 1 then 1 else 0 end) as active')
-            ->selectRaw('sum(case when is_active = 0 then 1 else 0 end) as inactive')
-            ->first();
+        $totalCount = Category::where('type', 'document')->count();
+        $activeCount = Category::where('type', 'document')->where('is_active', true)->count();
+        $inactiveCount = Category::where('type', 'document')->where('is_active', false)->count();
 
         $query = Category::where('type', 'document');
 
@@ -177,9 +175,9 @@ class CategoryList extends Component
 
         return view('document::livewire.admin.category-list', [
             'categories' => $categories,
-            'totalCount' => $stats->total ?? 0,
-            'activeCount' => $stats->active ?? 0,
-            'inactiveCount' => $stats->inactive ?? 0,
+            'totalCount' => $totalCount,
+            'activeCount' => $activeCount,
+            'inactiveCount' => $inactiveCount,
         ])->layout('layouts.admin', [
             'pageTitle' => 'Quản lý danh mục tài liệu',
             'breadcrumb' => new HtmlString('<span class="mx-2">/</span> Admin <span class="mx-2">/</span> Danh mục'),

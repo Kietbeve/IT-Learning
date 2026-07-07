@@ -98,6 +98,15 @@ class OrderService
                 'download_token' => Str::random(64),
             ]);
 
+            // Calculate revenue split for VIP download based on VIP sale price and quota
+            $vipPrice = (int) \App\Services\SettingService::get('vip_sale_price', 100000);
+            $vipQuota = (int) \App\Services\SettingService::get('vip_quota', 5);
+            $valuePerDownload = $vipQuota > 0 ? (int) floor($vipPrice / $vipQuota) : 0;
+            
+            $platformFeePercent = (int) \App\Services\SettingService::get('platform_fee_percent', 20);
+            $platformAmount = (int) floor($valuePerDownload * $platformFeePercent / 100);
+            $contributorAmount = $valuePerDownload - $platformAmount;
+
             return OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $doc->product->id,
@@ -106,8 +115,8 @@ class OrderService
                 'unit_price' => 0,
                 'quantity' => 1,
                 'subtotal' => 0,
-                'contributor_amount' => 0,
-                'platform_amount' => 0,
+                'contributor_amount' => $contributorAmount,
+                'platform_amount' => $platformAmount,
             ]);
         });
     }

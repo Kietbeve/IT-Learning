@@ -18,27 +18,7 @@
         }
     </style>
 
-    <!-- Notification Toast -->
-    <div x-show="notification" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform translate-y-2 scale-95"
-         x-transition:enter-end="opacity-100 transform translate-y-0 scale-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0 scale-100"
-         x-transition:leave-end="opacity-0 transform translate-y-2 scale-95"
-         class="fixed bottom-5 right-5 z-50 rounded-2xl border border-indigo-100 bg-white/95 p-4 shadow-2xl backdrop-blur-md"
-         style="display: none;">
-         <div class="flex items-center gap-3">
-             <template x-if="notification && notification.type === 'success'">
-                 <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
-                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                 </div>
-             </template>
-             <div>
-                 <p class="text-sm font-bold text-slate-800" x-text="notification ? notification.message : ''"></p>
-             </div>
-         </div>
-    </div>
+
 
     <!-- Stats Section - Light Glassmorphic Design -->
     <div class="grid gap-6 grid-cols-2 lg:grid-cols-4">

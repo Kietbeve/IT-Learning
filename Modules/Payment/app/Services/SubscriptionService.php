@@ -11,7 +11,7 @@ class SubscriptionService
      */
     public function activateVip(User $user, string $packageKey): void
     {
-        $package = config("subscription.packages.{$packageKey}");
+        $package = $this->getPackage($packageKey);
 
         if (! $package) {
             throw new \InvalidArgumentException("Invalid package key: {$packageKey}");
@@ -85,7 +85,22 @@ class SubscriptionService
      */
     public function getPackages(): array
     {
-        return config('subscription.packages', []);
+        $packages = config('subscription.packages', []);
+        
+        // Merge dynamic settings into the 'vip' package
+        if (isset($packages['vip'])) {
+            $vipPrice = (int) \App\Services\SettingService::get('vip_price', $packages['vip']['price']);
+            $vipSalePrice = (int) \App\Services\SettingService::get('vip_sale_price', $packages['vip']['sale_price']);
+            $vipQuota = (int) \App\Services\SettingService::get('vip_quota', $packages['vip']['download_quota']);
+            
+            $packages['vip']['price'] = $vipPrice;
+            $packages['vip']['sale_price'] = $vipSalePrice;
+            $packages['vip']['download_quota'] = $vipQuota;
+            $packages['vip']['description'] = "Tải {$vipQuota} tài liệu Premium trong 1 tháng";
+            $packages['vip']['features'][0] = "Tải {$vipQuota} tài liệu Premium";
+        }
+        
+        return $packages;
     }
 
     /**
@@ -93,7 +108,8 @@ class SubscriptionService
      */
     public function getPackage(string $packageKey): ?array
     {
-        return config("subscription.packages.{$packageKey}");
+        $packages = $this->getPackages();
+        return $packages[$packageKey] ?? null;
     }
 
     /**

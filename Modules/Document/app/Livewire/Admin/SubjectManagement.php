@@ -21,9 +21,7 @@ class SubjectManagement extends Component
     public $modalMode = 'create'; // 'create' hoặc 'edit'
     public $confirmDeleteId = null;
     
-    // Properties cho modal xem chi tiết
-    public $showDetailModal = false;
-    public $detailSubject = null;
+
     
     // Properties cho form
     public $subjectId = null;
@@ -184,29 +182,7 @@ class SubjectManagement extends Component
         $this->resetValidation();
     }
 
-    /**
-     * Mở modal xem chi tiết liên kết của môn học
-     * 
-     * @param int $id ID của môn học cần xem chi tiết
-     */
-    public function openDetailModal($id)
-    {
-        // Load môn học với các relationships và đếm số lượng
-        $this->detailSubject = Subject::with(['category', 'documents', 'exams'])
-            ->withCount(['documents', 'exams'])
-            ->findOrFail($id);
-        
-        $this->showDetailModal = true;
-    }
 
-    /**
-     * Đóng modal xem chi tiết
-     */
-    public function closeDetailModal()
-    {
-        $this->showDetailModal = false;
-        $this->detailSubject = null;
-    }
 
     /**
      * Render component với danh sách môn học

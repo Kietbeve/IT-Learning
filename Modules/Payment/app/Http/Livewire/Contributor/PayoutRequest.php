@@ -8,6 +8,7 @@ use Livewire\WithPagination;
 use Modules\Payment\Models\PayoutRequest as PayoutRequestModel;
 use Modules\Payment\Models\WalletTransaction;
 use WireUi\Traits\WireUiActions;
+use App\Services\SettingService;
 
 class PayoutRequest extends Component
 {
@@ -110,7 +111,7 @@ class PayoutRequest extends Component
     {
         $user = Auth::user();
         $this->availableBalance = $user->contributor_balance ?? 0;
-        $this->minimumAmount = config('payment.contributor.payout.minimum_amount', 50000);
+        $this->minimumAmount = SettingService::get('min_payout_amount', config('payment.contributor.payout.minimum_amount', 50000));
 
         $this->totalEarnings = WalletTransaction::where('user_id', $user->id)
             ->where('type', 'earning')

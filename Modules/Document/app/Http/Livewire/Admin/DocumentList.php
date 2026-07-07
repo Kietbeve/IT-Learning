@@ -98,6 +98,16 @@ class DocumentList extends Component
     {
         $doc = Document::with('author')->find($id);
         if ($doc) {
+            $hasPurchases = \Modules\Payment\Models\OrderItem::where('document_id', $id)
+                ->whereHas('order', function ($q) {
+                    $q->where('payment_status', 'paid');
+                })->exists();
+
+            if ($hasPurchases) {
+                $this->dispatch('notify', ['type' => 'error', 'message' => 'Không thể xóa vì tài liệu này đã có người mua.']);
+                return;
+            }
+
             $author = $doc->author;
             $title = $doc->title;
             $doc->delete(); // Soft delete

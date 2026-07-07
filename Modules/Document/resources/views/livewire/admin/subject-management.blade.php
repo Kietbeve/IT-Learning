@@ -1,5 +1,5 @@
 <div>
-    <x-notifications z-index="z-50" />
+
     {{-- Header - Thanh tìm kiếm và nút thêm mới --}}
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex-1 max-w-md relative">
@@ -97,16 +97,7 @@
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-600">{{ $subject->created_at->format('d/m/Y') }}</td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                <button 
-                                    wire:click="openDetailModal({{ $subject->id }})"
-                                    class="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
-                                >
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                    Chi tiết
-                                </button>
+
                                 <button 
                                     wire:click="openEditModal({{ $subject->id }})"
                                     class="ml-2 inline-flex items-center gap-1 rounded-lg bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 transition hover:bg-amber-100"
@@ -349,101 +340,5 @@
         </div>
     @endif
 
-    {{-- Modal xem chi tiết liên kết môn học --}}
-    @if($showDetailModal && $detailSubject)
-        <div class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:p-0">
-                {{-- Overlay nền tối với hiệu ứng blur --}}
-                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" wire:click="closeDetailModal"></div>
 
-                <div class="relative inline-block transform overflow-hidden rounded-2xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle">
-                    <div class="bg-white px-6 pt-6 pb-4">
-                        {{-- Header modal --}}
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h3 class="text-xl font-semibold text-slate-900">Chi Tiết Môn Học: {{ $detailSubject->name }}</h3>
-                                <div class="flex items-center gap-3 mt-2">
-                                    <p class="text-sm text-slate-500">Slug: {{ $detailSubject->slug }}</p>
-                                    <span class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium {{ $detailSubject->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
-                                        {{ $detailSubject->is_active ? 'Đang hoạt động' : 'Đã tắt' }}
-                                    </span>
-                                    <span class="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-                                        {{ $detailSubject->category->name ?? 'N/A' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <button wire:click="closeDetailModal" class="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-500">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        {{-- Thống kê tổng quan --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            {{-- Thống kê tài liệu --}}
-                            <div class="rounded-xl border border-blue-200 bg-blue-50 p-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="rounded-lg bg-blue-100 p-2">
-                                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-2xl font-bold text-blue-900">{{ $detailSubject->documents_count }}</p>
-                                        <p class="text-sm text-blue-700">Tài liệu</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Thống kê đề thi --}}
-                            <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="rounded-lg bg-emerald-100 p-2">
-                                        <svg class="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-2xl font-bold text-emerald-900">{{ $detailSubject->exams_count }}</p>
-                                        <p class="text-sm text-emerald-700">Đề thi</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Chi tiết liên kết --}}
-                        <div class="max-h-96 overflow-y-auto space-y-6">
-                            {{-- Thông báo nếu không có liên kết --}}
-                            @if($detailSubject->documents_count === 0 && $detailSubject->exams_count === 0)
-                                <div class="py-12 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
-                                    </svg>
-                                    <p class="mt-4 text-sm text-slate-500">Môn học này chưa có tài liệu hoặc đề thi nào</p>
-                                </div>
-                            @else
-                                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                                    <p class="text-sm text-slate-600">
-                                        Môn học này đang có <span class="font-semibold text-blue-700">{{ $detailSubject->documents_count }} tài liệu</span> 
-                                        và <span class="font-semibold text-emerald-700">{{ $detailSubject->exams_count }} đề thi</span> liên kết.
-                                    </p>
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Footer --}}
-                        <div class="mt-6 flex justify-end border-t border-slate-200 pt-4">
-                            <button 
-                                wire:click="closeDetailModal"
-                                class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
-                            >
-                                Đóng
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
 </div>
