@@ -63,32 +63,7 @@ class DocumentDownloadController extends Controller
             abort(403, 'Tài liệu này hiện đang ở chế độ riêng tư.');
         }
 
-        // 3. Double-check authentication for download
-        if (! $userId) {
-            return response('
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Yêu cầu đăng nhập - IT-Learning</title>
-                    <meta charset="utf-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1">
-                    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
-                    <script src="https://cdn.tailwindcss.com"></script>
-                    <style>body { font-family: "Figtree", sans-serif; }</style>
-                </head>
-                <body class="bg-slate-50 flex items-center justify-center min-h-screen p-4">
-                    <div class="max-w-md w-full bg-white border border-slate-200 shadow-xl rounded-[2.5rem] p-8 text-center space-y-6">
-                        <div class="h-16 w-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3 3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                        </div>
-                        <h1 class="text-xl font-bold text-slate-900">Yêu cầu đăng nhập</h1>
-                        <p class="text-sm text-slate-500 leading-relaxed">Bạn cần đăng nhập tài khoản để có thể tải tài nguyên từ hệ thống.</p>
-                        <a href="/login" class="block w-full rounded-2xl bg-slate-900 hover:bg-slate-800 text-white py-3.5 text-sm font-semibold transition-colors text-center">Đăng nhập ngay</a>
-                    </div>
-                </body>
-                </html>
-            ', 403);
-        }
+
 
         $isPaid = (bool) ($doc->product && $doc->product->is_active);
 

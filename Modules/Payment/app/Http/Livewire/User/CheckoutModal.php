@@ -25,6 +25,8 @@ class CheckoutModal extends Component
     public bool $showModal = false;
 
     public ?int $documentId = null;
+    
+    public ?string $guestEmail = null;
 
     public bool $loading = false;
 
@@ -44,9 +46,10 @@ class CheckoutModal extends Component
         ];
     }
 
-    public function show(int $documentId): void
+    public function show(int $documentId, ?string $guestEmail = null): void
     {
         $this->documentId = $documentId;
+        $this->guestEmail = $guestEmail;
         $this->loadDocument();
         $this->paymentData = [];
 
@@ -66,6 +69,7 @@ class CheckoutModal extends Component
     {
         $this->showModal = false;
         $this->documentId = null;
+        $this->guestEmail = null;
         $this->document = [];
         $this->product = null;
         $this->paymentData = [];
@@ -118,17 +122,24 @@ class CheckoutModal extends Component
 
             $user = Auth::user();
             $finalPrice = $this->finalPrice;
+            $deviceId = request()->cookie('guest_device_id');
 
             // 1. Check existing pending order for this document
-            $existingOrder = Order::where('user_id', $user->id)
-                ->where('order_type', 'document')
+            $query = Order::where('order_type', 'document')
                 ->where('payment_status', 'pending')
                 ->where('expires_at', '>', now())
                 ->where('total_amount', $finalPrice)
-                ->whereHas('items', function ($query) {
-                    $query->where('document_id', $this->documentId);
-                })
-                ->first();
+                ->whereHas('items', function ($q) {
+                    $q->where('document_id', $this->documentId);
+                });
+                
+            if ($user) {
+                $query->where('user_id', $user->id);
+            } else {
+                $query->whereNull('user_id')->where('guest_email', $this->guestEmail);
+            }
+
+            $existingOrder = $query->first();
 
             if ($existingOrder && $existingOrder->checkout_data) {
                 DB::rollBack();
@@ -140,7 +151,9 @@ class CheckoutModal extends Component
             }
 
             // 2. Cleanup expired old pending orders
-            Order::expirePendingOrders($user->id);
+            if ($user) {
+                Order::expirePendingOrders($user->id);
+            }
 
             $platformFeePercent = config('payment.platform_fee_percent', 10);
             $contributorAmount = $finalPrice * (100 - $platformFeePercent) / 100;
@@ -160,7 +173,9 @@ class CheckoutModal extends Component
                 $productInfo, 
                 $finalPrice, 
                 $contributorAmount, 
-                $platformAmount
+                $platformAmount,
+                $this->guestEmail,
+                $deviceId
             );
 
             // Dispatch delayed job to expire order after 10 minutes
@@ -179,13 +194,15 @@ class CheckoutModal extends Component
                 description: $description,
                 returnUrl: route('user.purchases'),
                 cancelUrl: route('user.purchases'),
-                buyerName: $user->name,
-                buyerEmail: $user->email,
+                buyerName: $user ? $user->name : 'Khách',
+                buyerEmail: $user ? $user->email : $this->guestEmail,
                 expiredAt: now()->addMinutes(10)->timestamp,
             );
 
             if (isset($paymentResponse['checkoutUrl'])) {
-                $order->update(['checkout_data' => $paymentResponse]);
+                // Merge PayOS response with existing checkout_data to preserve device_id
+                $mergedData = array_merge($order->checkout_data ?? [], $paymentResponse);
+                $order->update(['checkout_data' => $mergedData]);
                 $this->paymentData = $paymentResponse;
                 $this->remainingSeconds = 600;
                 $this->loading = false;
@@ -211,9 +228,6 @@ class CheckoutModal extends Component
         }
 
         $this->pollPayOSStatus($this->paymentData['orderCode'], function () {
-            // Để JS tự đóng sau 1.5s
-            // $this->close();
-
             $this->dispatch('payment-completed');
             $this->dispatch('new-notification');
         });

@@ -142,93 +142,31 @@ trait WithDocumentUpload
     {
         $this->validate();
 
-        $uploadService = app(\Modules\Document\Services\FileUploadService::class);
-
-        $originalR2Path = $uploadService->uploadOriginalDocument($this->originalFile);
-        $originalExt = strtolower($this->originalFile->getClientOriginalExtension());
-
-        $thumbnailR2Path = null;
-        if ($this->thumbnailFile) {
-            $thumbnailR2Path = $uploadService->uploadThumbnail($this->thumbnailFile);
-        }
-
-        // Upload gallery images
-        $galleryImagesData = [];
-        if (! empty($this->galleryFiles)) {
-            $galleryImagesData = $uploadService->uploadGalleryImages($this->galleryFiles, $this->excludedGalleryIndices);
-        }
-
-        $slug = Document::generateUniqueSlug($this->title);
-        $authorId = Auth::id();
-
-        // Create Document record (identity fields only)
-        $document = Document::create([
-            'public_id' => 'doc_'.Str::random(12),
-            'author_id' => $authorId,
-            'slug' => $slug,
-            'status' => $status,
-            'current_version_id' => null,
-        ]);
-
-        // Create DocumentVersion record
-        $version = DocumentVersion::create([
-            'document_id' => $document->id,
-            'version_number' => 1,
+        $documentService = app(\Modules\Document\Services\DocumentService::class);
+        
+        $data = [
             'title' => $this->title,
-            'short_description' => $this->short_description,
-            'description' => $this->description,
             'category_id' => $this->category_id,
             'subject_id' => $this->subject_id,
-            'thumbnail' => $thumbnailR2Path,
-            'gallery_images' => $galleryImagesData,
-            'file_original_path' => $originalR2Path,
-            'file_watermarked_path' => null,
-            'preview_file_path' => null,
-            'file_type' => $originalExt,
-            'file_size' => $this->originalFile->getSize(),
+            'short_description' => $this->short_description,
+            'description' => $this->description,
             'visibility' => $this->visibility,
             'is_downloadable' => $this->is_downloadable,
-            'watermark_status' => 'pending',
-            'price' => ($this->isPaid && $this->price > 0) ? $this->price : 0,
-            'sale_price' => ($this->isPaid && $this->price > 0 && $this->sale_price > 0) ? $this->sale_price : null,
-            'status' => $status,
-            'submitted_by' => $authorId,
-            'submitted_at' => now(),
-            'reviewed_by' => $status === 'approved' ? $authorId : null,
-            'reviewed_at' => $status === 'approved' ? now() : null,
-        ]);
+            'isPaid' => $this->isPaid,
+            'price' => $this->price,
+            'sale_price' => $this->sale_price,
+            'selectedTags' => $this->selectedTags,
+            'customTagsInput' => $this->customTagsInput,
+        ];
 
-        // Link current version to document if approved
-        if ($status === 'approved') {
-            $document->update([
-                'current_version_id' => $version->id,
-            ]);
-        }
-
-        // Handle watermark job dispatch or instant ZIP success
-        if (in_array($originalExt, ['pdf', 'docx'])) {
-            ProcessWatermarkJob::dispatch($document->id);
-        } else {
-            // ZIP: instant success
-            $version->update([
-                'watermark_status' => 'success',
-                'file_watermarked_path' => $originalR2Path,
-            ]);
-        }
-
-        // Create Product if paid
-        if ($this->isPaid && $this->price > 0) {
-            Product::create([
-                'document_id' => $document->id,
-                'name' => $this->title,
-                'price' => $this->price,
-                'sale_price' => $this->sale_price ?: null,
-                'is_active' => true,
-            ]);
-        }
-
-        $tagService = app(\Modules\Document\Services\TagService::class);
-        $tagService->syncTags($document, $this->selectedTags ?? [], $this->customTagsInput);
+        $documentService->createDocument(
+            $data,
+            $this->originalFile,
+            $this->thumbnailFile,
+            $this->galleryFiles ?? [],
+            $this->excludedGalleryIndices ?? [],
+            $status
+        );
 
         session()->flash('success', $successMessage);
 

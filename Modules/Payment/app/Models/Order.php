@@ -15,7 +15,7 @@ class Order extends Model
      */
     protected $fillable = [
         'order_code', 'order_type', 'subscription_package_key',
-        'user_id', 'guest_name', 'guest_email', 'total_amount',
+        'user_id', 'guest_name', 'guest_email', 'guest_device_id', 'total_amount',
         'payment_status', 'order_status', 'paid_at', 'canceled_at', 'completed_at',
         'download_token', 'guest_download_limit', 'guest_download_count',
         'expires_at', 'checkout_data',

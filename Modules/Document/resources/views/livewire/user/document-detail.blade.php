@@ -641,20 +641,20 @@
                 </div>
 
                 <div class="space-y-3">
-                    @guest
-                        @if($doc->product && $doc->product->price > 0)
-                            <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
-                                Mua tài nguyên ngay
-                            </button>
+                    @if($hasAccess || (!$doc->product || $doc->product->price == 0))
+                        @guest
+                            @if(!$doc->product || $doc->product->price == 0)
+                                <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    Đăng nhập để tải xuống
+                                </button>
+                            @else
+                                <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    Tải xuống (Khách)
+                                </button>
+                            @endif
                         @else
-                            <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                Đăng nhập để tải xuống
-                            </button>
-                        @endif
-                    @else
-                        @if(!$doc->product || $doc->product->price == 0 || $hasAccess)
                             <button wire:click="download" class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white py-4 text-sm font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                 @if(Auth::id() === $doc->author_id)
@@ -663,24 +663,33 @@
                                     Tải xuống
                                 @endif
                             </button>
-                        @elseif($isVip)
-                            <div class="space-y-3">
-                                <button wire:click="promptVipDownload" class="w-full rounded-2xl bg-amber-600 hover:bg-amber-700 text-white py-4 text-sm font-semibold shadow-lg shadow-amber-600/20 hover:shadow-amber-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                                    Tải xuống với gói VIP
-                                </button>
-                                <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
-                                    Mua tài nguyên ngay
-                                </button>
-                            </div>
-                        @else
+                        @endguest
+                    @else
+                        @guest
                             <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
                                 Mua tài nguyên ngay
                             </button>
-                        @endif
-                    @endguest
+                        @else
+                            @if($isVip)
+                                <div class="space-y-3">
+                                    <button wire:click="promptVipDownload" class="w-full rounded-2xl bg-amber-600 hover:bg-amber-700 text-white py-4 text-sm font-semibold shadow-lg shadow-amber-600/20 hover:shadow-amber-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                                        Tải xuống với gói VIP
+                                    </button>
+                                    <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
+                                        Mua tài nguyên ngay
+                                    </button>
+                                </div>
+                            @else
+                                <button wire:click="buyDocument" class="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m5-5v5m4-5v5m4-5l2 5"/></svg>
+                                    Mua tài nguyên ngay
+                                </button>
+                            @endif
+                        @endguest
+                    @endif
 
                     <button x-data="{ copied: false }" 
                             @click="if (navigator.share) { navigator.share({ title: '{{ addslashes($doc->title) }}', url: window.location.href }) } else { navigator.clipboard.writeText(window.location.href); copied = true; setTimeout(() => copied = false, 2000); }"
@@ -884,6 +893,65 @@
                         Đồng ý tải
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guest Email Modal -->
+    <div x-show="$wire.showGuestEmailModal" 
+         style="display: none;" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         aria-labelledby="modal-title" 
+         role="dialog" 
+         aria-modal="true">
+        
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div x-show="$wire.showGuestEmailModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-sm" 
+                 aria-hidden="true" 
+                 wire:click="$set('showGuestEmailModal', false)"></div>
+
+            <div x-show="$wire.showGuestEmailModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:w-full sm:max-w-md sm:align-middle p-6 border border-slate-100">
+                
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-blue-100 rounded-full mb-4 text-blue-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                
+                <h3 class="text-xl font-bold text-center text-slate-900 mb-2">Nhập Email để nhận Biên lai</h3>
+                
+                <p class="text-center text-slate-500 mb-6 text-sm">
+                    Vui lòng cung cấp email. Hệ thống sẽ gửi hóa đơn và thông tin số lượt tải cho bạn.
+                </p>
+
+                <form wire:submit.prevent="continueGuestPurchase" class="space-y-4">
+                    <div>
+                        <label for="guestEmail" class="block text-sm font-bold text-slate-700 mb-1">Địa chỉ Email <span class="text-red-500">*</span></label>
+                        <input type="email" id="guestEmail" wire:model="guestEmail" placeholder="ví dụ: khachhang@gmail.com" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100 transition" required>
+                        @error('guestEmail') <span class="text-xs text-red-500 font-medium mt-1">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" wire:click="$set('showGuestEmailModal', false)" class="flex-1 rounded-2xl border-2 border-slate-200 hover:bg-slate-50 text-slate-700 py-3 text-sm font-semibold transition">
+                            Đóng
+                        </button>
+                        <button type="submit" class="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white py-3 text-sm font-semibold shadow-lg shadow-blue-600/20 hover:shadow-blue-700/30 transition">
+                            Tiếp tục thanh toán
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -23,13 +23,16 @@
     <style>
         /* Force WireUI notifications to top-right below header */
         #toast-wrapper > div {
-            top: 70px !important;
+            top: 80px !important;
             right: 20px !important;
             bottom: auto !important;
             left: auto !important;
             width: 380px !important;
             max-width: calc(100vw - 40px) !important;
             z-index: 99999 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
         }
     </style>
     <div x-data="{ sidebarHidden: true }" class="flex min-h-screen">

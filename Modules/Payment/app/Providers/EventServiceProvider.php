@@ -31,6 +31,14 @@ class EventServiceProvider extends ServiceProvider
         \Modules\Payment\Events\DocumentDownloadedByVip::class => [
             \Modules\Payment\Listeners\SendDocumentVipPurchaseNotification::class,
         ],
+
+        \Illuminate\Auth\Events\Login::class => [
+            \Modules\Payment\Listeners\ClaimGuestPurchases::class,
+        ],
+
+        \Illuminate\Auth\Events\Registered::class => [
+            \Modules\Payment\Listeners\ClaimGuestPurchases::class,
+        ],
     ];
 
     /**

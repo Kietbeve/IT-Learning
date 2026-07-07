@@ -6,10 +6,11 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Str;
 use Modules\Document\Models\Document;
 
-class DocumentVipPurchaseNotification extends Notification
+class DocumentVipPurchaseNotification extends Notification implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -57,8 +58,8 @@ class DocumentVipPurchaseNotification extends Notification
         return [
             'type' => 'document_vip_purchase',
             'title' => 'Đã mua tài liệu bằng VIP',
-            'message' => 'Bạn đã dùng 1 lượt VIP để mua tài liệu "'.Str::limit($this->document->title, 40).'". Lượt tải còn lại: '.$notifiable->vip_download_quota,
-            'url' => route('documents.show', [$this->document->id, Str::slug($this->document->title)]),
+            'message' => 'Bạn đã dùng 1 lượt VIP để mua tài liệu "'.\Illuminate\Support\Str::limit($this->document->title, 40).'". Lượt tải còn lại: '.$notifiable->vip_download_quota,
+            'url' => route('documents.show', [$this->document->id, \Illuminate\Support\Str::slug($this->document->title)]),
             'icon' => '💎',
         ];
     }

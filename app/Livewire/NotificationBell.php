@@ -59,8 +59,10 @@ class NotificationBell extends Component
                     if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
                         \Illuminate\Support\Facades\Cache::put($cacheKey, true, 5);
                         
+                        $notificationType = $latestNotification->data['type'] ?? '';
+                        
                         $this->dispatch('notify', [
-                            'type' => 'info',
+                            'type' => 'success',
                             'title' => $latestNotification->data['title'],
                             'message' => \Illuminate\Support\Str::limit($latestNotification->data['message'], 100)
                         ]);

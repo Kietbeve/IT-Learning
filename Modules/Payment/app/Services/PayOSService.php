@@ -58,7 +58,7 @@ class PayOSService
         return $this->payos->paymentRequests->cancel($orderCode, $reason, ['asArray' => true]);
     }
 
-    public function verifyWebhookData(array $webhookBody): array
+    public function verifyWebhookData(array $webhookBody)
     {
         return $this->payos->webhooks->verify($webhookBody);
     }

@@ -116,6 +116,11 @@ Thiết kế theo phong cách exam_detail.blade.php
             </a>
           @endif
 
+          {{-- Notification Bell --}}
+          <div class="flex items-center md:mr-2 my-2 md:my-0">
+              @livewire('notification-bell')
+          </div>
+
           {{-- ===== DROPDOWN MENU USER ===== --}}
           <div x-data="{ dropdownOpen: false }" class="relative my-2 md:my-0">
 

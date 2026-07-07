@@ -16,7 +16,30 @@
     @livewireStyles
 </head>
 
-<body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
+<body class="bg-slate-50 font-sans antialiased text-slate-800">
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+    <div id="toast-wrapper">
+        <x-notifications z-index="z-50" position="top-right" />
+    </div>
+    <style>
+        /* Force WireUI notifications to top-right below header */
+        #toast-wrapper > div {
+            top: 80px !important;
+            right: 20px !important;
+            bottom: auto !important;
+            left: auto !important;
+            width: 380px !important;
+            max-width: calc(100vw - 40px) !important;
+            z-index: 99999 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
+        }
+    </style>
+    <x-dialog z-index="z-50" blur="md" align="center" />
+    
     <div class="flex min-h-screen">
         @if(request()->is('contributor*') || request()->is('contributor'))
             @include('layouts.patials.contributor_sidebar')
@@ -56,8 +79,27 @@
             @include('layouts.patials.footer')
         </div>
     </div>
-    @wireUiScripts
     @livewireScripts
+    @wireUiScripts
+    <script>
+        document.addEventListener('livewire:init', () => {
+            // Lắng nghe sự kiện 'notify' từ Livewire component
+            Livewire.on('notify', (event) => {
+                let data = Array.isArray(event) ? event[0] : event;
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: data.title || (data.type === 'success' ? 'Thành công' : (data.type === 'error' ? 'Lỗi' : 'Thông báo')),
+                        description: data.message,
+                        icon: data.type === 'error' ? 'error' : (data.type === 'success' ? 'success' : (data.type === 'warning' ? 'warning' : 'info')),
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

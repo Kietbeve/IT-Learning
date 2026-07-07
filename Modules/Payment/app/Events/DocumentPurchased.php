@@ -21,7 +21,7 @@ class DocumentPurchased
     /**
      * Create a new event instance.
      */
-    public function __construct(User $user, Order $order)
+    public function __construct(?User $user, Order $order)
     {
         $this->user = $user;
         $this->order = $order;

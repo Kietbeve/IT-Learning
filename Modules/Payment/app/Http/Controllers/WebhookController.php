@@ -28,7 +28,12 @@ class WebhookController
                 return response()->json(['error' => 'Invalid signature'], 401);
             }
 
-            $orderCode = $verifiedData['orderCode'] ?? $verifiedData['data']['orderCode'] ?? null;
+            $orderCode = null;
+            if (is_array($verifiedData)) {
+                $orderCode = $verifiedData['orderCode'] ?? $verifiedData['data']['orderCode'] ?? null;
+            } elseif (is_object($verifiedData)) {
+                $orderCode = $verifiedData->orderCode ?? null;
+            }
 
             if (! $orderCode) {
                 Log::error('PayOS Webhook: Missing order code', ['data' => $webhookData]);

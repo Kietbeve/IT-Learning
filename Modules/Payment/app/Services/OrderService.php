@@ -22,21 +22,30 @@ class OrderService
         protected SubscriptionService $subscriptionService
     ) {}
 
-    public function createDocumentOrder(User $user, int $documentId, array $productInfo, int $finalPrice, int $contributorAmount, int $platformAmount): Order
+    public function createDocumentOrder(?User $user, int $documentId, array $productInfo, int $finalPrice, int $contributorAmount, int $platformAmount, ?string $guestEmail = null, ?string $deviceId = null): Order
     {
-        return DB::transaction(function () use ($user, $documentId, $productInfo, $finalPrice, $contributorAmount, $platformAmount) {
+        return DB::transaction(function () use ($user, $documentId, $productInfo, $finalPrice, $contributorAmount, $platformAmount, $guestEmail, $deviceId) {
             $orderCode = (int) (now()->timestamp . Str::random(4));
+            
+            $checkoutData = [];
+            if ($deviceId) {
+                $checkoutData['device_id'] = $deviceId;
+            }
+
             $order = Order::create([
                 'order_code' => (string) $orderCode,
-                'user_id' => $user->id,
+                'user_id' => $user ? $user->id : null,
+                'guest_email' => $guestEmail,
+                'guest_device_id' => $deviceId,
                 'order_type' => 'document',
                 'total_amount' => $finalPrice,
                 'payment_status' => 'pending',
                 'order_status' => 'pending',
                 'download_token' => Str::random(64),
-                'guest_download_limit' => 0,
+                'guest_download_limit' => $user ? 0 : 5,
                 'guest_download_count' => 0,
                 'expires_at' => now()->addMinutes(10),
+                'checkout_data' => empty($checkoutData) ? null : $checkoutData,
             ]);
 
             OrderItem::create([
@@ -201,18 +210,20 @@ class OrderService
     protected function handleDocumentOrder(Order $order): void
     {
         foreach ($order->items as $item) {
-            // Cấp quyền truy cập tài liệu
-            DocumentAccess::updateOrCreate(
-                [
-                    'user_id' => $order->user_id,
-                    'document_id' => $item->document_id,
-                ],
-                [
-                    'order_item_id' => $item->id,
-                    'access_type' => 'purchased',
-                    'expires_at' => null,
-                ]
-            );
+            // Cấp quyền truy cập tài liệu (Chỉ đối với người dùng đã đăng nhập)
+            if ($order->user_id) {
+                DocumentAccess::updateOrCreate(
+                    [
+                        'user_id' => $order->user_id,
+                        'document_id' => $item->document_id,
+                    ],
+                    [
+                        'order_item_id' => $item->id,
+                        'access_type' => 'purchased',
+                        'expires_at' => null,
+                    ]
+                );
+            }
 
             // Cộng tiền hoa hồng cho tác giả
             if ($item->document_id && $item->contributor_amount > 0) {
@@ -245,12 +256,19 @@ class OrderService
             try {
                 $firstItem = $order->items->first();
                 $doc = $firstItem ? Document::find($firstItem->document_id) : null;
-                    if (!$doc) {
-                        Log::warning('OrderService: Document not found for first item', ['order_code' => $order->order_code]);
-                    }
+                if (!$doc) {
+                    Log::warning('OrderService: Document not found for first item', ['order_code' => $order->order_code]);
+                }
+                
+                if ($order->user_id) {
                     event(new DocumentPurchased($order->user, $order));
+                } elseif ($order->guest_email) {
+                    \Illuminate\Support\Facades\Mail::to($order->guest_email)
+                        ->send(new \Modules\Payment\Mail\GuestPurchaseReceiptMail($order));
+                }
+
             } catch (\Exception $e) {
-                Log::error('OrderService: DocumentPurchased event failed', [
+                Log::error('OrderService: DocumentPurchased event or Guest receipt failed', [
                     'order_code' => $order->order_code,
                     'error' => $e->getMessage(),
                 ]);

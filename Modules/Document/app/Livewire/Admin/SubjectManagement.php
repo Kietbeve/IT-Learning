@@ -124,13 +124,13 @@ class SubjectManagement extends Component
      */
     public function delete()
     {
-        $subject = Subject::withCount(['documents', 'exams'])
+        $subject = Subject::withCount(['documents'])
             ->findOrFail($this->confirmDeleteId);
 
-        if ($subject->documents_count > 0 || $subject->exams_count > 0) {
+        if ($subject->documents_count > 0) {
             $this->notification()->error(
                 title: 'Không thể xóa môn học',
-                description: 'Có '. $subject->documents_count . ' tài liệu và ' . $subject->exams_count . ' đề thi trong môn học này.'
+                description: 'Có '. $subject->documents_count . ' tài liệu trong môn học này.'
             );
             $this->resetPage();
             $this->confirmDeleteId = null;

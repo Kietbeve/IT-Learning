@@ -22,11 +22,14 @@ trait WithPayOSPolling
             return;
         }
 
-        $order = Order::where('order_code', (string) $orderCode)
-            ->where('user_id', Auth::id())
-            ->first();
+        $order = Order::where('order_code', (string) $orderCode)->first();
 
         if (! $order) {
+            return;
+        }
+
+        // Check ownership: if order belongs to a user, it must match current user.
+        if ($order->user_id && $order->user_id !== Auth::id()) {
             return;
         }
 

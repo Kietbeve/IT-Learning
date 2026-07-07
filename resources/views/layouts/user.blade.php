@@ -23,6 +23,28 @@
 </head>
 
 <body>
+    <div id="toast-wrapper">
+        <x-notifications z-index="z-50" position="top-right" />
+    </div>
+    <style>
+        /* Ép Toast của WireUI hiển thị ở góc trên bên phải trên MỌI kích thước màn hình (kể cả mobile) 
+           và đẩy xuống dưới Header (~72px) */
+        #toast-wrapper > div {
+            top: 80px !important;
+            right: 20px !important;
+            bottom: auto !important;
+            left: auto !important;
+            width: 380px !important;
+            max-width: calc(100vw - 40px) !important;
+            z-index: 99999 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
+        }
+    </style>
+    
+    <x-dialog z-index="z-50" blur="md" align="center" />
+    
     <div class="flex flex-col min-h-screen font-sans text-gray-800">
         <!-- User Header -->
         @include('layouts.patials.user_header')
@@ -88,6 +110,24 @@
     </div>
     @livewireScripts
     @wireUiScripts
+    <script>
+        document.addEventListener('livewire:init', () => {
+            // Lắng nghe sự kiện 'notify' từ Livewire component
+            Livewire.on('notify', (event) => {
+                let data = Array.isArray(event) ? event[0] : event;
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: data.title || (data.type === 'success' ? 'Thành công' : (data.type === 'error' ? 'Lỗi' : 'Thông báo')),
+                        description: data.message,
+                        icon: data.type === 'error' ? 'error' : (data.type === 'success' ? 'success' : (data.type === 'warning' ? 'warning' : 'info')),
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    </script>
 </body>
-
 </html>
