@@ -62,7 +62,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
-                                <a href="{{ route('student.subscription') }}" 
+                                <a href="{{ route('user.subscription') }}" 
                                    class="px-4 py-2 bg-white hover:bg-gray-100 text-amber-600 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300">
                                     Xem ngay
                                 </a>

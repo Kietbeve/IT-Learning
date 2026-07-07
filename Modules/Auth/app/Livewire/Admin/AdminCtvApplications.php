@@ -8,22 +8,18 @@ use Modules\Auth\Models\ContributorApplication;
 use App\Models\User;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
-use PowerComponents\LivewirePowerGrid\Exportable;
 use PowerComponents\LivewirePowerGrid\Facades\Filter;
 use PowerComponents\LivewirePowerGrid\Footer;
 use PowerComponents\LivewirePowerGrid\Header;
 use PowerComponents\LivewirePowerGrid\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridColumns;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
-use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Facades\Rule;
 
 #[Layout('layouts.admin')]
 final class AdminCtvApplications extends PowerGridComponent
 {
-    use WithExport;
-
     public string $tableName = 'admin-ctv-applications-table';
 
     public function setUp(): array
@@ -31,9 +27,6 @@ final class AdminCtvApplications extends PowerGridComponent
         $this->showCheckBox();
 
         return [
-            Exportable::make('export')
-                ->striped()
-                ->type(Exportable::TYPE_XLS, Exportable::TYPE_CSV),
             Header::make()
                 ->showSearchInput()
                 ->showToggleColumns(),
@@ -216,10 +209,8 @@ final class AdminCtvApplications extends PowerGridComponent
                 'rejected_reason' => null
             ]);
 
-            // Update user to be contributor
-            $application->user->update([
-                'is_contributor' => true
-            ]);
+            // Assign contributor role to user
+            $application->user->assignRole('contributor');
 
             $this->dispatch('swal:success', [
                 'title' => 'Thành công!',
