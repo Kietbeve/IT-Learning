@@ -6,7 +6,7 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Modules\Learning\Models\Roadmap; 
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth; // Thêm Facade này để sửa lỗi auth()
+use Illuminate\Support\Facades\Auth;
 
 #[Layout('layouts.contributor')]
 class RoadmapManagement extends Component
@@ -37,7 +37,9 @@ class RoadmapManagement extends Component
             'description' => 'nullable|string',
             'level' => 'required|string',
             'visibility' => 'required|in:public,private',
-            'status' => 'required|in:draft,published,pending',
+            
+            // SỬA LỖI TẠI ĐÂY: Đổi in:0,1 thành in:draft,approved cho khớp Database
+            'status' => 'required|in:draft,approved',
         ];
     }
 
@@ -113,7 +115,7 @@ class RoadmapManagement extends Component
                 'public_id' => 'RM-' . strtoupper(Str::random(8)),
                 // FIX ERROR P1013: Sử dụng Auth::id() thay cho auth()->id() để Intelephense nhận diện đúng phương thức
                 'author_id' => Auth::id() ?? 1, 
-                'category_id' => 1, 
+                'category_id' => null, 
                 'title' => $this->title,
                 'slug' => $this->slug,
                 'short_description' => $this->short_description,
@@ -128,6 +130,18 @@ class RoadmapManagement extends Component
         $this->closeForm();
     }
 
+    // THÊM MỚI HÀM NÀY: Dùng để click nút gạt Ẩn/Hiện ngay trên danh sách Lộ trình
+    public function toggleStatus(int $id): void
+    {
+        $roadmap = Roadmap::findOrFail($id);
+        
+        // Đảo trạng thái: nếu đang approved thì về draft và ngược lại
+        $roadmap->status = ($roadmap->status === 'approved') ? 'draft' : 'approved';
+        $roadmap->save();
+        
+        session()->flash('message', 'Đã cập nhật trạng thái hiển thị thành công!');
+    }
+
     // FIX WARNING P1132: Thêm kiểu dữ liệu int cho $id
     public function deleteRoadmap(int $id): void
     {
@@ -136,17 +150,17 @@ class RoadmapManagement extends Component
         session()->flash('message', 'Đã xóa tạm thời lộ trình vào thùng rác!');
     }
 
- public function render()
-{
-    $roadmaps = Roadmap::where('title', 'like', '%' . $this->search . '%')
-        ->latest()
-        ->get();
+    public function render()
+    {
+        $roadmaps = Roadmap::where('title', 'like', '%' . $this->search . '%')
+            ->latest()
+            ->get();
 
-    $view = view('learning::manage.management-roadmap', [
-        'roadmaps' => $roadmaps
-    ]);
+        $view = view('learning::manage.management-roadmap', [
+            'roadmaps' => $roadmaps
+        ]);
 
-    /** @var mixed $view */
-    return $view->extends('learning::layouts.master')->section('content');
-}
+        /** @var mixed $view */
+        return $view->extends('learning::layouts.master')->section('content');
+    }
 }

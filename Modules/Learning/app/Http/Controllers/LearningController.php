@@ -26,22 +26,31 @@ class LearningController extends Controller
     /**
      * TRANG 1: Danh sách lộ trình
      */
-    public function index(Request $request): View
+   public function index(Request $request): View
     {
         $roadmaps = $this->roadmapService->getFilteredRoadmaps($request->all(), 6);
         
         /** @var mixed $user */
         $user = Auth::user();
         $registeredRoadmaps = collect();
-        $unregisteredRoadmaps = Roadmap::all();
+        
+        // SỬA Ở ĐÂY: Chỉ lấy những lộ trình đã được approved (hiển thị)
+        $unregisteredRoadmaps = Roadmap::where('status', 'approved')->get();
 
         if ($user) {
             $registeredIds = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $user->id)
                 ->pluck('roadmap_id')
                 ->toArray();
 
-            $registeredRoadmaps = Roadmap::whereIn('id', $registeredIds)->get();
-            $unregisteredRoadmaps = Roadmap::whereNotIn('id', $registeredIds)->get();
+            // SỬA Ở ĐÂY: Lọc thêm điều kiện approved
+            $registeredRoadmaps = Roadmap::whereIn('id', $registeredIds)
+                ->where('status', 'approved')
+                ->get();
+                
+            // SỬA Ở ĐÂY: Lọc thêm điều kiện approved
+            $unregisteredRoadmaps = Roadmap::whereNotIn('id', $registeredIds)
+                ->where('status', 'approved')
+                ->get();
         }
 
         return view('learning::layouts.roadmap-list', compact(
