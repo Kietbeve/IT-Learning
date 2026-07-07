@@ -49,6 +49,7 @@ final class QuestionTable extends PowerGridComponent
                 ->showRecordCount(),
         ];
     }
+    
     public function header(): array
     {
         return [
