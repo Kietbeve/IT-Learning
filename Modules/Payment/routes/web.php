@@ -6,6 +6,7 @@ use Modules\Payment\Http\Livewire\Admin\OrderManagement;
 use Modules\Payment\Http\Livewire\Admin\PayoutReview;
 use Modules\Payment\Http\Livewire\Admin\PlatformRevenue;
 use Modules\Payment\Http\Livewire\Admin\RevenueSettings;
+use Modules\Payment\Http\Livewire\Admin\SystemReports;
 use Modules\Payment\Http\Livewire\Admin\TransactionList;
 use Modules\Payment\Http\Livewire\Contributor\EarningsReport;
 use Modules\Payment\Http\Livewire\Contributor\PayoutRequest;
@@ -32,5 +33,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/orders', OrderManagement::class)->name('admin.orders.index');
     Route::get('/transactions', TransactionList::class)->name('admin.transactions.index');
     Route::get('/payouts/review', PayoutReview::class)->name('admin.payouts.review');
+    Route::get('/reports', SystemReports::class)->name('admin.reports');
     Route::get('/settings/revenue', RevenueSettings::class)->name('admin.settings.revenue');
 });
