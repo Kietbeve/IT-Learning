@@ -34,7 +34,7 @@ class LearningController extends Controller
         $user = Auth::user();
         $registeredRoadmaps = collect();
         
-        // SỬA Ở ĐÂY: Chỉ lấy những lộ trình đã được approved (hiển thị)
+        // Chỉ lấy những lộ trình đã được approved (hiển thị)
         $unregisteredRoadmaps = Roadmap::where('status', 'approved')->get();
 
         if ($user) {
@@ -42,12 +42,12 @@ class LearningController extends Controller
                 ->pluck('roadmap_id')
                 ->toArray();
 
-            // SỬA Ở ĐÂY: Lọc thêm điều kiện approved
+            //  Lọc thêm điều kiện approved
             $registeredRoadmaps = Roadmap::whereIn('id', $registeredIds)
                 ->where('status', 'approved')
                 ->get();
                 
-            // SỬA Ở ĐÂY: Lọc thêm điều kiện approved
+            // Lọc thêm điều kiện approved
             $unregisteredRoadmaps = Roadmap::whereNotIn('id', $registeredIds)
                 ->where('status', 'approved')
                 ->get();

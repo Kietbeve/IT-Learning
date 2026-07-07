@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 use Modules\Learning\Models\Roadmap;
 use Modules\Learning\Models\RoadmapLesson;
 use Modules\Learning\Models\RoadmapSection;
-use Modules\Document\Models\Document;
+use Modules\Document\Models\DocumentVersion;
 use Modules\Exam\Models\Exam;
 use Modules\Learning\Models\Project; 
 
@@ -43,6 +43,7 @@ class ManagementDetail extends Component
     public Collection $documents;
     public Collection $exams;
     public Collection $projects;
+    public Collection $lessons;
 
     protected function rules(): array
     {
@@ -99,13 +100,25 @@ class ManagementDetail extends Component
 
     private function loadData(): void
     {
+        if ($this->roadmap) {
+        $this->roadmap->refresh();
+        }
         $this->sections = $this->roadmap
             ->sections()
             ->with('lessons')
             ->orderBy('sort_order')
             ->get();
+
+        $this->lessons = \Modules\Learning\Models\RoadmapLesson::where('roadmap_id', $this->roadmap->id)
+        ->with('section') // Eager load mối quan hệ chương để hiển thị tên chương
+        ->orderBy('sort_order')
+        ->get();
         
-        $this->documents = Document::where('status', 'approved')->orderBy('title')->get(['id', 'title']);
+     
+    $this->documents = DocumentVersion::where('status', 'approved')
+    ->orderBy('title')
+    ->select('document_id as id', 'title') 
+    ->get();
         $this->exams = Exam::where('status', 'approved')->orderBy('title')->get(['id', 'title']);
         $this->projects = Project::orderBy('title')->get(['id', 'title']);
     }
@@ -247,6 +260,7 @@ class ManagementDetail extends Component
     {
         $view = view('learning::manage.management-detail', [
             'sections' => $this->sections,
+            'lessons' => $this->lessons,
         ]);
 
         /** @var mixed $view */
