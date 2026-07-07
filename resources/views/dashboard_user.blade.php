@@ -86,7 +86,7 @@
 
                                 {{-- CTA section --}}
                                 <div class="shrink-0">
-                                    <a href="{{ route('student.subscription') }}"
+                                    <a href="{{ route('user.subscription') }}"
                                         class="px-4 py-2 bg-white hover:bg-gray-50 text-amber-600 rounded-lg text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-center inline-block">
                                         <span class="flex items-center gap-1.5">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

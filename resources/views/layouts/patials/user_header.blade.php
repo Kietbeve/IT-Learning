@@ -96,7 +96,7 @@ Thiết kế theo phong cách exam_detail.blade.php
           {{-- Badge VIP hoặc nút Nâng cấp VIP --}}
           @if ($isVip)
             {{-- Badge VIP cho user đã là thành viên VIP --}}
-            <a href="{{ route('student.subscription') }}"
+            <a href="{{ route('user.subscription') }}"
               class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-amber-400/50 text-amber-300 rounded-xl text-sm font-bold shadow-lg shadow-amber-500/20 backdrop-blur-sm transition-all duration-300 md:mr-4 md:my-0 my-2 hover:scale-105"
               title="Bạn đang là thành viên VIP">
               {{-- Icon ngôi sao với hiệu ứng glow --}}
@@ -108,7 +108,7 @@ Thiết kế theo phong cách exam_detail.blade.php
             </a>
           @else
             {{-- Call-to-action nút Nâng cấp VIP cho non-VIP users --}}
-            <a href="{{ route('student.subscription') }}"
+            <a href="{{ route('user.subscription') }}"
               class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/15 to-yellow-500/15 hover:from-amber-500/25 hover:to-yellow-500/25 border border-amber-400/60 hover:border-amber-300 text-amber-300 hover:text-amber-200 rounded-xl text-sm font-bold shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 backdrop-blur-sm transition-all duration-300 md:mr-4 md:my-0 my-2 hover:scale-105">
               {{-- Icon sparkles với animation pulse --}}
               <x-icon name="sparkles" class="w-4 h-4 animate-pulse drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
@@ -154,8 +154,8 @@ Thiết kế theo phong cách exam_detail.blade.php
               </a>
 
               {{-- Menu item: Tài liệu đã mua --}}
-              @if (Route::has('student.purchases'))
-                <a href="{{ route('student.purchases') }}"
+              @if (Route::has('user.purchases'))
+                <a href="{{ route('user.purchases') }}"
                   class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-700/70 hover:text-white transition-all group">
                   <div class="flex items-center gap-3">
                     <div
@@ -182,8 +182,8 @@ Thiết kế theo phong cách exam_detail.blade.php
               @endif
 
               {{-- Menu item: Lịch sử giao dịch --}}
-              @if (Route::has('student.transactions'))
-                <a href="{{ route('student.transactions') }}"
+              @if (Route::has('user.transactions'))
+                <a href="{{ route('user.transactions') }}"
                   class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-700/70 hover:text-white transition-all group">
                   <div class="flex items-center gap-3">
                     <div
@@ -196,8 +196,8 @@ Thiết kế theo phong cách exam_detail.blade.php
               @endif
 
               {{-- Menu item: Tài liệu yêu thích --}}
-              @if (Route::has('student.bookmarks'))
-                <a href="{{ route('student.bookmarks') }}"
+              @if (Route::has('user.bookmarks'))
+                <a href="{{ route('user.bookmarks') }}"
                   class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-700/70 hover:text-white transition-all group">
                   <div class="flex items-center gap-3">
                     <div

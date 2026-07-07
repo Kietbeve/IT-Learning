@@ -10,3 +10,8 @@ Route::get('/', [HomeController::class,'dashboard'])->name('home.dashboard');
 //     return view('dashboard_user');
 // });
 
+// Route Admin - Quản lý Tags
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/tags', \App\Livewire\Admin\TagManagement::class)->name('admin.tags');
+});
+
