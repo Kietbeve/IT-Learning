@@ -262,6 +262,17 @@ class QuestionModal extends Component
             ->filter(fn ($option) => filled($option['content'] ?? null))
             ->values();
 
+        //Check trùng lặp lựa chọn
+        $duplicate = $options
+            ->pluck('content')
+            ->duplicates();
+
+                if ($duplicate->isNotEmpty()) {
+                    throw ValidationException::withMessages([
+                        'options' => 'Các đáp án không được trùng nhau.',
+                    ]);
+                }
+
         $correctCount = $options->where('is_correct', true)->count();
 
         if ($options->count() < 2) {
@@ -502,13 +513,33 @@ class QuestionModal extends Component
         $this->dispatch('pg:eventRefresh-question-table');
     }
 
+    //Hàm check nội dung trùng lặp
     private function normalizeContent(string $content): string
     {
+         // 1. Bỏ HTML
         $content = strip_tags($content);
-        $content = html_entity_decode($content);
+
+        // 2. Decode HTML Entity
+        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // 3. Unicode Normalize (NFC)
+        if (class_exists(\Normalizer::class)) {
+            $content = \Normalizer::normalize($content, \Normalizer::FORM_C);
+        }
+
+        // 4. Chuyển về lowercase
+        $content = mb_strtolower($content, 'UTF-8');
+
+        // 5. Bỏ dấu tiếng Việt
+        $content = \Str::ascii($content);
+
+        // 6. Bỏ dấu câu, chỉ giữ chữ, số và khoảng trắng
+        $content = preg_replace('/[^a-z0-9\s]/', ' ', $content);
+
+        // 7. Gom nhiều khoảng trắng thành 1
         $content = preg_replace('/\s+/', ' ', $content);
 
-        return mb_strtolower(trim($content));
+        return trim($content);
     }
 
     public function render()
