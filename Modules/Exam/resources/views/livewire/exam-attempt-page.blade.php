@@ -745,5 +745,8 @@
             </div>
         </div>
     </div>
-
+{{-- Script chặn mở devtool, chặn copy --}}
+@if ($attempt->exam->mode=='official')
+    @vite('modules/exam/resources/assets/js/exam-security.js')
+@endif
 </div>
