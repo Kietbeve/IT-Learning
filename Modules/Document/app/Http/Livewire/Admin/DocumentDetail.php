@@ -146,7 +146,7 @@ class DocumentDetail extends Component
         $this->documentId = $id;
         $this->from = request()->query('from', 'moderation');
         $this->viewVersion = request()->query('version', 'pending'); // allow ?version=current
-        $doc = Document::with(['tags', 'currentVersion', 'latestVersion', 'pendingVersion', 'product'])->find($id);
+        $doc = Document::withTrashed()->with(['tags', 'currentVersion', 'latestVersion', 'pendingVersion', 'product'])->find($id);
         if (! $doc) {
             abort(404);
         }
@@ -619,7 +619,7 @@ class DocumentDetail extends Component
 
     public function render()
     {
-        $doc = Document::with([
+        $doc = Document::withTrashed()->with([
             'author', 'product', 'tags',
             'currentVersion.category', 'currentVersion.subject', 'currentVersion.reviewedByUser',
             'pendingVersion.category', 'pendingVersion.subject', 'pendingVersion.reviewedByUser',

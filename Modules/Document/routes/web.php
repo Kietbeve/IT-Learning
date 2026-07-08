@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin Routes
-Route::prefix('admin')->group(function () {
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:admin']], function () {
     Route::get('/moderation/documents/{id}', \Modules\Document\Http\Livewire\Admin\DocumentDetail::class)->name('admin.moderation.documents.show');
     Route::get('/documents', \Modules\Document\Http\Livewire\Admin\DocumentList::class)->name('admin.documents.index');
     Route::get('/documents/create', \Modules\Document\Http\Livewire\Admin\DocumentUpload::class)->name('admin.documents.create');

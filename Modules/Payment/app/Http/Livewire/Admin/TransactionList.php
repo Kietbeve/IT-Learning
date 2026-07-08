@@ -66,9 +66,13 @@ class TransactionList extends Component
         $query = WalletTransaction::with('user');
 
         if (! empty($this->search)) {
-            $query->whereHas('user', function ($q) {
-                $q->where('name', 'like', '%'.$this->search.'%')
-                    ->orWhere('email', 'like', '%'.$this->search.'%');
+            $query->where(function ($q) {
+                $q->where('reference_id', 'like', '%'.$this->search.'%')
+                  ->orWhere('note', 'like', '%'.$this->search.'%')
+                  ->orWhereHas('user', function ($userQ) {
+                      $userQ->where('name', 'like', '%'.$this->search.'%')
+                            ->orWhere('email', 'like', '%'.$this->search.'%');
+                  });
             });
         }
 
@@ -97,9 +101,13 @@ class TransactionList extends Component
         $query = WalletTransaction::with('user');
 
         if (! empty($this->search)) {
-            $query->whereHas('user', function ($q) {
-                $q->where('name', 'like', '%'.$this->search.'%')
-                    ->orWhere('email', 'like', '%'.$this->search.'%');
+            $query->where(function ($q) {
+                $q->where('reference_id', 'like', '%'.$this->search.'%')
+                  ->orWhere('note', 'like', '%'.$this->search.'%')
+                  ->orWhereHas('user', function ($userQ) {
+                      $userQ->where('name', 'like', '%'.$this->search.'%')
+                            ->orWhere('email', 'like', '%'.$this->search.'%');
+                  });
             });
         }
 

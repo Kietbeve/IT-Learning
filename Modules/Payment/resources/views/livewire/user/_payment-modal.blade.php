@@ -30,8 +30,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900 mb-2">Đơn hàng đã hết hạn</h3>
-                <p class="text-slate-500 mb-6">Vui lòng đóng và thực hiện mua lại gói VIP.</p>
+                <h3 class="text-xl font-bold text-blue-900 mb-2">Đơn hàng đã hết hạn</h3>
+                <p class="text-gray-500 mb-6">Vui lòng đóng và thực hiện mua lại gói VIP.</p>
                 <button
                     wire:click="closePaymentModal"
                     class="px-6 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition shadow"
@@ -41,9 +41,9 @@
             </div>
 
             {{-- Header --}}
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                <h2 class="text-xl font-bold text-slate-900">Thanh toán gói VIP</h2>
-                <button wire:click="closePaymentModal" class="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-blue-900">Thanh toán gói VIP</h2>
+                <button wire:click="closePaymentModal" class="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -56,36 +56,36 @@
 
                     {{-- Left: Bank Info --}}
                     <div class="space-y-4 mt-2">
-                        <h3 class="text-lg font-bold text-slate-900">Thông tin chuyển khoản</h3>
-                        <p class="text-sm text-slate-500">Sử dụng ứng dụng ngân hàng hoặc ví điện tử để quét mã QR hoặc chuyển khoản thủ công.</p>
+                        <h3 class="text-lg font-bold text-blue-900">Thông tin chuyển khoản</h3>
+                        <p class="text-sm text-gray-500">Sử dụng ứng dụng ngân hàng hoặc ví điện tử để quét mã QR hoặc chuyển khoản thủ công.</p>
 
                         @if(!empty($paymentData['accountNumber']))
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm space-y-3">
+                        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm space-y-3">
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Ngân hàng:</span>
-                                <span class="font-medium text-slate-900 text-right">{{ $paymentData['bankName'] ?? 'Vietcombank' }}</span>
+                                <span class="text-gray-500">Ngân hàng:</span>
+                                <span class="font-medium text-gray-900 text-right">{{ $paymentData['bankName'] ?? 'Vietcombank' }}</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Số tài khoản:</span>
-                                <span class="font-bold text-slate-900 text-right">{{ $paymentData['accountNumber'] ?? '' }}</span>
+                                <span class="text-gray-500">Số tài khoản:</span>
+                                <span class="font-bold text-gray-900 text-right">{{ $paymentData['accountNumber'] ?? '' }}</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Chủ tài khoản:</span>
-                                <span class="font-medium text-slate-900 text-right">{{ $paymentData['accountName'] ?? '' }}</span>
+                                <span class="text-gray-500">Chủ tài khoản:</span>
+                                <span class="font-medium text-gray-900 text-right">{{ $paymentData['accountName'] ?? '' }}</span>
                             </div>
-                            <div class="flex justify-between items-center pt-2 border-t border-slate-200">
-                                <span class="text-slate-500">Nội dung CK:</span>
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                                <span class="text-gray-500">Nội dung CK:</span>
                                 <span class="font-bold text-blue-600 text-right">{{ $paymentData['description'] ?? '' }}</span>
                             </div>
-                            <div class="flex justify-between items-center pt-2 border-t border-slate-200">
-                                <span class="text-slate-500">Số tiền:</span>
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                                <span class="text-gray-500">Số tiền:</span>
                                 <span class="font-bold text-blue-600 text-lg text-right">{{ number_format($paymentData['amount'] ?? 0) }}đ</span>
                             </div>
                         </div>
                         @endif
 
                         {{-- Auto polling indicator --}}
-                        <div class="flex items-center gap-2 text-xs text-slate-400 pt-2">
+                        <div class="flex items-center gap-2 text-xs text-gray-400 pt-2">
                             <span class="flex h-2 w-2 relative">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
@@ -95,7 +95,7 @@
                     </div>
 
                     {{-- Right: QR Code + Timer --}}
-                    <div class="md:pl-8 md:border-l border-slate-200 flex flex-col items-center justify-center space-y-5">
+                    <div class="md:pl-8 md:border-l border-gray-200 flex flex-col items-center justify-center space-y-5">
                         {{-- Timer --}}
                         <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-3 text-center shadow-lg w-full max-w-[250px]">
                             <div class="text-white" wire:ignore>
@@ -132,9 +132,9 @@
                         </div>
 
                         {{-- QR --}}
-                        <div class="bg-white p-4 rounded-3xl border border-slate-200 flex items-center justify-center relative overflow-hidden shadow-sm w-full max-w-[250px] aspect-square">
+                        <div class="bg-white p-4 rounded-3xl border border-gray-200 flex items-center justify-center relative overflow-hidden shadow-sm w-full max-w-[250px] aspect-square">
                             @if(empty($paymentData))
-                                <div class="flex flex-col items-center justify-center text-slate-400 space-y-4">
+                                <div class="flex flex-col items-center justify-center text-gray-400 space-y-4">
                                     <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -159,3 +159,5 @@
     </div>
 </div>
 @endif
+
+

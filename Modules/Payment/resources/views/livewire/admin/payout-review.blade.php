@@ -7,105 +7,105 @@
     @endif
 
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6">
             <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-slate-600">Chờ duyệt</p>
+                <p class="text-sm font-medium text-gray-600">Chờ duyệt</p>
                 <span class="rounded-xl bg-amber-50 p-2">
                     <svg class="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </span>
             </div>
-            <p class="mt-4 text-3xl font-bold text-slate-900">{{ $stats['pending_count'] }}</p>
-            <p class="mt-1 text-sm text-slate-500">{{ number_format($stats['pending_amount']) }}đ</p>
+            <p class="mt-4 text-3xl font-bold text-gray-900">{{ $stats['pending_count'] }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ number_format($stats['pending_amount']) }}đ</p>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6">
             <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-slate-600">Duyệt hôm nay</p>
+                <p class="text-sm font-medium text-gray-600">Duyệt hôm nay</p>
                 <span class="rounded-xl bg-green-50 p-2">
                     <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </span>
             </div>
-            <p class="mt-4 text-3xl font-bold text-slate-900">{{ $stats['completed_today'] }}</p>
-            <p class="mt-1 text-sm text-slate-500">{{ number_format($stats['completed_today_amount']) }}đ</p>
+            <p class="mt-4 text-3xl font-bold text-gray-900">{{ $stats['completed_today'] }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ number_format($stats['completed_today_amount']) }}đ</p>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6">
             <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-slate-600">Tổng đã chi trả</p>
+                <p class="text-sm font-medium text-gray-600">Tổng đã chi trả</p>
                 <span class="rounded-xl bg-blue-50 p-2">
                     <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </span>
             </div>
-            <p class="mt-4 text-3xl font-bold text-slate-900">{{ $stats['total_paid_count'] }}</p>
-            <p class="mt-1 text-sm text-slate-500">{{ number_format($stats['total_paid']) }}đ</p>
+            <p class="mt-4 text-3xl font-bold text-gray-900">{{ $stats['total_paid_count'] }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ number_format($stats['total_paid']) }}đ</p>
         </div>
     </div>
 
-    <div class="rounded-2xl border border-slate-200 bg-white">
-        <div class="border-b border-slate-200 p-6">
+    <div class="rounded-2xl border border-gray-200 bg-white">
+        <div class="border-b border-gray-200 p-6">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 class="text-lg font-semibold text-slate-900">Yêu cầu rút tiền</h2>
-                    <p class="text-sm text-slate-500">Duyệt hoặc từ chối yêu cầu của contributor</p>
+                    <h2 class="text-lg font-semibold text-gray-900">Yêu cầu rút tiền</h2>
+                    <p class="text-sm text-gray-500">Duyệt hoặc từ chối yêu cầu của contributor</p>
                 </div>
                 <div class="flex gap-3">
-                    <select wire:model.live="statusFilter" class="rounded-xl border-slate-300 text-sm">
+                    <select wire:model.live="statusFilter" class="rounded-xl border-gray-300 text-sm">
                         <option value="all">Tất cả</option>
                         <option value="pending">Chờ duyệt</option>
                         <option value="completed">Đã duyệt</option>
                         <option value="rejected">Đã từ chối</option>
                     </select>
                     <input type="search" wire:model.live.debounce.300ms="search" placeholder="Tìm contributor..."
-                           class="rounded-xl border-slate-300 text-sm" />
+                           class="rounded-xl border-gray-300 text-sm" />
                 </div>
             </div>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full">
-                <thead class="border-b border-slate-200 bg-slate-50">
+                <thead class="border-b border-gray-200 bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">Contributor</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase text-slate-600 cursor-pointer hover:bg-slate-100" wire:click="sortBy('amount')">
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">Contributor</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-600 cursor-pointer hover:bg-gray-100" wire:click="sortBy('amount')">
                             Số tiền
                             @if($sortField === 'amount')
                                 <span class="text-xs">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                             @endif
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">Ngân hàng</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">Trạng thái</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600 cursor-pointer hover:bg-slate-100" wire:click="sortBy('created_at')">
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">Ngân hàng</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">Trạng thái</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 cursor-pointer hover:bg-gray-100" wire:click="sortBy('created_at')">
                             Ngày tạo
                             @if($sortField === 'created_at')
                                 <span class="text-xs">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                             @endif
                         </th>
-                        <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-slate-600">Thao tác</th>
+                        <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-600">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                     @forelse($payouts as $payout)
-                        <tr class="hover:bg-slate-50">
-                            <td class="px-6 py-4 text-sm font-mono text-slate-900">#{{ $payout->id }}</td>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm font-mono text-gray-900">#{{ $payout->id }}</td>
                             <td class="px-6 py-4">
-                                <p class="font-semibold text-slate-900">{{ $payout->user->name }}</p>
-                                <p class="text-xs text-slate-500">{{ $payout->user->email }}</p>
-                                <p class="text-xs text-slate-400">Số dư: {{ number_format($payout->user->contributor_balance) }}đ</p>
+                                <p class="font-semibold text-gray-900">{{ $payout->user->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $payout->user->email }}</p>
+                                <p class="text-xs text-gray-400">Số dư: {{ number_format($payout->user->contributor_balance) }}đ</p>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <p class="font-bold text-slate-900">{{ number_format($payout->amount) }}đ</p>
+                                <p class="font-bold text-gray-900">{{ number_format($payout->amount) }}đ</p>
                             </td>
                             <td class="px-6 py-4">
-                                <p class="text-sm font-medium text-slate-900">{{ $payout->bank_name }}</p>
-                                <p class="text-xs text-slate-500">{{ $payout->bank_account_number }}</p>
-                                <p class="text-xs text-slate-500">{{ $payout->bank_account_name }}</p>
+                                <p class="text-sm font-medium text-gray-900">{{ $payout->bank_name }}</p>
+                                <p class="text-xs text-gray-500">{{ $payout->bank_account_number }}</p>
+                                <p class="text-xs text-gray-500">{{ $payout->bank_account_name }}</p>
                             </td>
                             <td class="px-6 py-4">
                                 @if($payout->status === 'pending')
@@ -119,13 +119,13 @@
                                     <p class="mt-1 text-xs text-rose-600">Lý do: {{ Str::limit($payout->rejection_reason, 50) }}</p>
                                 @endif
                                 @if($payout->note)
-                                    <p class="mt-1 text-xs text-slate-500">Contributor: {{ Str::limit($payout->note, 50) }}</p>
+                                    <p class="mt-1 text-xs text-gray-500">Contributor: {{ Str::limit($payout->note, 50) }}</p>
                                 @endif
                                 @if($payout->processed_at)
-                                    <p class="mt-1 text-xs text-slate-400">{{ $payout->processed_at->format('d/m/Y H:i') }}</p>
+                                    <p class="mt-1 text-xs text-gray-400">{{ $payout->processed_at->format('d/m/Y H:i') }}</p>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-500">
+                            <td class="px-6 py-4 text-sm text-gray-500">
                                 {{ $payout->created_at->format('d/m/Y H:i') }}
                             </td>
                             <td class="px-6 py-4 text-center">
@@ -150,13 +150,13 @@
                                         Xem chứng từ
                                     </a>
                                 @else
-                                    <span class="text-xs text-slate-400">-</span>
+                                    <span class="text-xs text-gray-400">-</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-slate-500">
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                                 Không có yêu cầu rút tiền nào
                             </td>
                         </tr>
@@ -166,7 +166,7 @@
         </div>
 
         @if($payouts->hasPages())
-            <div class="border-t border-slate-200 p-4">
+            <div class="border-t border-gray-200 p-4">
                 {{ $payouts->links() }}
             </div>
         @endif
@@ -175,20 +175,20 @@
     @if($showApproveModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                <h3 class="text-lg font-semibold text-slate-900">Duyệt yêu cầu rút tiền</h3>
-                <p class="mt-2 text-sm text-slate-600">Xác nhận duyệt và chuyển khoản cho contributor</p>
+                <h3 class="text-lg font-semibold text-gray-900">Duyệt yêu cầu rút tiền</h3>
+                <p class="mt-2 text-sm text-gray-600">Xác nhận duyệt và chuyển khoản cho contributor</p>
 
                 <div class="mt-4">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Chứng từ chuyển khoản (tùy chọn)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Chứng từ chuyển khoản (tùy chọn)</label>
                     <div class="flex items-center gap-3">
-                        <label for="receiptUpload" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl text-sm font-medium text-slate-700 transition-colors">
+                        <label for="receiptUpload" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                             </svg>
                             Chọn tệp
                         </label>
                         <input type="file" id="receiptUpload" wire:model="receiptImage" accept="image/*" class="hidden">
-                        <span class="text-sm text-slate-500">
+                        <span class="text-sm text-gray-500">
                             <span wire:loading.remove wire:target="receiptImage">
                                 @if(!$receiptImage)
                                     Chưa chọn tệp
@@ -202,11 +202,11 @@
                     
                     @if($receiptImage)
                         <div class="mt-3" x-data="{ showPreview: false }">
-                            <p class="text-xs text-slate-600 mb-2">Xem trước ảnh đã chọn:</p>
+                            <p class="text-xs text-gray-600 mb-2">Xem trước ảnh đã chọn:</p>
                             <div class="relative inline-block">
                                 <img src="{{ $receiptImage->temporaryUrl() }}" 
                                      @click="showPreview = true"
-                                     class="w-32 h-32 object-cover rounded-lg border-2 border-slate-200 cursor-pointer hover:border-blue-500 transition-colors"
+                                     class="w-32 h-32 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-500 transition-colors"
                                      alt="Preview">
                                 <div class="absolute top-1 right-1">
                                     <button type="button" wire:click="$set('receiptImage', null)" 
@@ -229,7 +229,7 @@
                                          @click.stop
                                          alt="Full preview">
                                     <button @click="showPreview = false" 
-                                            class="absolute top-2 right-2 bg-white text-slate-900 rounded-full p-2 hover:bg-slate-100">
+                                            class="absolute top-2 right-2 bg-white text-gray-900 rounded-full p-2 hover:bg-gray-100">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                         </svg>
@@ -243,7 +243,7 @@
 
                 <div class="mt-6 flex gap-3">
                     <button wire:click="$set('showApproveModal', false)"
-                            class="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                            class="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                         Hủy
                     </button>
                     <button wire:click="approvePayout"
@@ -258,18 +258,18 @@
     @if($showRejectModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                <h3 class="text-lg font-semibold text-slate-900">Từ chối yêu cầu</h3>
-                <p class="mt-2 text-sm text-slate-600">Nhập lý do từ chối yêu cầu rút tiền</p>
+                <h3 class="text-lg font-semibold text-gray-900">Từ chối yêu cầu</h3>
+                <p class="mt-2 text-sm text-gray-600">Nhập lý do từ chối yêu cầu rút tiền</p>
 
                 <div class="mt-4">
                     <textarea wire:model="rejectionReason" rows="4" placeholder="Nhập lý do từ chối..."
-                              class="w-full rounded-xl border-slate-300 text-sm"></textarea>
+                              class="w-full rounded-xl border-gray-300 text-sm"></textarea>
                     @error('rejectionReason') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="mt-6 flex gap-3">
                     <button wire:click="$set('showRejectModal', false)"
-                            class="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                            class="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                         Hủy
                     </button>
                     <button wire:click="rejectPayout"
@@ -301,8 +301,8 @@
                     }
                 </style>
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-slate-900">Chi tiết yêu cầu rút tiền #{{ $detailPayout->id }}</h3>
-                    <button wire:click="closeDetailModal" class="text-slate-400 hover:text-slate-600">
+                    <h3 class="text-lg font-semibold text-gray-900">Chi tiết yêu cầu rút tiền #{{ $detailPayout->id }}</h3>
+                    <button wire:click="closeDetailModal" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -330,34 +330,34 @@
                     </div>
 
                     <!-- Thông tin yêu cầu -->
-                    <div class="bg-slate-50 rounded-xl p-4">
-                        <h4 class="text-sm font-semibold text-slate-900 mb-3">Thông tin yêu cầu rút tiền</h4>
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <h4 class="text-sm font-semibold text-gray-900 mb-3">Thông tin yêu cầu rút tiền</h4>
                         <div class="space-y-2 text-sm">
-                            <div class="flex justify-between py-2 border-b border-slate-200">
-                                <span class="text-slate-600">Số tiền rút:</span>
-                                <span class="font-bold text-slate-900 text-lg">{{ number_format($detailPayout->amount) }}đ</span>
+                            <div class="flex justify-between py-2 border-b border-gray-200">
+                                <span class="text-gray-600">Số tiền rút:</span>
+                                <span class="font-bold text-gray-900 text-lg">{{ number_format($detailPayout->amount) }}đ</span>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-slate-200">
-                                <span class="text-slate-600">Ngân hàng:</span>
-                                <span class="font-medium text-slate-900">{{ $detailPayout->bank_name }}</span>
+                            <div class="flex justify-between py-2 border-b border-gray-200">
+                                <span class="text-gray-600">Ngân hàng:</span>
+                                <span class="font-medium text-gray-900">{{ $detailPayout->bank_name }}</span>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-slate-200">
-                                <span class="text-slate-600">Số tài khoản:</span>
-                                <span class="font-mono text-slate-900">{{ $detailPayout->bank_account_number }}</span>
+                            <div class="flex justify-between py-2 border-b border-gray-200">
+                                <span class="text-gray-600">Số tài khoản:</span>
+                                <span class="font-mono text-gray-900">{{ $detailPayout->bank_account_number }}</span>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-slate-200">
-                                <span class="text-slate-600">Tên chủ TK:</span>
-                                <span class="font-medium text-slate-900">{{ $detailPayout->bank_account_name }}</span>
+                            <div class="flex justify-between py-2 border-b border-gray-200">
+                                <span class="text-gray-600">Tên chủ TK:</span>
+                                <span class="font-medium text-gray-900">{{ $detailPayout->bank_account_name }}</span>
                             </div>
                             @if($detailPayout->note)
                                 <div class="py-2">
-                                    <span class="text-slate-600 block mb-1">Ghi chú của contributor:</span>
-                                    <p class="text-slate-900 bg-white p-2 rounded border border-slate-200">{{ $detailPayout->note }}</p>
+                                    <span class="text-gray-600 block mb-1">Ghi chú của contributor:</span>
+                                    <p class="text-gray-900 bg-white p-2 rounded border border-gray-200">{{ $detailPayout->note }}</p>
                                 </div>
                             @endif
                             <div class="flex justify-between py-2">
-                                <span class="text-slate-600">Ngày tạo:</span>
-                                <span class="text-slate-900">{{ $detailPayout->created_at->format('d/m/Y H:i') }}</span>
+                                <span class="text-gray-600">Ngày tạo:</span>
+                                <span class="text-gray-900">{{ $detailPayout->created_at->format('d/m/Y H:i') }}</span>
                             </div>
                         </div>
                     </div>
@@ -366,7 +366,7 @@
                 <!-- Action Buttons -->
                 <div class="mt-6 flex gap-3">
                     <button wire:click="closeDetailModal"
-                            class="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                            class="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                         Đóng
                     </button>
                     <button wire:click="closeDetailModal; openApproveModal({{ $detailPayout->id }})"
@@ -382,3 +382,4 @@
         </div>
     @endif
 </div>
+

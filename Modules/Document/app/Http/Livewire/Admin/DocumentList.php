@@ -30,7 +30,7 @@ class DocumentList extends Component
     public $sortDirection = 'desc';
 
     // Tab navigation
-    public $activeTab = 'pending'; // pending | approved | rejected | all
+    public $activeTab = 'pending'; // pending | approved | rejected | unpublished | deleted | all
 
     public $selectedDocumentId = null;
 
@@ -194,6 +194,8 @@ class DocumentList extends Component
             $query->where('status', 'approved');
         } elseif ($this->activeTab === 'rejected') {
             $query->where('status', 'rejected');
+        } elseif ($this->activeTab === 'unpublished') {
+            $query->where('status', 'unpublished');
         } elseif ($this->activeTab === 'deleted') {
             $query->onlyTrashed();
         }
@@ -262,6 +264,7 @@ class DocumentList extends Component
         })->count();
         $approvedCount = Document::where('status', 'approved')->count();
         $rejectedCount = Document::where('status', 'rejected')->count();
+        $unpublishedCount = Document::where('status', 'unpublished')->count();
         $totalDownloads = Document::sum('download_count');
 
         return view('document::livewire.admin.document-list', [
@@ -271,6 +274,7 @@ class DocumentList extends Component
             'approvedCount' => $approvedCount,
             'pendingCount' => $pendingCount,
             'rejectedCount' => $rejectedCount,
+            'unpublishedCount' => $unpublishedCount,
             'totalDownloads' => $totalDownloads,
         ])->layout('layouts.admin', [
             'pageTitle' => 'Quản lý tài liệu',

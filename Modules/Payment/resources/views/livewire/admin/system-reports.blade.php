@@ -1,34 +1,34 @@
 <div class="space-y-6">
     {{-- Date Filter Section --}}
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-lg font-semibold text-slate-900 mb-4">Lọc theo ngày</h3>
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Lọc theo ngày</h3>
         
         {{-- Custom Date Range Inputs --}}
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-                <label for="start_date" class="block text-sm font-medium text-slate-700 mb-2">Từ ngày</label>
+                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Từ ngày</label>
                 <input type="date" 
                     id="start_date"
                     wire:model="start_date" 
-                    class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
-                <label for="end_date" class="block text-sm font-medium text-slate-700 mb-2">Đến ngày</label>
+                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">Đến ngày</label>
                 <input type="date" 
                     id="end_date"
                     wire:model="end_date" 
-                    class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex items-end">
                 <button wire:click="setFilterPreset('custom')" 
-                    class="w-full rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700">
+                    class="w-full rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700">
                     Áp dụng bộ lọc
                 </button>
             </div>
         </div>
 
         @if($start_date || $end_date)
-            <div class="mt-4 flex items-center gap-2 text-sm text-slate-600">
+            <div class="mt-4 flex items-center gap-2 text-sm text-gray-600">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -48,11 +48,11 @@
 
 
     {{-- Export Report Section --}}
-    <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div class="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
         <div class="flex items-start justify-between">
             <div class="flex-1">
-                <h2 class="text-xl font-semibold text-slate-900">Xuất báo cáo thống kê</h2>
-                <p class="mt-2 text-sm text-slate-600">
+                <h2 class="text-xl font-semibold text-gray-900">Xuất báo cáo thống kê</h2>
+                <p class="mt-2 text-sm text-gray-600">
                     Tạo báo cáo Excel chi tiết bao gồm thống kê về người dùng, tài liệu, lộ trình học, bài kiểm tra và doanh thu.
                 </p>
                 
@@ -61,25 +61,25 @@
                         <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="text-sm text-slate-700">Thống kê tổng quan về toàn bộ hệ thống</span>
+                        <span class="text-sm text-gray-700">Thống kê tổng quan về toàn bộ hệ thống</span>
                     </div>
                     <div class="flex items-start gap-3">
                         <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="text-sm text-slate-700">Danh sách chi tiết người dùng, tài liệu, lộ trình và bài kiểm tra</span>
+                        <span class="text-sm text-gray-700">Danh sách chi tiết người dùng, tài liệu, lộ trình và bài kiểm tra</span>
                     </div>
                     <div class="flex items-start gap-3">
                         <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="text-sm text-slate-700">Báo cáo doanh thu chi tiết theo từng đơn hàng</span>
+                        <span class="text-sm text-gray-700">Báo cáo doanh thu chi tiết theo từng đơn hàng</span>
                     </div>
                     <div class="flex items-start gap-3">
                         <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="text-sm text-slate-700">Định dạng Excel với nhiều sheet, dễ dàng phân tích và xử lý</span>
+                        <span class="text-sm text-gray-700">Định dạng Excel với nhiều sheet, dễ dàng phân tích và xử lý</span>
                     </div>
                 </div>
 
@@ -114,8 +114,8 @@
     {{-- Additional Statistics --}}
     <div class="grid gap-6 lg:grid-cols-2">
         {{-- Revenue Statistics --}}
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 class="text-lg font-semibold text-slate-900">Thống kê doanh thu</h3>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-900">Thống kê doanh thu</h3>
             <div class="mt-4 space-y-4">
                 @php
                     $totalRevenue = \Modules\Payment\Models\Order::where('payment_status', 'paid')->sum('total_amount');
@@ -125,27 +125,27 @@
                 @endphp
                 
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Tổng doanh thu</span>
-                    <span class="text-lg font-semibold text-slate-900">{{ number_format($totalRevenue, 0, ',', '.') }} VNĐ</span>
+                    <span class="text-sm text-gray-600">Tổng doanh thu</span>
+                    <span class="text-lg font-semibold text-gray-900">{{ number_format($totalRevenue, 0, ',', '.') }} VNĐ</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Tổng đơn hàng</span>
-                    <span class="text-lg font-semibold text-slate-900">{{ number_format($totalOrders) }}</span>
+                    <span class="text-sm text-gray-600">Tổng đơn hàng</span>
+                    <span class="text-lg font-semibold text-gray-900">{{ number_format($totalOrders) }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Thu nhập Contributor</span>
+                    <span class="text-sm text-gray-600">Thu nhập Contributor</span>
                     <span class="text-lg font-semibold text-emerald-600">{{ number_format($contributorEarnings, 0, ',', '.') }} VNĐ</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Doanh thu Platform</span>
+                    <span class="text-sm text-gray-600">Doanh thu Platform</span>
                     <span class="text-lg font-semibold text-blue-600">{{ number_format($platformRevenue, 0, ',', '.') }} VNĐ</span>
                 </div>
             </div>
         </div>
 
         {{-- Content Statistics --}}
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 class="text-lg font-semibold text-slate-900">Thống kê nội dung</h3>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-900">Thống kê nội dung</h3>
             <div class="mt-4 space-y-4">
                 @php
                     $totalDownloads = \Modules\Document\Models\Document::sum('download_count');
@@ -155,22 +155,23 @@
                 @endphp
                 
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Tổng lượt xem tài liệu</span>
-                    <span class="text-lg font-semibold text-slate-900">{{ number_format($totalViews) }}</span>
+                    <span class="text-sm text-gray-600">Tổng lượt xem tài liệu</span>
+                    <span class="text-lg font-semibold text-gray-900">{{ number_format($totalViews) }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Tổng lượt tải xuống</span>
-                    <span class="text-lg font-semibold text-slate-900">{{ number_format($totalDownloads) }}</span>
+                    <span class="text-sm text-gray-600">Tổng lượt tải xuống</span>
+                    <span class="text-lg font-semibold text-gray-900">{{ number_format($totalDownloads) }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Người dùng VIP</span>
+                    <span class="text-sm text-gray-600">Người dùng VIP</span>
                     <span class="text-lg font-semibold text-purple-600">{{ number_format($vipUsers) }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Contributors</span>
+                    <span class="text-sm text-gray-600">Contributors</span>
                     <span class="text-lg font-semibold text-amber-600">{{ number_format($contributors) }}</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
+

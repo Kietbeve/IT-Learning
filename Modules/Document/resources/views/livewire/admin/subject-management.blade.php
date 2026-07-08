@@ -7,7 +7,7 @@
                 type="text" 
                 wire:model.live.debounce.300ms="search"
                 placeholder="Tìm kiếm môn học, danh mục..."
-                class="w-full rounded-xl border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                class="w-full rounded-xl border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
             >
             {{-- Loading indicator khi đang tìm kiếm --}}
             <div
@@ -16,7 +16,7 @@
                 class="absolute inset-y-0 right-3 items-center"
             >
                 <svg
-                    class="h-4 w-4 animate-spin text-slate-500"
+                    class="h-4 w-4 animate-spin text-gray-500"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -49,26 +49,26 @@
     </div>
 
     {{-- Bảng danh sách môn học --}}
-    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="w-full divide-y divide-slate-200">
-                <thead class="bg-slate-50">
+                <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">ID</th>
-                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Tên Môn Học</th>
-                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Danh Mục</th>
-                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Slug</th>
-                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Trạng Thái</th>
-                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Ngày Tạo</th>
-                        <th class="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-700">Thao Tác</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">ID</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">Tên Môn Học</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">Danh Mục</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">Slug</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">Trạng Thái</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">Ngày Tạo</th>
+                        <th class="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-700">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 bg-white">
                     @forelse($subjects as $subject)
-                        <tr class="transition hover:bg-slate-50">
-                            <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-900">{{ $subject->id }}</td>
-                            <td class="px-6 py-4 text-sm font-medium text-slate-900">{{ $subject->name }}</td>
-                            <td class="px-6 py-4 text-sm text-slate-600">
+                        <tr class="transition hover:bg-gray-50">
+                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ $subject->id }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $subject->name }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
                                 <span class="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
                                     <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
@@ -76,11 +76,11 @@
                                     {{ $subject->category->name ?? 'N/A' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-600">{{ $subject->slug }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ $subject->slug }}</td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm">
                                 <button 
                                     wire:click="toggleActive({{ $subject->id }})"
-                                    class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition {{ $subject->is_active ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}"
+                                    class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition {{ $subject->is_active ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
                                 >
                                     @if($subject->is_active)
                                         <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,7 +95,7 @@
                                     @endif
                                 </button>
                             </td>
-                            <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-600">{{ $subject->created_at->format('d/m/Y') }}</td>
+                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-600">{{ $subject->created_at->format('d/m/Y') }}</td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
 
                                 <button 
@@ -120,7 +120,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-sm text-slate-500">
+                            <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-500">
                                 Không tìm thấy môn học nào
                             </td>
                         </tr>
@@ -140,16 +140,16 @@
         <div class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:p-0">
                 {{-- Overlay nền tối với hiệu ứng blur --}}
-                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" wire:click="closeModal"></div>
+                <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" wire:click="closeModal"></div>
 
                 <div class="relative inline-block transform overflow-hidden rounded-2xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
                     <div class="bg-white px-6 pt-6 pb-4">
                         {{-- Header modal --}}
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-xl font-semibold text-slate-900">
+                            <h3 class="text-xl font-semibold text-gray-900">
                                 {{ $modalMode === 'create' ? 'Thêm Môn Học Mới' : 'Chỉnh Sửa Môn Học' }}
                             </h3>
-                            <button wire:click="closeModal" class="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-500">
+                            <button wire:click="closeModal" class="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-500">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
@@ -160,14 +160,14 @@
                         <form wire:submit="save" class="space-y-4">
                             {{-- Trường nhập tên môn học --}}
                             <div>
-                                <label for="name" class="block text-sm font-medium text-slate-700 mb-1">
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
                                     Tên Môn Học <span class="text-rose-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
                                     id="name"
                                     wire:model.live="name"
-                                    class="w-full rounded-lg border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 @error('name') border-rose-500 @enderror"
+                                    class="w-full rounded-lg border-gray-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 @error('name') border-rose-500 @enderror"
                                     placeholder="Ví dụ: Lập trình Web, Cấu trúc dữ liệu..."
                                 >
                                 @error('name')
@@ -177,13 +177,13 @@
 
                             {{-- Dropdown chọn danh mục --}}
                             <div>
-                                <label for="category_id" class="block text-sm font-medium text-slate-700 mb-1">
+                                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">
                                     Danh Mục <span class="text-rose-500">*</span>
                                 </label>
                                 <select 
                                     id="category_id"
                                     wire:model="category_id"
-                                    class="w-full rounded-lg border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 @error('category_id') border-rose-500 @enderror"
+                                    class="w-full rounded-lg border-gray-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 @error('category_id') border-rose-500 @enderror"
                                 >
                                     <option value="">-- Chọn danh mục --</option>
                                     @foreach($categories as $category)
@@ -196,17 +196,17 @@
                             </div>
 
                             {{-- Toggle trạng thái hoạt động --}}
-                            <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                            <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
                                 <div class="flex-1">
-                                    <label for="is_active" class="block text-sm font-medium text-slate-700">
+                                    <label for="is_active" class="block text-sm font-medium text-gray-700">
                                         Trạng Thái Hoạt Động
                                     </label>
-                                    <p class="text-xs text-slate-500 mt-0.5">Bật để môn học hiển thị trên hệ thống</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">Bật để môn học hiển thị trên hệ thống</p>
                                 </div>
                                 <button
                                     type="button"
                                     wire:click="$toggle('is_active')"
-                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {{ $is_active ? 'bg-blue-600' : 'bg-slate-300' }}"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {{ $is_active ? 'bg-blue-600' : 'bg-gray-300' }}"
                                     role="switch"
                                     aria-checked="{{ $is_active ? 'true' : 'false' }}"
                                 >
@@ -215,11 +215,11 @@
                             </div>
 
                             {{-- Footer với các nút hành động --}}
-                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                                 <button 
                                     type="button"
                                     wire:click="closeModal"
-                                    class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                                    class="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
                                 >
                                     Hủy
                                 </button>
@@ -270,7 +270,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:p-0">
                 {{-- Overlay nền tối với hiệu ứng blur --}}
-                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" wire:click="$set('confirmDeleteId', null)"></div>
+                <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" wire:click="$set('confirmDeleteId', null)"></div>
 
                 <div class="relative inline-block transform overflow-hidden rounded-2xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md sm:align-middle">
                     <div class="bg-white px-6 pt-6 pb-4">
@@ -282,8 +282,8 @@
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-slate-900 mb-2">Xác Nhận Xóa</h3>
-                                <p class="text-sm text-slate-600">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">Xác Nhận Xóa</h3>
+                                <p class="text-sm text-gray-600">
                                     Bạn có chắc chắn muốn xóa môn học <span class="font-semibold text-rose-600">{{ $name }}</span>? 
                                     Hành động này không thể hoàn tác và sẽ ảnh hưởng đến các tài liệu và đề thi liên quan.
                                 </p>
@@ -294,7 +294,7 @@
                         <div class="mt-6 flex items-center justify-end gap-3">
                             <button 
                                 wire:click="$set('confirmDeleteId', null)"
-                                class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                                class="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
                             >
                                 Hủy
                             </button>
@@ -342,3 +342,4 @@
 
 
 </div>
+

@@ -23,65 +23,65 @@
     <!-- Stats Section - Light Glassmorphic Design -->
     <div class="grid gap-6 grid-cols-2 lg:grid-cols-4">
         <!-- Approved -->
-        <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+        <article class="relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-gray-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
             <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-emerald-500/10 blur-xl"></div>
             <div class="flex items-center justify-between">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Đã duyệt</p>
+                <p class="text-xs uppercase tracking-[0.15em] text-gray-500 font-bold">Đã duyệt</p>
                 <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </span>
             </div>
-            <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($approvedCount) }}</p>
+            <p class="mt-4 text-3xl font-black text-gray-800 tracking-tight">{{ number_format($approvedCount) }}</p>
             <p class="mt-1.5 text-[10px] text-emerald-700 font-bold bg-emerald-50/50 border border-emerald-100 px-2 py-0.5 rounded-lg inline-block">Xuất bản công khai</p>
         </article>
 
         <!-- Pending -->
-        <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+        <article class="relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-gray-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
             <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-amber-500/10 blur-xl"></div>
             <div class="flex items-center justify-between">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Chờ duyệt</p>
+                <p class="text-xs uppercase tracking-[0.15em] text-gray-500 font-bold">Chờ duyệt</p>
                 <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </span>
             </div>
-            <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($pendingCount) }}</p>
+            <p class="mt-4 text-3xl font-black text-gray-800 tracking-tight">{{ number_format($pendingCount) }}</p>
             <p class="mt-1.5 text-[10px] text-amber-700 font-bold bg-amber-50/50 border border-amber-100 px-2 py-0.5 rounded-lg inline-block animate-pulse">Đang kiểm duyệt</p>
         </article>
 
         <!-- Downloads -->
-        <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+        <article class="relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-gray-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
             <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-blue-500/10 blur-xl"></div>
             <div class="flex items-center justify-between">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Lượt tải</p>
+                <p class="text-xs uppercase tracking-[0.15em] text-gray-500 font-bold">Lượt tải</p>
                 <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 </span>
             </div>
-            <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($totalDownloads) }}</p>
+            <p class="mt-4 text-3xl font-black text-gray-800 tracking-tight">{{ number_format($totalDownloads) }}</p>
             <p class="mt-1.5 text-[10px] text-indigo-700 font-bold bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg inline-block">Tổng lượt tải xuống</p>
         </article>
 
         <!-- Views -->
-        <article class="relative overflow-hidden rounded-3xl border border-white bg-white/70 p-6 shadow-xl shadow-slate-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+        <article class="relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-gray-100/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
             <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-purple-500/10 blur-xl"></div>
             <div class="flex items-center justify-between">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-500 font-bold">Lượt xem</p>
+                <p class="text-xs uppercase tracking-[0.15em] text-gray-500 font-bold">Lượt xem</p>
                 <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 </span>
             </div>
-            <p class="mt-4 text-3xl font-black text-slate-800 tracking-tight">{{ number_format($totalViews) }}</p>
+            <p class="mt-4 text-3xl font-black text-gray-800 tracking-tight">{{ number_format($totalViews) }}</p>
             <p class="mt-1.5 text-[10px] text-purple-700 font-bold bg-purple-50/50 border border-purple-100 px-2 py-0.5 rounded-lg inline-block">Xem thử tài nguyên</p>
         </article>
     </div>
 
     <!-- Main List Card -->
-    <section class="overflow-hidden rounded-[2rem] border border-white bg-white/75 shadow-xl shadow-slate-100/50 backdrop-blur-md">
+    <section class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
         <!-- Filter Header -->
         <div class="p-6 border-b border-indigo-50/50 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-indigo-50/10">
             <div>
-                <h2 class="text-lg font-extrabold text-slate-800">Quản Lý Tài Liệu</h2>
-                <p class="text-xs text-slate-400 mt-0.5">Tìm kiếm, cập nhật trạng thái hiển thị, chỉnh sửa thông tin tài nguyên.</p>
+                <h2 class="text-lg font-extrabold text-gray-800">Quản Lý Tài Liệu</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Tìm kiếm, cập nhật trạng thái hiển thị, chỉnh sửa thông tin tài nguyên.</p>
             </div>
             
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
@@ -91,17 +91,17 @@
                 </a>
 
                 <!-- Status Filter -->
-                <select wire:model.live="statusFilter" aria-label="Lọc theo trạng thái" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 focus:border-indigo-400 focus:outline-none">
+                <select wire:model.live="statusFilter" aria-label="Lọc theo trạng thái" class="rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 focus:border-indigo-400 focus:outline-none">
                     <option value="all">Tất cả trạng thái</option>
                     <option value="approved">Đã phê duyệt</option>
                     <option value="pending">Chờ phê duyệt</option>
                     <option value="rejected">Bị từ chối</option>
-                    <option value="draft">Bản nháp</option>
+                    <option value="unpublished">Đã gỡ/Bị ẩn</option>
                     <option value="deleted">Đã xóa</option>
                 </select>
 
                 <!-- Category Filter -->
-                <select wire:model.live="categoryFilter" aria-label="Lọc theo danh mục" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 focus:border-indigo-400 focus:outline-none">
+                <select wire:model.live="categoryFilter" aria-label="Lọc theo danh mục" class="rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 focus:border-indigo-400 focus:outline-none">
                     <option value="all">Tất cả danh mục</option>
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -115,8 +115,8 @@
                            aria-label="Tìm kiếm tài liệu"
                            wire:model.live.debounce.300ms="search" 
                            placeholder="Tìm tên tài liệu..." 
-                           class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pl-10 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none" />
-                    <span class="absolute inset-y-0 left-3.5 inline-flex items-center text-slate-400">
+                           class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-2.5 pl-10 text-xs font-semibold text-gray-800 placeholder-gray-400 focus:border-indigo-400 focus:outline-none" />
+                    <span class="absolute inset-y-0 left-3.5 inline-flex items-center text-gray-400">
                         <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
                     </span>
                 </div>
@@ -131,12 +131,12 @@
                 <div class="p-5 space-y-4">
                     <div class="flex items-start justify-between gap-4">
                         <div class="space-y-1.5 flex-1 min-w-0">
-                            <a href="{{ route('documents.show', $doc->id) }}" target="_blank" class="font-bold text-slate-800 block leading-snug text-sm truncate hover:text-blue-600 transition-colors" title="{{ $doc->title }}">
+                            <a href="{{ route('documents.show', $doc->id) }}" target="_blank" class="font-bold text-gray-800 block leading-snug text-sm truncate hover:text-blue-600 transition-colors" title="{{ $doc->title }}">
                                 {{ $doc->title }}
                             </a>
                             
-                            <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 font-bold">
-                                <span class="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 uppercase text-slate-500 font-bold">
+                            <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-gray-400 font-bold">
+                                <span class="inline-flex items-center rounded-lg bg-gray-100 px-2 py-0.5 uppercase text-gray-500 font-bold">
                                     {{ $doc->file_type }}
                                 </span>
                                 <span>{{ number_format($doc->file_size / 1024 / 1024, 2) }} MB</span>
@@ -152,7 +152,7 @@
                                 @endif
                             </div>
 
-                            @if(($doc->status === 'rejected' && $doc->rejected_reason) || ($doc->status === 'approved' && $doc->rejectedVersion))
+                            @if(!$doc->trashed() && (($doc->status === 'rejected' && $doc->rejected_reason) || ($doc->status === 'approved' && $doc->rejectedVersion)))
                                 @php 
                                     $isEditRejection = $doc->status === 'approved' && $doc->rejectedVersion;
                                     $rejectedV = $doc->rejectedVersion;
@@ -229,7 +229,7 @@
                             @if($doc->product && $doc->product->price > 0)
                                 @if($doc->product->sale_price)
                                     <span class="text-indigo-650 font-extrabold text-sm">{{ number_format($doc->product->sale_price) }} VND</span>
-                                    <div class="text-[10px] text-slate-400 font-bold line-through ml-1.5">{{ number_format($doc->product->price) }} VND</div>
+                                    <div class="text-[10px] text-gray-400 font-bold line-through ml-1.5">{{ number_format($doc->product->price) }} VND</div>
                                 @else
                                     <span class="text-indigo-650 font-extrabold text-sm">{{ number_format($doc->product->price) }} VND</span>
                                 @endif
@@ -240,25 +240,25 @@
                     </div>
 
                     <!-- Meta info (Stats) -->
-                    <div class="flex flex-wrap items-center justify-between gap-2 text-[10px] font-bold text-slate-400 bg-slate-50/50 p-3 rounded-2xl">
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-[10px] font-bold text-gray-400 bg-gray-50/50 p-3 rounded-2xl">
                         <div class="flex items-center gap-3">
-                            <span>Tải về: <strong class="text-slate-700 font-extrabold">{{ number_format($doc->download_count) }}</strong></span>
-                            <span class="text-slate-350">|</span>
-                            <span>Xem thử: <strong class="text-slate-700 font-extrabold">{{ number_format($doc->view_count) }}</strong></span>
-                            <span class="text-slate-350">|</span>
+                            <span>Tải về: <strong class="text-gray-700 font-extrabold">{{ number_format($doc->download_count) }}</strong></span>
+                            <span class="text-gray-300">|</span>
+                            <span>Xem thử: <strong class="text-gray-700 font-extrabold">{{ number_format($doc->view_count) }}</strong></span>
+                            <span class="text-gray-300">|</span>
                             <span class="flex items-center text-rose-600">
                                 <svg class="w-3 h-3 fill-rose-500 mr-0.5" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                 Yêu thích: <strong class="font-extrabold">{{ number_format($doc->favorite_count) }}</strong>
                             </span>
                         </div>
-                        <span class="text-[9px] font-semibold text-slate-400">{{ $doc->created_at->format('d/m/Y H:i') }}</span>
+                        <span class="text-[9px] font-semibold text-gray-400">{{ $doc->created_at->format('d/m/Y H:i') }}</span>
                     </div>
 
                     <!-- Actions & Status -->
                     <div class="flex items-center justify-between gap-4 pt-1">
                         <div>
                             @if($doc->trashed())
-                                <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-500">Đã xóa</span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-xs font-semibold text-gray-500">Đã xóa</span>
                             @elseif($doc->status === 'approved')
                                 <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-xs font-bold text-emerald-700 border border-emerald-100 px-2.5 py-0.5">
                                     <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
@@ -274,18 +274,21 @@
                                     <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
                                     Bị từ chối
                                 </span>
-                            @else
-                                <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-650">Nháp</span>
+                            @elseif($doc->status === 'unpublished')
+                                <span class="inline-flex items-center gap-1 rounded-full bg-gray-50 text-xs font-bold text-gray-700 border border-gray-200 px-2.5 py-0.5">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-gray-500"></span>
+                                    Đã bị gỡ
+                                </span>
                             @endif
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold {{ $doc->visibility === 'public' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-50 text-slate-400' }}">
+                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold {{ $doc->visibility === 'public' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-gray-50 text-gray-400' }}">
                                 {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
                             </span>
                             
                             @if(!$doc->trashed() && $doc->status !== 'pending')
-                                <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 text-xs font-bold transition-all">
+                                <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 text-xs font-bold transition-all">
                                     Sửa
                                 </a>
                                 <button onclick="confirm('Bạn có chắc chắn muốn xóa tài liệu này không?') || event.stopImmediatePropagation()" 
@@ -298,7 +301,7 @@
                 </div>
             </div>
         @empty
-                <div class="p-8 text-center text-slate-400">
+                <div class="p-8 text-center text-gray-400">
                     Không tìm thấy tài liệu nào khớp với bộ lọc.
                 </div>
             @endforelse
@@ -308,7 +311,7 @@
         <div class="hidden md:block overflow-hidden">
             <table class="w-full text-left border-collapse table-fixed">
                 <thead>
-                    <tr class="border-b border-indigo-50/50 text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-indigo-50/5">
+                    <tr class="border-b border-indigo-50/50 text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-indigo-50/5">
                         <th class="px-6 py-4 cursor-pointer hover:bg-indigo-50/10 transition-colors w-[42%]" wire:click="sortBy('title')">
                             Tài liệu
                             @if($sortField === 'title')
@@ -327,17 +330,17 @@
                         <th class="px-6 py-4 text-right w-[14%]">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-indigo-50/40 text-sm text-slate-650">
+                <tbody class="divide-y divide-indigo-50/40 text-sm text-gray-600">
                     @forelse($documents as $doc)
                         <tr class="hover:bg-indigo-50/10 transition-colors duration-200">
                             <td class="px-6 py-4 overflow-hidden">
                                 <div class="space-y-1">
-                                    <a href="{{ route('documents.show', $doc->id) }}" target="_blank" class="font-bold text-slate-800 block leading-tight truncate hover:text-blue-600 transition-colors" title="{{ $doc->title }}">
+                                    <a href="{{ route('documents.show', $doc->id) }}" target="_blank" class="font-bold text-gray-800 block leading-tight truncate hover:text-blue-600 transition-colors" title="{{ $doc->title }}">
                                         {{ $doc->title }}
                                     </a>
                                     
-                                    <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 font-bold">
-                                        <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 uppercase text-slate-500 font-bold">
+                                    <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-gray-400 font-bold">
+                                        <span class="inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 uppercase text-gray-500 font-bold">
                                             {{ $doc->file_type }}
                                         </span>
                                         <span>{{ number_format($doc->file_size / 1024 / 1024, 2) }} MB</span>
@@ -351,12 +354,12 @@
                                             {{ $doc->subject->name }}
                                         </span>
                                         @endif
-                                        <span class="text-slate-300">|</span>
+                                        <span class="text-gray-300">|</span>
                                         <span class="inline-flex items-center gap-1.5 flex-wrap">
-                                            <span>Tải về: <strong class="text-slate-600 font-extrabold">{{ number_format($doc->download_count) }}</strong></span>
-                                            <span class="text-slate-300">|</span>
-                                            <span>Xem thử: <strong class="text-slate-600 font-extrabold">{{ number_format($doc->view_count) }}</strong></span>
-                                            <span class="text-slate-300">|</span>
+                                            <span>Tải về: <strong class="text-gray-600 font-extrabold">{{ number_format($doc->download_count) }}</strong></span>
+                                            <span class="text-gray-300">|</span>
+                                            <span>Xem thử: <strong class="text-gray-600 font-extrabold">{{ number_format($doc->view_count) }}</strong></span>
+                                            <span class="text-gray-300">|</span>
                                             <span class="flex items-center text-rose-600">
                                                 <svg class="w-3.5 h-3.5 fill-rose-500 mr-0.5 inline" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                                 Yêu thích: <strong class="font-extrabold">{{ number_format($doc->favorite_count) }}</strong>
@@ -364,7 +367,7 @@
                                         </span>
                                     </div>
 
-                                    @if(($doc->status === 'rejected' && $doc->rejected_reason) || ($doc->status === 'approved' && $doc->rejectedVersion))
+                                    @if(!$doc->trashed() && (($doc->status === 'rejected' && $doc->rejected_reason) || ($doc->status === 'approved' && $doc->rejectedVersion)))
                                         @php 
                                             $isEditRejection = $doc->status === 'approved' && $doc->rejectedVersion;
                                             $rejectedV = $doc->rejectedVersion;
@@ -440,7 +443,7 @@
                                 @if($doc->product && $doc->product->price > 0)
                                     @if($doc->product->sale_price)
                                         <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->sale_price) }} VND</span>
-                                        <div class="text-[10px] text-slate-400 font-bold line-through">{{ number_format($doc->product->price) }} VND</div>
+                                        <div class="text-[10px] text-gray-400 font-bold line-through">{{ number_format($doc->product->price) }} VND</div>
                                     @else
                                         <span class="text-indigo-600 font-extrabold">{{ number_format($doc->product->price) }} VND</span>
                                     @endif
@@ -450,7 +453,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($doc->trashed())
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-500">Đã xóa</span>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-xs font-semibold text-gray-500">Đã xóa</span>
                                 @elseif($doc->status === 'approved')
                                     <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-xs font-bold text-emerald-700 border border-emerald-100 px-2.5 py-0.5">
                                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
@@ -466,24 +469,27 @@
                                         <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
                                         Bị từ chối
                                     </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">Nháp</span>
+                                @elseif($doc->status === 'unpublished')
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-gray-50 text-xs font-bold text-gray-700 border border-gray-200 px-2.5 py-0.5">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-gray-500"></span>
+                                        Đã bị gỡ
+                                    </span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold {{ $doc->visibility === 'public' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-50 text-slate-400' }}">
-                                    <span class="h-1.5 w-1.5 rounded-full {{ $doc->visibility === 'public' ? 'bg-indigo-500' : 'bg-slate-400' }}"></span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold {{ $doc->visibility === 'public' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-gray-50 text-gray-400' }}">
+                                    <span class="h-1.5 w-1.5 rounded-full {{ $doc->visibility === 'public' ? 'bg-indigo-500' : 'bg-gray-400' }}"></span>
                                     {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-slate-400 font-medium whitespace-nowrap text-xs">
+                            <td class="px-6 py-4 text-gray-400 font-medium whitespace-nowrap text-xs">
                                 {{ $doc->created_at->format('d/m/Y') }}
-                                <span class="block text-[10px] text-slate-400 font-normal mt-0.5">{{ $doc->created_at->format('H:i') }}</span>
+                                <span class="block text-[10px] text-gray-400 font-normal mt-0.5">{{ $doc->created_at->format('H:i') }}</span>
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-2">
                                     @if(!$doc->trashed() && $doc->status !== 'pending')
-                                        <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 text-xs font-bold shadow-sm transition-all duration-200">
+                                        <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 text-xs font-bold shadow-sm transition-all duration-200">
                                             Sửa
                                         </a>
                                         <button onclick="confirm('Bạn có chắc chắn muốn xóa tài liệu này không?') || event.stopImmediatePropagation()" 
@@ -497,9 +503,9 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-slate-400">
-                                <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
-                                <span class="font-medium text-slate-450">Không tìm thấy tài liệu phù hợp.</span>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                                <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                                <span class="font-medium text-gray-400">Không tìm thấy tài liệu phù hợp.</span>
                             </td>
                         </tr>
                     @endforelse
@@ -516,3 +522,4 @@
         @endif
     </section>
 </div>
+

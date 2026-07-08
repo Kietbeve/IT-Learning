@@ -20,7 +20,7 @@ class DocumentReport extends Component
 
     public $selectedReportId = null;
 
-    public $reportNote = '';
+    public $unpublishReason = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -43,62 +43,85 @@ class DocumentReport extends Component
         $this->resetPage();
     }
 
-    public function resolveReport($id)
+    public function openResolveModal($id)
     {
-        $report = Report::findOrFail($id);
+        $this->selectedReportId = $id;
+        $this->unpublishReason = '';
+        $this->resetValidation();
+        $this->dispatch('open-modal', 'report-resolve-modal');
+    }
+
+    public function confirmResolve()
+    {
+        $this->validate([
+            'unpublishReason' => 'required|string|max:500',
+        ], [
+            'unpublishReason.required' => 'Vui lòng nhập lý do gỡ tài liệu.',
+            'unpublishReason.max' => 'Lý do không được vượt quá 500 ký tự.',
+        ]);
+
+        $report = Report::findOrFail($this->selectedReportId);
 
         $report->update([
             'status' => 'resolved',
             'resolved_by' => Auth::id(),
             'resolved_at' => now(),
-            'review_note' => null,
+            'review_note' => $this->unpublishReason, // We can store it here too for the report record
         ]);
 
         if ($report->document) {
-            $report->document->update(['status' => 'rejected']);
+            $report->document->update(['status' => 'unpublished']);
             if ($report->document->currentVersion) {
                 $report->document->currentVersion->update([
-                    'status' => 'rejected',
-                    'rejected_reason' => 'Bị ẩn do vi phạm báo cáo: ' . $report->reason,
+                    'status' => 'unpublished',
                 ]);
+            }
+            
+            // Notify the author
+            if ($report->document->author) {
+                $report->document->author->notify(new \Modules\Document\Notifications\DocumentReportApprovedNotification($report));
+                $this->dispatch('new-notification');
             }
         }
 
+        // Notify the reporter
+        if ($report->user) {
+            $report->user->notify(new \Modules\Document\Notifications\DocumentReportResolvedForReporterNotification($report));
+            $this->dispatch('new-notification');
+        }
+
+        $this->dispatch('close-modal', 'report-resolve-modal');
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã phê duyệt báo cáo và gỡ bỏ tài liệu vi phạm thành công.']);
+        
+        $this->selectedReportId = null;
+        $this->unpublishReason = '';
     }
 
     public function openDismissModal($id)
     {
         $this->selectedReportId = $id;
-        $this->reportNote = '';
-        $this->resetValidation();
         $this->dispatch('open-modal', 'report-dismiss-modal');
     }
 
     public function confirmDismiss()
     {
-        $this->validate([
-            'reportNote' => 'required|string|min:5|max:500',
-        ], [
-            'reportNote.required' => 'Vui lòng nhập lý do/ghi chú bác bỏ.',
-            'reportNote.min' => 'Ghi chú phải có tối thiểu 5 ký tự.',
-            'reportNote.max' => 'Ghi chú không được vượt quá 500 ký tự.',
-        ]);
-
         $report = Report::findOrFail($this->selectedReportId);
 
         $report->update([
             'status' => 'dismissed',
             'resolved_by' => Auth::id(),
             'resolved_at' => now(),
-            'review_note' => $this->reportNote,
+            'review_note' => null,
         ]);
+
+        if ($report->user) {
+            $report->user->notify(new \Modules\Document\Notifications\DocumentReportRejectedNotification($report));
+            $this->dispatch('new-notification');
+        }
 
         $this->dispatch('close-modal', 'report-dismiss-modal');
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã bác bỏ báo cáo vi phạm thành công.']);
-
         $this->selectedReportId = null;
-        $this->reportNote = '';
     }
 
     public function getReasonLabel($reason)

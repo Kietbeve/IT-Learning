@@ -54,7 +54,6 @@ class ClaimGuestPurchases
                         [
                             'order_item_id' => $item->id,
                             'access_type' => 'purchased',
-                            'expires_at' => null,
                         ]
                     );
                 }

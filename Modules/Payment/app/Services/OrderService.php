@@ -107,7 +107,7 @@ class OrderService
             $platformAmount = (int) floor($valuePerDownload * $platformFeePercent / 100);
             $contributorAmount = $valuePerDownload - $platformAmount;
 
-            return OrderItem::create([
+            $orderItem = OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $doc->product->id,
                 'document_id' => $doc->id,
@@ -118,6 +118,10 @@ class OrderService
                 'contributor_amount' => $contributorAmount,
                 'platform_amount' => $platformAmount,
             ]);
+
+            $this->addContributorCommission($orderItem);
+
+            return $orderItem;
         });
     }
 
@@ -229,35 +233,12 @@ class OrderService
                     [
                         'order_item_id' => $item->id,
                         'access_type' => 'purchased',
-                        'expires_at' => null,
                     ]
                 );
             }
 
             // Cộng tiền hoa hồng cho tác giả
-            if ($item->document_id && $item->contributor_amount > 0) {
-                $document = Document::find($item->document_id);
-                if ($document && $document->author_id) {
-                    $author = User::find($document->author_id);
-                    if ($author) {
-                        $balanceBefore = $author->contributor_balance ?? 0;
-                        $balanceAfter = $balanceBefore + $item->contributor_amount;
-
-                        $author->update(['contributor_balance' => $balanceAfter]);
-
-                        WalletTransaction::create([
-                            'user_id' => $author->id,
-                            'type' => 'earning',
-                            'amount' => $item->contributor_amount,
-                            'balance_before' => $balanceBefore,
-                            'balance_after' => $balanceAfter,
-                            'reference_type' => 'order_item',
-                            'reference_id' => $item->id,
-                            'note' => 'Doanh thu từ tài liệu: '.$item->document_title_snapshot,
-                        ]);
-                    }
-                }
-            }
+            $this->addContributorCommission($item);
         }
 
         // Bắn event và gửi notification SAU khi DB commit
@@ -283,5 +264,35 @@ class OrderService
                 ]);
             }
         });
+    }
+
+    /**
+     * Cộng tiền hoa hồng cho tác giả từ một mục đơn hàng (thanh toán tiền hoặc tải VIP).
+     */
+    protected function addContributorCommission(OrderItem $item): void
+    {
+        if ($item->document_id && $item->contributor_amount > 0) {
+            $document = Document::find($item->document_id);
+            if ($document && $document->author_id) {
+                $author = User::find($document->author_id);
+                if ($author) {
+                    $balanceBefore = $author->contributor_balance ?? 0;
+                    $balanceAfter = $balanceBefore + $item->contributor_amount;
+
+                    $author->update(['contributor_balance' => $balanceAfter]);
+
+                    WalletTransaction::create([
+                        'user_id' => $author->id,
+                        'type' => 'earning',
+                        'amount' => $item->contributor_amount,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balanceAfter,
+                        'reference_type' => 'order_item',
+                        'reference_id' => $item->id,
+                        'note' => 'Doanh thu từ tài liệu: '.$item->document_title_snapshot,
+                    ]);
+                }
+            }
+        }
     }
 }

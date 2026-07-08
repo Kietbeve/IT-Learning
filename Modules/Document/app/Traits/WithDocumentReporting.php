@@ -36,7 +36,18 @@ trait WithDocumentReporting
             'reportDetails' => 'nullable|string|max:1000',
         ]);
 
-        \Modules\Document\Models\DocumentReport::create([
+        $existingReport = \Modules\Document\Models\DocumentReport::where('document_id', $this->documentId)
+            ->where('user_id', Auth::id())
+            ->where('status', '!=', 'dismissed')
+            ->first();
+
+        if ($existingReport) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Bạn đã báo cáo tài liệu này rồi.']);
+            $this->showReportModal = false;
+            return;
+        }
+
+        $report = \Modules\Document\Models\DocumentReport::create([
             'user_id' => Auth::id(),
             'document_id' => $this->documentId,
             'reason' => $this->reportReason,
@@ -44,7 +55,9 @@ trait WithDocumentReporting
             'status' => 'pending'
         ]);
 
+        Auth::user()->notify(new \Modules\Document\Notifications\DocumentReportSubmittedNotification($report));
+        $this->dispatch('new-notification');
+
         $this->showReportModal = false;
-        $this->dispatch('notify', ['type' => 'success', 'message' => 'Báo cáo vi phạm đã được gửi thành công. Admin sẽ kiểm duyệt tệp này.']);
     }
 }

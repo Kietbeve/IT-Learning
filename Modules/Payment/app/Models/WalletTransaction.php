@@ -17,7 +17,7 @@ class WalletTransaction extends Model
 
     protected $fillable = [
         'user_id', 'type', 'amount', 'balance_before', 'balance_after',
-        'reference_type', 'reference_id', 'note', 'created_by', 'created_at',
+        'reference_type', 'reference_id', 'note', 'created_at',
     ];
 
     protected $casts = [
@@ -27,10 +27,5 @@ class WalletTransaction extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
     }
 }

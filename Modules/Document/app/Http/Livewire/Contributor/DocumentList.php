@@ -144,7 +144,7 @@ class DocumentList extends Component
             if ($this->statusFilter === 'deleted') {
                 $query->onlyTrashed();
             } else {
-                $query->where('status', $this->statusFilter);
+                $query->whereNull('deleted_at')->where('status', $this->statusFilter);
             }
         }
 

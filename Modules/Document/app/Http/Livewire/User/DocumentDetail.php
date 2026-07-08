@@ -33,18 +33,32 @@ class DocumentDetail extends Component
     {
         $this->documentId = $id;
 
-        $doc = Document::with(['currentVersion', 'latestVersion', 'author'])->find($id);
+        $doc = Document::withTrashed()->with(['currentVersion', 'latestVersion', 'author'])->find($id);
         if (!$doc) {
             abort(404);
         }
 
-        if ($doc->status !== 'approved') {
-            abort(404);
+        $isAdmin = false;
+        if (Auth::check() && Auth::user()->roles()->where('name', 'admin')->exists()) {
+            $isAdmin = true;
         }
 
+        $isContributor = Auth::check() && Auth::user()->roles()->where('name', 'contributor')->exists();
+
         $userId = Auth::id();
-        if ($doc->visibility === 'private' && (!$userId || $doc->author_id !== $userId)) {
-            abort(404);
+
+        if (!$isAdmin) {
+            if ($doc->trashed()) {
+                if (!($isContributor && $doc->author_id === $userId)) {
+                    abort(404);
+                }
+            }
+            if ($doc->status !== 'approved' && $doc->author_id !== $userId) {
+                abort(404);
+            }
+            if ($doc->visibility === 'private' && (!$userId || $doc->author_id !== $userId)) {
+                abort(404);
+            }
         }
 
         \Illuminate\Support\Facades\DB::table('documents')
@@ -71,7 +85,7 @@ class DocumentDetail extends Component
 
     public function render()
     {
-        $doc = Document::with([
+        $doc = Document::withTrashed()->with([
             'author', 'currentVersion.category', 'product', 'tags',
             'reviews.user',
             'comments' => function($q) {

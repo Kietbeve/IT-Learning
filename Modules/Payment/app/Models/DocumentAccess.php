@@ -14,9 +14,7 @@ class DocumentAccess extends Model
     /**
      * The attributes that are mass assignable.
      */
-    protected $fillable = ['user_id', 'document_id', 'order_item_id', 'access_type', 'expires_at'];
-
-    protected $casts = ['expires_at' => 'datetime'];
+    protected $fillable = ['user_id', 'document_id', 'order_item_id', 'access_type'];
 
     public function user()
     {
