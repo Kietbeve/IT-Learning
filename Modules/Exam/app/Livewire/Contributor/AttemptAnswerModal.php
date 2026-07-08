@@ -13,6 +13,10 @@ class AttemptAnswerModal extends Component
     use WireUiActions;
 
     public bool $showModal = false;
+    public bool $showCommentModal = false;
+    public string $status = '';
+    public string $teacherComment = '';
+    public int $attemptAnswerId;
     public ?AttemptAnswer $answer = null;
 
     /**
@@ -234,6 +238,37 @@ class AttemptAnswerModal extends Component
                 'badge_color' => null,
             ];
         }
+    }
+
+    #[On('attempt-answer-grade')]
+    public function open(int $attemptAnswerId, string $status)
+    {
+        $this->attemptAnswerId = $attemptAnswerId;
+        $answer = AttemptAnswer::findOrFail($this->attemptAnswerId);
+        $this->status = $status;// status truyền từ button chấm
+
+        $this->teacherComment = $answer->teacher_comment??'';
+
+        $this->showCommentModal = true;
+    }
+
+    public function save()
+    {
+        $answer = AttemptAnswer::findOrFail($this->attemptAnswerId);
+
+        $answer->update([
+            'status' => $this->status,
+            'teacher_comment' => $this->teacherComment,
+            'is_correct' => $this->status === 'correct',
+        ]);
+
+        $this->dispatch('attempt-answer-updated');
+        $this->showCommentModal = false;
+        $this->notification()->success(
+            title: 'Đã cập nhật!',
+            description: "Câu {$answer->question?->pivot?->sort_order} được đánh dấu là {$this->status}"
+        );
+        $this->dispatch('pg:eventRefresh-attempt-answer-table');
     }
 
     /**

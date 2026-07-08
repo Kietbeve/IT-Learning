@@ -29,6 +29,7 @@ class ExamAttempt extends Model
         'is_passed',
         'status',
         'violation_count',
+        'teacher_comment',
     ];
 
     protected function casts(): array

@@ -18,6 +18,7 @@ class AttemptAnswer extends Model
         'status',
         'score',
         'answered_at',
+        'teacher_comment',
     ];
 
     protected function casts(): array

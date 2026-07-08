@@ -201,4 +201,81 @@
             </div>
         </x-slot>
     </x-modal-card>
+    {{-- --}}
+    <x-modal-card
+        title="Chấm câu trả lời tự luận"
+        blur
+        wire:model="showCommentModal"
+        max-width="2xl"
+    >
+
+        <div class="space-y-5">
+
+            {{-- Kết quả chấm --}}
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-700">
+                    Kết quả chấm
+                </label>
+
+               @if ($status === 'correct')
+                <div class="inline-flex items-center rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
+                    <x-icon
+                        name="check-circle"
+                        class="mr-2 h-5 w-5"
+                    />
+                    Correct
+                </div>
+            @elseif ($status === 'incorrect')
+                <div class="inline-flex items-center rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                    <x-icon
+                        name="x-circle"
+                        class="mr-2 h-5 w-5"
+                    />
+                    Incorrect
+                </div>
+            @endif
+            </div>
+
+            {{-- Nhận xét --}}
+            <div>
+                <label
+                    for="teacher_comment"
+                    class="mb-2 block text-sm font-medium text-gray-700"
+                >
+                    Nhận xét của giáo viên
+                </label>
+
+                <textarea
+                    wire:model="teacherComment"
+                    id="teacher_comment"
+                    rows="5"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-purple-500 focus:ring-purple-500"
+                    placeholder="Nhập nhận xét..."
+                ></textarea>
+
+                <p class="mt-2 text-xs text-gray-500">
+                    Nội dung này sẽ được hiển thị cho thí sinh.
+                </p>
+            </div>
+
+        </div>
+
+        <x-slot name="footer">
+            <div class="flex justify-end gap-3">
+                <x-button
+                    flat
+                    label="Hủy"
+                    wire:click="$set('showCommentModal', false)"
+                />
+
+                <x-button
+                    positive
+                    label="Lưu kết quả"
+                    wire:click="save"
+                    spinner="save"
+                />
+            </div>
+        </x-slot>
+
+    </x-modal-card>
 </div>

@@ -178,29 +178,49 @@ class ExamController extends Controller
     public function startExam(Request $request,$examSlug){
         $exam =$this->examService->getExamBySlug($examSlug);
 
+        //lấy cookie guest_exam_attempts
+        $attempts = json_decode($request->cookie('guest_exam_attempts', '{}'),true);
+        $attempts = is_array($attempts) ? $attempts : [];
+
+        // lấy danh sách session_id ứng với bài thi
+        $sessionIds = $attempts[$exam->id] ?? [];
+
         $attempt = $this->examService->startExam(
             exam: $exam,
             user: auth()->user(),
-            sessionId: $request->cookie("exam_{$exam->id}")
+            sessionIds: $sessionIds,
         );
 
-        return redirect()
+        //ko thêm nếu đã đăng nhập
+        if (! auth()->check()) {
+            // Không thêm nếu đã tồn tại
+            $attempts[$exam->id] ??= [];
+
+            if (! in_array($attempt->session_id, $attempts[$exam->id], true)) {
+                $attempts[$exam->id][] = $attempt->session_id;
+            }
+            // thêm cookie dành cho người dùng không đăng nhập
+            return redirect()
             ->route('exam.attempt.take', $attempt->session_id)
-            ->cookie(//cookie dành cho người dùng không đăng nhập lưu phiên làm bài
-                "exam_{$exam->id}",
-                $attempt->session_id,
-                60 * 24 // 1 ngày
+            ->cookie(
+                'guest_exam_attempts',
+                json_encode($attempts),
+                60 * 24 * 30
             );
+        }
+
+        // nếu đã đăng nhập thì chuyển hướng thẳng
+        return redirect()->route('exam.attempt.take', $attempt->session_id);
     }
 
     /**
      * Finalize attempt grading - recalculate scores and mark as submitted
      */
-    public function finalizeAttempt($attemptId)
+    public function finalizeAttempt(Request $request, $attemptId)
     {
         try {
             // Call service to finalize grading
-            $stats = $this->examService->finalizeAttemptGrading($attemptId);
+            $stats = $this->examService->finalizeAttemptGrading($attemptId,  $request->input('teacher_comment'));
 
             // Đẩy vào Queue để gửi email đến người làm
             SendAttemptResultEmailJob::dispatch($attemptId, $stats);
