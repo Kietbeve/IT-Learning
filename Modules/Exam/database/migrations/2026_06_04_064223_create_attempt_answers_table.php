@@ -34,6 +34,9 @@ return new class extends Migration
                 'incorrect',
             ])->default('pending');
 
+             // Ghi chú/nhận xét của giáo viên (tùy chọn)
+            $table->text('teacher_comment')->nullable();
+
             $table->decimal('score', 8, 2)
                 ->default(0);
 

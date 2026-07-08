@@ -216,11 +216,11 @@ class ExamController extends Controller
     /**
      * Finalize attempt grading - recalculate scores and mark as submitted
      */
-    public function finalizeAttempt($attemptId)
+    public function finalizeAttempt(Request $request, $attemptId)
     {
         try {
             // Call service to finalize grading
-            $stats = $this->examService->finalizeAttemptGrading($attemptId);
+            $stats = $this->examService->finalizeAttemptGrading($attemptId,  $request->input('teacher_comment'));
 
             // Đẩy vào Queue để gửi email đến người làm
             SendAttemptResultEmailJob::dispatch($attemptId, $stats);

@@ -570,9 +570,9 @@ class ExamService
     }
 
     // Hàm chấm điểm bài thi
-    public function finalizeAttemptGrading(int $attemptId): array
+    public function finalizeAttemptGrading(int $attemptId, ?string $teacherComment = null): array
     {
-        return DB::transaction(function () use ($attemptId) {
+        return DB::transaction(function () use ($attemptId, $teacherComment) {
             // Load attempt with relationships
             $attempt = ExamAttempt::with(['answers', 'exam.questions'])->findOrFail($attemptId);
             
@@ -614,6 +614,7 @@ class ExamService
                 'score' => $totalScore,
                 'percent_score' => round($percentScore, 2),
                 'is_passed' => $isPassed,
+                'teacher_comment' => $teacherComment ?? null,
             ]);
             
             // Return statistics for notification

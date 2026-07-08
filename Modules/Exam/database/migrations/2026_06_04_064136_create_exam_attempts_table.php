@@ -55,6 +55,9 @@ return new class extends Migration
             $table->boolean('is_passed')
                 ->nullable();
 
+            // Ghi chú/nhận xét của giáo viên (tùy chọn)
+            $table->text('teacher_comment')->nullable();
+
             $table->enum('status', [
                 'in_progress',
                 'submitted',
