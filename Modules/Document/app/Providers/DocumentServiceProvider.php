@@ -3,7 +3,16 @@
 namespace Modules\Document\Providers;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Modules\Document\Http\Livewire\Admin\CategoryList;
+use Modules\Document\Http\Livewire\Admin\DocumentUpload;
+use Modules\Document\Http\Livewire\Contributor\Dashboard;
+use Modules\Document\Http\Livewire\Contributor\DocumentEdit;
+use Modules\Document\Http\Livewire\User\BookmarkedDocuments;
+use Modules\Document\Http\Livewire\User\DocumentDetail;
+use Modules\Document\Http\Livewire\User\DocumentList;
 
 class DocumentServiceProvider extends ServiceProvider
 {
@@ -16,7 +25,7 @@ class DocumentServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Log::info('DocumentServiceProvider booting...');
+        Log::info('DocumentServiceProvider booting...');
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();
@@ -25,24 +34,23 @@ class DocumentServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(module_path($this->moduleName, 'database/migrations'));
 
         // Đăng ký Livewire components
-        if (class_exists(\Livewire\Livewire::class)) {
-            \Illuminate\Support\Facades\Log::info('Livewire class exists, registering components...');
-            \Livewire\Livewire::component('user-document-list', \Modules\Document\Http\Livewire\User\DocumentList::class);
-            \Livewire\Livewire::component('user-document-detail', \Modules\Document\Http\Livewire\User\DocumentDetail::class);
-            \Livewire\Livewire::component('user-bookmarked-documents', \Modules\Document\Http\Livewire\User\BookmarkedDocuments::class);
-            \Livewire\Livewire::component('user-purchased-documents', \Modules\Document\Http\Livewire\User\PurchasedDocuments::class);
+        if (class_exists(Livewire::class)) {
+            Log::info('Livewire class exists, registering components...');
+            Livewire::component('user-document-list', DocumentList::class);
+            Livewire::component('user-document-detail', DocumentDetail::class);
+            Livewire::component('user-bookmarked-documents', BookmarkedDocuments::class);
 
-            \Livewire\Livewire::component('admin-document-detail', \Modules\Document\Http\Livewire\Admin\DocumentDetail::class);
-            \Livewire\Livewire::component('admin-document-list', \Modules\Document\Http\Livewire\Admin\DocumentList::class);
-            \Livewire\Livewire::component('admin-document-upload', \Modules\Document\Http\Livewire\Admin\DocumentUpload::class);
-            \Livewire\Livewire::component('admin-category-list', \Modules\Document\Http\Livewire\Admin\CategoryList::class);
+            Livewire::component('admin-document-detail', \Modules\Document\Http\Livewire\Admin\DocumentDetail::class);
+            Livewire::component('admin-document-list', \Modules\Document\Http\Livewire\Admin\DocumentList::class);
+            Livewire::component('admin-document-upload', DocumentUpload::class);
+            Livewire::component('admin-category-list', CategoryList::class);
 
-            \Livewire\Livewire::component('contributor-dashboard', \Modules\Document\Http\Livewire\Contributor\Dashboard::class);
-            \Livewire\Livewire::component('contributor-document-list', \Modules\Document\Http\Livewire\Contributor\DocumentList::class);
-            \Livewire\Livewire::component('contributor-document-upload', \Modules\Document\Http\Livewire\Contributor\DocumentUpload::class);
-            \Livewire\Livewire::component('contributor-document-edit', \Modules\Document\Http\Livewire\Contributor\DocumentEdit::class);
+            Livewire::component('contributor-dashboard', Dashboard::class);
+            Livewire::component('contributor-document-list', \Modules\Document\Http\Livewire\Contributor\DocumentList::class);
+            Livewire::component('contributor-document-upload', \Modules\Document\Http\Livewire\Contributor\DocumentUpload::class);
+            Livewire::component('contributor-document-edit', DocumentEdit::class);
         } else {
-            \Illuminate\Support\Facades\Log::warning('Livewire class NOT found!');
+            Log::warning('Livewire class NOT found!');
         }
     }
 
@@ -110,7 +118,7 @@ class DocumentServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->moduleNameLower);
 
-        $componentNamespace = str_replace('/', '\\', config('modules.namespace').'\\'.$this->moduleName.'\\'.ltrim(config('modules.paths.generator.component-class.path'), config('modules.paths.app_folder','')));
+        $componentNamespace = str_replace('/', '\\', config('modules.namespace').'\\'.$this->moduleName.'\\'.ltrim(config('modules.paths.generator.component-class.path'), config('modules.paths.app_folder', '')));
         Blade::componentNamespace($componentNamespace, $this->moduleNameLower);
     }
 

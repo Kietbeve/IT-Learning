@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::table('documents', function (Blueprint $table) {
             $table->foreignId('subject_id')
-                  ->nullable()
-                  ->after('category_id')
-                  ->constrained('subjects')
-                  ->onDelete('set null')
-                  ->comment('Môn học của tài liệu');
-            
+                ->nullable()
+                ->after('category_id')
+                ->constrained('subjects')
+                ->onDelete('set null')
+                ->comment('Môn học của tài liệu');
+
             $table->index('subject_id');
         });
     }

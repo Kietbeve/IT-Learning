@@ -1,6 +1,6 @@
 <div>
 
-    <x-notifications z-index="z-50" />
+
 
     <div
         x-data="{ showLockModal: @entangle('showLockModal'), showUnlockModal: @entangle('showUnlockModal'), showDetailModal: @entangle('showDetailModal'), showUserModal: @entangle('showUserModal') }">

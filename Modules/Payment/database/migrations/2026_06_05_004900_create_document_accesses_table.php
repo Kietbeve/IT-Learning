@@ -18,15 +18,12 @@ return new class extends Migration
             $table->foreignId('order_item_id')->nullable()->constrained('order_items')->nullOnDelete();
 
             $table->string('access_type'); // free | purchased | granted
-            $table->timestamp('expires_at')->nullable();
-
             $table->timestamps();
 
             $table->unique(['user_id', 'document_id']);
             $table->index('document_id');
             $table->index('order_item_id');
             $table->index('access_type');
-            $table->index('expires_at');
         });
     }
 

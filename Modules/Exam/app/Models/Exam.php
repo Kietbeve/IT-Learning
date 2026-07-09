@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-use Modules\Auth\Models\User;
+use App\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
 use Modules\Learning\Models\RoadmapLesson;

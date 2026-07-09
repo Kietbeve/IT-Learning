@@ -2,11 +2,10 @@
 
 namespace Modules\Document\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Document\Database\factories\DocumentReviewFactory;
 use App\Models\User;
-use Modules\Document\Models\Document;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
 class DocumentReview extends Model
 {
     use HasFactory;
@@ -18,7 +17,18 @@ class DocumentReview extends Model
 
     protected $fillable = ['document_id', 'user_id', 'document_download_id', 'rating', 'review', 'status'];
 
-    public function document() { return $this->belongsTo(Document::class); }
-    public function user() { return $this->belongsTo(\App\Models\User::class); }
-    public function documentDownload() { return $this->belongsTo(DocumentDownload::class); }
+    public function document()
+    {
+        return $this->belongsTo(Document::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function documentDownload()
+    {
+        return $this->belongsTo(DocumentDownload::class);
+    }
 }

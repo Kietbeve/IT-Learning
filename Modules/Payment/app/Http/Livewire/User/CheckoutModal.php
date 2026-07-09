@@ -2,38 +2,66 @@
 
 namespace Modules\Payment\Http\Livewire\User;
 
-use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Livewire\Component;
 use Modules\Document\Models\Document;
+use Modules\Payment\Jobs\ExpireOrderJob;
 use Modules\Payment\Models\Order;
 use Modules\Payment\Models\OrderItem;
-use Modules\Payment\Models\Product;
+use Modules\Payment\Services\OrderService;
 use Modules\Payment\Services\PayOSService;
 use WireUi\Traits\WireUiActions;
+
+use Modules\Payment\Traits\WithPayOSPolling;
 
 class CheckoutModal extends Component
 {
     use WireUiActions;
+    use WithPayOSPolling;
 
     public bool $showModal = false;
+
     public ?int $documentId = null;
+    
+    public ?string $guestEmail = null;
+
     public bool $loading = false;
+
     public array $document = [];
+
     public ?array $product = null;
+
+    public array $paymentData = [];
+
+    public int $remainingSeconds = 600;
 
     protected function getListeners()
     {
         return [
             'openCheckoutModal' => 'show',
+            'trigger-payment-processing' => 'processPayment',
         ];
     }
 
-    public function show(int $documentId): void
+    public function show(int $documentId, ?string $guestEmail = null): void
     {
         $this->documentId = $documentId;
+        $this->guestEmail = $guestEmail;
         $this->loadDocument();
+        $this->paymentData = [];
+
+        // Reset timer default
+        $this->remainingSeconds = 600;
+
+        if (! empty($this->product)) {
+            $this->processPayment();
+        }
+
+        // Dispatch timer with the final calculated seconds (600 or reused from pending order)
+        $this->dispatch('reset-timer', seconds: $this->remainingSeconds);
         $this->showModal = true;
     }
 
@@ -41,8 +69,11 @@ class CheckoutModal extends Component
     {
         $this->showModal = false;
         $this->documentId = null;
+        $this->guestEmail = null;
         $this->document = [];
         $this->product = null;
+        $this->paymentData = [];
+        $this->remainingSeconds = 600;
         $this->loading = false;
     }
 
@@ -50,22 +81,19 @@ class CheckoutModal extends Component
     {
         $doc = Document::with(['author', 'product', 'currentVersion', 'latestVersion'])->find($this->documentId);
 
-        if (!$doc || !$doc->product || !$doc->product->is_active) {
+        if (! $doc || ! $doc->product || ! $doc->product->is_active) {
             $this->notification()->error(
                 title: 'Không thể thanh toán',
                 description: 'Tài liệu này không có sản phẩm thanh toán hoặc đã bị vô hiệu hóa.'
             );
             $this->close();
+
             return;
         }
 
         $this->document = [
             'id' => $doc->id,
             'title' => $doc->title,
-            'thumbnail' => $doc->thumbnail,
-            'author_name' => $doc->author?->name ?? 'Không xác định',
-            'category_name' => $doc->category?->name ?? 'Tài liệu',
-            'file_type' => strtoupper($doc->file_type),
         ];
 
         $this->product = [
@@ -83,7 +111,7 @@ class CheckoutModal extends Component
 
     public function processPayment(): void
     {
-        if (!$this->documentId || !$this->product) {
+        if (! $this->documentId || ! $this->product) {
             return;
         }
 
@@ -94,54 +122,90 @@ class CheckoutModal extends Component
 
             $user = Auth::user();
             $finalPrice = $this->finalPrice;
+            $deviceId = request()->cookie('guest_device_id');
 
-            $orderCode = (int) (now()->timestamp . Str::random(4));
+            // 1. Check existing pending order for this document
+            $query = Order::where('order_type', 'document')
+                ->where('payment_status', 'pending')
+                ->where('expires_at', '>', now())
+                ->where('total_amount', $finalPrice)
+                ->whereHas('items', function ($q) {
+                    $q->where('document_id', $this->documentId);
+                });
+                
+            if ($user) {
+                $query->where('user_id', $user->id);
+            } else {
+                $query->whereNull('user_id')->where('guest_email', $this->guestEmail);
+            }
 
-            $order = Order::create([
-                'order_code' => (string) $orderCode,
-                'user_id' => $user->id,
-                'total_amount' => $finalPrice,
-                'payment_status' => 'pending',
-                'order_status' => 'pending',
-                'download_token' => Str::random(64),
-                'guest_download_limit' => 0,
-                'guest_download_count' => 0,
-            ]);
+            $existingOrder = $query->first();
 
-            $platformFeePercent = config('payment.platform_fee_percent', 10);
+            if ($existingOrder && $existingOrder->checkout_data) {
+                DB::rollBack();
+                $this->paymentData = $existingOrder->checkout_data;
+                $this->remainingSeconds = max(1, $existingOrder->expires_at->timestamp - time());
+                $this->loading = false;
+
+                return;
+            }
+
+            // 2. Cleanup expired old pending orders
+            if ($user) {
+                Order::expirePendingOrders($user->id);
+            }
+
+            $platformFeePercent = (int) \App\Services\SettingService::get('platform_fee_percent', 20);
             $contributorAmount = $finalPrice * (100 - $platformFeePercent) / 100;
             $platformAmount = $finalPrice * $platformFeePercent / 100;
 
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $this->product['id'],
-                'document_id' => $this->documentId,
-                'document_title_snapshot' => $this->document['title'],
-                'unit_price' => $finalPrice,
-                'quantity' => 1,
-                'subtotal' => $finalPrice,
-                'contributor_amount' => $contributorAmount,
-                'platform_amount' => $platformAmount,
-            ]);
+            $productInfo = [
+                'id' => $this->product['id'],
+                'name' => $this->document['title'],
+                'price' => $this->product['price'],
+                'sale_price' => $this->product['sale_price'] ?? null
+            ];
+
+            $orderService = app(\Modules\Payment\Services\OrderService::class);
+            $order = $orderService->createDocumentOrder(
+                $user, 
+                $this->documentId, 
+                $productInfo, 
+                $finalPrice, 
+                $contributorAmount, 
+                $platformAmount,
+                $this->guestEmail,
+                $deviceId
+            );
+
+            // Dispatch delayed job to expire order after 10 minutes
+            ExpireOrderJob::dispatch($order->id)
+                ->delay(now()->addMinutes(10));
 
             DB::commit();
 
             $payOS = app(PayOSService::class);
 
-            $description = 'Mua: ' . Str::limit($this->document['title'], 50);
+            $description = 'Mua: '.Str::limit($this->document['title'], 15);
 
             $paymentResponse = $payOS->createPaymentLink(
-                orderCode: $orderCode,
+                orderCode: $order->order_code,
                 amount: $finalPrice,
                 description: $description,
-                returnUrl: route('payment.return', ['order_code' => $orderCode]),
-                cancelUrl: route('payment.cancel', ['order_code' => $orderCode]),
-                buyerName: $user->name,
-                buyerEmail: $user->email,
+                returnUrl: route('user.purchases'),
+                cancelUrl: route('user.purchases'),
+                buyerName: $user ? $user->name : 'Khách',
+                buyerEmail: $user ? $user->email : $this->guestEmail,
+                expiredAt: now()->addMinutes(10)->timestamp,
             );
 
             if (isset($paymentResponse['checkoutUrl'])) {
-                $this->redirect($paymentResponse['checkoutUrl']);
+                // Merge PayOS response with existing checkout_data to preserve device_id
+                $mergedData = array_merge($order->checkout_data ?? [], $paymentResponse);
+                $order->update(['checkout_data' => $mergedData]);
+                $this->paymentData = $paymentResponse;
+                $this->remainingSeconds = 600;
+                $this->loading = false;
             } else {
                 throw new \Exception('Không nhận được link thanh toán từ PayOS.');
             }
@@ -155,6 +219,18 @@ class CheckoutModal extends Component
                 description: $e->getMessage()
             );
         }
+    }
+
+    public function checkPaymentStatus()
+    {
+        if (empty($this->paymentData) || ! isset($this->paymentData['orderCode'])) {
+            return;
+        }
+
+        $this->pollPayOSStatus($this->paymentData['orderCode'], function () {
+            $this->dispatch('payment-completed');
+            $this->dispatch('new-notification');
+        });
     }
 
     public function render()
