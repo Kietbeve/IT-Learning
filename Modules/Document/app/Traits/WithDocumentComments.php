@@ -158,7 +158,11 @@ trait WithDocumentComments
     {
         if (!Auth::check()) return;
 
-        $comment = $this->getCommentForAuthUser($commentId);
+        if ($this->isAdmin()) {
+            $comment = DocumentComment::find($commentId);
+        } else {
+            $comment = $this->getCommentForAuthUser($commentId);
+        }
 
         if (!$comment || $comment->document_id != $this->documentId) return;
 

@@ -156,27 +156,7 @@ class DocumentList extends Component
                             ->orWhere('title', 'like', '%project%');
                     });
                 });
-            } elseif ($this->selectedResourceType === 'do_an') {
-                $query->whereHas('currentVersion', function ($vq) {
-                    $vq->where('title', 'like', '%đồ án%')
-                        ->orWhere('title', 'like', '%do an%')
-                        ->orWhere('title', 'like', '%báo cáo%')
-                        ->orWhere('title', 'like', '%khóa luận%')
-                        ->orWhere('title', 'like', '%niên luận%')
-                        ->orWhere('title', 'like', '%tiểu luận%')
-                        ->orWhere('description', 'like', '%đồ án%')
-                        ->orWhere('description', 'like', '%do an%');
-                });
-            } elseif ($this->selectedResourceType === 'ebook') {
-                $query->whereHas('currentVersion', function ($vq) {
-                    $vq->where('title', 'like', '%ebook%')
-                        ->orWhere('title', 'like', '%sách%')
-                        ->orWhere('title', 'like', '%giáo trình%')
-                        ->orWhere('description', 'like', '%ebook%')
-                        ->orWhere('description', 'like', '%sách%')
-                        ->orWhere('description', 'like', '%giáo trình%');
-                });
-            }
+            } 
         }
 
 

@@ -22,7 +22,7 @@ trait WithDocumentUpload
     public $short_description = '';
     public $description = '';
     public $visibility = 'public';
-    public $is_downloadable = true;
+    public $disable_download = false;
     public $originalFile;
     public $thumbnailFile;
     public $galleryFiles = [];
@@ -43,7 +43,7 @@ trait WithDocumentUpload
             'short_description' => 'nullable|string|min:10|max:500',
             'description' => 'required|string|min:10|max:50000',
             'visibility' => 'required|in:public,private,unlisted',
-            'is_downloadable' => 'required|boolean',
+            'disable_download' => 'boolean',
             'originalFile' => 'required|file|max:51200|mimes:pdf,doc,docx,zip',
             'thumbnailFile' => 'required|image|max:2048',
             'galleryFiles' => 'nullable|array|max:10',
@@ -76,8 +76,7 @@ trait WithDocumentUpload
         'description.max' => 'Mô tả chi tiết không được vượt quá 50.000 ký tự.',
         'visibility.required' => 'Vui lòng chọn chế độ hiển thị.',
         'visibility.in' => 'Chế độ hiển thị không hợp lệ.',
-        'is_downloadable.required' => 'Vui lòng chọn quyền tải xuống.',
-        'is_downloadable.boolean' => 'Giá trị quyền tải xuống không hợp lệ.',
+        'disable_download.boolean' => 'Giá trị quyền tải xuống không hợp lệ.',
         'originalFile.required' => 'Vui lòng chọn tệp tài liệu đăng tải.',
         'originalFile.mimes' => 'Tệp tải lên phải thuộc định dạng: PDF, DOC, DOCX hoặc ZIP.',
         'originalFile.max' => 'Dung lượng tệp tối đa là 50MB.',
@@ -151,7 +150,7 @@ trait WithDocumentUpload
             'short_description' => $this->short_description,
             'description' => $this->description,
             'visibility' => $this->visibility,
-            'is_downloadable' => $this->is_downloadable,
+            'is_downloadable' => !$this->disable_download,
             'isPaid' => $this->isPaid,
             'price' => $this->price,
             'sale_price' => $this->sale_price,

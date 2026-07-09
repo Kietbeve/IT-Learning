@@ -55,7 +55,7 @@
                 $isVip = Auth::user()->vip_expires_at && Auth::user()->vip_expires_at->isFuture();
             @endphp
             
-            @if(!$isVip)
+            @if(!$isVip && !request()->routeIs('user.subscription'))
                 <div x-data="{ 
                     show: !localStorage.getItem('vip_banner_dismissed'),
                     dismiss() {

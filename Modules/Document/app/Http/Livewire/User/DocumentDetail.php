@@ -25,6 +25,7 @@ class DocumentDetail extends Component
     use \Modules\Document\Traits\WithDocumentComments;
     use \Modules\Document\Traits\WithDocumentDownloads;
     use \Modules\Document\Traits\WithDocumentReporting;
+    use \Modules\Document\Traits\WithFileExistence;
 
     public $documentId;
     protected $zipFiles = [];
@@ -246,25 +247,7 @@ class DocumentDetail extends Component
         ])->layout('layouts.user');
     }
 
-    protected function checkFileExists($path)
-    {
-        if (!$path) return false;
-        
-        $cacheKey = 'file_exists_' . md5($path);
-        return \Illuminate\Support\Facades\Cache::rememberForever($cacheKey, function() use ($path) {
-            try {
-                if (Storage::disk('public')->exists($path)) {
-                    return true;
-                }
-                if (Storage::disk('r2')->exists($path)) {
-                    return true;
-                }
-            } catch (\Exception $e) {
-                \Log::warning("Failed to check file existence", ['path' => $path, 'error' => $e->getMessage()]);
-            }
-            return false;
-        });
-    }
+    // checkFileExists() is now provided by WithFileExistence trait
 
     private function isAdmin()
     {
@@ -284,6 +267,11 @@ class DocumentDetail extends Component
             'orderItemId' => null,
             'guestOrder' => null,
         ];
+
+        if ($this->isAdmin()) {
+            $result['hasAccess'] = true;
+            return $result;
+        }
 
         if (!$userId) {
             if (!$isPaid) {

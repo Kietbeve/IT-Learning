@@ -68,7 +68,6 @@ class FileUploadService
                 $galleryImagesData[] = [
                     'path' => $path,
                     'order' => $index + 1,
-                    'caption' => '',
                 ];
             }
         }

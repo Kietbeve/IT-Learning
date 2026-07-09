@@ -21,7 +21,7 @@ class DocumentService
     public function createDocument(
         array $data,
         UploadedFile $originalFile,
-        ?UploadedFile $thumbnailFile,
+        UploadedFile $thumbnailFile,
         array $galleryFiles,
         array $excludedGalleryIndices,
         string $status
@@ -29,11 +29,7 @@ class DocumentService
         return DB::transaction(function () use ($data, $originalFile, $thumbnailFile, $galleryFiles, $excludedGalleryIndices, $status) {
             $originalR2Path = $this->uploadService->uploadOriginalDocument($originalFile);
             $originalExt = strtolower($originalFile->getClientOriginalExtension());
-
-            $thumbnailR2Path = null;
-            if ($thumbnailFile) {
-                $thumbnailR2Path = $this->uploadService->uploadThumbnail($thumbnailFile);
-            }
+            $thumbnailR2Path = $this->uploadService->uploadThumbnail($thumbnailFile);
 
             // Upload gallery images
             $galleryImagesData = [];

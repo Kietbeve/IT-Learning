@@ -472,7 +472,13 @@
 
             <!-- Comments Section -->
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow p-6 md:p-8 shadow-sm space-y-6">
-                <h2 class="text-xl font-bold text-blue-900">Thảo luận ({{ collect($comments)->where('status', 'visible')->count() ?? 0 }})</h2>
+                @php
+                    $visibleComments = collect($comments)->where('status', 'visible');
+                    $totalComments = $visibleComments->count() + $visibleComments->sum(function($c) { 
+                        return $c->replies ? $c->replies->where('status', 'visible')->count() : 0; 
+                    });
+                @endphp
+                <h2 class="text-xl font-bold text-blue-900">Thảo luận ({{ $totalComments }})</h2>
 
                 @auth
                     <form wire:submit.prevent="addComment" class="flex gap-3">
@@ -507,7 +513,12 @@
                                 </div>
                                 <div class="flex-1 space-y-2">
                                     <div class="flex items-center justify-between">
-                                        <h4 class="text-base font-bold text-blue-900">{{ $comment->user?->name ?? 'Người dùng' }}</h4>
+                                        <h4 class="text-base font-bold text-blue-900 flex items-center gap-2">
+                                            {{ $comment->user?->name ?? 'Người dùng' }}
+                                            @if($comment->user?->hasRole('admin'))
+                                                <span class="inline-flex items-center rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700 ring-1 ring-inset ring-rose-600/20 whitespace-nowrap uppercase">Admin</span>
+                                            @endif
+                                        </h4>
                                         <span class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
                                     </div>
                                     
@@ -545,7 +556,12 @@
                                                     </div>
                                                     <div class="flex-1 space-y-1">
                                                         <div class="flex items-center justify-between">
-                                                            <h4 class="text-base font-bold text-blue-900">{{ $reply->user?->name ?? 'Người dùng' }}</h4>
+                                                            <h4 class="text-base font-bold text-blue-900 flex items-center gap-2">
+                                                                {{ $reply->user?->name ?? 'Người dùng' }}
+                                                                @if($reply->user?->hasRole('admin'))
+                                                                    <span class="inline-flex items-center rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700 ring-1 ring-inset ring-rose-600/20 whitespace-nowrap uppercase">Admin</span>
+                                                                @endif
+                                                            </h4>
                                                             <span class="text-[11px] text-gray-400">{{ $reply->created_at->diffForHumans() }}</span>
                                                         </div>
                                                         

@@ -12,51 +12,17 @@ use Modules\Document\Models\DocumentDownload;
 
 class PlatformRevenue extends Component
 {
-    public $chartData = [];
-
-    public $chartCategories = [];
-
-    public function mount()
-    {
-        $this->loadChartData();
-    }
-
-    public function loadChartData()
-    {
-        $dailyTotals = DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->where('orders.payment_status', 'paid')
-            ->where('orders.created_at', '>=', now()->subDays(7))
-            ->selectRaw('DATE(orders.created_at) as date, SUM(order_items.platform_amount) as total')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('total', 'date')
-            ->toArray();
-
-        $this->chartCategories = [];
-        $this->chartData = [];
-
-        for ($i = 6; $i >= 0; $i--) {
-            $date = now()->subDays($i)->format('Y-m-d');
-            $label = now()->subDays($i)->format('d/m');
-            $this->chartCategories[] = $label;
-            $this->chartData[] = (int) ($dailyTotals[$date] ?? 0);
-        }
-    }
-
     public function render()
     {
-        $totalRevenue = DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->where('orders.payment_status', 'paid')
-            ->sum('order_items.subtotal');
+        $totalRevenue = DB::table('orders')
+            ->where('payment_status', 'paid')
+            ->sum('total_amount');
 
-        $revenueThisMonth = DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->where('orders.payment_status', 'paid')
-            ->whereMonth('orders.created_at', now()->month)
-            ->whereYear('orders.created_at', now()->year)
-            ->sum('order_items.subtotal');
+        $revenueThisMonth = DB::table('orders')
+            ->where('payment_status', 'paid')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('total_amount');
 
         $pendingPayouts = PayoutRequest::where('status', 'pending')->sum('amount');
 
@@ -65,17 +31,13 @@ class PlatformRevenue extends Component
             ->where('orders.payment_status', 'paid')
             ->sum('order_items.contributor_amount');
 
-        $netProfit = DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->where('orders.payment_status', 'paid')
-            ->sum('order_items.platform_amount');
+        $netProfit = $totalRevenue - $totalPaid;
 
-        $lastMonthRevenue = DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->where('orders.payment_status', 'paid')
-            ->whereMonth('orders.created_at', now()->subMonth()->month)
-            ->whereYear('orders.created_at', now()->subMonth()->year)
-            ->sum('order_items.subtotal');
+        $lastMonthRevenue = DB::table('orders')
+            ->where('payment_status', 'paid')
+            ->whereMonth('created_at', now()->subMonth()->month)
+            ->whereYear('created_at', now()->subMonth()->year)
+            ->sum('total_amount');
 
         $revenueGrowth = $lastMonthRevenue > 0
             ? round(($revenueThisMonth - $lastMonthRevenue) / $lastMonthRevenue * 100)

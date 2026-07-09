@@ -9,9 +9,7 @@ use App\Models\User;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Facades\Filter;
-use PowerComponents\LivewirePowerGrid\Footer;
-use PowerComponents\LivewirePowerGrid\Header;
-use PowerComponents\LivewirePowerGrid\PowerGrid;
+use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridColumns;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,11 +25,11 @@ final class AdminCtvApplications extends PowerGridComponent
         $this->showCheckBox();
 
         return [
-            Header::make()
+            PowerGrid::header()
                 ->showSearchInput()
                 ->showToggleColumns(),
-            Footer::make()
-                ->showPerPage(15, [15, 25, 50, 100])
+            PowerGrid::footer()
+                ->showPerPage()
                 ->showRecordCount(),
         ];
     }

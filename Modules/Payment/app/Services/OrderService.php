@@ -277,16 +277,16 @@ class OrderService
                 $author = User::find($document->author_id);
                 if ($author) {
                     $balanceBefore = $author->contributor_balance ?? 0;
-                    $balanceAfter = $balanceBefore + $item->contributor_amount;
 
-                    $author->update(['contributor_balance' => $balanceAfter]);
+                    $author->increment('contributor_balance', $item->contributor_amount);
+                    $author->refresh();
 
                     WalletTransaction::create([
                         'user_id' => $author->id,
                         'type' => 'earning',
                         'amount' => $item->contributor_amount,
                         'balance_before' => $balanceBefore,
-                        'balance_after' => $balanceAfter,
+                        'balance_after' => $author->contributor_balance,
                         'reference_type' => 'order_item',
                         'reference_id' => $item->id,
                         'note' => 'Doanh thu từ tài liệu: '.$item->document_title_snapshot,

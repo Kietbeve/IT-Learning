@@ -21,11 +21,12 @@ use Modules\Document\Models\DocumentComment;
 use Modules\Document\Models\DocumentReview;
 use Modules\Document\Models\DocumentVersion;
 use Modules\Document\Traits\HasSubjects;
+use Modules\Document\Traits\WithFileExistence;
 use Modules\Payment\Models\Product;
 
 class DocumentDetail extends Component
 {
-    use HasSubjects, WithFileUploads;
+    use HasSubjects, WithFileUploads, WithFileExistence;
 
     public $documentId;
 
@@ -38,6 +39,8 @@ class DocumentDetail extends Component
     public $showHistoryModal = false;
 
     public $showRejectModal = false;
+
+    public $showApproveConfirm = false;
 
     public $submissionHistory = [];
 
@@ -194,7 +197,6 @@ class DocumentDetail extends Component
         try {
             app(\Modules\Document\Services\DocumentApprovalService::class)->approve($this->documentId);
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Phê duyệt tài liệu thành công.']);
-            $this->loadDocument(); // Refresh document data
             $this->showApproveConfirm = false;
         } catch (\Exception $e) {
             $this->dispatch('notify', ['type' => 'error', 'message' => $e->getMessage()]);
@@ -218,7 +220,6 @@ class DocumentDetail extends Component
         try {
             app(\Modules\Document\Services\DocumentApprovalService::class)->reject($this->documentId, $this->rejectionReason);
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Từ chối tài liệu thành công.']);
-            $this->loadDocument();
             $this->showRejectModal = false;
             $this->dispatch('close-modal', 'reject-detail-modal');
         } catch (\Exception $e) {
@@ -471,7 +472,7 @@ class DocumentDetail extends Component
 
     public function cancelEdit()
     {
-        $doc = Document::with('tags')->find($this->documentId);
+        $doc = Document::with(['tags', 'currentVersion', 'product'])->find($this->documentId);
         if ($doc) {
             $this->editTitle = $doc->title;
             $this->editCategoryId = $doc->category_id;
@@ -562,59 +563,52 @@ class DocumentDetail extends Component
         return number_format($mb, 2).' MB';
     }
 
+    /* ──── Admin moderation helpers (shared pattern) ──── */
+
     public function hideReview($reviewId)
     {
-        $review = DocumentReview::where('id', $reviewId)
-            ->where('document_id', $this->documentId)
-            ->first();
-        if ($review) {
-            $review->update(['status' => 'hidden']);
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã ẩn đánh giá.']);
-        }
+        $this->moderateItem(DocumentReview::class, $reviewId, 'hidden', 'Đã ẩn đánh giá.');
     }
 
     public function showReview($reviewId)
     {
-        $review = DocumentReview::where('id', $reviewId)
-            ->where('document_id', $this->documentId)
-            ->first();
-        if ($review) {
-            $review->update(['status' => 'visible']);
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã hiện đánh giá.']);
-        }
+        $this->moderateItem(DocumentReview::class, $reviewId, 'visible', 'Đã hiện đánh giá.');
     }
 
     public function hideComment($commentId)
     {
-        $comment = DocumentComment::where('id', $commentId)
-            ->where('document_id', $this->documentId)
-            ->first();
-        if ($comment) {
-            $comment->update(['status' => 'hidden']);
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã ẩn bình luận.']);
-        }
+        $this->moderateItem(DocumentComment::class, $commentId, 'hidden', 'Đã ẩn bình luận.');
     }
 
     public function showComment($commentId)
     {
-        $comment = DocumentComment::where('id', $commentId)
-            ->where('document_id', $this->documentId)
-            ->first();
-        if ($comment) {
-            $comment->update(['status' => 'visible']);
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã hiện bình luận.']);
-        }
+        $this->moderateItem(DocumentComment::class, $commentId, 'visible', 'Đã hiện bình luận.');
     }
 
     public function deleteComment($commentId)
     {
-        $comment = DocumentComment::where('id', $commentId)
-            ->where('document_id', $this->documentId)
-            ->first();
-        if ($comment) {
-            $comment->update(['status' => 'hidden']);
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xoá bình luận.']);
+        $this->moderateItem(DocumentComment::class, $commentId, 'hidden', 'Đã xoá bình luận.');
+    }
+
+    protected function moderateItem(string $model, int $id, string $status, string $message): void
+    {
+        if (!Auth::check() || !$this->isAdmin()) {
+            abort(403, 'Unauthorized');
         }
+
+        $item = $model::where('id', $id)->where('document_id', $this->documentId)->first();
+        if ($item) {
+            $item->update(['status' => $status]);
+            $this->dispatch('notify', ['type' => 'success', 'message' => $message]);
+        }
+    }
+
+    private function isAdmin()
+    {
+        $user = Auth::user();
+        if (!$user) return false;
+        
+        return $user->roles()->where('name', 'admin')->exists();
     }
 
     public function render()
@@ -746,27 +740,5 @@ class DocumentDetail extends Component
         ]);
     }
 
-    protected function checkFileExists($path)
-    {
-        if (! $path) {
-            return false;
-        }
-
-        $cacheKey = 'file_exists_'.md5($path);
-
-        return Cache::rememberForever($cacheKey, function () use ($path) {
-            try {
-                if (Storage::disk('public')->exists($path)) {
-                    return true;
-                }
-                if (Storage::disk('r2')->exists($path)) {
-                    return true;
-                }
-            } catch (\Exception $e) {
-                \Log::warning('Failed to check file existence', ['path' => $path, 'error' => $e->getMessage()]);
-            }
-
-            return false;
-        });
-    }
+    // checkFileExists() is now provided by WithFileExistence trait
 }

@@ -55,8 +55,8 @@
         </div>
     </div>
 
-    <!-- 3 Metrics mới -->
-    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
+    <!-- Metrics -->
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2">
         <div class="rounded-2xl border border-gray-200 bg-white p-6">
             <div class="flex items-center justify-between">
                 <p class="text-sm font-medium text-gray-600">Tổng số tài liệu</p>
@@ -82,84 +82,8 @@
             <p class="mt-4 text-3xl font-bold text-gray-900">{{ number_format($totalDownloads) }}</p>
             <p class="mt-1 text-sm text-gray-500">Tổng số lần tải xuống</p>
         </div>
-
-        <div class="rounded-2xl border border-gray-200 bg-white p-6">
-            <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-gray-600">Số dư ví</p>
-                <span class="rounded-xl bg-rose-50 p-2">
-                    <svg class="h-5 w-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                    </svg>
-                </span>
-            </div>
-            <p class="mt-4 text-3xl font-bold text-gray-900">{{ number_format($totalWalletBalance) }}đ</p>
-            <p class="mt-1 text-sm text-gray-500">Tổng số dư trong ví contributor</p>
-        </div>
     </div>
 
-    <div class="rounded-2xl border border-gray-200 bg-white">
-        <div class="border-b border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-900">Doanh thu tuần này</h2>
-            <p class="text-sm text-gray-500">Biểu đồ doanh thu 7 ngày gần nhất</p>
-        </div>
-        <div class="p-6" x-data="{
-            chartData: @js($chartData),
-            chartCategories: @js($chartCategories),
-            maxValue: Math.max(...@js($chartData), 1),
-        }">
-            <div class="flex items-end gap-3 justify-center" style="height: 260px;">
-                <template x-for="(value, index) in chartData" :key="index">
-                    <div class="group relative flex flex-col items-center justify-end h-full" style="width: 80px;">
-                        <div class="absolute bottom-full mb-3 hidden group-hover:flex z-20">
-                            <div class="rounded-2xl bg-gray-900 px-5 py-3 text-sm font-bold text-white shadow-2xl border border-gray-700">
-                                <div x-text="chartCategories[index]" class="text-xs text-gray-400 mb-1 text-center"></div>
-                                <div x-text="new Intl.NumberFormat('vi-VN').format(value) + 'đ'" class="text-lg text-center"></div>
-                            </div>
-                        </div>
-                        <div class="w-full rounded-2xl transition-all duration-300 hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl"
-                             :style="'height: ' + Math.max((value / maxValue) * 240, 4) + 'px;'"
-                             :class="value > 0 ? 'bg-gradient-to-t from-purple-600 via-purple-500 to-purple-400' : 'bg-gray-200'">
-                        </div>
-                        <span class="mt-3 text-xs font-bold text-gray-600"
-                              x-text="chartCategories[index]">
-                        </span>
-                    </div>
-                </template>
-            </div>
-            <div class="mt-6 flex items-center justify-center gap-6 text-sm text-gray-600">
-                <div class="flex items-center gap-2">
-                    <div class="h-4 w-4 rounded bg-gradient-to-t from-purple-600 to-purple-400 shadow"></div>
-                    <span class="font-medium">Doanh thu hàng ngày</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="rounded-2xl border border-gray-200 bg-white" x-data="{ showDetails: false }">
-        <div class="border-b border-gray-200 p-6 flex items-center justify-between">
-            <div>
-                <h2 class="text-lg font-semibold text-gray-900">Chi tiết 7 ngày</h2>
-                <p class="text-sm text-gray-500">Xem số liệu từng ngày trong tuần</p>
-            </div>
-            <button @click="showDetails = !showDetails" 
-                    class="rounded-xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200">
-                <span x-show="!showDetails">Xem ↓</span>
-                <span x-show="showDetails" x-cloak>Ẩn ↑</span>
-            </button>
-        </div>
-        <div x-show="showDetails" x-cloak x-collapse class="p-6">
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                <template x-for="(value, index) in @js($chartData)" :key="index">
-                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-3 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                        <div class="text-xs font-semibold text-gray-500 mb-1" x-text="@js($chartCategories)[index]"></div>
-                        <div class="text-base font-bold" :class="value > 0 ? 'text-blue-700' : 'text-gray-400'">
-                            <span x-text="new Intl.NumberFormat('vi-VN').format(value)"></span><span class="text-xs">đ</span>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
 
     <div class="rounded-2xl border border-gray-200 bg-white">
         <div class="border-b border-gray-200 p-6">
