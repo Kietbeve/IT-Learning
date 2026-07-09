@@ -57,119 +57,136 @@
         </div>
     </div>
 
-    <div class="rounded-2xl border border-gray-200 bg-white">
-        <div class="border-b border-gray-200 p-6">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h2 class="text-lg font-semibold text-gray-900">Đơn hàng</h2>
-                    <p class="text-sm text-gray-500">Danh sách tất cả đơn hàng mua tài liệu</p>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                    <select wire:model.live="statusFilter" class="rounded-xl border-gray-300 text-sm">
-                        <option value="all">Tất cả trạng thái</option>
-                        <option value="paid">Đã thanh toán</option>
-                        <option value="pending">Chờ thanh toán</option>
-                        <option value="failed">Thất bại</option>
-                    </select>
-                    <select wire:model.live="orderTypeFilter" class="rounded-xl border-gray-300 text-sm">
-                        <option value="all">Tất cả loại</option>
-                        <option value="document">Mua tài liệu</option>
-                        <option value="subscription">Đăng ký VIP</option>
-                    </select>
-                    <input type="date" wire:model.live="dateFrom" class="rounded-xl border-gray-300 text-sm">
-                    <input type="date" wire:model.live="dateTo" class="rounded-xl border-gray-300 text-sm">
-                    <input type="search" wire:model.live.debounce.300ms="search" placeholder="Tìm user..."
-                           class="rounded-xl border-gray-300 text-sm w-48" />
-                </div>
+    <div class="py-2">
+        {{-- Header --}}
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div>
+                <h2 class="text-lg font-bold text-gray-900">Đơn hàng</h2>
+                <p class="text-sm text-gray-500 mt-1">Danh sách tất cả đơn hàng mua tài liệu</p>
             </div>
         </div>
 
+        {{-- Bộ lọc --}}
+        <div class="flex flex-col sm:flex-row flex-wrap items-center gap-3 mb-6">
+            <select wire:model.live="statusFilter" class="w-full sm:w-auto rounded-xl border-0 py-2.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="paid">Đã thanh toán</option>
+                <option value="pending">Chờ thanh toán</option>
+                <option value="failed">Thất bại</option>
+            </select>
+            <select wire:model.live="orderTypeFilter" class="w-full sm:w-auto rounded-xl border-0 py-2.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
+                <option value="all">Tất cả loại</option>
+                <option value="document">Mua tài liệu</option>
+                <option value="subscription">Đăng ký VIP</option>
+            </select>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <input type="date" wire:model.live="dateFrom" class="flex-1 sm:flex-none rounded-xl border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
+                <span class="text-gray-400">-</span>
+                <input type="date" wire:model.live="dateTo" class="flex-1 sm:flex-none rounded-xl border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
+            </div>
+            <div class="relative w-full sm:flex-1 sm:min-w-[200px]">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <input type="search" wire:model.live.debounce.300ms="search" placeholder="Tìm user..."
+                       class="block w-full rounded-xl border-0 py-2.5 pl-9 pr-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all" />
+            </div>
+        </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+
         <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="border-b border-gray-200 bg-gray-50">
+            <table class="w-full table-fixed text-left divide-y divide-gray-200 min-w-[1000px]">
+                <thead class="bg-slate-50/50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">Mã ĐH</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">Loại</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">Người mua</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">Tài liệu</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">Người bán</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-600 cursor-pointer hover:bg-gray-100" wire:click="sortBy('total_amount')">
+                        <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 w-[12%]">Mã ĐH</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[12%]">Loại</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[14%]">Người mua</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[17%]">Tài liệu</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[11%]">Người bán</th>
+                        <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 w-[10%] cursor-pointer hover:bg-gray-100 transition-colors" wire:click="sortBy('total_amount')">
                             Tổng tiền
                             @if($sortField === 'total_amount')
-                                <span class="text-xs">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             @endif
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">Trạng thái</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 cursor-pointer hover:bg-gray-100" wire:click="sortBy('created_at')">
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[12%]">Trạng thái</th>
+                        <th scope="col" class="py-3.5 pl-3 pr-6 text-left text-sm font-semibold text-gray-900 w-[12%] cursor-pointer hover:bg-gray-100 transition-colors" wire:click="sortBy('created_at')">
                             Ngày tạo
                             @if($sortField === 'created_at')
-                                <span class="text-xs">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                <span class="ml-1 text-[10px]">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             @endif
                         </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
+                <tbody class="divide-y divide-gray-200 bg-white">
                     @forelse($orders as $order)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm font-mono text-gray-900">
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="py-4 pl-6 pr-3 text-sm font-mono text-gray-900 break-all whitespace-normal">
                                 #{{ $order->order_code }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-4 whitespace-nowrap">
                                 @if($order->order_type === 'subscription')
-                                    <span class="inline-flex rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-800">Đăng ký VIP</span>
+                                    <span class="inline-flex rounded-md bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700 ring-1 ring-inset ring-purple-600/20">Đăng ký VIP</span>
                                 @elseif($order->total_amount > 0)
-                                    <span class="inline-flex rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">Mua trực tiếp</span>
+                                    <span class="inline-flex rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-600/20">Mua trực tiếp</span>
                                 @else
-                                    <span class="inline-flex rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-semibold text-teal-800">Tải bằng VIP</span>
+                                    <span class="inline-flex rounded-md bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 ring-1 ring-inset ring-teal-600/20">Tải bằng VIP</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
-                                <p class="font-semibold text-gray-900">{{ $order->user->name ?? 'N/A' }}</p>
-                                <p class="text-xs text-gray-500">{{ $order->user->email ?? '' }}</p>
+                            <td class="px-3 py-4">
+                                <p class="font-semibold text-gray-900 text-sm whitespace-normal break-words">{{ $order->user->name ?? 'N/A' }}</p>
+                                <p class="text-xs text-gray-500 whitespace-normal break-all mt-0.5">{{ $order->user->email ?? '' }}</p>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-4">
                                 @if($order->order_type === 'subscription')
                                     <p class="text-sm text-gray-500 italic">Đăng ký VIP</p>
                                 @else
                                     @foreach($order->items as $item)
-                                        <div class="mb-1 last:mb-0">
-                                            <p class="text-sm font-medium text-gray-900">{{ $item->document_title_snapshot ?? 'N/A' }}</p>
-                                            <p class="text-xs text-gray-500">
+                                        <div class="mb-2 last:mb-0">
+                                            <p class="text-sm font-medium text-gray-900 whitespace-normal break-words line-clamp-2" title="{{ $item->document_title_snapshot ?? 'N/A' }}">
+                                                {{ $item->document_title_snapshot ?? 'N/A' }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-0.5">
                                                 Contributor: {{ number_format($item->contributor_amount) }}đ
-                                                <span class="text-gray-400">•</span>
+                                                <span class="text-gray-400 mx-1">•</span>
                                                 Platform: {{ number_format($item->platform_amount) }}đ
                                             </p>
                                         </div>
                                     @endforeach
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-4">
                                 @if($order->order_type === 'subscription')
                                     <p class="text-sm text-gray-500">—</p>
                                 @else
                                     @foreach($order->items as $item)
                                         <div class="mb-1 last:mb-0">
-                                            <p class="text-sm text-gray-900">{{ $item->document->author->name ?? 'N/A' }}</p>
+                                            <p class="text-sm text-gray-900 whitespace-normal break-words">{{ $item->document->author->name ?? 'N/A' }}</p>
                                         </div>
                                     @endforeach
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <p class="font-bold text-gray-900">{{ number_format($order->total_amount) }}đ</p>
+                            <td class="px-3 py-4 text-right whitespace-nowrap">
+                                <p class="font-bold text-gray-900 text-sm">{{ number_format($order->total_amount) }}đ</p>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-4 whitespace-nowrap">
                                 @if($order->payment_status === 'paid')
-                                    <span class="inline-flex rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800">Đã thanh toán</span>
+                                    <span class="inline-flex rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Đã thanh toán</span>
                                 @elseif($order->payment_status === 'pending')
-                                    <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">Chờ thanh toán</span>
+                                    <span class="inline-flex rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20">Chờ thanh toán</span>
                                 @elseif($order->payment_status === 'failed')
-                                    <span class="inline-flex rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800">Thất bại</span>
+                                    <span class="inline-flex rounded-md bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-inset ring-rose-600/20">Thất bại</span>
                                 @else
-                                    <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-800">{{ $order->payment_status }}</span>
+                                    <span class="inline-flex rounded-md bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-700 ring-1 ring-inset ring-gray-600/20">{{ $order->payment_status }}</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ $order->created_at->format('d/m/Y H:i') }}
+                            <td class="py-4 pl-3 pr-6 text-left whitespace-nowrap text-sm text-gray-500">
+                                <div>{{ $order->created_at->format('d/m/Y') }}</div>
+                                <div class="text-xs mt-0.5">{{ $order->created_at->format('H:i') }}</div>
                             </td>
                         </tr>
                     @empty
@@ -184,7 +201,7 @@
         </div>
 
         @if($orders->hasPages())
-            <div class="border-t border-gray-200 p-4">
+            <div class="border-t border-gray-200 px-4 py-3">
                 {{ $orders->links() }}
             </div>
         @endif

@@ -119,7 +119,7 @@
         <!-- Left Column (70%) -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Details Card -->
-            <div class="rounded-3xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
                 @if($editMode)
                     <!-- Edit Mode -->
                     <div class="space-y-4">
@@ -397,7 +397,7 @@
             </div>
 
             <!-- Original File Info & Preview -->
-            <div class="rounded-3xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
             <!-- File Variants -->
                 <div class="space-y-4">
                     <!-- Original File -->
@@ -475,7 +475,7 @@
                  }">
                  
                 <!-- Compact Trigger Card -->
-                <div class="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm flex items-center justify-between gap-4 mt-6">
+                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-center justify-between gap-4 mt-6">
                     <div class="flex items-center gap-3">
                         <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -495,7 +495,7 @@
 
                 <!-- Fullscreen Modal Container -->
                 <div x-show="isFullscreen" 
-                     class="fixed inset-4 md:inset-8 z-50 rounded-3xl bg-white border border-gray-200 p-6 md:p-8 flex flex-col h-[calc(100vh-64px)] shadow-2xl space-y-4"
+                     class="fixed inset-4 md:inset-8 z-50 rounded-2xl bg-white border border-gray-200 p-6 flex flex-col h-[calc(100vh-64px)] shadow-2xl space-y-4"
                      style="display: none;"
                      x-transition:enter="transition ease-out duration-300"
                      x-transition:enter-start="opacity-0 translate-y-4 scale-95"
@@ -703,8 +703,8 @@
 
             <!-- Gallery Images -->
             @if(!$editMode && $activeVersion && $activeVersion->gallery_images && is_array($activeVersion->gallery_images) && count($activeVersion->gallery_images) > 0)
-                <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest block">Ảnh gallery</span>
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+                    <span class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Ảnh gallery</span>
                     <div class="grid grid-cols-2 gap-2">
                         @foreach($activeVersion->gallery_images as $image)
                             <div class="rounded-xl overflow-hidden border border-gray-200 aspect-video">
@@ -719,10 +719,10 @@
             @endif
 
             <!-- Moderation Panel -->
-            @if($doc->status !== 'pending')
-                <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-6">
+            @if(in_array($doc->status, ['approved', 'rejected']))
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
                     <div>
-                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-widest block">Trạng thái duyệt</span>
+                        <span class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Trạng thái duyệt</span>
                         @if($doc->status === 'approved')
                             <span class="mt-2 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
                                 Đã phê duyệt
@@ -824,10 +824,10 @@
     <!-- Rejection Modal -->
     <template x-teleport="body">
         <div x-show="showRejectModal" 
-             class="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm" 
+              class="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm" 
              style="display: none;"
              x-transition>
-            <div class="bg-white rounded-3xl max-w-lg w-full border border-gray-200 shadow-2xl p-6 space-y-6" @click.away="showRejectModal = false">
+            <div class="bg-white rounded-2xl max-w-lg w-full border border-gray-200 shadow-2xl p-6 space-y-6" @click.away="showRejectModal = false">
             <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                 <h3 class="text-lg font-bold text-gray-900">Từ chối phê duyệt tài liệu</h3>
                 <button @click="showRejectModal = false" class="text-gray-400 hover:text-gray-600">&times;</button>
@@ -872,7 +872,7 @@
     <!-- History Modal -->
     @if($showHistoryModal)
     <div class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl max-w-4xl w-full border border-gray-200 shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto 
+        <div class="bg-white rounded-2xl max-w-4xl w-full border border-gray-200 shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto 
                     [&::-webkit-scrollbar]:w-2 
                     [&::-webkit-scrollbar-track]:bg-gray-100 
                     [&::-webkit-scrollbar-track]:rounded-full
