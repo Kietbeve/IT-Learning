@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-white rounded-xl">
 
     {{-- ───────────────────────────────── WireUI Notifications ───────────────────────────────── --}}
-    <x-notifications z-index="z-50" />
+
 
     {{-- ═══════════════════════════════════ PAGE HEADER ═══════════════════════════════════════ --}}
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

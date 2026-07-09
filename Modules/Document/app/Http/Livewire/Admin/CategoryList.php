@@ -2,10 +2,11 @@
 
 namespace Modules\Document\Http\Livewire\Admin;
 
+use App\Models\Category;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Category;
-use Illuminate\Support\Str;
 
 class CategoryList extends Component
 {
@@ -23,7 +24,6 @@ class CategoryList extends Component
     public $description = '';
     public $sort_order = 0;
     public $is_active = true;
-
     public $isFormOpen = false;
 
     protected $queryString = [
@@ -46,15 +46,8 @@ class CategoryList extends Component
         }
     }
 
-    public function updatingSearch()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingStatusFilter()
-    {
-        $this->resetPage();
-    }
+    public function updatingSearch() { $this->resetPage(); }
+    public function updatingStatusFilter() { $this->resetPage(); }
 
     public function sortBy($field)
     {
@@ -69,8 +62,7 @@ class CategoryList extends Component
     public function openCreateModal()
     {
         $this->resetForm();
-        $this->isFormOpen = true;
-        $this->dispatch('open-modal', 'category-form-modal');
+        $this->isFormOpen = true; // Chỉ cần dùng state này, @entangle sẽ lo phần còn lại
     }
 
     public function editCategory($id)
@@ -86,18 +78,12 @@ class CategoryList extends Component
             $this->is_active = $category->is_active;
 
             $this->isFormOpen = true;
-            $this->dispatch('open-modal', 'category-form-modal');
         }
     }
 
     public function resetForm()
     {
-        $this->categoryId = null;
-        $this->name = '';
-        $this->slug = '';
-        $this->description = '';
-        $this->sort_order = 0;
-        $this->is_active = true;
+        $this->reset(['categoryId', 'name', 'slug', 'description', 'sort_order', 'is_active', 'isFormOpen']);
         $this->resetErrorBag();
     }
 
@@ -105,51 +91,38 @@ class CategoryList extends Component
     {
         $this->validate();
 
-        // Auto-generate slug from name if empty
         if (empty($this->slug)) {
-            $this->slug = \Illuminate\Support\Str::slug($this->name);
+            $this->slug = Str::slug($this->name);
         }
 
-        // Handle duplicate slugs with numeric suffix
         $baseSlug = $this->slug;
         $count = 1;
-        $duplicateCheck = Category::where('slug', $this->slug)
-            ->where('type', 'document');
-        if ($this->categoryId) {
-            $duplicateCheck->where('id', '!=', $this->categoryId);
-        }
-        while ($duplicateCheck->exists()) {
-            $this->slug = $baseSlug . '-' . $count;
-            $count++;
-            $duplicateCheck = Category::where('slug', $this->slug)
-                ->where('type', 'document');
-            if ($this->categoryId) {
-                $duplicateCheck->where('id', '!=', $this->categoryId);
-            }
+        // Lưu ý: Đảm bảo Model App\Models\Category có use SoftDeletes nhé
+        while (Category::withTrashed()
+            ->where('slug', $this->slug)
+            ->when($this->categoryId, fn($q) => $q->where('id', '!=', $this->categoryId))
+            ->exists()
+        ) {
+            $this->slug = $baseSlug . '-' . $count++;
         }
 
-        $data = [
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'description' => $this->description,
-            'sort_order' => $this->sort_order,
-            'is_active' => $this->is_active,
-            'type' => 'document', // Always document type here
-        ];
+        Category::updateOrCreate(
+            ['id' => $this->categoryId],
+            [
+                'name' => $this->name,
+                'slug' => $this->slug,
+                'description' => $this->description,
+                'sort_order' => $this->sort_order,
+                'is_active' => $this->is_active,
+                'type' => 'document',
+            ]
+        );
 
-        if ($this->categoryId) {
-            $category = Category::find($this->categoryId);
-            if ($category) {
-                $category->update($data);
-                $this->dispatch('notify', ['type' => 'success', 'message' => 'Cập nhật danh mục thành công.']);
-            }
-        } else {
-            Category::create($data);
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Thêm danh mục mới thành công.']);
-        }
+        $message = $this->categoryId ? 'Cập nhật danh mục thành công.' : 'Thêm danh mục mới thành công.';
+        
+        // FIX: Truyền arguments trực tiếp để tương thích chuẩn với Livewire 3
+        $this->dispatch('notify', type: 'success', message: $message);
 
-        $this->isFormOpen = false;
-        $this->dispatch('close-modal', 'category-form-modal');
         $this->resetForm();
     }
 
@@ -157,10 +130,8 @@ class CategoryList extends Component
     {
         $category = Category::find($id);
         if ($category) {
-            $category->update([
-                'is_active' => !$category->is_active
-            ]);
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Thay đổi trạng thái danh mục thành công.']);
+            $category->update(['is_active' => ! $category->is_active]);
+            $this->dispatch('notify', type: 'success', message: 'Thay đổi trạng thái danh mục thành công.');
         }
     }
 
@@ -168,15 +139,15 @@ class CategoryList extends Component
     {
         $category = Category::find($id);
         if ($category) {
-            // Check if there are any documents using this category
-            $hasDocs = \Modules\Document\Models\Document::where('category_id', $id)->exists();
-            if ($hasDocs) {
-                $this->dispatch('notify', ['type' => 'error', 'message' => 'Không thể xóa danh mục này vì đang có tài liệu thuộc danh mục.']);
+            $hasDocs = \Modules\Document\Models\DocumentVersion::where('category_id', $id)->exists();
+            $hasSubjects = \Modules\Document\Models\Subject::where('category_id', $id)->exists();
+            if ($hasDocs || $hasSubjects) {
+                $this->dispatch('notify', type: 'error', message: 'Không thể xóa vì đang có môn học hoặc tài liệu thuộc danh mục.');
                 return;
             }
 
-            $category->delete(); // Soft delete
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa danh mục thành công.']);
+            $category->delete();
+            $this->dispatch('notify', type: 'success', message: 'Đã xóa danh mục thành công.');
         }
     }
 
@@ -186,14 +157,13 @@ class CategoryList extends Component
         $activeCount = Category::where('type', 'document')->where('is_active', true)->count();
         $inactiveCount = Category::where('type', 'document')->where('is_active', false)->count();
 
-        // Query
         $query = Category::where('type', 'document');
 
-        if (!empty($this->search)) {
-            $query->where(function($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%')
-                  ->orWhere('slug', 'like', '%' . $this->search . '%');
+        if (! empty($this->search)) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '%'.$this->search.'%')
+                  ->orWhere('description', 'like', '%'.$this->search.'%')
+                  ->orWhere('slug', 'like', '%'.$this->search.'%');
             });
         }
 
@@ -201,8 +171,7 @@ class CategoryList extends Component
             $query->where('is_active', $this->statusFilter === 'active');
         }
 
-        $categories = $query->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(15);
+        $categories = $query->orderBy($this->sortField, $this->sortDirection)->paginate(15);
 
         return view('document::livewire.admin.category-list', [
             'categories' => $categories,
@@ -211,7 +180,7 @@ class CategoryList extends Component
             'inactiveCount' => $inactiveCount,
         ])->layout('layouts.admin', [
             'pageTitle' => 'Quản lý danh mục tài liệu',
-            'breadcrumb' => new \Illuminate\Support\HtmlString('<span class="mx-2">/</span> Admin <span class="mx-2">/</span> Danh mục')
+            'breadcrumb' => new HtmlString('<span class="mx-2">/</span> Admin <span class="mx-2">/</span> Danh mục'),
         ]);
     }
 }

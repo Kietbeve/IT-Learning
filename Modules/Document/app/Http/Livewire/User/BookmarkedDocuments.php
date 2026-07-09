@@ -2,11 +2,11 @@
 
 namespace Modules\Document\Http\Livewire\User;
 
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Document\Models\Document;
 use Modules\Document\Models\DocumentFavorite;
-use Illuminate\Support\Facades\Auth;
 
 class BookmarkedDocuments extends Component
 {
@@ -14,20 +14,16 @@ class BookmarkedDocuments extends Component
 
     public function toggleFavorite($documentId)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $userId = Auth::id();
-        $fav = DocumentFavorite::where('document_id', $documentId)->where('user_id', $userId)->first();
         $doc = Document::find($documentId);
-
-        if ($fav) {
-            $fav->delete();
-            if ($doc) {
-                $doc->decrement('favorite_count');
-            }
-            $this->dispatch('notify', ['type' => 'info', 'message' => 'Đã bỏ lưu tài liệu khỏi mục Yêu thích.']);
+        
+        if ($doc) {
+            $doc->toggleFavoriteForUser($userId);
+            // The list of bookmarks is paginated and loaded in render(), so it will refresh automatically
         }
     }
 
@@ -40,7 +36,7 @@ class BookmarkedDocuments extends Component
             ->paginate(15);
 
         return view('document::livewire.user.bookmarked-documents', [
-            'favorites' => $favorites
+            'favorites' => $favorites,
         ])->layout('layouts.user');
     }
 }

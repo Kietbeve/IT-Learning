@@ -4,7 +4,6 @@ namespace Modules\Document\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
-use Modules\Document\Models\Document;
 
 class DocumentComment extends Model
 {

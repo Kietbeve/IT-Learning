@@ -16,7 +16,7 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, string $role): Response
     {
         if (!$request->user() || !$request->user()->hasRole($role)) {
-            abort(403, 'Unauthorized. Required role: ' . $role);
+            abort(403, 'Bạn không có quyền truy cập vào trang này.');
         }
 
         return $next($request);

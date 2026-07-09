@@ -5,25 +5,19 @@ namespace Modules\Auth\Livewire\Admin;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Modules\Auth\Models\ContributorApplication;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
-use PowerComponents\LivewirePowerGrid\Exportable;
 use PowerComponents\LivewirePowerGrid\Facades\Filter;
-use PowerComponents\LivewirePowerGrid\Footer;
-use PowerComponents\LivewirePowerGrid\Header;
-use PowerComponents\LivewirePowerGrid\PowerGrid;
+use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridColumns;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
-use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Facades\Rule;
 
 #[Layout('layouts.admin')]
 final class AdminCtvApplications extends PowerGridComponent
 {
-    use WithExport;
-
     public string $tableName = 'admin-ctv-applications-table';
 
     public function setUp(): array
@@ -31,14 +25,11 @@ final class AdminCtvApplications extends PowerGridComponent
         $this->showCheckBox();
 
         return [
-            Exportable::make('export')
-                ->striped()
-                ->type(Exportable::TYPE_XLS, Exportable::TYPE_CSV),
-            Header::make()
+            PowerGrid::header()
                 ->showSearchInput()
                 ->showToggleColumns(),
-            Footer::make()
-                ->showPerPage(15, [15, 25, 50, 100])
+            PowerGrid::footer()
+                ->showPerPage()
                 ->showRecordCount(),
         ];
     }
@@ -216,10 +207,8 @@ final class AdminCtvApplications extends PowerGridComponent
                 'rejected_reason' => null
             ]);
 
-            // Update user to be contributor
-            $application->user->update([
-                'is_contributor' => true
-            ]);
+            // Assign contributor role to user
+            $application->user->assignRole('contributor');
 
             $this->dispatch('swal:success', [
                 'title' => 'Thành công!',

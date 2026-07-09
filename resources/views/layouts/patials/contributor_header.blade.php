@@ -31,7 +31,11 @@
             </a>
         </div>
 
-        <div class="flex items-center">
+        <div class="flex items-center gap-2">
+
+            {{-- Notification Bell --}}
+            @livewire('notification-bell')
+
             <x-dropdown>
                 <x-slot name="trigger">
                     <button class="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-left focus:outline-none hover:bg-slate-100/50 transition-all">

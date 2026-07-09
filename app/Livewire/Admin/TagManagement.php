@@ -21,9 +21,7 @@ class TagManagement extends Component
     public $modalMode = 'create'; // 'create' hoặc 'edit'
     public $confirmDeleteId = null;
     
-    // Properties cho modal xem chi tiết
-    public $showDetailModal = false;
-    public $detailTag = null;
+
     
     // Properties cho form
     public $tagId = null;
@@ -124,7 +122,22 @@ class TagManagement extends Component
      */
     public function delete()
     {
-        $tag = Tag::findOrFail($this->confirmDeleteId);
+        $tag = Tag::withCount(['documents', 'exams', 'questions'])->findOrFail($this->confirmDeleteId);
+        
+        if ($tag->documents_count > 0 || $tag->exams_count > 0 || $tag->questions_count > 0) {
+            $parts = [];
+            if ($tag->documents_count > 0) $parts[] = "{$tag->documents_count} tài liệu";
+            if ($tag->exams_count > 0) $parts[] = "{$tag->exams_count} đề thi";
+            if ($tag->questions_count > 0) $parts[] = "{$tag->questions_count} câu hỏi";
+            
+            $this->notification()->error(
+                title: 'Không thể xóa tag',
+                description: 'Tag này đang được sử dụng trong ' . implode(', ', $parts) . '.'
+            );
+            $this->confirmDeleteId = null;
+            return;
+        }
+
         $tag->delete();
         
         $this->confirmDeleteId = null;
@@ -165,29 +178,7 @@ class TagManagement extends Component
     //     $this->slug = Str::slug($value);
     // }
 
-    /**
-     * Mở modal xem chi tiết liên kết của tag
-     * 
-     * @param int $id ID của tag cần xem chi tiết
-     */
-    public function openDetailModal($id)
-    {
-        // Load tag với các relationships và đếm số lượng
-        $this->detailTag = Tag::with(['documents', 'exams', 'questions'])
-            ->withCount(['documents', 'exams', 'questions'])
-            ->findOrFail($id);
-        
-        $this->showDetailModal = true;
-    }
 
-    /**
-     * Đóng modal xem chi tiết
-     */
-    public function closeDetailModal()
-    {
-        $this->showDetailModal = false;
-        $this->detailTag = null;
-    }
 
     /**
      * Render component với danh sách tags

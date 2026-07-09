@@ -2,7 +2,7 @@
 namespace Modules\Auth\Services;
 
 use Laravel\Socialite\Facades\Socialite;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Modules\Exam\Models\ExamAttempt;
@@ -26,22 +26,37 @@ class GoogleService
         $existingUser = User::where('email', $googleUser->email)->first();
 
         if ($existingUser) {
+            // Kiểm tra trạng thái bị khóa
+            if ($existingUser->status === 'blocked') {
+                return redirect('/login')->withErrors(['error' => 'Tài khoản của bạn đã bị khóa. ' . $existingUser->blocked_reason]);
+            }
+            
             // Tài khoản đã tồn tại: chỉ cập nhật thông tin Google
             $existingUser->update([
                 'google_id' => $googleUser->id,
                 'avatar'    => $googleUser->avatar,
             ]);
             $user = $existingUser;
+
+            if ($user->roles()->count() === 0) {
+                $user->assignRole('user');
+            }
         } else {
-            // Tài khoản chưa tồn tại: tạo mới và gán role student
+            // Tài khoản chưa tồn tại: tạo mới và gán role user
             $user = User::create([
                 'name'      => $googleUser->name,
                 'email'     => $googleUser->email,
                 'google_id' => $googleUser->id,
                 'avatar'    => $googleUser->avatar,
             ]);
-            $user->assignRole('student');
+            $user->assignRole('user');
         }
+
+        // Cập nhật lịch sử đăng nhập
+        $user->update([
+            'last_login_at' => now(),
+            'last_login_IP' => request()->ip(),
+        ]);
 
         Auth::login($user);
 

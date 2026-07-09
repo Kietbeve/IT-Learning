@@ -6,14 +6,14 @@
 
             <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
                 <span class="text-xl font-bold text-white">
-                    {{ mb_strtoupper(mb_substr($exam->category->name, 0, 1)) }}
+                    {{ mb_strtoupper(mb_substr($exam->category?->name ?? '?', 0, 1)) }}
                 </span>
             </div>
 
             <x-badge
                 flat
                 white
-                label="{{ $exam->category->name }}"
+                label="{{ $exam->category?->name ?? 'Chưa phân loại' }}"
             />
 
         </div>
@@ -56,7 +56,7 @@
         <div class="mt-5 flex items-center gap-3">
 
             <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-semibold text-indigo-700">
-                {{ mb_strtoupper(mb_substr($exam->author->name, 0, 1)) }}
+                {{ mb_strtoupper(mb_substr($exam->author?->name ?? '?', 0, 1)) }}
             </div>
 
             <div class="min-w-0">
@@ -65,7 +65,7 @@
                 </p>
 
                 <p class="text-sm font-medium text-gray-700 truncate">
-                    {{ $exam->author->name }}
+                    {{ $exam->author?->name ?? 'Ẩn danh' }}
                 </p>
             </div>
 
