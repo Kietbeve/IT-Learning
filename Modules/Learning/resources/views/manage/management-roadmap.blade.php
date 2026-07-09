@@ -92,7 +92,7 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-100">
-                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24">Public ID</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24">Thứ Tự</th>
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lộ Trình Đào Tạo</th>
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-28">Cấp Độ</th>
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-36">Trạng Thái</th>
@@ -102,7 +102,9 @@
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     @forelse($roadmaps as $roadmap)
                     <tr class="hover:bg-slate-50/60 transition-colors group">
-                        <td class="px-6 py-4 text-xs font-mono font-bold text-slate-400">{{ $roadmap->public_id }}</td>
+                       <td class="px-6 py-4 text-xs font-mono font-bold text-slate-500 text-center">
+            {{ $loop->iteration }}
+        </td>
                         <td class="px-6 py-4">
                             <span class="block text-xs font-black text-slate-800 group-hover:text-blue-600 transition-colors">{{ $roadmap->title }}</span>
                             <span class="block text-[11px] text-slate-400 font-medium mt-0.5 max-w-md truncate">{{ $roadmap->description ?? 'Chưa cấu hình mô tả ngắn.' }}</span>

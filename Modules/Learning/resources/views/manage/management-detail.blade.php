@@ -57,62 +57,48 @@
                 </div>
 
                 <div>
-                    {{-- <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Thuộc Chương / Mục số *</label>
-                    <input type="number" wire:model="sort_order" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500">
-                    @error('sort_order') <span class="text-[10px] text-rose-500 font-bold mt-1 block">{{ $message }}</span> @enderror --}}
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                            Chương
-                        </label>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Chương
+                    </label>
 
-                        <select
-                            wire:model.live="section_id"
-                            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="">-- Không thuộc chương nào --</option>
+                    <select
+                        wire:model.live="section_id"
+                        class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
+                    >
+                        <option value="">-- Không thuộc chương nào --</option>
 
-                           @foreach($sections as $section)
-                            {{-- ✅ THÊM wire:key VÀO ĐÂY --}}
-                            <div wire:key="section-{{ $section->id }}" class="..."> 
-                                
-                                <h4>Phần {{ $section->sort_order }} - {{ $section->title }}</h4>
-
-                                @foreach($section->lessons as $lesson)
-                                    {{-- ✅ THÊM wire:key VÀO ĐÂY --}}
-                                    <div wire:key="lesson-{{ $lesson->id }}" class="...">
-                                        {{ $lesson->title }}
-                                    </div>
-                                @endforeach
-
-                            </div>
+                        {{-- ✅ Duyệt qua danh sách chương và in ra bằng thẻ <option> hợp lệ --}}
+                        @foreach($sections as $section)
+                            <option value="{{ $section->id }}" wire:key="section-opt-{{ $section->id }}">
+                                Phần {{ $section->sort_order }} - {{ $section->title }}
+                            </option>
                         @endforeach
-                        </select>
+                    </select>
 
-                        @error('section_id')
-                            <span class="text-[10px] text-rose-500 font-bold mt-1 block">
-                                {{ $message }}
-                            </span>
-                        @enderror
-                    </div>
+                    @error('section_id')
+                        <span class="text-[10px] text-rose-500 font-bold mt-1 block">
+                            {{ $message }}
+                        </span>
+                    @enderror
                 </div>
 
-                @if(empty($section_id))
-            <div class="mt-3 animate-fade-in" wire:key="new-section-input">
-                 <label class="block text-[11px] font-bold text-blue-600 uppercase mb-1">
-                    Tên chương mới (Nếu muốn tạo tự động)
-                 </label>
-             <input 
-                type="text" 
-                wire:model="new_section_title" 
-                placeholder="Nhập tên chương mới... (Bỏ trống nếu muốn để mặc định)" 
-                class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500 placeholder-slate-400"
-             >
-            @error('new_section_title') 
-                <span class="text-[10px] text-rose-500 font-bold mt-1 block">{{ $message }}</span> 
-            @enderror
-        </div>
-    @endif
-</div>
+                                @if(empty($section_id))
+                            <div class="mt-3 animate-fade-in" wire:key="new-section-input">
+                                <label class="block text-[11px] font-bold text-blue-600 uppercase mb-1">
+                                    Tên chương mới (Nếu muốn tạo tự động)
+                                </label>
+                            <input 
+                                type="text" 
+                                wire:model="new_section_title" 
+                                placeholder="Nhập tên chương mới... (Bỏ trống nếu muốn để mặc định)" 
+                                class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500 placeholder-slate-400"
+                            >
+                            @error('new_section_title') 
+                                <span class="text-[10px] text-rose-500 font-bold mt-1 block">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    @endif
+                </div>
 
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Trạng thái hiển thị</label>
@@ -303,10 +289,7 @@
             
             <td class="px-6 py-4">
                 <div class="flex items-center justify-center gap-1.5">
-                    {{-- Nút chuyển trang --}}
-                    <a href="{{ route('manage.lesson', ['sectionId' => $lesson->id]) }}" title="Quản lý bài học" class="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                    </a>
+                   
 
                     {{-- Nút sửa --}}
                     <button wire:click="openEditForm({{ $lesson->id }})" title="Chỉnh sửa bài học" class="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">

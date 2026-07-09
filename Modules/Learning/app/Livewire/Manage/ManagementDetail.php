@@ -256,14 +256,25 @@ class ManagementDetail extends Component
     $this->loadData();
 }
 
-    public function render()
-    {
-        $view = view('learning::manage.management-detail', [
-            'sections' => $this->sections,
-            'lessons' => $this->lessons,
-        ]);
+   public function render()
+{
+    // 1. Kéo trực tiếp dữ liệu mới nhất ở đây
+    $sections = \Modules\Learning\Models\RoadmapSection::where('roadmap_id', $this->roadmap->id)
+        ->orderBy('sort_order')
+        ->get();
 
-        /** @var mixed $view */
-        return $view->extends('layouts.contributor')->section('content');
-    }
+    $lessons = \Modules\Learning\Models\RoadmapLesson::where('roadmap_id', $this->roadmap->id)
+        ->with('section')
+        ->orderBy('sort_order')
+        ->get();
+
+    // 2. Truyền thẳng các biến cục bộ này ra ngoài View
+    $view = view('learning::manage.management-detail', [
+        'sections' => $sections,
+        'lessons'  => $lessons,
+    ]);
+
+    /** @var mixed $view */
+    return $view->extends('layouts.contributor')->section('content');
+}
 }
