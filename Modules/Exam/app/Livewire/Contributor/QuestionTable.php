@@ -99,7 +99,7 @@ final class QuestionTable extends PowerGridComponent
         return PowerGrid::fields()
             ->add('id')
             ->add('content')
-            ->add('content_excerpt', fn (Question $model) => Str::words($model->content, 4, '...'))
+            ->add('content_excerpt', fn (Question $model) => Str::words(strip_tags(html_entity_decode($model->content)), 4, '...'))
             ->add('type')
             ->add('type_label', fn (Question $model) => $this->mapQuestionType($model->type))
             ->add('difficulty')

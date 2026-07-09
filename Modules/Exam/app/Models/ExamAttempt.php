@@ -114,6 +114,24 @@ class ExamAttempt extends Model
         
         return max(0, $totalSeconds - $elapsed);
     }
+    //Hàm tính tổng điểm tự luận
+    public function getMultipleChoiceScore(): float
+    {
+        return (float) $this->answers()
+            ->whereHas('question', function ($query) {
+                $query->whereNot('type', 'essay');
+            })
+            ->sum('score');
+    }
+    //Hàm tính tổng điểm trắc nghiệm
+    public function getEssayScore(): float
+    {
+        return (float) $this->answers()
+            ->whereHas('question', function ($query) {
+                $query->where('type', 'essay');
+            })
+            ->sum('score');
+    }
 
     public function getAnsweredQuestionsCount(): int
     {

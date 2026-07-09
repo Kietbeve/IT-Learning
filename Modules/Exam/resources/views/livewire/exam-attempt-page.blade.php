@@ -291,16 +291,33 @@
     <main class="pt-14 md:pt-12 pb-8 px-4">
         <div class="max-w-4xl mx-auto">
             <x-card>
-                @if ($attempt->status=='submitted')
-                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div class="flex items-center gap-3">
-                        <x-icon name="check-circle" class="w-6 h-6 text-green-600" />
-                        <div>
-                            <h3 class="font-semibold text-green-900">Đã nộp bài thành công</h3>
-                            <p class="text-sm text-green-700">Bài thi của bạn đã được lưu lại.</p>
+                @if ($attempt->status=='submitted' || $attempt->status=='completed')
+                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <div class="flex items-center gap-3">
+                                <x-icon name="check-circle" class="w-6 h-6 text-green-600 shrink-0" />
+
+                                <div>
+                                    <h3 class="font-semibold text-green-900">
+                                        Đã nộp bài thành công
+                                    </h3>
+                                    <p class="text-sm text-green-700">
+                                        Bài thi của bạn đã được lưu lại.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <a href="{{ route('exam.attempt.result', $attempt->session_id) }}"
+                                class="inline-flex w-full md:w-auto items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                                <span>
+                                    {{-- {{ $attempt->status === 'completed' ? 'Xem kết quả' : 'Xem trạng thái chấm' }} --}}
+                                    Xem kết quả
+                                </span>
+
+                                <x-icon name="arrow-right" class="w-4 h-4" />
+                            </a>
                         </div>
                     </div>
-                </div>
                 @endif
                 
                 {{-- Question Display --}}
@@ -728,5 +745,8 @@
             </div>
         </div>
     </div>
-
+{{-- Script chặn mở devtool, chặn copy --}}
+@if ($attempt->exam->mode=='official')
+    @vite('modules/exam/resources/assets/js/exam-security.js')
+@endif
 </div>
