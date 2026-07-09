@@ -1,11 +1,11 @@
 
 
 <div>
-    <div class="border-b border-gray-200 bg-white px-6 py-5">
+      <div class="rounded-2xl border border-gray-300 bg-white px-6 py-5 shadow-sm">
         {{-- Hàng trên cùng: Tiêu đề --}}
         <div class="mb-4">
             <h2 class="text-lg font-semibold tracking-tight text-gray-800">
-                Danh sách câu hỏi
+                Danh sách câu hỏi 
             </h2>
         </div>
 
@@ -144,17 +144,19 @@
                 </div>
 
                 {{-- Bộ lọc: Chế độ Chia sẻ --}}
-                <div>
-                    <x-native-select
-                        label="Chia sẻ"
-                        wire:model.live="filterShared"
-                    >
-                        <option value="">Tất cả</option>
-                        @foreach($sharedOptions as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </x-native-select>
-                </div>
+                @if($isAdmin)
+                  <div>
+                      <x-native-select
+                          label="Chia sẻ"
+                          wire:model.live="filterShared"
+                      >
+                          <option value="">Tất cả</option>
+                          @foreach($sharedOptions as $value => $label)
+                              <option value="{{ $value }}">{{ $label }}</option>
+                          @endforeach
+                      </x-native-select>
+                  </div>
+                @endif
             </div>
 
             {{-- Nút Reset toàn bộ bộ lọc --}}
@@ -179,7 +181,8 @@
     </div>
 
     {{-- ===================== Bảng Dữ Liệu ===================== --}}
-    <div class="overflow-x-auto">
+    {{-- <div class="overflow-x-auto"> --}}
+      <div class="mt-3 overflow-x-auto rounded-2xl border border-gray-200 bg-white">
         <table class="min-w-full">
             <thead class="sticky top-0 z-10 border-b border-gray-200 bg-gray-50">
                 <tr>
@@ -191,32 +194,42 @@
                     @endif
                     
                     @if($visibleColumns['id'])
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">ID</th>
+                    <th class="whitespace-nowrap px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">ID</th>
                     @endif
                     @if($visibleColumns['content'])
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Nội dung câu hỏi</th>
+                    <th class="whitespace-nowrap px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Nội dung câu hỏi</th>
                     @endif
                     @if($visibleColumns['type'])
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Loại câu hỏi</th>
+                    <th class="whitespace-nowrap px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Loại câu hỏi</th>
                     @endif
                     @if($visibleColumns['difficulty'])
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Độ khó</th>
+                    <th class="whitespace-nowrap px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Độ khó</th>
                     @endif
                     @if($visibleColumns['status'])
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Trạng thái</th>
+                    <th class="whitespace-nowrap px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Trạng thái</th>
                     @endif
                     @if($visibleColumns['shared'])
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Chia sẻ</th>
+                    <th class="whitespace-nowrap px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Chia sẻ</th>
                     @endif
                     @if($visibleColumns['actions'])
-                    <th class="w-44 px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">Thao tác</th>
+                    <th class="whitespace-nowrap w-44 px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">Thao tác</th>
                     @endif
                 </tr>
             </thead>
 
             <tbody class="divide-y divide-gray-100 bg-white">
                 @forelse($questions as $question)
-                <tr class="transition hover:bg-indigo-50/40">
+                <tr
+                    @class([
+                         'transition', 
+                        'bg-red-100/40 hover:bg-red-200/60'
+                            => $question->status === 'rejected',
+                        'bg-amber-100/40 hover:bg-amber-200/60'
+                            => $question->status === 'pending',
+                        'bg-green-100/40 hover:bg-green-200/60'
+                            => $question->status === 'approved',
+                    ])
+                >
                     
                     {{-- Cột Checkbox từng hàng --}}
                     @if($showCheckboxes)
@@ -225,12 +238,14 @@
                     </td>
                     @endif
 
+                    {{-- Cột ID --}}
                     @if($visibleColumns['id'])
-                    <td class="px-6 py-4 text-sm text-gray-700">
+                    <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
                         {{ $question->id }}
                     </td>
                     @endif
 
+                    {{-- Cột Nội dung câu hỏi --}}
                     @if($visibleColumns['content'])
                     <td class="px-6 py-4">
                         <div class="text-sm text-gray-800">
@@ -239,50 +254,127 @@
                     </td>
                     @endif
 
+                    {{-- Cột Loại câu hỏi --}}
                     @if($visibleColumns['type'])
-                    <td class="px-6 py-4">
+                    <td class="whitespace-nowrap px-6 py-4">
                         @if($question->type === 'single_choice')
-                            <x-badge indigo label="Trắc nghiệm một đáp án"/>
+                            <span
+                              class="inline-flex items-center rounded-full
+                                       border border-indigo-200
+                                       bg-indigo-50
+                                       px-2.5 py-1
+                                       text-xs font-medium text-indigo-700">
+                                Trắc nghiệm một đáp án
+                            </span>
                         @elseif($question->type === 'multiple_choice')
-                            <x-badge purple label="Trắc nghiệm nhiều đáp án"/>
+                            <span
+                                class="inline-flex items-center rounded-full
+                                       border border-purple-200
+                                       bg-purple-50
+                                       px-2.5 py-1
+                                       text-xs font-medium text-purple-700">
+                                Trắc nghiệm nhiều đáp án
+                            </span>
                         @elseif($question->type === 'essay')
-                            <x-badge sky label="Tự luận"/>
+                            <span
+                                class="inline-flex items-center rounded-full
+                                       border border-sky-200
+                                       bg-sky-50
+                                       px-2.5 py-1
+                                       text-xs font-medium text-sky-700">
+                                Tự luận
+                            </span>
                         @else
-                            <x-badge slate label="{{ $question->type }}"/>
+                            <span
+                                class="inline-flex items-center rounded-full
+                                       border border-gray-200
+                                       bg-gray-50
+                                       px-2.5 py-1
+                                       text-xs font-medium text-gray-700">
+                                {{ $question->type }}
+                            </span>
                         @endif
                     </td>
                     @endif
 
+                    {{-- Cột Độ khó --}}
                     @if($visibleColumns['difficulty'])
-                    <td class="px-6 py-4">
+                    <td class="whitespace-nowrap px-6 py-4">
                         @if($question->difficulty === 'easy')
-                            <x-badge positive label="Dễ"/>
+                           <span
+                              class="inline-flex rounded-full
+                                     border border-green-200
+                                     bg-green-50
+                                     px-2.5 py-1
+                                     text-xs font-medium text-green-700">
+                              Dễ
+                          </span> 
                         @elseif($question->difficulty === 'medium')
-                            <x-badge warning label="Trung bình"/>
+                            <span
+                                class="inline-flex rounded-full
+                                       border border-yellow-200
+                                       bg-yellow-50
+                                       px-2.5 py-1
+                                       text-xs font-medium text-yellow-700">
+                                Trung bình
+                            </span>
                         @elseif($question->difficulty === 'hard')
-                            <x-badge negative label="Khó"/>
+                            <span
+                                class="inline-flex rounded-full
+                                       border border-red-200
+                                       bg-red-50
+                                       px-2.5 py-1
+                                       text-xs font-medium text-red-700">
+                                Khó
+                            </span>
                         @else
                             <x-badge slate label="{{ $question->difficulty }}"/>
                         @endif
                     </td>
                     @endif
 
+                    {{-- Cột Trạng thái --}}
                     @if($visibleColumns['status'])
-                    <td class="px-6 py-4">
+                    <td class="whitespace-nowrap px-6 py-4">
                         @if($question->status === 'pending')
-                            <x-badge warning label="Chờ duyệt"/>
+                          <span
+                              class="inline-flex rounded-full
+                                     border border-yellow-200
+                                     bg-yellow-50
+                                     px-2.5 py-1
+                                     text-xs font-semibold text-yellow-700">
+                              Chờ duyệt
+                          </span>
+
                         @elseif($question->status === 'approved')
-                            <x-badge positive label="Đã duyệt"/>
+                          <span
+                              class="inline-flex rounded-full
+                                     border border-green-200
+                                     bg-green-50
+                                     px-2.5 py-1
+                                     text-xs font-semibold text-green-700">
+                              Đã duyệt
+                          </span>
+                            
                         @elseif($question->status === 'rejected')
-                            <x-badge negative label="Từ chối"/>
+                          <span
+                              class="inline-flex rounded-full
+                                     border border-red-200
+                                     bg-red-50
+                                     px-2.5 py-1
+                                     text-xs font-semibold text-red-700">
+                              Từ chối
+                          </span>
+                            
                         @else
                             <x-badge slate label="Không xác định"/>
                         @endif
                     </td>
                     @endif
-
+                    
+                    {{-- Cột Chia sẻ --}}
                     @if($visibleColumns['shared'])
-                    <td class="px-6 py-4">
+                    <td class="whitespace-nowrap px-6 py-4">
                         {{-- Logic nút chia sẻ phụ thuộc vào quyền Admin --}}
                         @if(!$isAdmin)
                             @if($question->is_shared)
@@ -299,9 +391,11 @@
                         @endif
                     </td>
                     @endif
+                
 
+                    {{-- Cột Thao tác --}}
                     @if($visibleColumns['actions'])
-                    <td class="px-6 py-4">
+                    <td class="whitespace-nowrap px-6 py-4">
                         <div class="flex justify-center gap-2">
                             {{-- Admin có quyền Duyệt / Từ chối --}}
                             @if($isAdmin && $question->status === 'pending')
@@ -309,7 +403,9 @@
                                 <x-button flat icon="x-mark" sm negative wire:click="$dispatch('question-reject', { id: {{ $question->id }} })"/>
                             @endif
                             <x-button flat icon="eye" sm info wire:click="$dispatch('question-view', { id: {{ $question->id }} })"/>
-                            <x-button flat icon="pencil" sm warning wire:click="$dispatch('question-edit', { id: {{ $question->id }} })"/>
+                            @if($isAdmin)
+                              <x-button flat icon="pencil" sm warning wire:click="$dispatch('question-edit', { id: {{ $question->id }} })"/>
+                            @endif
                             <x-button flat icon="trash" sm negative wire:click="$dispatch('question-delete-confirm', { id: {{ $question->id }} })"/>
                         </div>
                     </td>
@@ -334,7 +430,7 @@
     </div>
 
     {{-- ===================== Chân Bảng (Phân trang) ===================== --}}
-    <div class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+    <div class=" px-6 py-4">
         {{ $questions->links() }}
     </div>
 

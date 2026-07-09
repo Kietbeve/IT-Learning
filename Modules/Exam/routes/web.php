@@ -108,6 +108,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:admin']], func
 
     // Quản lý tất cả câu hỏi trong hệ thống
     Route::get('questions', [ExamController::class, 'questionManager'])->name('admin.questions');
+    // Quản lý tất cả câu hỏi trong hệ thống - Phiên bản 2 sử dụng Livewire component
+    Route::get('questions2', \Modules\Exam\Livewire\Contributor\QuestionTable2::class)->name('admin.questions2');
 });
 
 /*
