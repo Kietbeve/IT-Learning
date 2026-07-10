@@ -1,7 +1,7 @@
 {{-- Modal: Chi tiết câu hỏi --}}
 
 <div>
-    <x-notifications z-index="z-50" />
+
     {{-- Modal: Xem chi tiết câu hỏi --}}
     <x-modal-card title="Chi tiết câu hỏi" blur wire:model="showViewModal" max-width="2xl">
         @if ($question)

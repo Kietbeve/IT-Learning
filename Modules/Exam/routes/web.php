@@ -74,9 +74,9 @@ Route::group(['prefix' => 'exam'], function () {
 
 Route::group(['prefix' => 'contributor', 'middleware' => ['auth', 'role:contributor']], function () {
     // Quản lý câu hỏi - Danh sách câu hỏi của contributor
-    Route::get('questions', [ExamController::class, 'questionManager'])->name('contributor.questions');
+    // Route::get('questions', [ExamController::class, 'questionManager'])->name('contributor.questions');
     // Quản lý câu hỏi - Phiên bản 2 sử dụng Livewire component
-    Route::get('questions2', \Modules\Exam\Livewire\Contributor\QuestionTable2::class)->name('contributor.questions2');
+    Route::get('questions', \Modules\Exam\Livewire\Contributor\QuestionTable::class)->name('contributor.questions');
 
     // Quản lý bài thi
     Route::get('exams', [ExamController::class, 'examManager'])->name('contributor.exams');
@@ -110,7 +110,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:admin']], func
     // Quản lý tất cả câu hỏi trong hệ thống
     Route::get('questions', [ExamController::class, 'questionManager'])->name('admin.questions');
     // Quản lý tất cả câu hỏi trong hệ thống - Phiên bản 2 sử dụng Livewire component
-    Route::get('questions2', \Modules\Exam\Livewire\Contributor\QuestionTable2::class)->name('admin.questions2');
+    Route::get('questions', \Modules\Exam\Livewire\Contributor\QuestionTable::class)->name('admin.questions');
 });
 
 /*
