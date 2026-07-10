@@ -1,30 +1,4 @@
-<div id="bookmarked-documents-list" class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
-    <!-- Notification Toast -->
-    <div x-show="notification" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform translate-y-2"
-         class="fixed bottom-5 right-5 z-50 rounded-2xl border bg-white p-4 shadow-xl border-slate-200"
-         style="display: none;">
-        <div class="flex items-center gap-3">
-            <template x-if="notification && notification.type === 'success'">
-                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                </div>
-            </template>
-            <template x-if="notification && notification.type === 'info'">
-                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-            </template>
-            <div>
-                <p class="text-sm font-semibold text-slate-900" x-text="notification ? notification.message : ''"></p>
-            </div>
-        </div>
-    </div>
+<div id="bookmarked-documents-list" class="max-w-7xl mx-auto py-6">
 
     <!-- Header Section -->
     <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -99,8 +73,13 @@
                                 <span class="text-xs text-slate-600 font-medium">{{ $fav->document->author?->name ?? 'Uploader' }}</span>
                             </div>
                             <div class="text-sm font-semibold text-slate-900">
-                                @if($fav->document->product)
-                                    <span class="text-blue-600 font-bold">{{ number_format($fav->document->product->price) }}đ</span>
+                                @if($fav->document->product && $fav->document->product->price > 0)
+                                    @if($fav->document->product->sale_price)
+                                        <span class="text-blue-600 font-bold">{{ number_format($fav->document->product->sale_price) }}đ</span>
+                                        <span class="text-xs text-slate-400 line-through ml-1">{{ number_format($fav->document->product->price) }}đ</span>
+                                    @else
+                                        <span class="text-blue-600 font-bold">{{ number_format($fav->document->product->price) }}đ</span>
+                                    @endif
                                 @else
                                     <span class="text-emerald-600 font-semibold">Miễn phí</span>
                                 @endif

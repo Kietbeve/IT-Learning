@@ -12,11 +12,17 @@ class OrderManagement extends Component
     use WithPagination;
 
     public $search = '';
+
     public $statusFilter = 'all';
+
     public $orderTypeFilter = 'all';
+
     public $dateFrom = '';
+
     public $dateTo = '';
+
     public $sortField = 'created_at';
+
     public $sortDirection = 'desc';
 
     protected $queryString = [
@@ -66,10 +72,14 @@ class OrderManagement extends Component
     {
         $query = Order::with(['user', 'items.document']);
 
-        if (!empty($this->search)) {
-            $query->whereHas('user', function($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('email', 'like', '%' . $this->search . '%');
+        if (! empty($this->search)) {
+            $query->where(function ($q) {
+                $q->where('order_code', 'like', '%'.$this->search.'%')
+                  ->orWhere('guest_email', 'like', '%'.$this->search.'%')
+                  ->orWhereHas('user', function ($userQ) {
+                      $userQ->where('name', 'like', '%'.$this->search.'%')
+                            ->orWhere('email', 'like', '%'.$this->search.'%');
+                  });
             });
         }
 
@@ -81,16 +91,21 @@ class OrderManagement extends Component
             $query->where('order_type', $this->orderTypeFilter);
         }
 
-        if (!empty($this->dateFrom)) {
+        if (! empty($this->dateFrom)) {
             $query->whereDate('created_at', '>=', $this->dateFrom);
         }
 
-        if (!empty($this->dateTo)) {
+        if (! empty($this->dateTo)) {
             $query->whereDate('created_at', '<=', $this->dateTo);
         }
 
         $orders = $query->orderBy($this->sortField, $this->sortDirection)
             ->paginate(20);
+
+        $totalRevenue = Order::where('payment_status', 'paid')->sum('total_amount');
+        $totalContributorAmount = OrderItem::whereHas('order', function ($q) {
+            $q->where('payment_status', 'paid');
+        })->sum('contributor_amount');
 
         $stats = [
             'total_orders' => Order::count(),
@@ -98,13 +113,9 @@ class OrderManagement extends Component
             'pending_orders' => Order::where('payment_status', 'pending')->count(),
             'subscription_count' => Order::where('order_type', 'subscription')->where('payment_status', 'paid')->count(),
             'subscription_revenue' => Order::where('order_type', 'subscription')->where('payment_status', 'paid')->sum('total_amount'),
-            'total_revenue' => Order::where('payment_status', 'paid')->sum('total_amount'),
-            'total_contributor_amount' => OrderItem::whereHas('order', function($q) {
-                $q->where('payment_status', 'paid');
-            })->sum('contributor_amount'),
-            'total_platform_amount' => OrderItem::whereHas('order', function($q) {
-                $q->where('payment_status', 'paid');
-            })->sum('platform_amount'),
+            'total_revenue' => $totalRevenue,
+            'total_contributor_amount' => $totalContributorAmount,
+            'total_platform_amount' => $totalRevenue - $totalContributorAmount,
         ];
 
         return view('payment::livewire.admin.order-management', [

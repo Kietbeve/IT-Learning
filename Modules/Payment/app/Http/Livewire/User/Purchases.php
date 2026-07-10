@@ -3,68 +3,41 @@
 namespace Modules\Payment\Http\Livewire\User;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Modules\Payment\Models\DocumentAccess;
-use WireUi\Traits\WireUiActions;
+use Modules\Document\Models\Document;
+use Modules\Payment\Models\OrderItem;
 
 class Purchases extends Component
 {
-    use WithPagination, WireUiActions;
-
-    public function mount()
-    {
-    }
+    use WithPagination;
 
     public function render()
     {
         $user = Auth::user();
 
-        $purchasedDocuments = DocumentAccess::with(['document'])
-            ->where('user_id', $user->id)
-            ->latest()
+        // Lấy danh sách document_id đã mua (mỗi tài liệu chỉ hiện 1 lần)
+        $purchasedDocuments = OrderItem::whereHas('order', function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+                ->where('payment_status', 'paid');
+        })
+            ->whereNotNull('document_id')
+            ->select('document_id', DB::raw('MAX(id) as id'), DB::raw('MAX(created_at) as created_at'))
+            ->groupBy('document_id')
+            ->latest('created_at')
             ->paginate(12);
 
+        // Eager load document cho kết quả đã group
+        $documentIds = collect($purchasedDocuments->items())->pluck('document_id')->unique();
+        $documents = Document::with(['currentVersion.category'])
+            ->whereIn('id', $documentIds)
+            ->get()
+            ->keyBy('id');
+
         return view('payment::livewire.user.purchases', [
-            'purchasedDocuments' => $purchasedDocuments
+            'purchasedDocuments' => $purchasedDocuments,
+            'documents' => $documents,
         ])->layout('layouts.user');
-    }
-
-    public function downloadDocument($documentId)
-    {
-        $userId = Auth::id();
-        if (!$userId) return;
-
-        $access = DocumentAccess::where('user_id', $userId)
-            ->where('document_id', $documentId)
-            ->where('access_type', 'purchased')
-            ->first();
-
-        if (!$access) {
-            $this->notification()->error(
-                title: 'Không thể tải',
-                description: 'Bạn không có quyền tải tài liệu này.'
-            );
-            return;
-        }
-
-        $doc = \Modules\Document\Models\Document::find($documentId);
-        if (!$doc) return;
-
-        $token = \Illuminate\Support\Str::random(40);
-
-        \Illuminate\Support\Facades\Cache::put("doc_download_{$token}", [
-            'document_id' => $doc->id,
-            'user_id' => $userId,
-            'order_item_id' => $access->order_item_id,
-            'ip' => request()->ip()
-        ], now()->addMinutes(30));
-
-        $this->notification()->success(
-            title: 'Thành công',
-            description: 'Liên kết tải xuống đã được tạo.'
-        );
-
-        return redirect()->route('documents.download', ['token' => $token]);
     }
 }

@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('document_id')->constrained('documents')->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            
+
             // FK xuyên Module (Đơn hàng). Sẽ tạo cứng bằng file riêng ở Payment Module hoặc để nullable mềm
-            $table->unsignedBigInteger('order_item_id')->nullable(); 
+            $table->unsignedBigInteger('order_item_id')->nullable();
 
             $table->string('ip_address');
             $table->text('user_agent')->nullable();

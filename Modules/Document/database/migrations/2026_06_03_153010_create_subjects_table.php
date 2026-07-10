@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id')
-                  ->constrained('categories')
-                  ->onDelete('cascade')
-                  ->comment('Môn học thuộc danh mục nào');
+                ->constrained('categories')
+                ->onDelete('cascade')
+                ->comment('Môn học thuộc danh mục nào');
             $table->string('name')->comment('Tên môn học: Lập trình Web');
             $table->string('slug')->unique()->comment('URL slug: lap-trinh-web');
             $table->boolean('is_active')->default(true)->comment('Còn dùng không');
             $table->timestamps();
-            
+
             // Indexes for performance
             $table->index(['category_id', 'is_active']);
         });

@@ -7,12 +7,14 @@ use setasign\Fpdi\Fpdi;
 class CustomFpdi extends Fpdi
 {
     protected $extgstates = [];
+
     protected $n_ocg_print;
+
     protected $n_ocg_view;
 
     public function SetAlpha($alpha, $bm = 'Normal')
     {
-        $gs = $this->addExtGState(['ca' => $alpha, 'CA' => $alpha, 'BM' => '/' . $bm]);
+        $gs = $this->addExtGState(['ca' => $alpha, 'CA' => $alpha, 'BM' => '/'.$bm]);
         $this->setExtGState($gs);
     }
 
@@ -20,6 +22,7 @@ class CustomFpdi extends Fpdi
     {
         $n = count($this->extgstates) + 1;
         $this->extgstates[$n] = ['params' => $params];
+
         return $n;
     }
 
@@ -49,7 +52,7 @@ class CustomFpdi extends Fpdi
             $this->_put('<</Type /ExtGState');
             $params = $this->extgstates[$i]['params'];
             foreach ($params as $k => $v) {
-                $this->_put('/' . $k . ' ' . $v);
+                $this->_put('/'.$k.' '.$v);
             }
             $this->_put('>>');
             $this->_put('endobj');
@@ -61,7 +64,7 @@ class CustomFpdi extends Fpdi
         parent::_putresourcedict();
         $this->_put('/ExtGState <<');
         foreach ($this->extgstates as $k => $extgstate) {
-            $this->_put('/GS' . $k . ' ' . $extgstate['n'] . ' 0 R');
+            $this->_put('/GS'.$k.' '.$extgstate['n'].' 0 R');
         }
         $this->_put('>>');
     }

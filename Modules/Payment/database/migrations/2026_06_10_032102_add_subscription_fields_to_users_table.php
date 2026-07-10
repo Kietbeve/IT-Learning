@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('last_login_IP', 45)->nullable()->after('last_login_at');
             $table->timestamp('vip_expires_at')->nullable()->after('last_login_IP');
             $table->integer('vip_download_quota')->default(0)->after('vip_expires_at');
-            
+
             $table->index('vip_expires_at');
             $table->index('last_login_at');
         });
@@ -30,7 +30,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropIndex(['vip_expires_at']);
             $table->dropIndex(['last_login_at']);
-            
+
             $table->dropColumn([
                 'last_login_at',
                 'last_login_IP',

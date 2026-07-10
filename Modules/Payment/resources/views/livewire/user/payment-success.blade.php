@@ -16,7 +16,7 @@
                 <h1 class="text-3xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent">
                     🎉 Chúc mừng! Bạn đã là VIP!
                 </h1>
-                <p class="text-base text-slate-600">
+                <p class="text-base text-gray-600">
                     Tài khoản của bạn đã được nâng cấp thành công. Bắt đầu tải tài liệu Premium ngay!
                 </p>
             </div>
@@ -30,8 +30,8 @@
 
             {{-- Regular Title --}}
             <div class="space-y-2">
-                <h1 class="text-2xl font-bold text-slate-900">Thanh toán thành công!</h1>
-                <p class="text-sm text-slate-500">
+                <h1 class="text-2xl font-bold text-blue-900">Thanh toán thành công!</h1>
+                <p class="text-sm text-gray-500">
                     Cảm ơn bạn đã mua tài liệu. Bạn có thể tải xuống ngay bây giờ.
                 </p>
             </div>
@@ -45,15 +45,15 @@
                     <span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded-lg">VIP</span>
                 </div>
                 <div class="flex justify-between text-sm">
-                    <span class="text-slate-600">Mã giao dịch:</span>
-                    <span class="font-semibold text-slate-900">{{ $orderCode }}</span>
+                    <span class="text-gray-600">Mã giao dịch:</span>
+                    <span class="font-semibold text-gray-900">{{ $orderCode }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
-                    <span class="text-slate-600">Gói đã mua:</span>
+                    <span class="text-gray-600">Gói đã mua:</span>
                     <span class="font-semibold text-amber-700">{{ $documentTitle }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
-                    <span class="text-slate-600">Số tiền:</span>
+                    <span class="text-gray-600">Số tiền:</span>
                     <span class="font-bold text-amber-600">{{ number_format($amount) }}đ</span>
                 </div>
                 @if(isset($packageKey))
@@ -63,7 +63,7 @@
                     @if($package)
                         <div class="mt-4 pt-3 border-t border-amber-200">
                             <p class="text-xs text-amber-700 font-semibold mb-2">✨ Quyền lợi của bạn:</p>
-                            <ul class="space-y-1 text-xs text-slate-700">
+                            <ul class="space-y-1 text-xs text-gray-700">
                                 <li>• Tải <strong>{{ $package['download_quota'] }} tài liệu Premium</strong></li>
                                 <li>• Hiệu lực <strong>{{ $package['duration_days'] }} ngày</strong></li>
                                 <li>• Tiết kiệm hơn so với mua lẻ</li>
@@ -73,22 +73,22 @@
                 @endif
             </div>
         @else
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left space-y-2 text-sm">
+            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-left space-y-2 text-sm">
                 <div class="flex justify-between">
-                    <span class="text-slate-500">Mã giao dịch:</span>
-                    <span class="font-semibold text-slate-900">{{ $orderCode }}</span>
+                    <span class="text-gray-500">Mã giao dịch:</span>
+                    <span class="font-semibold text-gray-900">{{ $orderCode }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-slate-500">Tài liệu:</span>
-                    <span class="font-semibold text-slate-900 text-right">{{ $documentTitle }}</span>
+                    <span class="text-gray-500">Tài liệu:</span>
+                    <span class="font-semibold text-gray-900 text-right">{{ $documentTitle }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-slate-500">Số tiền:</span>
+                    <span class="text-gray-500">Số tiền:</span>
                     <span class="font-semibold text-emerald-600">{{ number_format($amount) }}đ</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-slate-500">Thời gian:</span>
-                    <span class="font-semibold text-slate-900">{{ now()->format('d/m/Y H:i') }}</span>
+                    <span class="text-gray-500">Thời gian:</span>
+                    <span class="font-semibold text-gray-900">{{ now()->format('d/m/Y H:i') }}</span>
                 </div>
             </div>
         @endif
@@ -96,7 +96,7 @@
         {{-- Actions --}}
         @if(isset($orderType) && $orderType === 'subscription')
             <div class="space-y-3">
-                <a href="{{ route('student.subscription') }}" 
+                <a href="{{ route('user.subscription') }}" 
                    class="block w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3.5 px-6 text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 text-center">
                     ⚡ Xem trạng thái VIP của bạn
                 </a>
@@ -109,7 +109,7 @@
             <div class="space-y-3">
                 <x-button
                     primary
-                    :href="route('student.purchases')"
+                    :href="route('user.purchases')"
                     label="Tải tài nguyên ngay"
                     icon="arrow-down-tray"
                     class="w-full"
@@ -126,3 +126,5 @@
     </div>
 </div>
 @endsection
+
+

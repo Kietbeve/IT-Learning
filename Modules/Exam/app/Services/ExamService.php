@@ -16,7 +16,7 @@ use Modules\Exam\Models\QuestionOption;
 use Modules\Exam\Models\ExamAttempt;
 use Modules\Exam\Models\AttemptAnswer;
 use Modules\Exam\Models\Exam;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use Modules\Exam\Jobs\GradeExamAttemptJob;
 use App\Models\Category;
 use App\Models\Tag;
@@ -381,7 +381,7 @@ class ExamService
         author_id: 1,
         category_id: 1,
         questions_count: 3,
-        author: Modules\Auth\Models\User {#9016
+        author: App\Models\User {#9016
           id: 1,
           name: "admin",
         },
@@ -467,7 +467,7 @@ class ExamService
     author_id: 1,
     category_id: 1,
     questions_count: 3,
-    author: Modules\Auth\Models\User {#9019
+    author: App\Models\User {#9019
       id: 1,
       name: "admin",
     },

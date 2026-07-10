@@ -24,8 +24,8 @@
             <form method="POST" action="{{ url('/admin/login') }}">
                 @csrf
 
-                <label for="name" class="mb-1 block text-sm font-medium text-slate-700">Name</label>
-                <input id="name" name="name" type="text" value="{{ old('name') }}" required autofocus
+                <label for="email" class="mb-1 block text-sm font-medium text-slate-700">Email</label>
+                <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
                     class="mb-4 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none" />
 
                 <label for="password" class="mb-1 block text-sm font-medium text-slate-700">Password</label>
