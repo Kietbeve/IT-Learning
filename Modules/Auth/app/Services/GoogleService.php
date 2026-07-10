@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Modules\Exam\Models\ExamAttempt;
+use Spatie\Permission\Models\Role;
 
 class GoogleService
 {
@@ -39,6 +40,7 @@ class GoogleService
             $user = $existingUser;
 
             if ($user->roles()->count() === 0) {
+                Role::findOrCreate('user', 'web');
                 $user->assignRole('user');
             }
         } else {
@@ -49,6 +51,7 @@ class GoogleService
                 'google_id' => $googleUser->id,
                 'avatar'    => $googleUser->avatar,
             ]);
+            Role::findOrCreate('user', 'web');
             $user->assignRole('user');
         }
 

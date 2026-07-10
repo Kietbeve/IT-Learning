@@ -103,7 +103,7 @@
         {{-- ===================== Khu vực Bộ Lọc (Filter Panel) ===================== --}}
         @if($showFilters)
         <div class="mt-5 rounded-xl border border-gray-100 bg-gray-50/70 p-5 transition-all duration-300">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:flex lg:flex-nowrap [&>div]:w-full lg:[&>div]:flex-1">
                 {{-- Bộ lọc: Loại câu hỏi --}}
                 <div>
                     <x-native-select
@@ -157,6 +157,17 @@
                       </x-native-select>
                   </div>
                 @endif
+
+                {{-- Sắp xếp --}}
+                <div>
+                    <x-native-select
+                        label="Sắp xếp"
+                        wire:model.live="sortOrder"
+                    >
+                        <option value="">Mới nhất</option>
+                        <option value="asc">Cũ nhất</option>
+                    </x-native-select>
+                </div>
             </div>
 
             {{-- Nút Reset toàn bộ bộ lọc --}}

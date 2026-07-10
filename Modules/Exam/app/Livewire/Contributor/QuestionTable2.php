@@ -27,6 +27,9 @@ class QuestionTable2 extends Component
     #[Url]
     public string $filterShared = '';
 
+    #[Url(except: '')]
+    public string $sortOrder = '';
+
     // Kiểm tra quyền của user
     public function mount()
     {
@@ -101,6 +104,7 @@ class QuestionTable2 extends Component
     public function updatedFilterDifficulty() { $this->resetPage(); }
     public function updatedFilterStatus() { $this->resetPage(); }
     public function updatedFilterShared() { $this->resetPage(); }
+    public function updatedSortOrder() { $this->resetPage(); }
 
     // ─── TÙY CHỌN BỘ LỌC (DROPDOWN OPTIONS) ────────────────────
     public array $typeOptions = [
@@ -134,6 +138,7 @@ class QuestionTable2 extends Component
     public function resetFilters(): void
     {
         $this->reset(['search', 'filterType', 'filterDifficulty', 'filterStatus', 'filterShared']);
+        $this->sortOrder = '';
         $this->resetPage();
     }
 
@@ -189,6 +194,10 @@ class QuestionTable2 extends Component
             ->when($this->filterDifficulty, fn ($q) => $q->where('difficulty', $this->filterDifficulty))
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->filterShared !== '', fn ($q) => $q->where('is_shared', $this->filterShared));
+
+        if ($this->sortOrder === 'asc') {
+            return $query->oldest()->paginate(10);
+        }
 
         return $query->latest()->paginate(10);
     }

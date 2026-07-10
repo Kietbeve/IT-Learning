@@ -101,7 +101,9 @@ class ExamController extends Controller
         $questionCount = $exam->questions()->count();
         $attemptCount = $exam->attempts()->count();
         //return view ExamDetail with data
-        return view('exam::contributor.exam-detail', 
+        // return view('exam::contributor.exam-detail', 
+        //     compact('exam','questionCount','attemptCount'));
+        return view('exam::contributor.exam-detail2', 
             compact('exam','questionCount','attemptCount'));
     }
     public function examQuestionManager($examId)
@@ -129,6 +131,7 @@ class ExamController extends Controller
                 ->sum('exam_questions.score'),
         ];
         return view("exam::contributor.exam-question-table", compact('exam', 'stats'));
+        
     }
 
     public function examAttemptManager($examId)
