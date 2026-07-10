@@ -205,20 +205,7 @@
                             </select>
                         </div>
                         
-                        <!-- Is Downloadable -->
-                        <div>
-                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Quyền tải xuống</label>
-                            <div class="flex items-center gap-4">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" wire:model.live="editIsDownloadable" value="1" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                                    <span class="text-sm text-gray-700">Cho phép tải xuống</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" wire:model.live="editIsDownloadable" value="0" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                                    <span class="text-sm text-gray-700">Không cho phép</span>
-                                </label>
-                            </div>
-                        </div>
+
 
                         <!-- Tags Selection -->
                         <div class="col-span-2 space-y-3" x-data="{ showCustom: @entangle('editCustomTagsInput').defer !== '' }">
@@ -274,7 +261,7 @@
 
                         <!-- File Upload -->
                         <div class="col-span-2 space-y-1">
-                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block">Thay đổi file tài liệu (Bỏ trống nếu giữ nguyên)</label>
+                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block">Thay đổi file tài liệu (Bỏ trống nếu giữ nguyên) <span class="text-gray-400 font-medium normal-case">(tối đa {{ \App\Services\SettingService::get('max_document_size_mb', 50) }}MB)</span></label>
                             @if($doc->file_original_path)
                                 <div class="text-xs bg-gray-50 border border-gray-100 rounded-xl p-2.5 flex items-center justify-between text-gray-600 mb-2 gap-2">
                                     <span class="truncate font-mono">Tệp hiện tại: {{ basename($doc->file_original_path) }} ({{ strtoupper($doc->file_type) }})</span>
@@ -300,7 +287,7 @@
                         <!-- Images (Thumbnail + Gallery) -->
                         <div class="col-span-2 space-y-4">
                             <div class="space-y-1">
-                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block">Ảnh bìa (Bỏ trống nếu giữ nguyên)</label>
+                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block">Ảnh bìa (Bỏ trống nếu giữ nguyên) <span class="text-gray-400 font-medium normal-case">(tối đa {{ \App\Services\SettingService::get('max_thumbnail_size_mb', 5) }}MB)</span></label>
                                 @if($activeVersion?->thumbnail)
                                     <div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl p-2.5 mb-2">
                                         <img src="{{ $activeVersion?->thumbnail_url }}" class="h-10 w-16 object-cover rounded-lg border border-gray-200" alt="Current thumb">
@@ -324,7 +311,7 @@
                             </div>
 
                             <div class="space-y-1">
-                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block">Ảnh mô tả <span class="text-gray-400 font-medium">(có thể bỏ trống)</span></label>
+                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block">Ảnh mô tả <span class="text-gray-400 font-medium normal-case">(có thể bỏ trống, tối đa {{ \App\Services\SettingService::get('max_gallery_size_mb', 5) }}MB/ảnh)</span></label>
                                 @if(!$editGalleryFiles && $activeVersion && $activeVersion->gallery_images && is_array($activeVersion->gallery_images))
                                     <div class="grid grid-cols-5 gap-2 mb-2">
                                         @foreach($activeVersion->gallery_images as $img)
@@ -794,10 +781,7 @@
                         <span>Chế độ hiển thị:</span>
                         <span class="font-bold text-gray-800 uppercase">{{ $activeVersion?->visibility }}</span>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <span>Được tải xuống:</span>
-                        <span class="font-bold text-gray-800">{{ $activeVersion?->is_downloadable ? 'Có' : 'Không' }}</span>
-                    </div>
+
                     <div class="flex items-center justify-between pt-2 border-t border-gray-100/50">
                         <span>Lượt xem:</span>
                         <span class="font-bold text-gray-800">{{ number_format($doc->view_count) }}</span>

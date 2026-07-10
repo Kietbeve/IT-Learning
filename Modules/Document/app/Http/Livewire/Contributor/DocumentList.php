@@ -64,23 +64,34 @@ class DocumentList extends Component
         return $user?->id;
     }
 
-    public function deleteDocument($id)
+    public $confirmDeleteId = null;
+
+    public function confirmDelete($id)
     {
-        $doc = Document::where('author_id', $this->getAuthorId())->find($id);
+        $this->confirmDeleteId = $id;
+    }
+
+    public function delete()
+    {
+        if (!$this->confirmDeleteId) return;
+
+        $doc = Document::where('author_id', $this->getAuthorId())->find($this->confirmDeleteId);
         if ($doc) {
-            $hasPurchases = \Modules\Payment\Models\OrderItem::where('document_id', $id)
+            $hasPurchases = \Modules\Payment\Models\OrderItem::where('document_id', $this->confirmDeleteId)
                 ->whereHas('order', function ($q) {
                     $q->where('payment_status', 'paid');
                 })->exists();
 
             if ($hasPurchases) {
                 $this->dispatch('notify', ['type' => 'error', 'message' => 'Không thể xóa vì tài liệu này đã có người mua.']);
+                $this->confirmDeleteId = null;
                 return;
             }
 
             $doc->delete(); // Soft delete
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa tài liệu thành công.']);
         }
+        $this->confirmDeleteId = null;
     }
 
     /**

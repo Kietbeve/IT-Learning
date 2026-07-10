@@ -58,7 +58,7 @@ class DocumentDetail extends Component
 
     public $editVisibility;
 
-    public $editIsDownloadable;
+
 
     public $editPrice;
     public $editSalePrice;
@@ -168,7 +168,7 @@ class DocumentDetail extends Component
         $this->editShortDescription = $targetVersion?->short_description;
         $this->editDescription = $targetVersion?->description;
         $this->editVisibility = $targetVersion?->visibility ?? 'public';
-        $this->editIsDownloadable = $targetVersion?->is_downloadable ?? true;
+
 
         // Lấy giá từ version thay vì từ product, vì product chỉ ứng với bản đã duyệt
         $this->editPrice = $targetVersion?->price ?? ($doc->product?->price ?? 0);
@@ -397,7 +397,7 @@ class DocumentDetail extends Component
             'file_type' => $finalFileType,
             'file_size' => $finalFileSize,
             'visibility' => $this->editVisibility,
-            'is_downloadable' => $this->editIsDownloadable,
+
             'watermark_status' => $this->editFile ? (in_array($originalExt, ['pdf', 'docx']) ? 'pending' : 'success') : $currentVersion?->watermark_status,
             'price' => (int) $this->editPrice,
             'sale_price' => ((int) $this->editPrice > 0 && (int) $this->editSalePrice > 0) ? (int) $this->editSalePrice : null,
@@ -480,7 +480,7 @@ class DocumentDetail extends Component
             $this->editShortDescription = $doc->short_description;
             $this->editDescription = $doc->description;
             $this->editVisibility = $doc->visibility;
-            $this->editIsDownloadable = $doc->is_downloadable;
+
             $this->editPrice = $doc->product?->price ?? 0;
             $this->editSalePrice = $doc->product?->sale_price ?? null;
 
@@ -630,7 +630,7 @@ class DocumentDetail extends Component
         $changes = [];
 
         if ($pendingVersion && $currentVersion && $pendingVersion->version_number > 1) {
-            $fields = ['title', 'short_description', 'description', 'visibility', 'is_downloadable'];
+            $fields = ['title', 'short_description', 'description', 'visibility'];
             foreach ($fields as $field) {
                 if ($pendingVersion->$field !== $currentVersion->$field) {
                     $changes[$field] = ['old' => $currentVersion->$field, 'new' => $pendingVersion->$field];

@@ -38,6 +38,8 @@ class DocumentList extends Component
 
     public bool $showRejectionModal = false;
 
+    public $confirmDeleteId = null;
+
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => 'all'],
@@ -94,17 +96,25 @@ class DocumentList extends Component
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Cập nhật chế độ hiển thị thành công.']);
     }
 
-    public function deleteDocument($id)
+    public function confirmDelete($id)
     {
-        $doc = Document::with('author')->find($id);
+        $this->confirmDeleteId = $id;
+    }
+
+    public function delete()
+    {
+        if (!$this->confirmDeleteId) return;
+
+        $doc = Document::with('author')->find($this->confirmDeleteId);
         if ($doc) {
-            $hasPurchases = \Modules\Payment\Models\OrderItem::where('document_id', $id)
+            $hasPurchases = \Modules\Payment\Models\OrderItem::where('document_id', $this->confirmDeleteId)
                 ->whereHas('order', function ($q) {
                     $q->where('payment_status', 'paid');
                 })->exists();
 
             if ($hasPurchases) {
                 $this->dispatch('notify', ['type' => 'error', 'message' => 'Không thể xóa vì tài liệu này đã có người mua.']);
+                $this->confirmDeleteId = null;
                 return;
             }
 
@@ -119,6 +129,7 @@ class DocumentList extends Component
 
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa tài liệu thành công (Xóa mềm).']);
         }
+        $this->confirmDeleteId = null;
     }
 
     /**

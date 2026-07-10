@@ -197,7 +197,7 @@ class Subscription extends Component
 
             $payOS = app(PayOSService::class);
 
-            $description = 'Mua gói VIP: '.$package['name'];
+            $description = 'ITL ' . $order->order_code;
 
             $paymentResponse = $payOS->createPaymentLink(
                 orderCode: $order->order_code,

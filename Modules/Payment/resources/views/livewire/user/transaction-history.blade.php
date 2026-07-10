@@ -123,9 +123,54 @@
                         @endif
 
                         @if($order->paid_at)
-                            <div class="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
-                                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Thời gian thanh toán</span>
-                                <span class="text-xs font-semibold text-gray-600">{{ $order->paid_at->format('d/m/Y H:i') }}</span>
+                            <div class="mt-4 pt-4 border-t border-gray-50">
+                                @php $payment = $order->payments->last(); @endphp
+                                @if($payment && $order->total_amount > 0)
+                                    <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 mb-3">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <span class="text-sm font-bold text-emerald-900">Chi tiết thanh toán</span>
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mt-3">
+                                            <div>
+                                                <span class="text-gray-500">Mã giao dịch:</span>
+                                                <span class="font-bold text-gray-900 ml-1">{{ $payment->transaction_code }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-500">Kênh thanh toán:</span>
+                                                <span class="font-bold uppercase text-gray-900 ml-1">{{ $payment->provider }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Thời gian thanh toán</span>
+                                    <span class="text-xs font-semibold text-gray-600">{{ $order->paid_at->format('d/m/Y H:i') }}</span>
+                                </div>
+                            </div>
+                        @elseif($order->payment_status === 'pending' && $order->total_amount > 0)
+                            <div class="mt-4 pt-4 border-t border-gray-50">
+                                <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-bold text-blue-900">Thông tin thanh toán</span>
+                                        @if(!empty($order->checkout_data['checkoutUrl']))
+                                            <a href="{{ $order->checkout_data['checkoutUrl'] }}" target="_blank" class="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors">
+                                                Mở cổng thanh toán &rarr;
+                                            </a>
+                                        @endif
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <span class="text-gray-500">Số tiền:</span>
+                                            <span class="font-bold text-indigo-600 ml-1">{{ number_format($order->total_amount) }}đ</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-500">Nội dung CK:</span>
+                                            <span class="font-bold text-gray-900 ml-1">ITL {{ $order->order_code }}</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-[11px] text-gray-400 mt-3 italic">* Đơn hàng sẽ tự động hủy nếu không được thanh toán trong vòng 10 phút.</p>
+                                </div>
                             </div>
                         @endif
                     </x-card>

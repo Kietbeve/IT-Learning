@@ -134,7 +134,7 @@
                             <small class="block text-gray-400 text-xs">{{ number_format($originalFile->getSize() / 1024 / 1024, 2) }} MB</small>
                         @else
                             <span class="font-medium text-gray-700 block">Chọn file tài liệu</span>
-                            <small class="block text-gray-400 text-xs">PDF, DOCX, ZIP ... (tối đa 50MB)</small>
+                            <small class="block text-gray-400 text-xs">PDF, DOCX, ZIP ... (tối đa {{ \App\Services\SettingService::get('max_document_size_mb', 50) }}MB)</small>
                         @endif
                     </div>
                     
@@ -177,7 +177,7 @@
                     <div class="relative border-2 border-dashed border-[#dce2ec] rounded-[14px] px-4 py-2 mt-1 bg-[#f8faff] flex items-center gap-2 cursor-pointer hover:border-[#2a7de1] hover:bg-[#f0f6ff] transition-all justify-center">
                         <input type="file" wire:model="thumbnailFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" />
                         <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        <span class="text-sm text-gray-600 font-medium">Tải ảnh bìa</span>
+                        <span class="text-sm text-gray-600 font-medium">Tải ảnh bìa <span class="font-normal text-xs text-gray-400">(tối đa {{ \App\Services\SettingService::get('max_thumbnail_size_mb', 5) }}MB)</span></span>
                     </div>
                     <div wire:loading wire:target="thumbnailFile" class="text-xs text-blue-600 mt-1 text-center">Đang tải...</div>
                     @error('thumbnailFile') <span class="text-xs text-red-500 font-medium">{{ $message }}</span> @enderror
@@ -212,7 +212,7 @@
                     <div class="relative border-2 border-dashed border-[#dce2ec] rounded-[14px] px-4 py-2 mt-1 bg-[#f8faff] flex items-center gap-2 cursor-pointer hover:border-[#2a7de1] hover:bg-[#f0f6ff] transition-all justify-center">
                         <input type="file" wire:model="galleryFiles" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" multiple />
                         <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        <span class="text-sm text-gray-600 font-medium">Tải ảnh mô tả</span>
+                        <span class="text-sm text-gray-600 font-medium">Tải ảnh mô tả <span class="font-normal text-xs text-gray-400">(tối đa {{ \App\Services\SettingService::get('max_gallery_size_mb', 5) }}MB/ảnh)</span></span>
                     </div>
                     <div wire:loading wire:target="galleryFiles" class="text-xs text-blue-600 mt-1 text-center">Đang tải...</div>
                     @error('galleryFiles') <span class="text-xs text-red-500 font-medium">{{ $message }}</span> @enderror
@@ -234,17 +234,7 @@
                 </div>
             </div>
 
-            <!-- Quyền truy cập -->
-            <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Quyền truy cập</label>
-                <div class="flex items-center gap-3 flex-wrap pt-1">
-                    <label class="flex items-center gap-2 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
-                        <input type="checkbox" wire:model="disable_download" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1] rounded-sm" />
-                        Không cho phép tải về
-                    </label>
-                </div>
-                <span class="text-xs text-gray-400 mt-1 block">Đánh dấu nếu bạn chỉ muốn học viên xem trực tuyến.</span>
-            </div>
+
 
             <!-- Action Buttons -->
             <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100">

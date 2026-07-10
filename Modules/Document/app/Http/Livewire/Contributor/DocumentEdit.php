@@ -43,12 +43,14 @@ class DocumentEdit extends Component
 
     public $customTagsInput = '';
 
-    public $is_downloadable = true;
+
 
     // Existing paths (shown on the form)
     public $existingFilePath;
 
     public $existingThumbnailPath;
+
+    public $existingGalleryImages = [];
 
     // New file inputs
     public $newFile;
@@ -75,6 +77,11 @@ class DocumentEdit extends Component
 
     public function mount($id)
     {
+        if (\App\Services\SettingService::get('allow_contributor_upload', '1') === '0') {
+            session()->flash('error', 'Hệ thống đang tạm khóa chức năng chỉnh sửa tài liệu của Contributor.');
+            return $this->redirectRoute('contributor.documents.index', navigate: true);
+        }
+
         $authorId = $this->getAuthorId();
 
         // For approved docs, editing is allowed; for pending/rejected we load the doc
@@ -96,9 +103,11 @@ class DocumentEdit extends Component
         $this->doc = $doc;
         $this->documentId = $doc->id;
 
-        // If doc is approved, check if contributor wants to edit a rejected version
+        // If doc is approved, check if contributor wants to edit a rejected or pending version
         if ($doc->status === 'approved') {
             $rejectedVersion = $doc->rejectedVersion;
+            $pendingVersion = $doc->pendingVersion;
+
             if ($rejectedVersion) {
                 // Load data from the rejected version so contributor can fix and resubmit
                 $this->title = $rejectedVersion->title;
@@ -107,25 +116,44 @@ class DocumentEdit extends Component
                 $this->short_description = $rejectedVersion->short_description;
                 $this->description = $rejectedVersion->description;
                 $this->visibility = $rejectedVersion->visibility;
-                $this->is_downloadable = (bool) $rejectedVersion->is_downloadable;
+
                 $this->existingFilePath = $rejectedVersion->file_original_path;
                 $this->existingThumbnailPath = $rejectedVersion->thumbnail;
+                $this->existingGalleryImages = $rejectedVersion->gallery_images ?? [];
                 if ($rejectedVersion->price > 0) {
                     $this->isPaid = true;
                     $this->price = (int) $rejectedVersion->price;
                     $this->sale_price = $rejectedVersion->sale_price ? (int) $rejectedVersion->sale_price : null;
                 }
+            } elseif ($pendingVersion) {
+                // Load data from the pending version so contributor can view/edit it
+                $this->title = $pendingVersion->title;
+                $this->category_id = $pendingVersion->category_id;
+                $this->subject_id = $pendingVersion->subject_id;
+                $this->short_description = $pendingVersion->short_description;
+                $this->description = $pendingVersion->description;
+                $this->visibility = $pendingVersion->visibility;
+
+                $this->existingFilePath = $pendingVersion->file_original_path;
+                $this->existingThumbnailPath = $pendingVersion->thumbnail;
+                $this->existingGalleryImages = $pendingVersion->gallery_images ?? [];
+                if ($pendingVersion->price > 0) {
+                    $this->isPaid = true;
+                    $this->price = (int) $pendingVersion->price;
+                    $this->sale_price = $pendingVersion->sale_price ? (int) $pendingVersion->sale_price : null;
+                }
             } else {
-                // No rejected version - load from the doc itself (current live version)
+                // No rejected or pending version - load from the doc itself (current live version)
                 $this->title = $doc->title;
                 $this->category_id = $doc->category_id;
                 $this->subject_id = $doc->subject_id;
                 $this->short_description = $doc->short_description;
                 $this->description = $doc->description;
                 $this->visibility = $doc->visibility;
-                $this->is_downloadable = (bool) $doc->is_downloadable;
+
                 $this->existingFilePath = $doc->file_original_path;
                 $this->existingThumbnailPath = $doc->thumbnail;
+                $this->existingGalleryImages = $doc->gallery_images ?? [];
                 if ($doc->product && $doc->product->price > 0) {
                     $this->isPaid = true;
                     $this->price = (int) $doc->product->price;
@@ -140,9 +168,10 @@ class DocumentEdit extends Component
             $this->short_description = $doc->short_description;
             $this->description = $doc->description;
             $this->visibility = $doc->visibility;
-            $this->is_downloadable = (bool) $doc->is_downloadable;
+
             $this->existingFilePath = $doc->file_original_path;
             $this->existingThumbnailPath = $doc->thumbnail;
+            $this->existingGalleryImages = $doc->gallery_images ?? [];
             if ($doc->product && $doc->product->price > 0) {
                 $this->isPaid = true;
                 $this->price = (int) $doc->product->price;
@@ -167,7 +196,7 @@ class DocumentEdit extends Component
             'short_description' => 'nullable|string|min:10|max:500',
             'description' => 'required|string|min:10|max:50000',
             'visibility' => 'required|in:public,private,unlisted',
-            'is_downloadable' => 'required|boolean',
+
             'newFile' => 'nullable|file|max:51200|mimes:pdf,doc,docx,zip',
             'newThumbnailFile' => 'nullable|image|max:2048',
             'galleryFiles' => 'nullable|array|max:10',
@@ -200,8 +229,7 @@ class DocumentEdit extends Component
         'description.max' => 'Mô tả chi tiết không được vượt quá 50.000 ký tự.',
         'visibility.required' => 'Vui lòng chọn chế độ hiển thị.',
         'visibility.in' => 'Chế độ hiển thị không hợp lệ.',
-        'is_downloadable.required' => 'Vui lòng chọn quyền tải xuống.',
-        'is_downloadable.boolean' => 'Giá trị quyền tải xuống không hợp lệ.',
+
         'newFile.mimes' => 'Tệp tải lên phải thuộc định dạng: PDF, DOC, DOCX hoặc ZIP.',
         'newFile.max' => 'Dung lượng tệp tối đa là 50MB.',
         'newThumbnailFile.image' => 'Ảnh bìa tài liệu phải là định dạng hình ảnh.',
@@ -320,7 +348,7 @@ class DocumentEdit extends Component
                 $cv?->subject_id == $this->subject_id &&
                 $cv?->short_description === $this->short_description &&
                 $cv?->description === $this->description &&
-                $cv?->is_downloadable == $this->is_downloadable &&
+
                 $cv?->visibility !== $this->visibility &&
                 (! $latestVersion || $latestVersion->version_number == $cv->version_number)
             );
@@ -363,7 +391,7 @@ class DocumentEdit extends Component
             $latestVersion?->subject_id != $this->subject_id ||
             $latestVersion?->short_description !== $this->short_description ||
             $latestVersion?->description !== $this->description ||
-            $latestVersion?->is_downloadable != $this->is_downloadable ||
+
             $latestVersion?->visibility !== $this->visibility ||
             $latestVersion?->price != $priceVal ||
             $latestVersion?->sale_price != $salePriceVal
@@ -401,7 +429,7 @@ class DocumentEdit extends Component
                 'file_type' => $finalFileType,
                 'file_size' => $finalFileSize,
                 'visibility' => $this->visibility,
-                'is_downloadable' => $this->is_downloadable,
+
                 'watermark_status' => $originalPath ? 'pending' : ($latestVersion ? $latestVersion->watermark_status : 'success'),
                 'price' => $priceVal,
                 'sale_price' => $salePriceVal,
@@ -432,9 +460,10 @@ class DocumentEdit extends Component
                 'file_type' => $fileType ?? $latestVersion->file_type,
                 'file_size' => $fileSize ?? $latestVersion->file_size,
                 'visibility' => $this->visibility,
-                'is_downloadable' => $this->is_downloadable,
+
                 'watermark_status' => $originalPath ? 'pending' : $latestVersion->watermark_status,
                 'price' => $priceVal,
+                'sale_price' => $salePriceVal,
                 'status' => 'pending',
                 'rejected_reason' => null,
                 'submitted_by' => Auth::id(),
@@ -458,18 +487,21 @@ class DocumentEdit extends Component
             ]);
         }
 
-        // Handle product
-        if ($this->isPaid && $this->price > 0) {
-            Product::updateOrCreate(
-                ['document_id' => $doc->id],
-                ['name' => $doc->title, 'price' => $this->price, 'sale_price' => $salePriceVal, 'is_active' => true]
-            );
-        } else {
-            Product::where('document_id', $doc->id)->update([
-                'price' => 0,
-                'sale_price' => null,
-                'is_active' => false
-            ]);
+        // Handle product directly only if document is not approved yet. 
+        // For approved documents, the Product will be updated upon Admin approval of the pending version.
+        if ($doc->status !== 'approved') {
+            if ($this->isPaid && $this->price > 0) {
+                Product::updateOrCreate(
+                    ['document_id' => $doc->id],
+                    ['name' => $doc->title, 'price' => $this->price, 'sale_price' => $salePriceVal, 'is_active' => true]
+                );
+            } else {
+                Product::where('document_id', $doc->id)->update([
+                    'price' => 0,
+                    'sale_price' => null,
+                    'is_active' => false
+                ]);
+            }
         }
 
         $tagService = app(\Modules\Document\Services\TagService::class);

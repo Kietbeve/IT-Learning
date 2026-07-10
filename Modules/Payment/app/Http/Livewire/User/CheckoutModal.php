@@ -186,7 +186,7 @@ class CheckoutModal extends Component
 
             $payOS = app(PayOSService::class);
 
-            $description = 'Mua: '.Str::limit($this->document['title'], 15);
+            $description = 'ITL ' . $order->order_code;
 
             $paymentResponse = $payOS->createPaymentLink(
                 orderCode: $order->order_code,

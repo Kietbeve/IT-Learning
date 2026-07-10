@@ -7,7 +7,9 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Modules\Payment\Models\Order;
 
-class GuestPurchaseReceiptMail extends Mailable
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class GuestPurchaseReceiptMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

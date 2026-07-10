@@ -118,12 +118,6 @@ trait WithDocumentDownloads
             return;
         }
 
-        // Check is_downloadable flag
-        if (!$doc->is_downloadable) {
-            $this->dispatch('notify', ['type' => 'info', 'message' => 'Tài liệu này chỉ hỗ trợ xem online, không cho phép tải xuống.']);
-            return;
-        }
-
         $accessInfo = $this->checkDocumentAccess($doc);
 
         if (!$accessInfo['hasAccess']) {

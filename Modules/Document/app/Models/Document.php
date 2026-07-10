@@ -215,10 +215,7 @@ class Document extends Model
         return $this->resolveVersion()?->visibility ?? 'public';
     }
 
-    public function getIsDownloadableAttribute()
-    {
-        return $this->resolveVersion()?->is_downloadable ?? true;
-    }
+
 
     public function getWatermarkStatusAttribute()
     {

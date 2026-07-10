@@ -25,6 +25,7 @@ class CategoryList extends Component
     public $sort_order = 0;
     public $is_active = true;
     public $isFormOpen = false;
+    public $confirmDeleteId = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -135,20 +136,29 @@ class CategoryList extends Component
         }
     }
 
-    public function deleteCategory($id)
+    public function confirmDelete($id)
     {
-        $category = Category::find($id);
+        $this->confirmDeleteId = $id;
+    }
+
+    public function delete()
+    {
+        if (!$this->confirmDeleteId) return;
+        
+        $category = Category::find($this->confirmDeleteId);
         if ($category) {
-            $hasDocs = \Modules\Document\Models\DocumentVersion::where('category_id', $id)->exists();
-            $hasSubjects = \Modules\Document\Models\Subject::where('category_id', $id)->exists();
+            $hasDocs = \Modules\Document\Models\DocumentVersion::where('category_id', $this->confirmDeleteId)->exists();
+            $hasSubjects = \Modules\Document\Models\Subject::where('category_id', $this->confirmDeleteId)->exists();
             if ($hasDocs || $hasSubjects) {
                 $this->dispatch('notify', type: 'error', message: 'Không thể xóa vì đang có môn học hoặc tài liệu thuộc danh mục.');
+                $this->confirmDeleteId = null;
                 return;
             }
 
             $category->delete();
             $this->dispatch('notify', type: 'success', message: 'Đã xóa danh mục thành công.');
         }
+        $this->confirmDeleteId = null;
     }
 
     public function render()

@@ -32,7 +32,7 @@ class Dashboard extends Component
                     ->whereColumn('order_items.document_id', 'documents.id')
                     ->where('orders.payment_status', 'paid');
             }, 'total_sales')
-            ->with(['currentVersion.category', 'product'])
+            ->with(['currentVersion.category', 'currentVersion.subject', 'product'])
             ->orderByDesc('total_sales')
             ->limit(5)
             ->get();
@@ -97,6 +97,9 @@ class Dashboard extends Component
             ->limit(5)
             ->get();
 
+        $platformFeePercent = (int) \App\Services\SettingService::get('platform_fee_percent', 20);
+        $contributorPercent = 100 - $platformFeePercent;
+
         return view('document::livewire.contributor.dashboard', [
             'totalDocs' => $totalDocs,
             'balance' => $balance,
@@ -109,8 +112,8 @@ class Dashboard extends Component
             'todayEarnings' => $todayEarnings,
             'chartData' => $chartData,
             'topDocuments' => $topDocuments,
+            'contributorPercent' => $contributorPercent,
         ])->layout('layouts.contributor', [
-            'pageTitle' => 'Kênh Người Đăng Tải',
             'breadcrumb' => new HtmlString('<span class="mx-2">/</span> Contributor <span class="mx-2">/</span> Dashboard'),
         ]);
     }

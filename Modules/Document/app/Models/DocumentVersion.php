@@ -25,7 +25,7 @@ class DocumentVersion extends Model
         'file_type',
         'file_size',
         'visibility',
-        'is_downloadable',
+
         'watermark_status',
         'price',
         'sale_price',
@@ -38,7 +38,7 @@ class DocumentVersion extends Model
     ];
 
     protected $casts = [
-        'is_downloadable' => 'boolean',
+
         'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',
         'price' => 'decimal:2',

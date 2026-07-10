@@ -1,26 +1,38 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Contributor' }}</title>
+    <title>{{ $title ?? 'IT Learning · Contributor' }}</title>
     
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('Image/logo.png') }}" type="image/png">
+    
+    <!-- Tailwind + Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
     
     @vite([
         'resources/css/app.css',
         'resources/js/app.js'
     ])
     @livewireStyles
-</head>
 
-<body class="min-h-screen bg-gradient-to-br from-[#f3f5fc] via-white to-[#f9f8ff] text-slate-700 antialiased font-sans">
-    <div id="toast-wrapper">
-        <x-notifications position="top-right" />
-    </div>
     <style>
+        body, .font-sans { font-family: 'Inter', system-ui, -apple-system, sans-serif !important; }
+        body { background: #f0f4f9; }
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: #eef2f6; border-radius: 10px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .card-hover { transition: transform 0.25s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 16px 36px -12px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.04); }
+        .nav-link { transition: all 0.15s ease; position: relative; }
+        .nav-link:hover { background: #f1f5f9; }
+        .nav-link.active::before { content: ''; position: absolute; left: 0; top: 20%; height: 60%; width: 3px; background: #4f46e5; border-radius: 0 4px 4px 0; }
+        .glass-header { background: rgba(255,255,255,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .gradient-border { background: linear-gradient(135deg, #eef2ff, #e0e7ff, #f3e8ff); }
+
         /* Force WireUI notifications to top-right below header */
         #toast-wrapper > div {
             top: 80px !important;
@@ -34,42 +46,44 @@
             flex-direction: column !important;
             align-items: flex-end !important;
         }
+        [x-cloak] { display: none !important; }
     </style>
-    <div x-data="{ sidebarHidden: true }" class="flex min-h-screen">
+</head>
+
+<body class="antialiased text-slate-700">
+    <div id="toast-wrapper">
+        <x-notifications position="top-right" />
+    </div>
+
+    <!-- layout grid -->
+    <div x-data="{ sidebarHidden: (window.innerWidth < 1024) }" 
+         @resize.window="sidebarHidden = (window.innerWidth < 1024)"
+         class="min-h-screen flex">
+
+        <!-- ===== SIDEBAR ===== -->
         @include('layouts.patials.contributor_sidebar')
 
-        <div class="flex-1 flex flex-col min-w-0">
+        <!-- ===== MAIN ===== -->
+        <div class="flex-1 flex flex-col min-h-screen min-w-0">
+
+            <!-- ===== HEADER ===== -->
             @include('layouts.patials.contributor_header')
 
+            <!-- ===== CONTENT ===== -->
             <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
                 <div class="mx-auto w-full max-w-7xl">
-                    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 class="text-2xl font-black tracking-tight text-slate-800">
-                                {{ $pageTitle ?? '' }}
-                            </h1>
-                        </div>
-                    </div>
-
-                    @if(session('success'))
-                        <div class="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50/80 backdrop-blur-md px-4 py-4 text-emerald-800 shadow-md">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-                    @if(session('error'))
-                        <div class="mb-6 rounded-2xl border border-rose-100 bg-rose-50/80 backdrop-blur-md px-4 py-4 text-rose-800 shadow-md">
-                            {{ session('error') }}
-                        </div>
-                    @endif
+                    <!-- Removed Flash Messages -->
 
                     @yield('content')
                     {{ $slot ?? '' }}
                 </div>
             </main>
 
+            <!-- ===== FOOTER ===== -->
             @include('layouts.patials.contributor_footer')
         </div>
     </div>
+
     @wireUiScripts
     @livewireScripts
     <script>
@@ -90,5 +104,4 @@
         });
     </script>
 </body>
-
 </html>
