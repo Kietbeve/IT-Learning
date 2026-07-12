@@ -101,25 +101,27 @@ class DocumentList extends Component
         $this->confirmDeleteId = $id;
     }
 
-    public function delete()
+    public function deleteDocument($id)
     {
-        if (!$this->confirmDeleteId) return;
-
-        $doc = Document::with('author')->find($this->confirmDeleteId);
+        $doc = Document::with('author')->find($id);
         if ($doc) {
-            $hasPurchases = \Modules\Payment\Models\OrderItem::where('document_id', $this->confirmDeleteId)
+            $hasPurchases = \Modules\Payment\Models\OrderItem::where('document_id', $id)
                 ->whereHas('order', function ($q) {
                     $q->where('payment_status', 'paid');
                 })->exists();
 
             if ($hasPurchases) {
                 $this->dispatch('notify', ['type' => 'error', 'message' => 'Không thể xóa vì tài liệu này đã có người mua.']);
-                $this->confirmDeleteId = null;
                 return;
             }
 
             $author = $doc->author;
             $title = $doc->title;
+            
+            // Deactivate product if it exists
+            \Modules\Payment\Models\Product::where('document_id', $doc->id)->update(['is_active' => false]);
+            
+            $doc->update(['deleted_by' => Auth::id()]);
             $doc->delete(); // Soft delete
 
             // Thông báo cho Contributor
@@ -129,7 +131,6 @@ class DocumentList extends Component
 
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa tài liệu thành công (Xóa mềm).']);
         }
-        $this->confirmDeleteId = null;
     }
 
     /**

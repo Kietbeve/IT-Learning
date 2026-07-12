@@ -81,7 +81,7 @@
                         @if(isset($notification['data']['amount']))
                         <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                             <span class="font-medium text-purple-600">
-                                {{ $notification['data']['amount'] }}
+                                Bạn nhận được: +{{ is_numeric($notification['data']['amount']) ? number_format($notification['data']['amount']) : $notification['data']['amount'] }}đ
                             </span>
                         </div>
                         @endif

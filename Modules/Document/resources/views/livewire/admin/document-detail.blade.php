@@ -19,7 +19,7 @@
     </div>
 
     <!-- Status & Action Buttons Bar (Top) -->
-    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div class="bg-white rounded-[20px] shadow-[0_20px_40px_rgba(0,0,0,0.06)] px-5 py-6 sm:px-9 sm:py-8 transition-all border border-gray-100">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <!-- Status Badge -->
             <div>
@@ -86,26 +86,57 @@
 
     <!-- Version Changes Comparison -->
     @if(isset($changes) && count($changes) > 0)
-        <div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm space-y-3">
-            <h3 class="text-sm font-bold text-amber-900 flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                Bản cập nhật này có sự thay đổi so với phiên bản đã duyệt trước đó:
-            </h3>
+        <div class="bg-white rounded-[14px] shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-amber-100 overflow-hidden mb-5">
+            <div class="px-4 py-2.5 border-b border-amber-100/50 bg-amber-50/30 flex items-center gap-2">
+                <div class="p-1 bg-amber-100 text-amber-600 rounded-md">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </div>
+                <h3 class="text-[13px] font-bold text-amber-900">
+                    Thông tin thay đổi ở bản cập nhật này
+                </h3>
+            </div>
+            
             <div class="overflow-x-auto">
-                <table class="w-full text-xs text-left text-gray-700">
-                    <thead class="text-[10px] text-gray-500 uppercase bg-gray-100">
-                        <tr>
-                            <th class="px-4 py-2">Trường thay đổi</th>
-                            <th class="px-4 py-2">Giá trị trước đó (Đã duyệt)</th>
-                            <th class="px-4 py-2">Giá trị mới (Chờ duyệt)</th>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 border-b border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                            <th class="px-4 py-2 w-1/4">Trường thay đổi</th>
+                            <th class="px-4 py-2 w-3/8 text-rose-600/80">Giá trị cũ (Đã duyệt)</th>
+                            <th class="px-4 py-2 w-3/8 text-emerald-600">Giá trị mới (Chờ duyệt)</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 bg-white">
+                    <tbody class="divide-y divide-gray-100">
                         @foreach($changes as $field => $change)
-                            <tr>
-                                <td class="px-4 py-2.5 font-bold uppercase text-gray-500">{{ $field }}</td>
-                                <td class="px-4 py-2.5 text-gray-600 line-through bg-rose-50/50 break-words max-w-xs">{{ $change['old'] }}</td>
-                                <td class="px-4 py-2.5 text-gray-900 font-semibold bg-emerald-50/50 break-words max-w-xs">{{ $change['new'] }}</td>
+                            @php
+                                $fieldNames = [
+                                    'title' => 'Tiêu đề',
+                                    'short_description' => 'Mô tả ngắn',
+                                    'description' => 'Mô tả chi tiết',
+                                    'visibility' => 'Trạng thái hiển thị',
+                                    'category' => 'Danh mục',
+                                    'subject' => 'Môn học',
+                                    'file' => 'Tệp tài liệu',
+                                    'thumbnail' => 'Ảnh bìa',
+                                    'gallery' => 'Ảnh mô tả (Gallery)',
+                                    'price' => 'Giá bán',
+                                    'tags' => 'Thẻ (Tags)',
+                                ];
+                                $displayField = $fieldNames[$field] ?? $field;
+                            @endphp
+                            <tr class="hover:bg-gray-50/30 transition-colors">
+                                <td class="px-4 py-2.5 text-xs font-semibold text-gray-700">
+                                    {{ $displayField }}
+                                </td>
+                                <td class="px-4 py-2.5 text-xs text-gray-600">
+                                    <div class="px-2 py-1 bg-rose-50/50 border border-rose-100/50 text-rose-700 rounded leading-snug line-through line-clamp-2" title="{{ $change['old'] }}">
+                                        {{ $change['old'] }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-2.5 text-xs text-gray-800 font-medium">
+                                    <div class="px-2 py-1 bg-emerald-50/50 border border-emerald-100/50 text-emerald-800 rounded leading-snug line-clamp-2" title="{{ $change['new'] }}">
+                                        {{ $change['new'] }}
+                                    </div>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -119,14 +150,14 @@
         <!-- Left Column (70%) -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Details Card -->
-            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
+            <div class="bg-white rounded-[20px] shadow-[0_20px_40px_rgba(0,0,0,0.06)] px-5 py-6 sm:px-9 sm:py-8 transition-all border border-gray-100 space-y-6">
                 @if($editMode)
                     <!-- Edit Mode -->
                     <div class="space-y-4">
                         <!-- Category -->
                         <div>
-                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Danh mục</label>
-                            <select wire:model.live="editCategoryId" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Danh mục</label>
+                            <select wire:model.live="editCategoryId" class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all">
                                 <option value="">-- Chọn danh mục --</option>
                                 @foreach($categories as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -137,8 +168,8 @@
 
                         <!-- Subject -->
                         <div>
-                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Môn học</label>
-                            <select wire:model.live="editSubjectId" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Môn học</label>
+                            <select wire:model.live="editSubjectId" class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all">
                                 <option value="">-- Chọn môn học --</option>
                                 @foreach($subjectsForEdit as $sub)
                                     <option value="{{ $sub->id }}">{{ $sub->name }}</option>
@@ -149,21 +180,21 @@
                         
                         <!-- Title -->
                         <div>
-                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Tiêu đề</label>
-                            <input type="text" wire:model.blur="editTitle" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-lg font-bold text-gray-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tiêu đề</label>
+                            <input type="text" wire:model.blur="editTitle" class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-lg font-bold bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all">
                             @error('editTitle') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         
                         <!-- Short Description -->
                         <div>
-                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Mô tả ngắn</label>
-                            <textarea wire:model.blur="editShortDescription" rows="3" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none"></textarea>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Mô tả ngắn</label>
+                            <textarea wire:model.blur="editShortDescription" rows="3" class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all"></textarea>
                         </div>
                         
                         <!-- Description -->
                         <div>
-                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Nội dung chi tiết</label>
-                            <textarea wire:model.blur="editDescription" rows="8" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none"></textarea>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nội dung chi tiết</label>
+                            <textarea wire:model.blur="editDescription" rows="8" class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all"></textarea>
                             @error('editDescription') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         
@@ -183,13 +214,13 @@
 
                             <div x-show="paid" x-transition class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Giá (VND)</label>
-                                    <input type="number" wire:model.blur="editPrice" min="0" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none" placeholder="10000">
+                                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Giá (VND)</label>
+                                    <input type="number" wire:model.blur="editPrice" min="0" class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all" placeholder="10000">
                                     @error('editPrice') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
-                                    <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Giá KM (VND) - tùy chọn</label>
-                                    <input type="number" wire:model.blur="editSalePrice" min="0" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none" placeholder="Khuyến mãi">
+                                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Giá KM (VND) - tùy chọn</label>
+                                    <input type="number" wire:model.blur="editSalePrice" min="0" class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all" placeholder="Khuyến mãi">
                                     @error('editSalePrice') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -197,8 +228,8 @@
                         
                         <!-- Visibility -->
                         <div>
-                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Chế độ hiển thị</label>
-                            <select wire:model.live="editVisibility" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none">
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Chế độ hiển thị</label>
+                            <select wire:model.live="editVisibility" class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all">
                                 <option value="public">Công khai (Public)</option>
                                 <option value="private">Riêng tư (Private)</option>
                                 <option value="unlisted">Không liệt kê (Unlisted)</option>
@@ -368,11 +399,11 @@
                         <div class="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-words">{{ $activeVersion->description }}</div>
                     </div>
 
-                    @if($doc->tags && $doc->tags->isNotEmpty())
+                    @if(isset($displayTags) && $displayTags->isNotEmpty())
                         <div class="border-t border-gray-100 pt-6 space-y-3">
                             <h2 class="text-base font-bold text-gray-900">Tags / Thẻ</h2>
                             <div class="flex flex-wrap gap-2">
-                                @foreach($doc->tags as $tag)
+                                @foreach($displayTags as $tag)
                                     <span class="inline-flex items-center rounded-lg bg-gray-50 border border-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-600">
                                         #{{ $tag->name }}
                                     </span>
@@ -384,7 +415,7 @@
             </div>
 
             <!-- Original File Info & Preview -->
-            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
+            <div class="bg-white rounded-[20px] shadow-[0_20px_40px_rgba(0,0,0,0.06)] px-5 py-6 sm:px-9 sm:py-8 transition-all border border-gray-100 space-y-6">
             <!-- File Variants -->
                 <div class="space-y-4">
                     <!-- Original File -->
@@ -462,7 +493,7 @@
                  }">
                  
                 <!-- Compact Trigger Card -->
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-center justify-between gap-4 mt-6">
+                <div class="bg-white rounded-[20px] shadow-[0_20px_40px_rgba(0,0,0,0.06)] px-5 py-6 sm:px-9 sm:py-8 transition-all border border-gray-100 flex items-center justify-between gap-4 mt-6">
                     <div class="flex items-center gap-3">
                         <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -690,26 +721,63 @@
 
             <!-- Gallery Images -->
             @if(!$editMode && $activeVersion && $activeVersion->gallery_images && is_array($activeVersion->gallery_images) && count($activeVersion->gallery_images) > 0)
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-                    <span class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Ảnh gallery</span>
-                    <div class="grid grid-cols-2 gap-2">
-                        @foreach($activeVersion->gallery_images as $image)
-                            <div class="rounded-xl overflow-hidden border border-gray-200 aspect-video">
-                                <img src="{{ Storage::disk('r2')->url($image['path']) }}" 
-                                     alt="Gallery" 
-                                     class="w-full h-full object-cover"
-                                     loading="lazy" />
+                <div class="bg-white rounded-[20px] shadow-[0_20px_40px_rgba(0,0,0,0.06)] px-5 py-6 sm:px-9 sm:py-8 transition-all border border-gray-100 space-y-4">
+                    <span class="block text-[13px] font-semibold text-gray-700 mb-1.5">Ảnh gallery</span>
+                    <div x-data="{ activeIndex: null }">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            @foreach($activeVersion->gallery_images as $index => $image)
+                                <div class="relative rounded-xl overflow-hidden border border-gray-200 aspect-video group cursor-pointer" @click="activeIndex = {{ $index }}">
+                                    <img src="{{ Storage::disk('r2')->url($image['path']) }}" 
+                                         alt="Gallery {{ $index + 1 }}" 
+                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                         loading="lazy" />
+                                    @if(!empty($image['caption']))
+                                        <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                                            <span class="text-xs text-white font-medium">{{ $image['caption'] }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Lightbox -->
+                        <template x-if="activeIndex !== null">
+                            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                                 @click="activeIndex = null"
+                                 x-transition>
+                                <div class="relative max-w-[90vw] max-h-[90vh]" @click.stop>
+                                    <button @click="activeIndex = null" 
+                                            class="absolute -top-3 -right-3 z-10 rounded-full bg-white/90 hover:bg-white text-gray-800 p-1.5 shadow-lg transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <button @click="activeIndex = Math.max(0, activeIndex - 1)" 
+                                                x-show="activeIndex > 0"
+                                                class="rounded-full bg-white/90 hover:bg-white text-gray-800 p-2 shadow-lg transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                                        </button>
+                                        <img :src="'{{ Storage::disk('r2')->url('') }}' + {{ Js::from($activeVersion->gallery_images) }}[activeIndex].path" 
+                                             class="max-h-[85vh] max-w-[75vw] rounded-2xl shadow-2xl object-contain" 
+                                             alt="Gallery image" />
+                                        <button @click="activeIndex = Math.min({{ count($activeVersion->gallery_images) - 1 }}, activeIndex + 1)" 
+                                                x-show="activeIndex < {{ count($activeVersion->gallery_images) - 1 }}"
+                                                class="rounded-full bg-white/90 hover:bg-white text-gray-800 p-2 shadow-lg transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <p class="text-center text-white text-sm mt-2" x-text="`${activeIndex + 1} / {{ count($activeVersion->gallery_images) }}`"></p>
+                                </div>
                             </div>
-                        @endforeach
+                        </template>
                     </div>
                 </div>
             @endif
 
             <!-- Moderation Panel -->
             @if(in_array($doc->status, ['approved', 'rejected']))
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
+                <div class="bg-white rounded-[20px] shadow-[0_20px_40px_rgba(0,0,0,0.06)] px-5 py-6 sm:px-9 sm:py-8 transition-all border border-gray-100 space-y-6">
                     <div>
-                        <span class="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Trạng thái duyệt</span>
+                        <span class="block text-[13px] font-semibold text-gray-700 mb-1.5">Trạng thái duyệt</span>
                         @if($doc->status === 'approved')
                             <span class="mt-2 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
                                 Đã phê duyệt
@@ -875,7 +943,8 @@
                             <div class="absolute left-0 top-0 -ml-[7px] h-3.5 w-3.5 rounded-full border-2 
                                 {{ $event->type === 'submission' ? 'bg-indigo-500 border-indigo-600' : '' }}
                                 {{ $event->type === 'review' && $event->status === 'approved' ? 'bg-emerald-500 border-emerald-600' : '' }}
-                                {{ $event->type === 'review' && $event->status === 'rejected' ? 'bg-rose-500 border-rose-600' : '' }}">
+                                {{ $event->type === 'review' && $event->status === 'rejected' ? 'bg-rose-500 border-rose-600' : '' }}
+                                {{ $event->type === 'deleted' ? 'bg-gray-500 border-gray-600' : '' }}">
                             </div>
                             
                             <div class="space-y-1">
@@ -893,6 +962,8 @@
                                             @elseif($event->status === 'rejected')
                                                 ❌ Từ chối
                                             @endif
+                                        @elseif($event->type === 'deleted')
+                                            🗑️ Đã xóa
                                         @endif
                                     </span>
                                     <span class="text-xs text-gray-400 whitespace-nowrap ml-2">
@@ -912,15 +983,29 @@
                                                 @endif
                                             @elseif($event->type === 'review')
                                                 <span>đã {{ $event->status === 'approved' ? 'phê duyệt' : 'từ chối' }}</span>
+                                            @elseif($event->type === 'deleted')
+                                                <span>đã xóa tài liệu</span>
                                             @endif
                                         </div>
                                     @endif
                                     
                                     @if(isset($event->details) && $event->details)
-                                        <div class="mt-1.5 p-2 bg-rose-50 border-l-2 border-rose-400 rounded text-[11px]">
-                                            <span class="font-bold text-rose-800">Lý do từ chối:</span>
-                                            <span class="text-rose-700">"{{ $event->details }}"</span>
-                                        </div>
+                                        @if($event->status === 'rejected')
+                                            <div class="mt-1.5 p-2 bg-rose-50 border-l-2 border-rose-400 rounded text-[11px]">
+                                                <span class="font-bold text-rose-800">Lý do từ chối:</span>
+                                                <span class="text-rose-700">"{{ $event->details }}"</span>
+                                            </div>
+                                        @elseif($event->type === 'deleted')
+                                            <div class="mt-1.5 p-2 bg-gray-50 border-l-2 border-gray-400 rounded text-[11px]">
+                                                <span class="font-bold text-gray-800">Thông báo:</span>
+                                                <span class="text-gray-700">"{{ $event->details }}"</span>
+                                            </div>
+                                        @else
+                                            <div class="mt-1.5 p-2 bg-emerald-50 border-l-2 border-emerald-400 rounded text-[11px]">
+                                                <span class="font-bold text-emerald-800">Ghi chú:</span>
+                                                <span class="text-emerald-700">"{{ $event->details }}"</span>
+                                            </div>
+                                        @endif
                                     @endif
                                 </div>
                             </div>

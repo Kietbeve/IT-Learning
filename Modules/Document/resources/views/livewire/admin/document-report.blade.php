@@ -105,10 +105,11 @@
                 <!-- Reason Filter -->
                 <select wire:model.live="reasonFilter" aria-label="Lọc lý do" class="w-full sm:w-auto rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-gray-400 focus:outline-none">
                     <option value="all">Tất cả lý do</option>
-                    <option value="copyright">Bản quyền / Trùng lặp</option>
-                    <option value="spam">Spam / Lừa đảo</option>
-                    <option value="inappropriate">Nội dung không phù hợp</option>
-                    <option value="other">Khác</option>
+                    <option value="Bản quyền">Bản quyền / Sở hữu trí tuệ</option>
+                    <option value="Nội dung sai">Nội dung sai lệch</option>
+                    <option value="File hỏng">Tập tin lỗi / Mã độc</option>
+                    <option value="Spam">Spam / Quảng cáo</option>
+                    <option value="Khác">Lý do khác</option>
                 </select>
 
                 <!-- Search Input -->

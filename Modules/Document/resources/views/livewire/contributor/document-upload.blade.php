@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <form wire:submit.prevent="save">
+        <form wire:submit.prevent="save" novalidate>
             <!-- Basic Info Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-5">
                 <!-- Left Column -->
@@ -215,7 +215,7 @@
                 <div class="border-[1.5px] border-[#e5ebf3] rounded-[14px] p-3 bg-[#fafcff] flex flex-col gap-1.5">
                     <div class="text-sm font-semibold text-gray-700">Ảnh mô tả <span class="text-gray-400 font-normal text-xs">(có thể bỏ trống)</span></div>
                     
-                    <div class="w-full h-[140px] bg-[#eef3fa] rounded-[10px] flex items-center justify-center text-[#6b7f9e] text-[13px] relative p-2 overflow-y-auto">
+                    <div class="w-full min-h-[140px] max-h-[280px] bg-[#eef3fa] rounded-[10px] flex flex-col text-[#6b7f9e] text-[13px] relative p-2 overflow-y-auto">
                         @if ($galleryFiles && count($galleryFiles) > 0)
                             <div class="grid grid-cols-3 gap-1.5 w-full">
                                 @foreach($galleryFiles as $index => $galleryFile)
@@ -230,7 +230,7 @@
                                 @endforeach
                             </div>
                         @else
-                            <div class="flex flex-col items-center gap-1">
+                            <div class="flex flex-col items-center justify-center flex-1 w-full min-h-[120px] gap-1">
                                 <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                                 <span>Chưa có ảnh</span>
                             </div>

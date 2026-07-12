@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <form wire:submit.prevent="save">
+        <form wire:submit.prevent="save" novalidate>
             <!-- Basic Info Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-5">
                 <!-- Left Column -->
@@ -243,7 +243,7 @@
                 <div class="border-[1.5px] border-[#e5ebf3] rounded-[14px] p-3 bg-[#fafcff] flex flex-col gap-1.5">
                     <div class="text-sm font-semibold text-gray-700">Ảnh mô tả <span class="text-gray-400 font-normal text-xs">(bỏ trống nếu không đổi)</span></div>
                     
-                    <div class="w-full h-[140px] bg-[#eef3fa] rounded-[10px] flex items-center justify-center text-[#6b7f9e] text-[13px] relative p-2 overflow-y-auto">
+                    <div class="w-full min-h-[140px] max-h-[280px] bg-[#eef3fa] rounded-[10px] flex flex-col text-[#6b7f9e] text-[13px] relative p-2 overflow-y-auto">
                         @if ($galleryFiles && count($galleryFiles) > 0)
                             <div class="grid grid-cols-3 gap-1.5 w-full">
                                 @foreach($galleryFiles as $index => $galleryFile)

@@ -72,7 +72,7 @@
                 <option value="all">Tất cả trạng thái</option>
                 <option value="paid">Đã thanh toán</option>
                 <option value="pending">Chờ thanh toán</option>
-                <option value="failed">Thất bại</option>
+                <option value="expired">Hết hạn</option>
             </select>
             <select wire:model.live="orderTypeFilter" class="w-full sm:w-auto rounded-xl border-0 py-2.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
                 <option value="all">Tất cả loại</option>
@@ -178,8 +178,8 @@
                                     <span class="inline-flex rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Đã thanh toán</span>
                                 @elseif($order->payment_status === 'pending')
                                     <span class="inline-flex rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20">Chờ thanh toán</span>
-                                @elseif($order->payment_status === 'failed')
-                                    <span class="inline-flex rounded-md bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-inset ring-rose-600/20">Thất bại</span>
+                                @elseif($order->payment_status === 'expired')
+                                    <span class="inline-flex rounded-md bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-700 ring-1 ring-inset ring-gray-600/20">Hết hạn</span>
                                 @else
                                     <span class="inline-flex rounded-md bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-700 ring-1 ring-inset ring-gray-600/20">{{ $order->payment_status }}</span>
                                 @endif

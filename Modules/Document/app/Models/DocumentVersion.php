@@ -35,6 +35,7 @@ class DocumentVersion extends Model
         'reviewed_by',
         'submitted_at',
         'reviewed_at',
+        'version_tags',
     ];
 
     protected $casts = [
@@ -43,6 +44,7 @@ class DocumentVersion extends Model
         'reviewed_at' => 'datetime',
         'price' => 'decimal:2',
         'gallery_images' => 'array',
+        'version_tags' => 'array',
     ];
 
     /* ──────────── Relationships ──────────── */

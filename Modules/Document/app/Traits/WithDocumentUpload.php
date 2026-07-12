@@ -137,7 +137,11 @@ trait WithDocumentUpload
 
     public function removeGalleryImage($index)
     {
+        if (isset($this->galleryFiles[$index])) {
+            unset($this->galleryFiles[$index]);
+        }
         $this->excludedGalleryIndices[] = $index;
+        $this->resetValidation('galleryFiles');
     }
 
     public function setTags($tags)

@@ -140,11 +140,11 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">
-                                        <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-2 break-all max-w-[200px]">
                                             <span>{{ \Illuminate\Support\Str::limit($docName, 40) }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-600" title="{{ $transaction->note }}">
+                                    <td class="px-6 py-4 text-sm text-gray-600 break-words max-w-[250px]" title="{{ $transaction->note }}">
                                         {{ $transaction->note }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">

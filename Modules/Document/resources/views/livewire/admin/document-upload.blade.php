@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <form wire:submit.prevent="save">
+        <form wire:submit.prevent="save" novalidate>
             <!-- Tiêu đề -->
             <div class="mb-4">
                 <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">

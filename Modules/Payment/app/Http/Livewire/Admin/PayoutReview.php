@@ -162,6 +162,9 @@ class PayoutReview extends Component
 
             DB::commit();
 
+            // Send Notification
+            $user->notify(new \Modules\Payment\Notifications\PayoutApprovedNotification($payout));
+
             $this->showApproveModal = false;
             $this->notification()->success(
                 title: 'Thành công',
@@ -229,6 +232,9 @@ class PayoutReview extends Component
             ]);
 
             DB::commit();
+
+            // Send Notification
+            $user->notify(new \Modules\Payment\Notifications\PayoutRejectedNotification($payout));
 
             $this->showRejectModal = false;
             $this->notification()->success(

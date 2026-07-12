@@ -13,18 +13,25 @@
         <div class="lg:col-span-2 space-y-6">
             <!-- Document Info Card -->
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow p-6 md:p-8 shadow-sm space-y-6">
-                <div>
+                <div class="flex flex-wrap gap-2">
                     <span class="rounded-xl px-2.5 py-1 text-xs font-semibold bg-gray-100 text-gray-800">
                         {{ $doc->category?->name ?? 'Tài liệu' }}
                     </span>
+                    @if($doc->subject)
+                        <span class="rounded-xl px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700">
+                            {{ $doc->subject->name }}
+                        </span>
+                    @endif
+                </div>
+                <div>
                     <h1 class="mt-4 text-3xl lg:text-4xl font-extrabold text-blue-900 leading-tight mb-5">
                         {{ strip_tags($doc->title) }}
                     </h1>
 
                     <!-- Tags -->
-                    @if($doc->tags->isNotEmpty())
+                    @if(isset($displayTags) && $displayTags->isNotEmpty())
                         <div class="mt-3 flex flex-wrap gap-1.5">
-                            @foreach($doc->tags as $tag)
+                            @foreach($displayTags as $tag)
                                 <span class="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
                                     #{{ $tag->name }}
                                 </span>
@@ -730,9 +737,9 @@
             <!-- Author Card -->
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow p-5 shadow-sm">
                 <div class="flex items-center gap-4">
-                    <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-950 text-white flex items-center justify-center font-bold text-xl uppercase shrink-0 shadow-md">
-                        {{ substr($doc->author?->name ?? 'A', 0, 1) }}
-                    </div>
+                    <img src="{{ $doc->author?->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($doc->author?->name ?? 'A') . '&background=1e293b&color=fff&bold=true' }}" 
+                         alt="{{ $doc->author?->name ?? 'Author' }}" 
+                         class="h-14 w-14 rounded-2xl object-cover shrink-0 shadow-md border border-gray-100">
                     <div class="flex-1 min-w-0">
                         <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block">Tác giả đăng tải</span>
                         <h3 class="text-lg font-bold text-blue-900 truncate">{{ $doc->author?->name ?? 'Giảng viên/CTV' }}</h3>
@@ -765,7 +772,7 @@
                             </div>
                             <!-- Info -->
                             <div class="flex-1 min-w-0 flex flex-col justify-center">
-                                <h4 class="text-xs font-bold text-blue-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">{{ $rel->title }}</h4>
+                                <h4 class="text-xs font-bold text-blue-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug break-all">{{ strip_tags($rel->title) }}</h4>
                                 <div class="flex items-center gap-3 mt-1.5">
                                     <span class="inline-flex items-center gap-1 text-[10px] text-gray-400 font-medium">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>

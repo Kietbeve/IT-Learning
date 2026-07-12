@@ -58,28 +58,28 @@ Thiết kế theo phong cách exam_detail.blade.php
 
           {{-- Menu item: Trang chủ --}}
           <a class="{{ request()->is('/') ? 'text-blue-400 font-bold bg-blue-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-700/30' }} 
-                              px-4 py-2.5 rounded-xl transition-all duration-300 transform md:mx-2 md:my-0 my-1"
+                              px-4 py-2.5 rounded-xl transition-all duration-300 transform md:mx-2 md:my-0 my-1 whitespace-nowrap"
             href="/">
             Trang chủ
           </a>
 
           {{-- Menu item: Kho tài liệu --}}
           <a class="{{ request()->is('documents*') ? 'text-blue-400 font-bold bg-blue-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-700/30' }} 
-                              px-4 py-2.5 rounded-xl transition-all duration-300 transform md:mx-2 md:my-0 my-1"
+                              px-4 py-2.5 rounded-xl transition-all duration-300 transform md:mx-2 md:my-0 my-1 whitespace-nowrap"
             href="{{ route('documents.index') }}">
             Kho tài liệu
           </a>
 
           {{-- Menu item: Đề thi --}}
           <a class="{{ request()->is('exam*') ? 'text-blue-400 font-bold bg-blue-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-700/30' }} 
-                              px-4 py-2.5 rounded-xl transition-all duration-300 transform md:mx-2 md:my-0 my-1"
+                              px-4 py-2.5 rounded-xl transition-all duration-300 transform md:mx-2 md:my-0 my-1 whitespace-nowrap"
             href="{{ route('exam.index') }}">
             Đề thi
           </a>
 
           {{-- Menu item: Lộ trình học tập --}}
           <a class="{{ request()->is('learning*') ? 'text-blue-400 font-bold bg-blue-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-700/30' }} 
-                              px-4 py-2.5 rounded-xl transition-all duration-300 transform md:mx-2 md:my-0 my-1"
+                              px-4 py-2.5 rounded-xl transition-all duration-300 transform md:mx-2 md:my-0 my-1 whitespace-nowrap"
             href="{{ route('learning.roadmaps.index') }}">
             Lộ trình học tập
           </a>

@@ -48,7 +48,7 @@
                     <p class="text-xs text-slate-500 truncate">{{ $activeUser?->email ?? '' }}</p>
                 </div>
                 
-                <x-dropdown.item href="{{ route('contributor.dashboard') }}" label="Dashboard" />
+                <x-dropdown.item href="{{ url('/') }}" label="Về trang chủ" />
                 
                 @if(auth()->user() && auth()->user()->hasRole('admin'))
                     <div class="border-t border-slate-100 my-1"></div>

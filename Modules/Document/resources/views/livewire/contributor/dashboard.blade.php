@@ -130,7 +130,7 @@
                         <tr class="transition hover:bg-gray-50/50">
                             <td class="py-4 pl-6 pr-3 align-top">
                                 <div class="flex flex-col gap-1">
-                                    <a href="{{ route('documents.show', $doc->id) }}" target="_blank" class="text-sm font-semibold text-gray-900 hover:text-blue-600 truncate max-w-[280px] lg:max-w-[350px]" title="{{ $doc->title }}">
+                                    <a href="{{ route('documents.show', [$doc->id, Str::slug($doc->currentVersion?->title ?? $doc->title ?? 'tai-lieu')]) }}" target="_blank" class="text-sm font-semibold text-gray-900 hover:text-blue-600 truncate max-w-[280px] lg:max-w-[350px]" title="{{ $doc->currentVersion?->title ?? $doc->title }}">
                                         {{ \Illuminate\Support\Str::limit($doc->title, 55) }}
                                     </a>
                                     <div class="flex items-center gap-2 mt-1 flex-wrap">

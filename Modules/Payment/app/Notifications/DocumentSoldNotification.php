@@ -28,6 +28,7 @@ class DocumentSoldNotification extends Notification implements ShouldQueue
         $this->order = $order;
         $this->amount = $amount;
         $this->type = $type;
+        $this->onQueue('high');
     }
 
     /**

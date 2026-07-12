@@ -31,7 +31,7 @@ Route::middleware(['auth', 'role:contributor'])->prefix('contributor')->group(fu
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/', PlatformRevenue::class)->name('admin.dashboard');
     Route::get('/orders', OrderManagement::class)->name('admin.orders.index');
-    Route::get('/transactions', TransactionList::class)->name('admin.transactions.index');
+
     Route::get('/payouts/review', PayoutReview::class)->name('admin.payouts.review');
     Route::get('/reports', SystemReports::class)->name('admin.reports');
     Route::get('/settings/revenue', RevenueSettings::class)->name('admin.settings.revenue');

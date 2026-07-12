@@ -136,7 +136,7 @@
                 <div class="p-5 space-y-4 hover:bg-gray-50/50 transition-colors">
                     <div class="flex items-start justify-between gap-4">
                         <div class="space-y-2 flex-1 min-w-0">
-                            <a href="{{ route('documents.show', $doc->id) }}" target="_blank" class="text-sm font-semibold text-gray-900 hover:text-blue-600 block leading-tight truncate" title="{{ $doc->title }}">
+                            <a href="{{ route('documents.show', [$doc->id, Str::slug($doc->currentVersion?->title ?? $doc->title ?? 'tai-lieu')]) }}" target="_blank" class="text-sm font-semibold text-gray-900 hover:text-blue-600 block leading-tight truncate" title="{{ $doc->currentVersion?->title ?? $doc->title }}">
                                 {{ \Illuminate\Support\Str::limit($doc->title, 50) }}
                             </a>
                             
@@ -201,14 +201,14 @@
 
                             @if($doc->status === 'approved' && $doc->pendingVersion)
                                 <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
-                                    <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="flex-1 flex items-start gap-2 hover:opacity-80">
+                                    <div class="flex-1 flex items-start gap-2">
                                         <svg class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                         <div class="flex-1 text-xs min-w-0 leading-snug">
                                             <span class="font-bold text-blue-800">Đang chờ duyệt bản cập nhật</span>
                                         </div>
-                                    </a>
+                                    </div>
                                     <button wire:click.prevent="cancelUpdate({{ $doc->id }})" class="ml-2 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-white border border-rose-200 rounded-lg hover:bg-rose-50 transition-colors shrink-0" onclick="confirm('Bạn có chắc muốn hủy yêu cầu cập nhật này không?') || event.stopImmediatePropagation()">Hủy</button>
                                 </div>
                             @endif
@@ -281,11 +281,22 @@
                             <span class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 ring-inset {{ $doc->visibility === 'public' ? 'text-blue-700 ring-blue-600/20' : 'text-gray-700 ring-gray-300' }}">
                                 {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
                             </span>
+                            <button wire:click="showHistory({{ $doc->id }})" class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                                Nhật ký
+                            </button>
                             
-                            @if(!$doc->trashed() && $doc->status !== 'pending')
+                            @if(!$doc->trashed() && $doc->status !== 'pending' && !$doc->pendingVersion)
                                 <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
                                     Sửa
                                 </a>
+                                <button wire:click="confirmDelete({{ $doc->id }})" 
+                                        class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-sm ring-1 ring-inset ring-rose-300 hover:bg-rose-50 transition-colors">
+                                    Xóa
+                                </button>
+                            @elseif(!$doc->trashed() && $doc->pendingVersion)
+                                <button disabled class="inline-flex items-center rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-400 shadow-sm ring-1 ring-inset ring-gray-200 cursor-not-allowed" title="Đang có bản cập nhật chờ duyệt">
+                                    Sửa
+                                </button>
                                 <button wire:click="confirmDelete({{ $doc->id }})" 
                                         class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-sm ring-1 ring-inset ring-rose-300 hover:bg-rose-50 transition-colors">
                                     Xóa
@@ -310,7 +321,7 @@
                 <table class="w-full table-fixed divide-y divide-gray-200">
                     <thead class="bg-slate-50/50">
                         <tr>
-                            <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-slate-100/50 transition-colors w-[35%]" wire:click="sortBy('title')">
+                            <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-slate-100/50 transition-colors w-[32%]" wire:click="sortBy('title')">
                                 <div class="flex items-center gap-2">
                                     Tài liệu
                                     @if($sortField === 'title')
@@ -318,10 +329,10 @@
                                     @endif
                                 </div>
                             </th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[15%]">Hình thức</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[12%]">Trạng thái</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[12%]">Hiển thị</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-slate-100/50 transition-colors w-[12%]" wire:click="sortBy('created_at')">
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[13%]">Hình thức</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[11%]">Trạng thái</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[11%]">Hiển thị</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-slate-100/50 transition-colors w-[11%]" wire:click="sortBy('created_at')">
                                 <div class="flex items-center gap-2">
                                     Ngày tạo
                                     @if($sortField === 'created_at')
@@ -329,7 +340,7 @@
                                     @endif
                                 </div>
                             </th>
-                            <th scope="col" class="relative py-3.5 pl-3 pr-6 text-right text-sm font-semibold text-gray-900 w-[14%]">Thao tác</th>
+                            <th scope="col" class="relative py-3.5 px-3 text-center text-sm font-semibold text-gray-900 w-[22%]">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -337,7 +348,7 @@
                             <tr class="transition hover:bg-gray-50/50">
                                 <td class="py-4 pl-6 pr-3 align-top">
                                     <div class="flex flex-col gap-1">
-                                        <a href="{{ route('documents.show', $doc->id) }}" target="_blank" class="text-sm font-semibold text-gray-900 hover:text-blue-600 truncate max-w-[280px] lg:max-w-[350px]" title="{{ $doc->title }}">
+                                        <a href="{{ route('documents.show', [$doc->id, Str::slug($doc->currentVersion?->title ?? $doc->title ?? 'tai-lieu')]) }}" target="_blank" class="text-sm font-semibold text-gray-900 hover:text-blue-600 truncate max-w-[280px] lg:max-w-[350px]" title="{{ $doc->currentVersion?->title ?? $doc->title }}">
                                             {{ \Illuminate\Support\Str::limit($doc->title, 55) }}
                                         </a>
                                         
@@ -387,12 +398,12 @@
                                         
                                         @if($doc->status === 'approved' && $doc->pendingVersion)
                                             <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
-                                                <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                                                <div class="flex items-center gap-2">
                                                     <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                     </svg>
                                                     <span class="font-bold text-xs text-blue-800">Đang chờ duyệt bản cập nhật</span>
-                                                </a>
+                                                </div>
                                                 <button wire:click.prevent="cancelUpdate({{ $doc->id }})" class="ml-2 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-white border border-rose-200 rounded-lg hover:bg-rose-50 transition-colors" onclick="confirm('Hủy yêu cầu cập nhật?') || event.stopImmediatePropagation()">Hủy</button>
                                             </div>
                                         @endif
@@ -425,8 +436,7 @@
                                         @else
                                             <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Bản nháp</span>
                                         @endif
-
-                                        
+                                    </div>
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                     <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $doc->visibility === 'public' ? 'bg-blue-50 text-blue-700 ring-blue-600/20' : 'bg-gray-50 text-gray-600 ring-gray-500/10' }}">
@@ -437,14 +447,25 @@
                                     <div class="text-gray-900">{{ $doc->created_at->format('d/m/Y') }}</div>
                                     <div class="text-xs text-gray-500">{{ $doc->created_at->format('H:i') }}</div>
                                 </td>
-                                <td class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
-                                    <div class="flex items-center justify-end gap-2">
-                                        @if(!$doc->trashed() && $doc->status !== 'pending')
+                                <td class="relative whitespace-nowrap py-4 px-3 text-center text-sm font-medium">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button wire:click="showHistory({{ $doc->id }})" class="inline-flex items-center justify-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                                            Nhật ký
+                                        </button>
+                                        @if(!$doc->trashed() && $doc->status !== 'pending' && !$doc->pendingVersion)
                                             <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex items-center justify-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
                                                 Sửa
                                             </a>
                                             <button wire:click="confirmDelete({{ $doc->id }})" 
                                                     class="inline-flex items-center justify-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-sm ring-1 ring-inset ring-rose-300 hover:bg-rose-50 transition-colors">
+                                                Xóa
+                                            </button>
+                                        @elseif(!$doc->trashed() && $doc->pendingVersion)
+                                            <button disabled class="inline-flex items-center justify-center rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-400 shadow-sm ring-1 ring-inset ring-gray-200 cursor-not-allowed" title="Đang có bản cập nhật chờ duyệt">
+                                                Sửa
+                                            </button>
+                                            <button disabled 
+                                                    class="inline-flex items-center justify-center rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-400 shadow-sm ring-1 ring-inset ring-gray-200 cursor-not-allowed" title="Vui lòng hủy bản cập nhật trước khi xóa">
                                                 Xóa
                                             </button>
                                         @endif
@@ -501,4 +522,114 @@
             </div>
         </div>
     </template>
+
+    <!-- History Modal -->
+    @if($showHistoryModal)
+    <div class="fixed inset-0 z-[110] overflow-y-auto flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-4xl w-full border border-gray-200 shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto 
+                    [&::-webkit-scrollbar]:w-2 
+                    [&::-webkit-scrollbar-track]:bg-gray-100 
+                    [&::-webkit-scrollbar-track]:rounded-full
+                    [&::-webkit-scrollbar-thumb]:bg-gray-300 
+                    [&::-webkit-scrollbar-thumb]:rounded-full
+                    [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-3 sticky top-0 bg-white z-10 shadow-sm">
+                <h3 class="text-lg font-bold text-gray-900">📋 Lịch sử gửi & duyệt tài liệu</h3>
+                <button wire:click="closeHistoryModal" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            
+            @if($submissionHistory && count($submissionHistory) > 0)
+                <div class="space-y-0">
+                    @foreach($submissionHistory as $index => $event)
+                        <div class="relative pl-8 pb-6 {{ $index < count($submissionHistory) - 1 ? 'border-l-2 border-gray-200' : '' }}">
+                            <div class="absolute left-0 top-0 -ml-[7px] h-3.5 w-3.5 rounded-full border-2 
+                                {{ $event->type === 'submission' ? 'bg-indigo-500 border-indigo-600' : '' }}
+                                {{ $event->type === 'review' && $event->status === 'approved' ? 'bg-emerald-500 border-emerald-600' : '' }}
+                                {{ $event->type === 'review' && $event->status === 'rejected' ? 'bg-rose-500 border-rose-600' : '' }}
+                                {{ $event->type === 'deleted' ? 'bg-gray-500 border-gray-600' : '' }}">
+                            </div>
+                            
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-bold text-gray-800">
+                                        @if($event->type === 'submission')
+                                            @if(isset($event->version_number) && $event->version_number > 1)
+                                                {{ $event->user && $event->user->hasRole('admin') ? '🔄 Cập nhật tài liệu' : '🔄 Gửi bản cập nhật' }}
+                                            @else
+                                                {{ $event->user && $event->user->hasRole('admin') ? '📝 Đăng tài liệu' : '📤 Gửi tài liệu mới' }}
+                                            @endif
+                                        @elseif($event->type === 'review')
+                                            @if($event->status === 'approved')
+                                                ✅ Phê duyệt
+                                            @elseif($event->status === 'rejected')
+                                                ❌ Từ chối
+                                            @endif
+                                        @elseif($event->type === 'deleted')
+                                            🗑️ Đã xóa
+                                        @endif
+                                    </span>
+                                    <span class="text-xs text-gray-400 whitespace-nowrap ml-2">
+                                        {{ $event->timestamp instanceof \Carbon\Carbon ? $event->timestamp->format('d/m/Y H:i') : (is_string($event->timestamp) ? date('d/m/Y H:i', strtotime($event->timestamp)) : '') }}
+                                    </span>
+                                </div>
+                                
+                                <div class="text-xs text-gray-500">
+                                    @if($event->user)
+                                        <div class="break-words">
+                                            <span class="font-medium text-gray-600">{{ $event->user->name ?? 'Unknown' }}</span>
+                                            @if($event->type === 'submission')
+                                                @if(isset($event->version_number) && $event->version_number > 1)
+                                                    <span>{{ $event->user && $event->user->hasRole('admin') ? 'đã cập nhật tài liệu' : 'đã gửi bản cập nhật mới' }}</span>
+                                                @else
+                                                    <span>{{ $event->user && $event->user->hasRole('admin') ? 'đã đăng tài liệu' : 'đã gửi tài liệu' }}</span>
+                                                @endif
+                                            @elseif($event->type === 'review')
+                                                <span>đã {{ $event->status === 'approved' ? 'phê duyệt' : 'từ chối' }}</span>
+                                            @elseif($event->type === 'deleted')
+                                                <span>đã xóa tài liệu</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    
+                                    @if(isset($event->details) && $event->details)
+                                        @if($event->status === 'rejected')
+                                            <div class="mt-1.5 p-2 bg-rose-50 border-l-2 border-rose-400 rounded text-[11px]">
+                                                <span class="font-bold text-rose-800">Lý do từ chối:</span>
+                                                <span class="text-rose-700">"{{ $event->details }}"</span>
+                                            </div>
+                                        @elseif($event->type === 'deleted')
+                                            <div class="mt-1.5 p-2 bg-gray-50 border-l-2 border-gray-400 rounded text-[11px]">
+                                                <span class="font-bold text-gray-800">Thông báo:</span>
+                                                <span class="text-gray-700">"{{ $event->details }}"</span>
+                                            </div>
+                                        @else
+                                            <div class="mt-1.5 p-2 bg-emerald-50 border-l-2 border-emerald-400 rounded text-[11px]">
+                                                <span class="font-bold text-emerald-800">Ghi chú:</span>
+                                                <span class="text-emerald-700">"{{ $event->details }}"</span>
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-8 text-gray-400">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Chưa có lịch sử gửi & duyệt
+                </div>
+            @endif
+            
+            <div class="pt-3 border-t border-gray-100">
+                <button wire:click="closeHistoryModal" class="w-full rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 text-sm font-bold transition-colors">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>

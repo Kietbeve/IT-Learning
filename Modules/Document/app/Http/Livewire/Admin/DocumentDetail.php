@@ -90,7 +90,6 @@ class DocumentDetail extends Component
             'editShortDescription' => 'nullable|string|min:10|max:500',
             'editDescription' => 'required|string|min:10|max:50000',
             'editVisibility' => 'required|in:public,private,unlisted',
-            'editIsDownloadable' => 'required|boolean',
             'editSelectedTags' => 'nullable|array',
             'editSelectedTags.*' => 'exists:tags,id',
             'editCustomTagsInput' => 'nullable|string|max:500',
@@ -126,8 +125,6 @@ class DocumentDetail extends Component
         'editDescription.max' => 'Mô tả chi tiết không được vượt quá 50.000 ký tự.',
         'editVisibility.required' => 'Vui lòng chọn chế độ hiển thị.',
         'editVisibility.in' => 'Chế độ hiển thị không hợp lệ.',
-        'editIsDownloadable.required' => 'Vui lòng chọn quyền tải xuống.',
-        'editIsDownloadable.boolean' => 'Quyền tải xuống không hợp lệ.',
         'editPrice.numeric' => 'Giá bán phải là số.',
         'editPrice.min' => 'Mức giá bán tối thiểu là 1.000đ khi bán có phí hoặc 0đ nếu miễn phí.',
         'editPrice.max' => 'Mức giá bán tối đa là 100.000.000đ.',
@@ -177,8 +174,12 @@ class DocumentDetail extends Component
 
         $this->loadEditSubjects();
 
-        if ($doc->relationLoaded('tags') && $doc->tags->isNotEmpty()) {
+        if ($targetVersion && !empty($targetVersion->version_tags)) {
+            $this->editSelectedTags = $targetVersion->version_tags['selectedTags'] ?? [];
+            $this->editCustomTagsInput = $targetVersion->version_tags['customTagsInput'] ?? '';
+        } elseif ($doc->relationLoaded('tags') && $doc->tags->isNotEmpty()) {
             $this->editSelectedTags = $doc->tags->pluck('id')->toArray();
+            $this->editCustomTagsInput = '';
         }
     }
 
@@ -294,16 +295,19 @@ class DocumentDetail extends Component
         // Build a timeline from the versions
         $timeline = collect();
         foreach ($versions as $ver) {
+            $isAdminDirectEdit = $ver->rejected_reason === 'Quản trị viên đã trực tiếp chỉnh sửa tài liệu';
+
             $timeline->push((object) [
                 'type' => 'submission',
                 'version_number' => $ver->version_number,
                 'timestamp' => $ver->submitted_at,
                 'user' => $ver->submittedByUser,
-                'status' => null,
-                'details' => null,
+                'status' => $isAdminDirectEdit ? 'approved' : null,
+                'details' => $isAdminDirectEdit ? $ver->rejected_reason : null,
             ]);
 
-            if ($ver->reviewed_at) {
+            // Only push a separate review event if it's not a direct admin edit
+            if ($ver->reviewed_at && !$isAdminDirectEdit) {
                 $timeline->push((object) [
                     'type' => 'review',
                     'version_number' => $ver->version_number,
@@ -313,6 +317,17 @@ class DocumentDetail extends Component
                     'details' => $ver->rejected_reason,
                 ]);
             }
+        }
+
+        if ($this->document->trashed()) {
+            $timeline->push((object) [
+                'type' => 'deleted',
+                'version_number' => null,
+                'timestamp' => $this->document->deleted_at,
+                'user' => $this->document->deletedByUser,
+                'status' => null,
+                'details' => 'Tài liệu đã được chuyển vào thùng rác (xóa mềm).',
+            ]);
         }
 
         $this->submissionHistory = $timeline->sortBy('timestamp')->values();
@@ -406,6 +421,7 @@ class DocumentDetail extends Component
             'submitted_at' => now(),
             'reviewed_by' => $adminId,
             'reviewed_at' => now(),
+            'rejected_reason' => 'Quản trị viên đã trực tiếp chỉnh sửa tài liệu',
         ]);
 
         // Link current version to document & ensure approved status
@@ -633,7 +649,16 @@ class DocumentDetail extends Component
             $fields = ['title', 'short_description', 'description', 'visibility'];
             foreach ($fields as $field) {
                 if ($pendingVersion->$field !== $currentVersion->$field) {
-                    $changes[$field] = ['old' => $currentVersion->$field, 'new' => $pendingVersion->$field];
+                    $oldVal = $currentVersion->$field;
+                    $newVal = $pendingVersion->$field;
+                    
+                    if ($field === 'visibility') {
+                        $visMap = ['public' => 'Công khai', 'private' => 'Riêng tư', 'unlisted' => 'Không công khai'];
+                        $oldVal = $visMap[$oldVal] ?? $oldVal;
+                        $newVal = $visMap[$newVal] ?? $newVal;
+                    }
+
+                    $changes[$field] = ['old' => $oldVal, 'new' => $newVal];
                 }
             }
             if ($pendingVersion->category_id !== $currentVersion->category_id) {
@@ -651,11 +676,56 @@ class DocumentDetail extends Component
             if ($pendingVersion->file_original_path !== $currentVersion->file_original_path) {
                 $changes['file'] = ['old' => 'File cũ', 'new' => 'File mới được upload'];
             }
-            if ($pendingVersion->price != $currentVersion->price) {
+            if ($pendingVersion->thumbnail !== $currentVersion->thumbnail) {
+                $changes['thumbnail'] = ['old' => 'Ảnh bìa cũ', 'new' => 'Ảnh bìa mới'];
+            }
+            $oldGallery = json_encode($currentVersion->gallery_images);
+            $newGallery = json_encode($pendingVersion->gallery_images);
+            if ($oldGallery !== $newGallery) {
+                $changes['gallery'] = ['old' => 'Bộ sưu tập cũ', 'new' => 'Bộ sưu tập mới'];
+            }
+            if ($pendingVersion->price != $currentVersion->price || $pendingVersion->sale_price != $currentVersion->sale_price) {
+                $oldPriceStr = $currentVersion->price > 0 ? number_format($currentVersion->price).' VND' : 'Miễn phí';
+                if ($currentVersion->sale_price > 0) {
+                    $oldPriceStr .= ' (Khuyến mãi: ' . number_format($currentVersion->sale_price) . ' VND)';
+                }
+
+                $newPriceStr = $pendingVersion->price > 0 ? number_format($pendingVersion->price).' VND' : 'Miễn phí';
+                if ($pendingVersion->sale_price > 0) {
+                    $newPriceStr .= ' (Khuyến mãi: ' . number_format($pendingVersion->sale_price) . ' VND)';
+                }
+
                 $changes['price'] = [
-                    'old' => $currentVersion->price > 0 ? number_format($currentVersion->price).' VND' : 'Miễn phí',
-                    'new' => $pendingVersion->price > 0 ? number_format($pendingVersion->price).' VND' : 'Miễn phí',
+                    'old' => $oldPriceStr,
+                    'new' => $newPriceStr,
                 ];
+            }
+            
+            // Compare tags
+            $oldTagIds = $doc->tags->pluck('id')->toArray();
+            sort($oldTagIds);
+            $oldTagNames = $doc->tags->pluck('name')->toArray();
+            
+            if (!empty($pendingVersion->version_tags)) {
+                $newSelectedTags = $pendingVersion->version_tags['selectedTags'] ?? [];
+                $newSelectedTagIds = array_map('intval', $newSelectedTags);
+                sort($newSelectedTagIds);
+                $newCustomTags = $pendingVersion->version_tags['customTagsInput'] ?? '';
+                
+                $newTagNames = Tag::whereIn('id', $newSelectedTags)->pluck('name')->toArray();
+                if (!empty(trim($newCustomTags))) {
+                    $newTagNames = array_merge($newTagNames, array_map('trim', explode(',', $newCustomTags)));
+                }
+                
+                $oldTagsStr = implode(', ', $oldTagNames) ?: 'Không có tag';
+                $newTagsStr = implode(', ', $newTagNames) ?: 'Không có tag';
+                
+                if ($oldTagsStr !== $newTagsStr && ($oldTagIds !== $newSelectedTagIds || !empty(trim($newCustomTags)))) {
+                    $changes['tags'] = [
+                        'old' => $oldTagsStr,
+                        'new' => $newTagsStr
+                    ];
+                }
             }
         }
 
@@ -710,6 +780,23 @@ class DocumentDetail extends Component
 
 
 
+        $displayTags = collect();
+        if ($activeVersion && !empty($activeVersion->version_tags)) {
+            $selectedTags = $activeVersion->version_tags['selectedTags'] ?? [];
+            $customTags = $activeVersion->version_tags['customTagsInput'] ?? '';
+            
+            $tagNames = Tag::whereIn('id', $selectedTags)->pluck('name')->toArray();
+            if (!empty(trim($customTags))) {
+                $tagNames = array_merge($tagNames, array_map('trim', explode(',', $customTags)));
+            }
+            foreach ($tagNames as $name) {
+                if ($name) $displayTags->push((object)['name' => $name]);
+            }
+        } else {
+            // fallback to live tags
+            $displayTags = clone $doc->tags; 
+        }
+
         return view('document::livewire.admin.document-detail', [
             'doc' => $doc,
             'pendingVersion' => $pendingVersion,
@@ -720,6 +807,7 @@ class DocumentDetail extends Component
             'categories' => $categories,
             'subjectsForEdit' => $this->editSubjects,
             'allTags' => $allTags,
+            'displayTags' => $displayTags,
             'originalFileSize' => $this->formatFileSize($activeVersion?->file_size),
             'previewFileSize' => $this->formatFileSize($previewFileSize),
             'watermarkedFileSize' => $this->formatFileSize($watermarkedFileSize),

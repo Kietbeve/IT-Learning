@@ -99,6 +99,8 @@ class OrderManagement extends Component
             $query->whereDate('created_at', '<=', $this->dateTo);
         }
 
+        $query->whereNotIn('payment_status', ['failed', 'cancelled']);
+
         $orders = $query->orderBy($this->sortField, $this->sortDirection)
             ->paginate(20);
 
@@ -108,7 +110,7 @@ class OrderManagement extends Component
         })->sum('contributor_amount');
 
         $stats = [
-            'total_orders' => Order::count(),
+            'total_orders' => Order::whereNotIn('payment_status', ['failed', 'cancelled'])->count(),
             'paid_orders' => Order::where('payment_status', 'paid')->count(),
             'pending_orders' => Order::where('payment_status', 'pending')->count(),
             'subscription_count' => Order::where('order_type', 'subscription')->where('payment_status', 'paid')->count(),

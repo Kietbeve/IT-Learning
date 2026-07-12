@@ -1,4 +1,16 @@
-<div class="space-y-6 py-4" wire:poll.10s>
+<div id="admin-payout-review" class="space-y-6 py-4" wire:poll.10s.keep-alive>
+
+    <style>
+        #admin-payout-review,
+        #admin-payout-review.wire-loading,
+        #admin-payout-review * {
+            transition: none !important;
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            visibility: visible !important;
+        }
+    </style>
 
     {{-- Thông báo thành công --}}
     @if(session('success'))

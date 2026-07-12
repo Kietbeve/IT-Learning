@@ -39,7 +39,16 @@ class Document extends Model
         'download_count',
         'favorite_count',
         'view_count',
+        'deleted_by',
     ];
+
+    /**
+     * Get the user who deleted the document.
+     */
+    public function deletedByUser()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
 
     /**
      * Toggle favorite status for a user.

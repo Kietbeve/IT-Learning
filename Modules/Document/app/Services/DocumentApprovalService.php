@@ -40,10 +40,24 @@ class DocumentApprovalService
                 'reviewed_at' => now(),
             ]);
 
+            // Generate new slug if the title has changed
+            $newSlug = $doc->slug;
+            $baseSlug = \Illuminate\Support\Str::slug($pendingVersion->title);
+            if ($baseSlug !== preg_replace('/-\d+$/', '', $doc->slug) && $baseSlug !== $doc->slug) {
+                $slug = $baseSlug;
+                $count = 1;
+                while (\Modules\Document\Models\Document::where('slug', $slug)->where('id', '!=', $doc->id)->exists()) {
+                    $slug = $baseSlug.'-'.$count;
+                    $count++;
+                }
+                $newSlug = $slug;
+            }
+
             // Merge version data into the main document record
             $doc->update([
                 'status' => 'approved',
                 'current_version_id' => $pendingVersion->id,
+                'slug' => $newSlug,
             ]);
 
             // Handle product based on version price
@@ -58,7 +72,19 @@ class DocumentApprovalService
                     ]
                 );
             } else {
-                Product::where('document_id', $doc->id)->delete();
+                Product::where('document_id', $doc->id)->update([
+                    'price' => 0,
+                    'sale_price' => null,
+                    'is_active' => false
+                ]);
+            }
+
+            // Sync tags if they were updated in this version
+            if (!empty($pendingVersion->version_tags)) {
+                $tagService = app(\Modules\Document\Services\TagService::class);
+                $selectedTags = $pendingVersion->version_tags['selectedTags'] ?? [];
+                $customTags = $pendingVersion->version_tags['customTagsInput'] ?? '';
+                $tagService->syncTags($doc, $selectedTags, $customTags);
             }
 
             // Fire event
