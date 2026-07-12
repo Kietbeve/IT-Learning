@@ -99,11 +99,6 @@ class DocumentEdit extends Component
             return redirect()->route('contributor.documents.index');
         }
 
-        if ($doc->pendingVersion) {
-            session()->flash('error', 'Tài liệu đang có bản cập nhật chờ duyệt. Bạn không thể chỉnh sửa tiếp cho đến khi được Admin xử lý.');
-            return redirect()->route('contributor.documents.index');
-        }
-
         $this->doc = $doc;
         $this->documentId = $doc->id;
 

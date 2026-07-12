@@ -25,23 +25,24 @@
             <p class="text-lg text-gray-300 mt-3 mb-8 max-w-2xl mx-auto">Khám phá hàng ngàn tài liệu học tập, luận văn và mã nguồn được chọn lọc kỹ càng</p>
             <div class="relative max-w-2xl mx-auto" x-data="{ isOpen: false }" @click.away="isOpen = false">
                 <div class="flex items-center bg-white rounded-2xl shadow-2xl overflow-hidden p-1.5 ring-1 ring-white/20 relative z-20">
-                    <div class="flex-1 flex items-center pl-5">
-                        <i class="fas fa-search text-gray-400 mr-3"></i>
+                    <div class="flex-1 flex items-center pl-3 sm:pl-5 min-w-0">
+                        <i class="fas fa-search text-gray-400 mr-2 sm:mr-3 shrink-0"></i>
                         <input type="text" 
                                wire:model.live.debounce.300ms="search"
                                @focus="isOpen = true"
                                @input="isOpen = true"
-                               placeholder="Tìm kiếm tài liệu, môn học, chủ đề..." 
-                               class="w-full py-3.5 text-gray-800 placeholder-gray-400 bg-transparent outline-none text-base">
+                               placeholder="Tìm kiếm tài liệu, môn học..." 
+                               class="w-full py-2.5 sm:py-3.5 pr-2 text-gray-800 placeholder-gray-400 bg-transparent outline-none text-sm sm:text-base min-w-0">
                         
                         <!-- Loading spinner -->
-                        <span wire:loading wire:target="search" class="absolute inset-y-0 right-36 flex items-center pointer-events-none text-blue-500">
-                            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span wire:loading wire:target="search" class="absolute inset-y-0 right-32 sm:right-40 flex items-center pointer-events-none text-blue-500">
+                            <svg class="animate-spin h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                         </span>
                     </div>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-semibold flex items-center gap-2 transition">
-                        <span>Tìm kiếm</span>
-                        <i class="fas fa-arrow-right text-sm"></i>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-8 py-2.5 sm:py-3.5 rounded-xl font-semibold flex items-center gap-1 sm:gap-2 transition shrink-0">
+                        <span class="hidden sm:inline">Tìm kiếm</span>
+                        <span class="sm:hidden">Tìm</span>
+                        <i class="fas fa-arrow-right text-xs sm:text-sm"></i>
                     </button>
                 </div>
 
@@ -254,11 +255,6 @@
             <div>
                 <h2 class="text-2xl font-bold text-gray-900">Tài liệu nổi bật</h2>
                 <p class="text-sm text-gray-500 mt-0.5">Hiển thị <span class="font-semibold text-gray-700">{{ $documents->firstItem() ?? 0 }}-{{ $documents->lastItem() ?? 0 }}</span> / <span class="font-semibold text-gray-700">{{ $documents->total() }}</span> tài liệu</p>
-            </div>
-            <!-- Toggle view -->
-            <div class="hidden sm:flex gap-2 text-gray-400">
-                <button class="p-2 rounded-lg hover:bg-gray-100 transition text-blue-600"><i class="fas fa-th-large"></i></button>
-                <button class="p-2 rounded-lg hover:bg-gray-100 transition"><i class="fas fa-list"></i></button>
             </div>
         </div>
 

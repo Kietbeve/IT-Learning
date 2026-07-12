@@ -449,7 +449,10 @@
                                 <svg class="w-6 h-6 text-white shrink-0 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-white font-bold text-sm md:text-base">
-                                        🎁 <span class="hidden sm:inline">Ưu đãi đặc biệt!</span> Nâng cấp VIP - Tải tài liệu Premium giá hời - Chỉ từ 99,000đ/tháng
+                                        @php
+                                            $vipBannerPrice = (int) \App\Services\SettingService::get('vip_sale_price', 99000);
+                                        @endphp
+                                        🎁 <span class="hidden sm:inline">Ưu đãi đặc biệt!</span> Nâng cấp VIP - Tải tài liệu Premium giá hời - Chỉ từ {{ number_format($vipBannerPrice) }}đ/tháng
                                     </p>
                                 </div>
                             </div>
@@ -497,6 +500,32 @@
                     alert(data.message);
                 }
             });
+        });
+    </script>
+    <script>
+        document.addEventListener('livewire:navigated', () => {
+            @if(session()->has('success'))
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: 'Thành công',
+                        description: '{!! session('success') !!}',
+                        icon: 'success',
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                }
+            @endif
+            @if(session()->has('error'))
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: 'Lỗi',
+                        description: '{!! session('error') !!}',
+                        icon: 'error',
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                }
+            @endif
         });
     </script>
 </body>

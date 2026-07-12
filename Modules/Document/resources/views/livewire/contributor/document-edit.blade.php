@@ -44,24 +44,73 @@
 
                     <!-- Danh mục + Môn học -->
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
+                        <div x-data="{ open: false }">
                             <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Danh mục <span class="text-red-500">*</span></label>
-                            <select wire:model.live="category_id" required class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all">
-                                <option value="">-- Chọn danh mục --</option>
-                                @foreach($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                @endforeach
-                            </select>
+                            <div class="relative w-full" @click.away="open = false">
+                                <div @click="open = !open" 
+                                     class="flex items-center justify-between w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] cursor-pointer hover:border-[#2a7de1] transition-all">
+                                    <span class="truncate">
+                                        @if($category_id)
+                                            {{ collect($categories)->firstWhere('id', $category_id)?->name ?? '-- Chọn danh mục --' }}
+                                        @else
+                                            <span class="text-gray-400">-- Chọn danh mục --</span>
+                                        @endif
+                                    </span>
+                                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                                <div x-show="open" x-cloak
+                                     class="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="transform opacity-0 scale-95"
+                                     x-transition:enter-end="transform opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="transform opacity-100 scale-100"
+                                     x-transition:leave-end="transform opacity-0 scale-95">
+                                    <div class="max-h-48 overflow-y-auto py-1">
+                                        @foreach($categories as $cat)
+                                            <div wire:click="$set('category_id', '{{ $cat->id }}'); open = false"
+                                                 class="px-3.5 py-2 text-sm cursor-pointer hover:bg-[#f0f6ff] transition-colors {{ $category_id == $cat->id ? 'text-[#2a7de1] font-medium bg-[#f0f6ff]' : 'text-[#1a2b4a]' }}">
+                                                {{ $cat->name }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
                             @error('category_id') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
                         </div>
-                        <div>
+                        <div x-data="{ open: false }">
                             <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Môn học <span class="text-red-500">*</span></label>
-                            <select wire:model.live="subject_id" wire:key="subject-select-{{ $category_id }}" required class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all">
-                                <option value="">-- Chọn môn --</option>
-                                @foreach($subjects as $sub)
-                                    <option value="{{ $sub->id }}">{{ $sub->name }}</option>
-                                @endforeach
-                            </select>
+                            <div class="relative w-full" @click.away="open = false">
+                                <div @click="open = !open" 
+                                     class="flex items-center justify-between w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] cursor-pointer hover:border-[#2a7de1] transition-all"
+                                     :class="{ 'opacity-50 pointer-events-none': {{ count($subjects) == 0 ? 'true' : 'false' }} }">
+                                    <span class="truncate">
+                                        @if($subject_id)
+                                            {{ collect($subjects)->firstWhere('id', $subject_id)?->name ?? '-- Chọn môn --' }}
+                                        @else
+                                            <span class="text-gray-400">-- Chọn môn --</span>
+                                        @endif
+                                    </span>
+                                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                                <div x-show="open" x-cloak
+                                     class="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="transform opacity-0 scale-95"
+                                     x-transition:enter-end="transform opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="transform opacity-100 scale-100"
+                                     x-transition:leave-end="transform opacity-0 scale-95">
+                                    <div class="max-h-48 overflow-y-auto py-1">
+                                        @foreach($subjects as $sub)
+                                            <div wire:click="$set('subject_id', '{{ $sub->id }}'); open = false"
+                                                 class="px-3.5 py-2 text-sm cursor-pointer hover:bg-[#f0f6ff] transition-colors {{ $subject_id == $sub->id ? 'text-[#2a7de1] font-medium bg-[#f0f6ff]' : 'text-[#1a2b4a]' }}">
+                                                {{ $sub->name }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
                             @error('subject_id') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -173,32 +222,34 @@
                     </div>
 
                     <!-- Thiết lập bán -->
-                    <div class="border-[1.5px] border-[#e5ebf3] rounded-[14px] p-4 bg-[#fafcff] space-y-3" x-data="{ paid: @entangle('isPaid') }">
-                        <div class="text-[13px] font-semibold text-gray-700">Thiết lập bán</div>
-                        <div class="flex gap-6">
-                            <label class="flex items-center gap-2 font-medium text-[14px] text-[#1a2b4a] cursor-pointer">
-                                <input type="radio" :checked="!paid" @click="paid = false" name="isPaidRadio" class="w-4 h-4 text-[#2a7de1] focus:ring-[#2a7de1] border-gray-300" />
+                    <div class="mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Thiết lập bán <span class="text-red-500">*</span></label>
+                        <div class="flex flex-wrap gap-x-10 gap-y-3 pt-1.5">
+                            <label class="flex items-center gap-2.5 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
+                                <input type="radio" wire:model.live="isPaid" value="0" name="isPaidRadio" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1]" />
                                 Miễn phí
                             </label>
-                            <label class="flex items-center gap-2 font-medium text-[14px] text-[#1a2b4a] cursor-pointer">
-                                <input type="radio" :checked="paid" @click="paid = true" name="isPaidRadio" class="w-4 h-4 text-[#2a7de1] focus:ring-[#2a7de1] border-gray-300" />
+                            <label class="flex items-center gap-2.5 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
+                                <input type="radio" wire:model.live="isPaid" value="1" name="isPaidRadio" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1]" />
                                 Bán có phí
                             </label>
                         </div>
-                        <div x-show="paid" x-transition class="grid grid-cols-2 gap-3 mt-3">
-                            <div>
+                        @if((bool)$isPaid)
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <div class="flex flex-col h-full">
                                 <label class="block text-[12px] font-medium text-gray-500 mb-1">Giá bán (VND) <span class="text-red-500">*</span></label>
                                 <input type="number" wire:model.blur="price" placeholder="10000" x-on:input="$el.value = $el.value.replace(/^0+/, '') || '0'"
-                                    class="w-full px-3 py-2 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-white text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                    class="mt-auto w-full px-3 py-2 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-white text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                                 @error('price') <span class="text-[11px] text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
                             </div>
-                            <div>
+                            <div class="flex flex-col h-full">
                                 <label class="block text-[12px] font-medium text-gray-500 mb-1">Giá khuyến mãi (VND)</label>
                                 <input type="number" wire:model.blur="sale_price" placeholder="Tùy chọn" x-on:input="$el.value = $el.value.replace(/^0+/, '') || ''"
-                                    class="w-full px-3 py-2 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-white text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                    class="mt-auto w-full px-3 py-2 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-white text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                                 @error('sale_price') <span class="text-[11px] text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -288,23 +339,19 @@
                 </div>
             </div>
 
-            <!-- Quyền riêng tư & Truy cập -->
-            <div class="grid grid-cols-1 gap-5 mt-5">
-                <div class="border-[1.5px] border-[#e5ebf3] rounded-[14px] p-4 bg-white">
-                    <label class="block text-[13px] font-semibold text-gray-700 mb-2.5">Quyền riêng tư</label>
-                    <div class="flex flex-wrap gap-x-6 gap-y-3">
-                        <label class="flex items-center gap-2.5 font-medium text-[14px] text-[#1a2b4a] cursor-pointer">
-                            <input type="radio" wire:model="visibility" value="public" class="w-4 h-4 text-[#2a7de1] focus:ring-[#2a7de1] border-gray-300" />
-                            Công khai
-                        </label>
-                        <label class="flex items-center gap-2.5 font-medium text-[14px] text-[#1a2b4a] cursor-pointer">
-                            <input type="radio" wire:model="visibility" value="private" class="w-4 h-4 text-[#2a7de1] focus:ring-[#2a7de1] border-gray-300" />
-                            Riêng tư
-                        </label>
-                    </div>
+            <!-- Hình thức xuất bản -->
+            <div class="mb-5">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Hình thức xuất bản <span class="text-red-500">*</span></label>
+                <div class="flex flex-wrap gap-x-10 gap-y-3 pt-1.5">
+                    <label class="flex items-center gap-2.5 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
+                        <input type="radio" wire:model="visibility" value="public" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1]" />
+                        Công khai
+                    </label>
+                    <label class="flex items-center gap-2.5 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
+                        <input type="radio" wire:model="visibility" value="private" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1]" />
+                        Riêng tư
+                    </label>
                 </div>
-
-
             </div>
 
             <!-- Action Buttons -->

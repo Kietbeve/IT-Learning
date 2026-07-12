@@ -36,16 +36,16 @@
     <div class="overflow-hidden rounded-2xl bg-white shadow ring-1 ring-gray-200">
         <div wire:loading.class="opacity-50 pointer-events-none" class="transition-opacity duration-200">
             <div class="overflow-x-auto">
-                <table class="w-full table-fixed divide-y divide-gray-200">
+                <table class="min-w-[900px] w-full divide-y divide-gray-200">
                     <thead class="bg-slate-50/50">
                         <tr>
-                            <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 w-[6%]">ID</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[20%]">Tên Môn Học</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[16%]">Danh Mục</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[16%]">Slug</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[14%]">Trạng Thái</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[12%]">Ngày Tạo</th>
-                            <th scope="col" class="relative py-3.5 pl-3 pr-6 text-right text-sm font-semibold text-gray-900 w-[16%]">Thao Tác</th>
+                            <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900">ID</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tên Môn Học</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Danh Mục</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Slug</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Trạng Thái</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ngày Tạo</th>
+                            <th scope="col" class="py-3.5 pl-3 pr-6 text-center text-sm font-semibold text-gray-900">Thao Tác</th>
                         </tr>
                 </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -92,8 +92,8 @@
                                     <div class="text-gray-900">{{ $subject->created_at->format('d/m/Y') }}</div>
                                     <div class="text-xs">{{ $subject->created_at->format('H:i') }}</div>
                                 </td>
-                                <td class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
-                                    <div class="flex items-center justify-end gap-1.5">
+                                <td class="whitespace-nowrap py-4 pl-3 pr-6 text-center text-sm font-medium">
+                                    <div class="flex items-center justify-center gap-1.5">
                                         <button 
                                             wire:click="openEditModal({{ $subject->id }})"
                                             class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 shadow-sm ring-1 ring-inset ring-amber-600/20 hover:bg-amber-50 transition-colors"
@@ -180,20 +180,44 @@
                             </div>
 
                             {{-- Dropdown chọn danh mục --}}
-                            <div>
-                                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">
+                            <div x-data="{ open: false }">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
                                     Danh Mục <span class="text-rose-500">*</span>
                                 </label>
-                                <select 
-                                    id="category_id"
-                                    wire:model="category_id"
-                                    class="w-full rounded-lg border-gray-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 @error('category_id') border-rose-500 @enderror"
-                                >
-                                    <option value="">-- Chọn danh mục --</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="relative w-full" @click.away="open = false">
+                                    <div @click="open = !open" 
+                                         class="flex items-center justify-between w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-900 cursor-pointer shadow-sm hover:border-blue-400 transition-all focus:ring-2 focus:ring-blue-500/20 @error('category_id') border-rose-500 @enderror">
+                                        <span class="truncate">
+                                            @if($category_id)
+                                                {{ collect($categories)->firstWhere('id', $category_id)?->name ?? '-- Chọn danh mục --' }}
+                                            @else
+                                                <span class="text-gray-400">-- Chọn danh mục --</span>
+                                            @endif
+                                        </span>
+                                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    </div>
+                                    <div x-show="open" x-cloak
+                                         class="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
+                                         x-transition:enter="transition ease-out duration-100"
+                                         x-transition:enter-start="transform opacity-0 scale-95"
+                                         x-transition:enter-end="transform opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="transform opacity-100 scale-100"
+                                         x-transition:leave-end="transform opacity-0 scale-95">
+                                        <div class="max-h-48 overflow-y-auto py-1">
+                                            <div wire:click="$set('category_id', ''); open = false"
+                                                 class="px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 transition-colors text-gray-400">
+                                                -- Chọn danh mục --
+                                            </div>
+                                            @foreach($categories as $category)
+                                                <div wire:click="$set('category_id', '{{ $category->id }}'); open = false"
+                                                     class="px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 transition-colors {{ $category_id == $category->id ? 'text-blue-600 font-medium bg-blue-50' : 'text-gray-700' }}">
+                                                    {{ $category->name }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
                                 @error('category_id')
                                     <p class="mt-1.5 text-sm text-rose-600">{{ $message }}</p>
                                 @enderror

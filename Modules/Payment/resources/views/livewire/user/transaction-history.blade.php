@@ -13,25 +13,53 @@
             </div>
         </div>
         
-        <x-card padding="p-6" class="shadow-sm border border-gray-100">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
+        <x-card padding="p-4 sm:p-6" class="shadow-sm border border-gray-100">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Loại đơn hàng</label>
-                    <select wire:model.live="orderType" class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors">
-                        <option value="">Tất cả</option>
-                        <option value="document">Mua tài liệu</option>
-                        <option value="subscription">Mua gói VIP</option>
-                    </select>
+                    <div @click="open = !open" class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 cursor-pointer hover:border-indigo-400 transition-colors select-none">
+                        <span class="font-medium text-gray-700">
+                            @if($orderType === '') Tất cả 
+                            @elseif($orderType === 'document') Mua tài liệu
+                            @elseif($orderType === 'subscription') Mua gói VIP
+                            @endif
+                        </span>
+                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div x-show="open" x-cloak x-transition.opacity.duration.200ms style="display: none;"
+                         class="absolute top-full left-0 mt-2 w-full bg-white border border-slate-100 rounded-xl shadow-lg py-1.5 z-[60]">
+                        <div wire:click="$set('orderType', '')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $orderType === '' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Tất cả</div>
+                        <div wire:click="$set('orderType', 'document')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $orderType === 'document' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Mua tài liệu</div>
+                        <div wire:click="$set('orderType', 'subscription')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $orderType === 'subscription' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Mua gói VIP</div>
+                    </div>
                 </div>
                 
-                <div>
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Trạng thái thanh toán</label>
-                    <select wire:model.live="paymentStatus" class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors">
-                        <option value="">Tất cả</option>
-                        <option value="paid">Đã thanh toán</option>
-                        <option value="pending">Chờ thanh toán</option>
-                        <option value="failed">Thất bại</option>
-                    </select>
+                    <div @click="open = !open" class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 cursor-pointer hover:border-indigo-400 transition-colors select-none">
+                        <span class="font-medium text-gray-700">
+                            @if($paymentStatus === '') Tất cả 
+                            @elseif($paymentStatus === 'paid') Đã thanh toán
+                            @elseif($paymentStatus === 'pending') Chờ thanh toán
+                            @elseif($paymentStatus === 'failed') Thất bại
+                            @endif
+                        </span>
+                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div x-show="open" x-cloak x-transition.opacity.duration.200ms style="display: none;"
+                         class="absolute top-full left-0 mt-2 w-full bg-white border border-slate-100 rounded-xl shadow-lg py-1.5 z-[60]">
+                        <div wire:click="$set('paymentStatus', '')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $paymentStatus === '' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Tất cả</div>
+                        <div wire:click="$set('paymentStatus', 'paid')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $paymentStatus === 'paid' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Đã thanh toán</div>
+                        <div wire:click="$set('paymentStatus', 'pending')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $paymentStatus === 'pending' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Chờ thanh toán</div>
+                        <div wire:click="$set('paymentStatus', 'failed')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $paymentStatus === 'failed' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Thất bại</div>
+                    </div>
                 </div>
             </div>
         </x-card>
@@ -46,7 +74,7 @@
         @else
             <div class="space-y-4">
                 @foreach($orders as $order)
-                    <x-card padding="p-6" class="shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <x-card padding="p-4 sm:p-6" class="shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                         <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                             <div>
                                 <div class="flex flex-wrap items-center gap-3">

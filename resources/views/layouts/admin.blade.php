@@ -78,7 +78,23 @@
     </style>
     <x-dialog z-index="z-50" blur="md" align="center" />
     
-    <div class="flex min-h-screen">
+    <div x-data="{ sidebarHidden: (window.innerWidth < 1024) }" 
+         @resize.window="sidebarHidden = (window.innerWidth < 1024)"
+         class="flex min-h-screen relative">
+         
+        <!-- Backdrop Overlay (Mobile) -->
+        <div x-show="!sidebarHidden" 
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarHidden = true"
+             class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+             x-cloak>
+        </div>
+
         <!-- Sidebar -->
         @if(request()->is('contributor*') || request()->is('contributor'))
             @include('layouts.patials.contributor_sidebar')
@@ -138,35 +154,32 @@
             });
         });
 
-        // Mobile sidebar toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarToggle = document.querySelector('[aria-label="Open sidebar"]');
-            const sidebar = document.querySelector('aside');
-            
-            if (sidebarToggle && sidebar) {
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('hidden');
-                    sidebar.classList.toggle('fixed');
-                    sidebar.classList.toggle('inset-y-0');
-                    sidebar.classList.toggle('left-0');
-                    sidebar.classList.toggle('z-50');
-                    sidebar.classList.toggle('w-72');
-                    sidebar.classList.toggle('shadow-2xl');
-                    sidebar.classList.toggle('animate-slide-in');
-                });
-            }
+    </script>
+    <script>
+        document.addEventListener('livewire:navigated', () => {
+            @if(session()->has('success'))
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: 'Thành công',
+                        description: '{!! session('success') !!}',
+                        icon: 'success',
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                }
+            @endif
+            @if(session()->has('error'))
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: 'Lỗi',
+                        description: '{!! session('error') !!}',
+                        icon: 'error',
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                }
+            @endif
         });
     </script>
-    
-    <style>
-        @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        .animate-slide-in {
-            animation: slideIn 0.3s ease-out;
-        }
-    </style>
 </body>
-
 </html>

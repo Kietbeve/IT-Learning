@@ -278,7 +278,7 @@ class DocumentDetail extends Component
 
     public function showHistory()
     {
-        $doc = Document::find($this->documentId);
+        $doc = Document::withTrashed()->with('deletedByUser')->find($this->documentId);
         if (! $doc) {
             $this->submissionHistory = collect();
             $this->showHistoryModal = true;
@@ -319,12 +319,12 @@ class DocumentDetail extends Component
             }
         }
 
-        if ($this->document->trashed()) {
+        if ($doc->trashed()) {
             $timeline->push((object) [
                 'type' => 'deleted',
                 'version_number' => null,
-                'timestamp' => $this->document->deleted_at,
-                'user' => $this->document->deletedByUser,
+                'timestamp' => $doc->deleted_at,
+                'user' => $doc->deletedByUser,
                 'status' => null,
                 'details' => 'Tài liệu đã được chuyển vào thùng rác (xóa mềm).',
             ]);

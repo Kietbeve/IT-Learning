@@ -60,6 +60,19 @@
          @resize.window="sidebarHidden = (window.innerWidth < 1024)"
          class="min-h-screen flex">
 
+        <!-- Backdrop Overlay (Mobile) -->
+        <div x-show="!sidebarHidden" 
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarHidden = true"
+             class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+             x-cloak>
+        </div>
+
         <!-- ===== SIDEBAR ===== -->
         @include('layouts.patials.contributor_sidebar')
 
@@ -101,6 +114,32 @@
                     alert(data.message);
                 }
             });
+        });
+    </script>
+    <script>
+        document.addEventListener('livewire:navigated', () => {
+            @if(session()->has('success'))
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: 'Thành công',
+                        description: '{!! session('success') !!}',
+                        icon: 'success',
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                }
+            @endif
+            @if(session()->has('error'))
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: 'Lỗi',
+                        description: '{!! session('error') !!}',
+                        icon: 'error',
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                }
+            @endif
         });
     </script>
 </body>

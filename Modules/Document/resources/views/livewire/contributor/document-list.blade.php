@@ -88,22 +88,57 @@
                 @endif
 
                 <!-- Status Filter -->
-                <select wire:model.live="statusFilter" aria-label="Lọc theo trạng thái" class="block w-full sm:w-auto rounded-xl border-0 py-2.5 pl-4 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
-                    <option value="all">Tất cả trạng thái</option>
-                    <option value="approved">Đã phê duyệt</option>
-                    <option value="pending">Chờ phê duyệt</option>
-                    <option value="rejected">Bị từ chối</option>
-                    <option value="unpublished">Đã gỡ/Bị ẩn</option>
-                    <option value="deleted">Đã xóa</option>
-                </select>
+                <div class="relative w-full sm:w-auto min-w-[160px]" x-data="{ open: false }" @click.away="open = false">
+                    <div @click="open = !open" class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 cursor-pointer hover:border-indigo-400 transition-colors select-none shadow-sm h-[42px]">
+                        <span class="font-medium text-gray-700 whitespace-nowrap">
+                            @if($statusFilter === 'all') Tất cả trạng thái
+                            @elseif($statusFilter === 'approved') Đã phê duyệt
+                            @elseif($statusFilter === 'pending') Chờ phê duyệt
+                            @elseif($statusFilter === 'rejected') Bị từ chối
+                            @elseif($statusFilter === 'unpublished') Đã gỡ/Bị ẩn
+                            @elseif($statusFilter === 'deleted') Đã xóa
+                            @endif
+                        </span>
+                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ml-2" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div x-show="open" x-cloak x-transition.opacity.duration.200ms style="display: none;"
+                         class="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 w-full sm:w-48 bg-white border border-slate-100 rounded-xl shadow-lg py-1.5 z-[60]">
+                        <div wire:click="$set('statusFilter', 'all')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $statusFilter === 'all' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Tất cả trạng thái</div>
+                        <div wire:click="$set('statusFilter', 'approved')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $statusFilter === 'approved' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Đã phê duyệt</div>
+                        <div wire:click="$set('statusFilter', 'pending')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $statusFilter === 'pending' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Chờ phê duyệt</div>
+                        <div wire:click="$set('statusFilter', 'rejected')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $statusFilter === 'rejected' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Bị từ chối</div>
+                        <div wire:click="$set('statusFilter', 'unpublished')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $statusFilter === 'unpublished' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Đã gỡ/Bị ẩn</div>
+                        <div wire:click="$set('statusFilter', 'deleted')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $statusFilter === 'deleted' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Đã xóa</div>
+                    </div>
+                </div>
 
                 <!-- Category Filter -->
-                <select wire:model.live="categoryFilter" aria-label="Lọc theo danh mục" class="block w-full sm:w-auto rounded-xl border-0 py-2.5 pl-4 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
-                    <option value="all">Tất cả danh mục</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                    @endforeach
-                </select>
+                <div class="relative w-full sm:w-auto min-w-[160px]" x-data="{ open: false }" @click.away="open = false">
+                    <div @click="open = !open" class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 cursor-pointer hover:border-indigo-400 transition-colors select-none shadow-sm h-[42px]">
+                        <span class="font-medium text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]">
+                            @if($categoryFilter === 'all') Tất cả danh mục
+                            @else
+                                {{ collect($categories)->firstWhere('id', $categoryFilter)->name ?? 'Tất cả danh mục' }}
+                            @endif
+                        </span>
+                        <svg class="w-4 h-4 text-gray-400 shrink-0 ml-2 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div x-show="open" x-cloak x-transition.opacity.duration.200ms style="display: none;"
+                         class="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 w-full sm:w-56 bg-white border border-slate-100 rounded-xl shadow-lg py-1.5 z-[60] max-h-64 overflow-y-auto">
+                        <div wire:click="$set('categoryFilter', 'all')" @click="open = false" 
+                             class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $categoryFilter === 'all' ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">Tất cả danh mục</div>
+                        @foreach($categories as $cat)
+                            <div wire:click="$set('categoryFilter', '{{ $cat->id }}')" @click="open = false" 
+                                 class="px-4 py-2.5 text-sm cursor-pointer transition-colors {{ $categoryFilter == $cat->id ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">{{ $cat->name }}</div>
+                        @endforeach
+                    </div>
+                </div>
 
                 <!-- Search Input -->
                 <div class="relative w-full sm:w-60">
@@ -162,7 +197,7 @@
                                     
                                     if ($isEditRejection) {
                                         $reason = $rejectedV->rejected_reason;
-                                        $title = 'Bản cập nhật bị từ chối';
+                                        $title = 'Cập nhật bị từ chối';
                                         $bgColor = 'bg-amber-50';
                                         $borderColor = 'border-amber-200';
                                         $textColor = 'text-amber-800';
@@ -176,7 +211,7 @@
                                         $iconColor = 'text-rose-500';
                                     }
                                 @endphp
-                                <div class="mt-3 p-3 {{ $bgColor }} border {{ $borderColor }} rounded-xl" x-data="{ expanded: false }">
+                                <div class="mt-2 p-2.5 {{ $bgColor }} border {{ $borderColor }} rounded-xl" x-data="{ expanded: false }">
                                     <div class="flex items-start justify-between gap-2">
                                         <div class="flex items-start gap-2 flex-1 min-w-0">
                                             <svg class="w-4 h-4 {{ $iconColor }} shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,26 +235,19 @@
                             @endif
 
                             @if($doc->status === 'approved' && $doc->pendingVersion)
-                                <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
+                                <div class="mt-2 p-2.5 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
                                     <div class="flex-1 flex items-start gap-2">
                                         <svg class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
-                                        <div class="flex-1 text-xs min-w-0 leading-snug">
+                                        <div class="flex-1 text-[11px] min-w-0 leading-snug">
                                             <span class="font-bold text-blue-800">Đang chờ duyệt bản cập nhật</span>
                                         </div>
                                     </div>
-                                    <button wire:click.prevent="cancelUpdate({{ $doc->id }})" class="ml-2 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-white border border-rose-200 rounded-lg hover:bg-rose-50 transition-colors shrink-0" onclick="confirm('Bạn có chắc muốn hủy yêu cầu cập nhật này không?') || event.stopImmediatePropagation()">Hủy</button>
+                                    <button wire:click.prevent="cancelUpdate({{ $doc->id }})" class="ml-2 px-2 py-1 text-[10px] font-semibold text-rose-600 bg-white border border-rose-200 rounded-md hover:bg-rose-50 transition-colors shrink-0" onclick="confirm('Bạn có chắc muốn hủy yêu cầu cập nhật này không?') || event.stopImmediatePropagation()">Hủy</button>
                                 </div>
                             @endif
 
-                            @if($doc->tags->isNotEmpty())
-                                <div class="flex flex-wrap gap-1 mt-2">
-                                    @foreach($doc->tags as $tag)
-                                        <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-[10px] font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">#{{ $tag->name }}</span>
-                                    @endforeach
-                                </div>
-                            @endif
                         </div>
 
                         <!-- Price tag -->
@@ -237,68 +265,44 @@
                         </div>
                     </div>
 
-                    <!-- Meta info (Stats) -->
-                    <div class="flex flex-col gap-1.5 rounded-xl bg-gray-50 p-3 text-xs text-gray-600 ring-1 ring-inset ring-gray-200/50">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <span>Tải về: <strong class="text-gray-900 font-semibold">{{ number_format($doc->download_count) }}</strong></span>
-                                <span class="text-gray-300">|</span>
-                                <span>Xem thử: <strong class="text-gray-900 font-semibold">{{ number_format($doc->view_count) }}</strong></span>
-                                <span class="text-gray-300">|</span>
-                                <span class="flex items-center text-rose-600">
-                                    <svg class="w-3.5 h-3.5 fill-rose-500 mr-1" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                    <strong class="font-semibold">{{ number_format($doc->favorite_count) }}</strong>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Actions & Status -->
-                    <div class="flex items-center justify-between gap-4 pt-1">
-                        <div>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-gray-100">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center rounded-md px-2 py-1 text-[10px] font-semibold ring-1 ring-inset {{ $doc->visibility === 'public' ? 'bg-blue-50 text-blue-700 ring-blue-600/20' : 'bg-gray-50 text-gray-600 ring-gray-500/10' }}">
+                                {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
+                            </span>
                             @if($doc->trashed())
-                                <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 w-max">Đã xóa mềm</span>
+                                <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-[10px] font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Đã xóa mềm</span>
                             @elseif($doc->status === 'approved')
-                                <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 w-max">Đã duyệt</span>
+                                <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Đã duyệt</span>
                             @elseif($doc->status === 'pending')
-                                <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20 w-max">Chờ duyệt</span>
+                                <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-[10px] font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20">Chờ duyệt</span>
                             @elseif($doc->status === 'rejected')
-                                <span class="inline-flex items-center rounded-md bg-rose-50 px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-600/10 w-max" title="Lý do: {{ $doc->rejected_reason }}">Bị từ chối</span>
+                                <span class="inline-flex items-center rounded-md bg-rose-50 px-2 py-1 text-[10px] font-medium text-rose-700 ring-1 ring-inset ring-rose-600/10" title="Lý do: {{ $doc->rejected_reason }}">Bị từ chối</span>
                             @elseif($doc->status === 'unpublished')
-                                <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 w-max">Đã gỡ</span>
+                                <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-[10px] font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Đã gỡ</span>
                             @endif
 
                             @if($doc->status === 'approved' && $doc->pendingVersion)
-                                <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 w-max mt-1">Cập nhật chờ duyệt</span>
+                                <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">Cập nhật chờ duyệt</span>
                             @endif
                             
                             @if($doc->status === 'approved' && $doc->rejectedVersion)
-                                <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-[10px] font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20 w-max mt-1">Cập nhật bị từ chối</span>
+                                <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-[10px] font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20">Cập nhật bị từ chối</span>
                             @endif
                         </div>
 
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 ring-inset {{ $doc->visibility === 'public' ? 'text-blue-700 ring-blue-600/20' : 'text-gray-700 ring-gray-300' }}">
-                                {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
-                            </span>
-                            <button wire:click="showHistory({{ $doc->id }})" class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                            <button wire:click="showHistory({{ $doc->id }})" class="inline-flex items-center rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
                                 Nhật ký
                             </button>
                             
-                            @if(!$doc->trashed() && $doc->status !== 'pending' && !$doc->pendingVersion)
-                                <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                            @if(!$doc->trashed())
+                                <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex items-center rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
                                     Sửa
                                 </a>
                                 <button wire:click="confirmDelete({{ $doc->id }})" 
-                                        class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-sm ring-1 ring-inset ring-rose-300 hover:bg-rose-50 transition-colors">
-                                    Xóa
-                                </button>
-                            @elseif(!$doc->trashed() && $doc->pendingVersion)
-                                <button disabled class="inline-flex items-center rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-400 shadow-sm ring-1 ring-inset ring-gray-200 cursor-not-allowed" title="Đang có bản cập nhật chờ duyệt">
-                                    Sửa
-                                </button>
-                                <button wire:click="confirmDelete({{ $doc->id }})" 
-                                        class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-sm ring-1 ring-inset ring-rose-300 hover:bg-rose-50 transition-colors">
+                                        class="inline-flex items-center rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-rose-600 shadow-sm ring-1 ring-inset ring-rose-300 hover:bg-rose-50 transition-colors">
                                     Xóa
                                 </button>
                             @endif
@@ -317,30 +321,42 @@
             </div>
 
             <!-- Desktop Table View (hidden on mobile) -->
-            <div class="hidden md:block overflow-x-auto">
-                <table class="w-full table-fixed divide-y divide-gray-200">
+            <div class="hidden md:block overflow-x-auto pb-4">
+                <table class="w-full divide-y divide-gray-200 min-w-[1000px]">
                     <thead class="bg-slate-50/50">
                         <tr>
                             <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-slate-100/50 transition-colors w-[32%]" wire:click="sortBy('title')">
                                 <div class="flex items-center gap-2">
                                     Tài liệu
                                     @if($sortField === 'title')
-                                        <span class="text-gray-400 text-xs">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                        <svg class="w-4 h-4 {{ $sortDirection === 'asc' ? 'rotate-180' : '' }} transition-transform text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    @else
+                                        <svg class="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                                     @endif
                                 </div>
                             </th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[13%]">Hình thức</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[11%]">Trạng thái</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[11%]">Hiển thị</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-slate-100/50 transition-colors w-[11%]" wire:click="sortBy('created_at')">
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[15%]">
+                                Giá bán
+                            </th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[12%]">
+                                Trạng thái
+                            </th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[9%]">Hiển thị</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-slate-100/50 transition-colors w-[12%]" wire:click="sortBy('created_at')">
                                 <div class="flex items-center gap-2">
-                                    Ngày tạo
+                                    Ngày tải lên
                                     @if($sortField === 'created_at')
-                                        <span class="text-gray-400 text-xs">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                        <svg class="w-4 h-4 {{ $sortDirection === 'asc' ? 'rotate-180' : '' }} transition-transform text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    @else
+                                        <svg class="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                                     @endif
                                 </div>
                             </th>
-                            <th scope="col" class="relative py-3.5 px-3 text-center text-sm font-semibold text-gray-900 w-[22%]">Thao tác</th>
+                            <th scope="col" class="relative py-3.5 px-3 text-center text-sm font-semibold text-gray-900 w-[20%]">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -368,7 +384,7 @@
                                                 $rejectedV = $doc->rejectedVersion;
                                                 if ($isEditRejection) {
                                                     $reason = $rejectedV->rejected_reason;
-                                                    $title = 'Bản cập nhật bị từ chối';
+                                                    $title = 'Cập nhật bị từ chối';
                                                     $bgColor = 'bg-amber-50';
                                                     $borderColor = 'border-amber-200';
                                                     $textColor = 'text-amber-800';
@@ -452,20 +468,12 @@
                                         <button wire:click="showHistory({{ $doc->id }})" class="inline-flex items-center justify-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
                                             Nhật ký
                                         </button>
-                                        @if(!$doc->trashed() && $doc->status !== 'pending' && !$doc->pendingVersion)
+                                        @if(!$doc->trashed())
                                             <a href="{{ route('contributor.documents.edit', ['id' => $doc->id]) }}" class="inline-flex items-center justify-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
                                                 Sửa
                                             </a>
                                             <button wire:click="confirmDelete({{ $doc->id }})" 
                                                     class="inline-flex items-center justify-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-sm ring-1 ring-inset ring-rose-300 hover:bg-rose-50 transition-colors">
-                                                Xóa
-                                            </button>
-                                        @elseif(!$doc->trashed() && $doc->pendingVersion)
-                                            <button disabled class="inline-flex items-center justify-center rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-400 shadow-sm ring-1 ring-inset ring-gray-200 cursor-not-allowed" title="Đang có bản cập nhật chờ duyệt">
-                                                Sửa
-                                            </button>
-                                            <button disabled 
-                                                    class="inline-flex items-center justify-center rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-400 shadow-sm ring-1 ring-inset ring-gray-200 cursor-not-allowed" title="Vui lòng hủy bản cập nhật trước khi xóa">
                                                 Xóa
                                             </button>
                                         @endif

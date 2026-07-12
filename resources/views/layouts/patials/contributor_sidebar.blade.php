@@ -1,4 +1,5 @@
-<aside x-show="!sidebarHidden" 
+<aside x-cloak
+       x-show="!sidebarHidden" 
        x-transition:enter="transition ease-out duration-300 transform"
        x-transition:enter-start="-translate-x-full"
        x-transition:enter-end="translate-x-0"

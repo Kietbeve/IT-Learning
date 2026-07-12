@@ -63,9 +63,16 @@ class DocumentDetail extends Component
             }
         }
 
-        \Illuminate\Support\Facades\DB::table('documents')
-            ->where('id', $doc->id)
-            ->increment('view_count');
+        $userIdentifier = Auth::check() ? Auth::id() : request()->ip();
+        $cacheKey = 'viewed_document_' . $doc->id . '_' . $userIdentifier;
+        
+        if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            \Illuminate\Support\Facades\DB::table('documents')
+                ->where('id', $doc->id)
+                ->increment('view_count');
+                
+            \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->addMinutes(10));
+        }
 
         if (!Auth::check() && !request()->cookie('guest_device_id')) {
             $deviceId = \Illuminate\Support\Str::uuid()->toString();

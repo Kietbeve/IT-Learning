@@ -177,8 +177,8 @@
                             <p class="text-gray-500 font-medium">Chưa có yêu cầu rút tiền nào</p>
                         </div>
                     @else
-                        <div class="max-h-[600px] overflow-auto">
-                            <table class="w-full">
+                        <div class="max-h-[600px] overflow-x-auto">
+                            <table class="w-full min-w-[1000px]">
                                 <thead class="bg-gray-50 border-b border-gray-200">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Mã</th>

@@ -91,7 +91,7 @@
             <p class="text-sm text-gray-500">10 người dùng có doanh thu cao nhất</p>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full">
+            <table class="w-full min-w-[800px]">
                 <thead class="border-b border-gray-200 bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600">#</th>

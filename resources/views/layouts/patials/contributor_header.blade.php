@@ -7,7 +7,7 @@
     <div class="px-4 lg:px-8 py-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
             <!-- Mobile Menu Button -->
-            <button @click="sidebarHidden = false" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm lg:hidden hover:bg-slate-50 transition-colors" aria-label="Open sidebar">
+            <button @click="sidebarHidden = false" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm lg:hidden hover:bg-slate-50 transition-colors" aria-label="Open contributor sidebar">
                 <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
 
@@ -18,11 +18,7 @@
         </div>
 
         <div class="flex items-center gap-3 sm:gap-5">
-            <!-- search (hidden on small screens) -->
-            <div class="hidden md:flex items-center bg-white/60 rounded-full px-4 py-2 border border-slate-200/40 focus-within:ring-2 focus-within:ring-indigo-300/50 focus-within:border-indigo-300 transition-all shadow-sm backdrop-blur-sm">
-                <svg class="w-4 h-4 text-slate-400 mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                <input type="text" placeholder="Tìm kiếm..." class="bg-transparent text-sm outline-none w-32 lg:w-48 placeholder-slate-400" />
-            </div>
+            
 
             <!-- notification -->
             <div class="relative flex items-center justify-center">

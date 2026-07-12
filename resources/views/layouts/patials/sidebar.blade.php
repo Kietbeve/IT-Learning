@@ -1,4 +1,13 @@
-<aside class="hidden w-72 shrink-0 border-r border-gray-200 bg-white flex-col h-screen overflow-hidden sticky top-0 lg:flex transition-all">
+<aside x-cloak
+       x-show="!sidebarHidden"
+       x-transition:enter="transition ease-out duration-300 transform"
+       x-transition:enter-start="-translate-x-full"
+       x-transition:enter-end="translate-x-0"
+       x-transition:leave="transition ease-in duration-300 transform"
+       x-transition:leave-start="translate-x-0"
+       x-transition:leave-end="-translate-x-full"
+       @click.away="if (window.innerWidth < 1024) { sidebarHidden = true }"
+       class="w-72 shrink-0 border-r border-gray-200 bg-white flex-col h-screen overflow-hidden fixed lg:sticky top-0 inset-y-0 left-0 z-50 lg:z-20 transition-all flex">
     <!-- Logo -->
     <div class="flex items-center gap-3 px-6 h-16 border-b border-gray-100 flex-shrink-0">
         <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">

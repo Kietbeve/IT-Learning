@@ -8,7 +8,7 @@
     
     <!-- Left: Mobile toggle (Breadcrumb removed) -->
     <div class="flex items-center gap-4">
-        <button class="lg:hidden text-gray-500 hover:text-gray-700 transition-colors" aria-label="Open sidebar" onclick="toggleSidebar()">
+        <button @click="sidebarHidden = false" class="lg:hidden text-gray-500 hover:text-gray-700 transition-colors" aria-label="Open sidebar">
             <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>

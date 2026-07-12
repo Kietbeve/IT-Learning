@@ -36,14 +36,14 @@
     <div class="overflow-hidden rounded-2xl bg-white shadow ring-1 ring-gray-200">
         <div wire:loading.class="opacity-50 pointer-events-none" class="transition-opacity duration-200">
             <div class="overflow-x-auto">
-                <table class="w-full table-fixed divide-y divide-gray-200">
+                <table class="min-w-[700px] w-full divide-y divide-gray-200">
                     <thead class="bg-slate-50/50">
                         <tr>
-                            <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 w-[8%]">ID</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[25%]">Tên Tag</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[25%]">Slug</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-[15%]">Ngày Tạo</th>
-                            <th scope="col" class="relative py-3.5 pl-3 pr-6 text-right text-sm font-semibold text-gray-900 w-[27%]">Thao Tác</th>
+                            <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900">ID</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tên Tag</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Slug</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ngày Tạo</th>
+                            <th scope="col" class="py-3.5 pl-3 pr-6 text-center text-sm font-semibold text-gray-900">Thao Tác</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -64,8 +64,8 @@
                                     <div class="text-gray-900">{{ $tag->created_at->format('d/m/Y') }}</div>
                                     <div class="text-xs">{{ $tag->created_at->format('H:i') }}</div>
                                 </td>
-                                <td class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
-                                    <div class="flex items-center justify-end gap-2">
+                                <td class="whitespace-nowrap py-4 pl-3 pr-6 text-center text-sm font-medium">
+                                    <div class="flex items-center justify-center gap-2">
                                         <button 
                                             wire:click="openEditModal({{ $tag->id }})"
                                             class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 shadow-sm ring-1 ring-inset ring-amber-600/20 hover:bg-amber-50 transition-colors"

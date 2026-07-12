@@ -64,33 +64,87 @@
     </div>
 
     {{-- Thanh tìm kiếm và bộ lọc --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex-1 max-w-2xl flex flex-col sm:flex-row items-center gap-3">
-            <div class="relative w-full sm:max-w-md">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
-                    </svg>
+    <div class="flex flex-col sm:flex-row items-center gap-3">
+        {{-- Ô tìm kiếm --}}
+        <div class="relative flex-1 w-full">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <input type="search" 
+                   wire:model.live.debounce.300ms="search" 
+                   placeholder="Tìm kiếm contributor..." 
+                   class="block w-full rounded-xl border-0 py-2.5 pl-10 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all" />
+            <div wire:loading.flex wire:target="search" class="absolute inset-y-0 right-3 items-center">
+                <svg class="h-4 w-4 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+            </div>
+        </div>
+
+        {{-- Bộ lọc trạng thái --}}
+        <div class="relative w-full sm:w-auto min-w-[200px] shrink-0" x-data="{ open: false }" @click.away="open = false">
+            <div @click="open = !open" 
+                 class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm h-[42px] ring-1 ring-inset ring-gray-300">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    <span class="font-medium">
+                        @if($statusFilter === 'all' || empty($statusFilter)) Tất cả trạng thái
+                        @elseif($statusFilter === 'pending') Chờ duyệt
+                        @elseif($statusFilter === 'completed') Đã duyệt
+                        @elseif($statusFilter === 'rejected') Từ chối
+                        @endif
+                    </span>
                 </div>
-                <input type="search" 
-                       wire:model.live.debounce.300ms="search" 
-                       placeholder="Tìm kiếm contributor..." 
-                       class="block w-full rounded-xl border-0 py-2.5 pl-10 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all" />
-                <div wire:loading.flex wire:target="search" class="absolute inset-y-0 right-3 items-center">
-                    <svg class="h-4 w-4 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
+                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            
+            <div x-show="open" x-cloak
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                <div class="py-1 max-h-60 overflow-y-auto">
+                    @foreach([
+                        'all' => 'Tất cả trạng thái',
+                        'pending' => 'Chờ duyệt',
+                        'completed' => 'Đã duyệt',
+                        'rejected' => 'Từ chối'
+                    ] as $val => $label)
+                        <div wire:click="$set('statusFilter', '{{ $val }}'); open = false" 
+                             class="cursor-pointer px-4 py-2.5 text-sm transition-colors hover:bg-blue-50 flex items-center justify-between {{ $statusFilter === $val ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700' }}">
+                            <span>{{ $label }}</span>
+                            @if($statusFilter === $val)
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
             </div>
+        </div>
 
-            <select wire:model.live="statusFilter" 
-                    class="block w-full sm:w-auto rounded-xl border-0 py-2.5 pl-4 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
-                <option value="all">Tất cả trạng thái</option>
-                <option value="pending">Chờ duyệt</option>
-                <option value="completed">Đã duyệt</option>
-                <option value="rejected">Từ chối</option>
-            </select>
+        {{-- Bộ lọc ngày --}}
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input type="date" wire:model.live="dateFrom" max="{{ date('Y-m-d') }}"
+                   class="flex-1 sm:flex-none h-[42px] rounded-xl border border-gray-200 px-3 text-sm text-gray-900 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-0 transition-colors">
+            <span class="text-gray-400">-</span>
+            <input type="date" wire:model.live="dateTo" max="{{ date('Y-m-d') }}"
+                   class="flex-1 sm:flex-none h-[42px] rounded-xl border border-gray-200 px-3 text-sm text-gray-900 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-0 transition-colors">
+            {{-- Wrapper cố định chiều rộng để không bị layout shift --}}
+            <div class="w-8 shrink-0 flex items-center justify-center">
+                @if($dateFrom || $dateTo)
+                    <button wire:click="resetDateFilter"
+                            class="rounded-lg p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                            title="Xóa bộ lọc ngày">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -98,7 +152,7 @@
     <div class="overflow-hidden rounded-2xl bg-white shadow ring-1 ring-gray-200">
             <div wire:loading.class="opacity-50 pointer-events-none" class="transition-opacity duration-200">
                 <div class="overflow-x-auto">
-                    <table class="w-full table-fixed divide-y divide-gray-200">
+                    <table class="w-full table-fixed divide-y divide-gray-200 min-w-[1000px]">
                         <thead class="bg-slate-50/50">
                             <tr>
                                 <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 w-[8%]">ID</th>

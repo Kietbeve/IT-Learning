@@ -219,8 +219,7 @@ class DocumentList extends Component
         if (! empty($this->search)) {
             $query->where(function ($q) {
                 $q->whereHas('versions', function ($vq) {
-                    $vq->where('title', 'like', '%'.$this->search.'%')
-                        ->orWhere('short_description', 'like', '%'.$this->search.'%');
+                    $vq->where('title', 'like', '%'.$this->search.'%');
                 });
             });
         }

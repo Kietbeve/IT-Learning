@@ -16,29 +16,34 @@
         </div>
 
         <!-- Filters -->
-        <div class="bg-white rounded-2xl border border-gray-200 p-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
 
                 <!-- Date From -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Từ ngày</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Từ ngày</label>
                     <input type="date" wire:model.live="filterDateFrom" max="{{ date('Y-m-d') }}"
-                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
                 </div>
 
                 <!-- Date To -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Đến ngày</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Đến ngày</label>
                     <input type="date" wire:model.live="filterDateTo" max="{{ date('Y-m-d') }}"
-                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
                 </div>
 
                 <!-- Search -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
-                    <input type="text" wire:model.live.debounce.300ms="search" 
-                           placeholder="Tìm trong ghi chú..."
-                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên tài liệu</label>
+                    <div class="relative">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                        <input type="text" wire:model.live.debounce.300ms="search" 
+                               placeholder="Nhập tên tài liệu..."
+                               class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
+                    </div>
                 </div>
             </div>
         </div>
@@ -54,8 +59,8 @@
                     <p class="text-gray-400 text-sm mt-1">Thử thay đổi bộ lọc để xem kết quả khác</p>
                 </div>
             @else
-                <div class="overflow-hidden">
-                    <table class="w-full table-fixed">
+                <div class="overflow-x-auto">
+                    <table class="w-full table-fixed min-w-[800px]">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100"

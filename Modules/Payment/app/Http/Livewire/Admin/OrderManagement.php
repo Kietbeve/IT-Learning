@@ -58,6 +58,39 @@ class OrderManagement extends Component
         $this->resetPage();
     }
 
+    public function updatedDateFrom($value)
+    {
+        $today = date('Y-m-d');
+        if ($value > $today) {
+            $this->dateFrom = $today;
+        }
+        // dateFrom cannot be after dateTo
+        if ($this->dateTo && $this->dateFrom > $this->dateTo) {
+            $this->dateTo = $this->dateFrom;
+        }
+        $this->resetPage();
+    }
+
+    public function updatedDateTo($value)
+    {
+        $today = date('Y-m-d');
+        if ($value > $today) {
+            $this->dateTo = $today;
+        }
+        // dateTo cannot be before dateFrom
+        if ($this->dateFrom && $this->dateTo < $this->dateFrom) {
+            $this->dateFrom = $this->dateTo;
+        }
+        $this->resetPage();
+    }
+
+    public function resetDateFilter()
+    {
+        $this->dateFrom = '';
+        $this->dateTo = '';
+        $this->resetPage();
+    }
+
     public function sortBy($field)
     {
         if ($this->sortField === $field) {

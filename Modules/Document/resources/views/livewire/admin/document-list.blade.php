@@ -96,17 +96,54 @@
                 </div>
             </div>
             
-            <select wire:model.live="categoryFilter" aria-label="Lọc theo danh mục" 
-                    class="block w-full sm:w-auto rounded-xl border-0 py-2.5 pl-4 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
-                <option value="all">Tất cả danh mục</option>
-                @foreach($categories as $cat)
-                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                @endforeach
-            </select>
+            <div class="relative w-full sm:w-auto min-w-[200px]" x-data="{ open: false }" @click.away="open = false">
+                <div @click="open = !open" 
+                     class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm h-[42px] ring-1 ring-inset ring-gray-300">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        <span class="font-medium truncate max-w-[120px]">
+                            @if($categoryFilter === 'all' || empty($categoryFilter))
+                                Tất cả danh mục
+                            @else
+                                {{ $categories->firstWhere('id', $categoryFilter)?->name ?? 'Tất cả danh mục' }}
+                            @endif
+                        </span>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                
+                <div x-show="open" x-cloak
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                    <div class="max-h-60 overflow-y-auto py-1">
+                        <div wire:click="$set('categoryFilter', 'all'); open = false" 
+                             class="cursor-pointer px-4 py-2.5 text-sm transition-colors hover:bg-blue-50 flex items-center justify-between {{ $categoryFilter === 'all' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700' }}">
+                            <span>Tất cả danh mục</span>
+                            @if($categoryFilter === 'all')
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </div>
+                        @foreach($categories as $cat)
+                            <div wire:click="$set('categoryFilter', '{{ $cat->id }}'); open = false" 
+                                 class="cursor-pointer px-4 py-2.5 text-sm transition-colors hover:bg-blue-50 flex items-center justify-between {{ $categoryFilter == $cat->id ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700' }}">
+                                <span>{{ $cat->name }}</span>
+                                @if($categoryFilter == $cat->id)
+                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
         </div>
 
         <a href="{{ route('admin.documents.create') }}" 
-           class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all shrink-0">
+           class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all shrink-0 h-[42px]">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Đăng tài liệu
         </a>
@@ -428,7 +465,7 @@
                                   wire:model="rejectionReason" 
                                   rows="4" 
                                   placeholder="Ví dụ: Tài liệu tải lên bị lỗi font chữ, tài liệu vi phạm bản quyền..."
-                                  class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-rose-600 sm:text-sm sm:leading-6"></textarea>
+                                  class="block w-full rounded-xl border-0 py-2.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 @error('rejectionReason') ring-2 ring-rose-500 @enderror"></textarea>
                         @error('rejectionReason')
                             <p class="text-sm text-rose-500 font-medium mt-1">{{ $message }}</p>
                         @enderror
