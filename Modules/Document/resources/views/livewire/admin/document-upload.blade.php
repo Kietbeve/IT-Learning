@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <form wire:submit.prevent="save">
+        <form wire:submit.prevent="save" novalidate>
             <!-- Tiêu đề -->
             <div class="mb-4">
                 <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">
@@ -26,28 +26,77 @@
 
             <!-- Danh mục + Môn học -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
+                <div x-data="{ open: false }">
                     <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">
                         Danh mục <span class="text-red-500">*</span>
                     </label>
-                    <select wire:model.live="category_id" required class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all">
-                        <option value="">-- Chọn danh mục --</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                        @endforeach
-                    </select>
+                    <div class="relative w-full" @click.away="open = false">
+                        <div @click="open = !open" 
+                             class="flex items-center justify-between w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] cursor-pointer hover:border-[#2a7de1] transition-all">
+                            <span class="truncate">
+                                @if($category_id)
+                                    {{ collect($categories)->firstWhere('id', $category_id)?->name ?? '-- Chọn danh mục --' }}
+                                @else
+                                    <span class="text-gray-400">-- Chọn danh mục --</span>
+                                @endif
+                            </span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div x-show="open" x-cloak
+                             class="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95">
+                            <div class="max-h-48 overflow-y-auto py-1">
+                                @foreach($categories as $cat)
+                                    <div wire:click="$set('category_id', '{{ $cat->id }}'); open = false"
+                                         class="px-3.5 py-2 text-sm cursor-pointer hover:bg-[#f0f6ff] transition-colors {{ $category_id == $cat->id ? 'text-[#2a7de1] font-medium bg-[#f0f6ff]' : 'text-[#1a2b4a]' }}">
+                                        {{ $cat->name }}
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
                     @error('category_id') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
                 </div>
-                <div>
+                <div x-data="{ open: false }">
                     <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">
                         Môn học <span class="text-red-500">*</span>
                     </label>
-                    <select wire:model.live="subject_id" required class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all">
-                        <option value="">-- Chọn môn --</option>
-                        @foreach($subjects as $sub)
-                            <option value="{{ $sub->id }}">{{ $sub->name }}</option>
-                        @endforeach
-                    </select>
+                    <div class="relative w-full" @click.away="open = false">
+                        <div @click="open = !open" 
+                             class="flex items-center justify-between w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] cursor-pointer hover:border-[#2a7de1] transition-all"
+                             :class="{ 'opacity-50 pointer-events-none': {{ count($subjects) == 0 ? 'true' : 'false' }} }">
+                            <span class="truncate">
+                                @if($subject_id)
+                                    {{ collect($subjects)->firstWhere('id', $subject_id)?->name ?? '-- Chọn môn --' }}
+                                @else
+                                    <span class="text-gray-400">-- Chọn môn --</span>
+                                @endif
+                            </span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div x-show="open" x-cloak
+                             class="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95">
+                            <div class="max-h-48 overflow-y-auto py-1">
+                                @foreach($subjects as $sub)
+                                    <div wire:click="$set('subject_id', '{{ $sub->id }}'); open = false"
+                                         class="px-3.5 py-2 text-sm cursor-pointer hover:bg-[#f0f6ff] transition-colors {{ $subject_id == $sub->id ? 'text-[#2a7de1] font-medium bg-[#f0f6ff]' : 'text-[#1a2b4a]' }}">
+                                        {{ $sub->name }}
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
                     @error('subject_id') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -134,7 +183,7 @@
                             <small class="block text-gray-400 text-xs">{{ number_format($originalFile->getSize() / 1024 / 1024, 2) }} MB</small>
                         @else
                             <span class="font-medium text-gray-700 block">Chọn file tài liệu</span>
-                            <small class="block text-gray-400 text-xs">PDF, DOCX, ZIP ... (tối đa 50MB)</small>
+                            <small class="block text-gray-400 text-xs">PDF, DOCX, ZIP ... (tối đa {{ \App\Services\SettingService::get('max_document_size_mb', 50) }}MB)</small>
                         @endif
                     </div>
                     
@@ -177,7 +226,7 @@
                     <div class="relative border-2 border-dashed border-[#dce2ec] rounded-[14px] px-4 py-2 mt-1 bg-[#f8faff] flex items-center gap-2 cursor-pointer hover:border-[#2a7de1] hover:bg-[#f0f6ff] transition-all justify-center">
                         <input type="file" wire:model="thumbnailFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" />
                         <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        <span class="text-sm text-gray-600 font-medium">Tải ảnh bìa</span>
+                        <span class="text-sm text-gray-600 font-medium">Tải ảnh bìa <span class="font-normal text-xs text-gray-400">(tối đa {{ \App\Services\SettingService::get('max_thumbnail_size_mb', 5) }}MB)</span></span>
                     </div>
                     <div wire:loading wire:target="thumbnailFile" class="text-xs text-blue-600 mt-1 text-center">Đang tải...</div>
                     @error('thumbnailFile') <span class="text-xs text-red-500 font-medium">{{ $message }}</span> @enderror
@@ -212,11 +261,42 @@
                     <div class="relative border-2 border-dashed border-[#dce2ec] rounded-[14px] px-4 py-2 mt-1 bg-[#f8faff] flex items-center gap-2 cursor-pointer hover:border-[#2a7de1] hover:bg-[#f0f6ff] transition-all justify-center">
                         <input type="file" wire:model="galleryFiles" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" multiple />
                         <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        <span class="text-sm text-gray-600 font-medium">Tải ảnh mô tả</span>
+                        <span class="text-sm text-gray-600 font-medium">Tải ảnh mô tả <span class="font-normal text-xs text-gray-400">(tối đa {{ \App\Services\SettingService::get('max_gallery_size_mb', 5) }}MB/ảnh)</span></span>
                     </div>
                     <div wire:loading wire:target="galleryFiles" class="text-xs text-blue-600 mt-1 text-center">Đang tải...</div>
                     @error('galleryFiles') <span class="text-xs text-red-500 font-medium">{{ $message }}</span> @enderror
                 </div>
+            </div>
+
+            <!-- Thiết lập bán -->
+            <div class="mb-5">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Thiết lập bán <span class="text-red-500">*</span></label>
+                <div class="flex flex-wrap gap-x-10 gap-y-3 pt-1.5">
+                    <label class="flex items-center gap-2.5 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
+                        <input type="radio" wire:model.live="isPaid" value="0" name="isPaidRadio" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1]" />
+                        Miễn phí
+                    </label>
+                    <label class="flex items-center gap-2.5 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
+                        <input type="radio" wire:model.live="isPaid" value="1" name="isPaidRadio" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1]" />
+                        Bán có phí
+                    </label>
+                </div>
+                @if((bool)$isPaid)
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div class="flex flex-col h-full">
+                        <label class="block text-[12px] font-medium text-gray-500 mb-1">Giá bán (VND) <span class="text-red-500">*</span></label>
+                        <input type="number" wire:model.blur="price" placeholder="10000" x-on:input="$el.value = $el.value.replace(/^0+/, '') || '0'"
+                            class="mt-auto w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-white text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                        @error('price') <span class="text-[11px] text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="flex flex-col h-full">
+                        <label class="block text-[12px] font-medium text-gray-500 mb-1">Giá khuyến mãi (VND)</label>
+                        <input type="number" wire:model.blur="sale_price" placeholder="Tùy chọn" x-on:input="$el.value = $el.value.replace(/^0+/, '') || ''"
+                            class="mt-auto w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-white text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                        @error('sale_price') <span class="text-[11px] text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+                @endif
             </div>
 
             <!-- Hình thức xuất bản -->
@@ -234,17 +314,7 @@
                 </div>
             </div>
 
-            <!-- Quyền truy cập -->
-            <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Quyền truy cập</label>
-                <div class="flex items-center gap-3 flex-wrap pt-1">
-                    <label class="flex items-center gap-2 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
-                        <input type="checkbox" wire:model="disable_download" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1] rounded-sm" />
-                        Không cho phép tải về
-                    </label>
-                </div>
-                <span class="text-xs text-gray-400 mt-1 block">Đánh dấu nếu bạn chỉ muốn học viên xem trực tuyến.</span>
-            </div>
+
 
             <!-- Action Buttons -->
             <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100">

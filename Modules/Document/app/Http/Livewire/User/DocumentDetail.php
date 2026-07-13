@@ -2,6 +2,7 @@
 
 namespace Modules\Document\Http\Livewire\User;
 
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Modules\Document\Models\Document;
@@ -62,9 +63,16 @@ class DocumentDetail extends Component
             }
         }
 
-        \Illuminate\Support\Facades\DB::table('documents')
-            ->where('id', $doc->id)
-            ->increment('view_count');
+        $userIdentifier = Auth::check() ? Auth::id() : request()->ip();
+        $cacheKey = 'viewed_document_' . $doc->id . '_' . $userIdentifier;
+        
+        if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            \Illuminate\Support\Facades\DB::table('documents')
+                ->where('id', $doc->id)
+                ->increment('view_count');
+                
+            \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->addMinutes(10));
+        }
 
         if (!Auth::check() && !request()->cookie('guest_device_id')) {
             $deviceId = \Illuminate\Support\Str::uuid()->toString();
@@ -229,8 +237,26 @@ class DocumentDetail extends Component
         }
         $this->zipFiles = $zipFilesData;
 
+        $activeVerForTags = $doc->currentVersion ?? $doc->latestVersion;
+        $displayTags = collect();
+        if ($doc->status !== 'approved' && $activeVerForTags && !empty($activeVerForTags->version_tags)) {
+            $selectedTags = $activeVerForTags->version_tags['selectedTags'] ?? [];
+            $customTags = $activeVerForTags->version_tags['customTagsInput'] ?? '';
+            
+            $tagNames = \App\Models\Tag::whereIn('id', $selectedTags)->pluck('name')->toArray();
+            if (!empty(trim($customTags))) {
+                $tagNames = array_merge($tagNames, array_map('trim', explode(',', $customTags)));
+            }
+            foreach ($tagNames as $name) {
+                if ($name) $displayTags->push((object)['name' => $name]);
+            }
+        } else {
+            $displayTags = clone $doc->tags; 
+        }
+
         return view('document::livewire.user.document-detail', [
             'doc' => $doc,
+            'displayTags' => $displayTags,
             'isBookmarked' => $isBookmarked,
             'hasAccess' => $hasAccess,
             'isVip' => $isVip,
@@ -244,7 +270,11 @@ class DocumentDetail extends Component
             'isAdmin' => $isAdmin,
             'zipFiles' => $this->zipFiles,
             'previewFileExists' => $previewFileExists
-        ])->layout('layouts.user');
+        ])->layout('layouts.user', [
+            'description' => $doc->short_description ?? Str::limit(strip_tags($doc->description), 160),
+            'keywords' => $doc->tags->pluck('name')->implode(', '),
+            'author' => $doc->author?->name ?? '',
+        ]);
     }
 
     // checkFileExists() is now provided by WithFileExistence trait

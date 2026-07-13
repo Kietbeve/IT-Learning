@@ -21,6 +21,22 @@ class SystemReports extends Component
         $this->end_date = Carbon::now()->format('Y-m-d');
     }
 
+    public function updatedStartDate($value)
+    {
+        $today = Carbon::today()->format('Y-m-d');
+        if ($value > $today) $this->start_date = $today;
+        if ($this->end_date && $this->start_date > $this->end_date) $this->end_date = $this->start_date;
+        $this->filter_preset = 'custom';
+    }
+
+    public function updatedEndDate($value)
+    {
+        $today = Carbon::today()->format('Y-m-d');
+        if ($value > $today) $this->end_date = $today;
+        if ($this->start_date && $this->end_date < $this->start_date) $this->start_date = $this->end_date;
+        $this->filter_preset = 'custom';
+    }
+
     public function render()
     {
         return view('payment::livewire.admin.system-reports')

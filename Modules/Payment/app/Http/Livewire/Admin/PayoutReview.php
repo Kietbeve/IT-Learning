@@ -20,6 +20,10 @@ class PayoutReview extends Component
 
     public $statusFilter = 'pending';
 
+    public $dateFrom = '';
+
+    public $dateTo = '';
+
     public $sortField = 'created_at';
 
     public $sortDirection = 'asc';
@@ -41,6 +45,8 @@ class PayoutReview extends Component
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => 'pending'],
+        'dateFrom' => ['except' => ''],
+        'dateTo' => ['except' => ''],
     ];
 
     public function updatingSearch()
@@ -50,6 +56,29 @@ class PayoutReview extends Component
 
     public function updatingStatusFilter()
     {
+        $this->resetPage();
+    }
+
+    public function updatedDateFrom($value)
+    {
+        $today = date('Y-m-d');
+        if ($value > $today) $this->dateFrom = $today;
+        if ($this->dateTo && $this->dateFrom > $this->dateTo) $this->dateTo = $this->dateFrom;
+        $this->resetPage();
+    }
+
+    public function updatedDateTo($value)
+    {
+        $today = date('Y-m-d');
+        if ($value > $today) $this->dateTo = $today;
+        if ($this->dateFrom && $this->dateTo < $this->dateFrom) $this->dateFrom = $this->dateTo;
+        $this->resetPage();
+    }
+
+    public function resetDateFilter()
+    {
+        $this->dateFrom = '';
+        $this->dateTo = '';
         $this->resetPage();
     }
 
@@ -162,6 +191,9 @@ class PayoutReview extends Component
 
             DB::commit();
 
+            // Send Notification
+            $user->notify(new \Modules\Payment\Notifications\PayoutApprovedNotification($payout));
+
             $this->showApproveModal = false;
             $this->notification()->success(
                 title: 'Thành công',
@@ -230,6 +262,9 @@ class PayoutReview extends Component
 
             DB::commit();
 
+            // Send Notification
+            $user->notify(new \Modules\Payment\Notifications\PayoutRejectedNotification($payout));
+
             $this->showRejectModal = false;
             $this->notification()->success(
                 title: 'Thành công',
@@ -262,6 +297,14 @@ class PayoutReview extends Component
 
         if ($this->statusFilter !== 'all') {
             $query->where('status', $this->statusFilter);
+        }
+
+        if (!empty($this->dateFrom)) {
+            $query->whereDate('created_at', '>=', $this->dateFrom);
+        }
+
+        if (!empty($this->dateTo)) {
+            $query->whereDate('created_at', '<=', $this->dateTo);
         }
 
         $payouts = $query->orderBy($this->sortField, $this->sortDirection)

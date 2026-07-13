@@ -95,21 +95,96 @@
             
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
                 <!-- Status Filter -->
-                <select wire:model.live="statusFilter" aria-label="Lọc trạng thái" class="w-full sm:w-auto rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-gray-400 focus:outline-none">
-                    <option value="all">Tất cả trạng thái</option>
-                    <option value="pending">Chờ giải quyết</option>
-                    <option value="resolved">Đã xử lý (Gỡ tài liệu)</option>
-                    <option value="dismissed">Đã bác bỏ</option>
-                </select>
+                <div class="relative w-full sm:w-auto min-w-[200px]" x-data="{ open: false }" @click.away="open = false">
+                    <div @click="open = !open" 
+                         class="flex items-center justify-between w-full rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm h-[42px] focus:border-gray-400">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                            <span class="font-medium">
+                                @if($statusFilter === 'all' || empty($statusFilter)) Tất cả trạng thái
+                                @elseif($statusFilter === 'pending') Chờ giải quyết
+                                @elseif($statusFilter === 'resolved') Đã xử lý (Gỡ tài liệu)
+                                @elseif($statusFilter === 'dismissed') Đã bác bỏ
+                                @endif
+                            </span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    
+                    <div x-show="open" x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                        <div class="py-1 max-h-60 overflow-y-auto">
+                            @foreach([
+                                'all' => 'Tất cả trạng thái',
+                                'pending' => 'Chờ giải quyết',
+                                'resolved' => 'Đã xử lý (Gỡ tài liệu)',
+                                'dismissed' => 'Đã bác bỏ'
+                            ] as $val => $label)
+                                <div wire:click="$set('statusFilter', '{{ $val }}'); open = false" 
+                                     class="cursor-pointer px-4 py-2.5 text-sm transition-colors hover:bg-gray-100 flex items-center justify-between {{ $statusFilter === $val ? 'bg-gray-50 text-gray-900 font-semibold' : 'text-gray-700' }}">
+                                    <span>{{ $label }}</span>
+                                    @if($statusFilter === $val)
+                                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Reason Filter -->
-                <select wire:model.live="reasonFilter" aria-label="Lọc lý do" class="w-full sm:w-auto rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-gray-400 focus:outline-none">
-                    <option value="all">Tất cả lý do</option>
-                    <option value="copyright">Bản quyền / Trùng lặp</option>
-                    <option value="spam">Spam / Lừa đảo</option>
-                    <option value="inappropriate">Nội dung không phù hợp</option>
-                    <option value="other">Khác</option>
-                </select>
+                <div class="relative w-full sm:w-auto min-w-[200px]" x-data="{ open: false }" @click.away="open = false">
+                    <div @click="open = !open" 
+                         class="flex items-center justify-between w-full rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm h-[42px] focus:border-gray-400">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <span class="font-medium">
+                                @if($reasonFilter === 'all' || empty($reasonFilter)) Tất cả lý do
+                                @elseif($reasonFilter === 'Bản quyền') Bản quyền / Sở hữu trí tuệ
+                                @elseif($reasonFilter === 'Nội dung sai') Nội dung sai lệch
+                                @elseif($reasonFilter === 'File hỏng') Tập tin lỗi / Mã độc
+                                @elseif($reasonFilter === 'Spam') Spam / Quảng cáo
+                                @elseif($reasonFilter === 'Khác') Lý do khác
+                                @endif
+                            </span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    
+                    <div x-show="open" x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                        <div class="py-1 max-h-60 overflow-y-auto">
+                            @foreach([
+                                'all' => 'Tất cả lý do',
+                                'Bản quyền' => 'Bản quyền / Sở hữu trí tuệ',
+                                'Nội dung sai' => 'Nội dung sai lệch',
+                                'File hỏng' => 'Tập tin lỗi / Mã độc',
+                                'Spam' => 'Spam / Quảng cáo',
+                                'Khác' => 'Lý do khác'
+                            ] as $val => $label)
+                                <div wire:click="$set('reasonFilter', '{{ $val }}'); open = false" 
+                                     class="cursor-pointer px-4 py-2.5 text-sm transition-colors hover:bg-gray-100 flex items-center justify-between {{ $reasonFilter === $val ? 'bg-gray-50 text-gray-900 font-semibold' : 'text-gray-700' }}">
+                                    <span>{{ $label }}</span>
+                                    @if($reasonFilter === $val)
+                                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Search Input -->
                 <div class="relative flex-1 sm:w-64 sm:flex-initial">

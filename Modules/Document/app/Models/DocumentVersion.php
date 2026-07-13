@@ -25,7 +25,7 @@ class DocumentVersion extends Model
         'file_type',
         'file_size',
         'visibility',
-        'is_downloadable',
+
         'watermark_status',
         'price',
         'sale_price',
@@ -35,14 +35,16 @@ class DocumentVersion extends Model
         'reviewed_by',
         'submitted_at',
         'reviewed_at',
+        'version_tags',
     ];
 
     protected $casts = [
-        'is_downloadable' => 'boolean',
+
         'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',
         'price' => 'decimal:2',
         'gallery_images' => 'array',
+        'version_tags' => 'array',
     ];
 
     /* ──────────── Relationships ──────────── */

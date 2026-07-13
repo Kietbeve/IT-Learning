@@ -69,7 +69,7 @@ class DocumentService
                 'file_type' => $originalExt,
                 'file_size' => $originalFile->getSize(),
                 'visibility' => $data['visibility'] ?? 'public',
-                'is_downloadable' => $data['is_downloadable'] ?? true,
+
                 'watermark_status' => 'pending',
                 'price' => $price,
                 'sale_price' => $sale_price,

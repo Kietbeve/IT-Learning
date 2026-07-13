@@ -9,14 +9,16 @@
                 <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Từ ngày</label>
                 <input type="date" 
                     id="start_date"
-                    wire:model="start_date" 
+                    wire:model.live="start_date"
+                    max="{{ date('Y-m-d') }}"
                     class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
                 <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">Đến ngày</label>
                 <input type="date" 
                     id="end_date"
-                    wire:model="end_date" 
+                    wire:model.live="end_date"
+                    max="{{ date('Y-m-d') }}"
                     class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex items-end">

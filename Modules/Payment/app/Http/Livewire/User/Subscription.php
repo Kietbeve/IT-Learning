@@ -35,7 +35,7 @@ class Subscription extends Component
 
     public $currentOrderCode = null;
 
-    public $remainingSeconds = 600;
+    public $remainingSeconds = 60;
 
     public function mount()
     {
@@ -65,7 +65,7 @@ class Subscription extends Component
         $this->showPaymentModal = false;
         $this->currentOrderCode = null;
         $this->paymentData = [];
-        $this->remainingSeconds = 600;
+        $this->remainingSeconds = 60;
     }
 
     public function refreshVipStatus()
@@ -166,9 +166,8 @@ class Subscription extends Component
                 $finalPrice
             );
 
-            // Dispatch delayed job to expire order after 10 minutes
-            ExpireOrderJob::dispatch($order->id)
-                ->delay(now()->addMinutes(10));
+            // Dispatch delayed job to expire order after 5 minutes
+            ExpireOrderJob::dispatch($order->id)->delay(now()->addMinutes(1));
 
             $payOSClientId = config('payment.payos.client_id');
 
@@ -197,7 +196,7 @@ class Subscription extends Component
 
             $payOS = app(PayOSService::class);
 
-            $description = 'Mua gói VIP: '.$package['name'];
+            $description = 'ITL ' . $order->order_code;
 
             $paymentResponse = $payOS->createPaymentLink(
                 orderCode: $order->order_code,
@@ -207,7 +206,7 @@ class Subscription extends Component
                 cancelUrl: route('user.subscription'),
                 buyerName: $user->name,
                 buyerEmail: $user->email,
-                expiredAt: now()->addMinutes(10)->timestamp,
+                expiredAt: now()->addMinutes(1)->timestamp,
             );
 
             if (isset($paymentResponse['checkoutUrl'])) {
@@ -218,7 +217,7 @@ class Subscription extends Component
 
                 $this->paymentData = $paymentResponse;
                 $this->currentOrderCode = (string) $order->order_code;
-                $this->remainingSeconds = 600;
+                $this->remainingSeconds = 60;
                 $this->showPaymentModal = true;
                 $this->loading = false;
 

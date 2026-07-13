@@ -1,296 +1,337 @@
-<div class="max-w-4xl mx-auto space-y-6 font-sans pb-10">
-    <div class="flex items-center justify-between">
-        <div>
-            <h2 class="text-2xl font-extrabold text-gray-850 tracking-tight">Tải Lên Tài Liệu</h2>
-            <p class="text-xs text-gray-400 mt-1">Chia sẻ tài nguyên hữu ích và tích lũy doanh thu của bạn.</p>
-        </div>
-        <a href="{{ route('contributor.documents.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+<div class="w-full py-4 max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-4">
+        <a href="{{ route('contributor.documents.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             Quay lại kho
         </a>
     </div>
 
-    <form wire:submit.prevent="save" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Main Form Columns -->
-        <div class="md:col-span-2 space-y-6">
-            <!-- Basic Information Card -->
-            <div class="rounded-[2rem] border border-white bg-white/70 p-6 shadow-xl shadow-gray-100/50 backdrop-blur-md space-y-5">
-                <h3 class="text-sm font-extrabold text-gray-800 border-b border-gray-100 pb-3 uppercase tracking-wider">Thông tin cơ bản</h3>
-                
-                <!-- Title -->
-                <div class="space-y-1.5">
-                    <label for="title" class="text-xs font-extrabold text-gray-700">Tiêu đề tài liệu <span class="text-rose-500">*</span></label>
-                    <input type="text" id="title" wire:model.blur="title" placeholder="VD: Giáo trình cấu trúc dữ liệu và giải thuật" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-xs font-semibold text-gray-800 placeholder-gray-400 focus:border-indigo-400 focus:outline-none transition-colors" />
-                    @error('title') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Category -->
-                <div class="space-y-1.5">
-                    <label for="category_id" class="text-xs font-extrabold text-gray-700">Danh mục <span class="text-rose-500">*</span></label>
-                    <select id="category_id" wire:model.live="category_id" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-xs font-semibold text-gray-700 focus:border-indigo-400 focus:outline-none bg-white transition-colors">
-                        <option value="">-- Chọn danh mục tài liệu --</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('category_id') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Subject (Môn học) -->
-                <div class="space-y-1.5">
-                    <label for="subject_id" class="text-xs font-extrabold text-gray-700">Môn học <span class="text-rose-500">*</span></label>
-                    <select id="subject_id" wire:model.live="subject_id" wire:key="subject-select-{{ $category_id }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-xs font-semibold text-gray-700 focus:border-indigo-400 focus:outline-none bg-white transition-colors">
-                        <option value="">-- Chọn môn học --</option>
-                        @foreach($subjects as $sub)
-                            <option value="{{ $sub->id }}">{{ $sub->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('subject_id') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Short Description -->
-                <div class="space-y-1.5">
-                    <label for="short_description" class="text-xs font-extrabold text-gray-700">Mô tả ngắn</label>
-                    <textarea id="short_description" wire:model.blur="short_description" rows="2" placeholder="Tóm tắt nội dung chính của tài liệu (không quá 500 ký tự)..." class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-xs font-semibold text-gray-800 placeholder-gray-400 focus:border-indigo-400 focus:outline-none transition-colors resize-none"></textarea>
-                    @error('short_description') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Detailed Description -->
-                <div class="space-y-1.5">
-                    <label for="description" class="text-xs font-extrabold text-gray-700">Mô tả chi tiết <span class="text-rose-500">*</span></label>
-                    <textarea id="description" wire:model.blur="description" rows="6" placeholder="Mô tả cụ thể tài liệu gồm những phần nào, kiến thức gì, lợi ích khi học viên đọc tài liệu này..." class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-xs font-semibold text-gray-800 placeholder-gray-400 focus:border-indigo-400 focus:outline-none transition-colors"></textarea>
-                    @error('description') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Tags -->
-                <div class="space-y-1.5" x-data="{ showCustom: false }">
-                    <label class="text-xs font-extrabold text-gray-700">Thẻ (Tags)</label>
-
-                    <!-- Tom-Select for predefined tags -->
-                    <div wire:ignore x-init="
-                        $nextTick(() => {
-                            if ($refs.select.tomselect) $refs.select.tomselect.destroy();
-                            const ts = new TomSelect($refs.select, {
-                                maxItems: null,
-                                plugins: ['remove_button'],
-                                placeholder: 'Chọn tags...',
-                                onChange: (values) => { 
-                                    $wire.call('setTags', values);
-                                },
-                            });
-                        });
-                    ">
-                        <select multiple x-ref="select" class="w-full text-xs font-semibold">
-                            @foreach($allTags as $tag)
-                                <option value="{{ $tag->id }}">{{ $tag->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Custom tags toggle -->
-                    <div class="flex items-center gap-2 pt-2">
-                        <input type="checkbox" id="customTagsToggle" x-model="showCustom" class="rounded border-gray-300">
-                        <label for="customTagsToggle" class="text-xs font-bold text-gray-600 cursor-pointer">Tag không có trong danh sách? Nhập tại đây</label>
-                    </div>
-
-                    <!-- Custom tags input (shown when checkbox is checked) -->
-                    <div x-show="showCustom" x-transition class="space-y-1">
-                        <input type="text" wire:model="customTagsInput" placeholder="VD: tag tùy chỉnh 1, tag tùy chỉnh 2" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-xs font-semibold text-gray-800 placeholder-gray-400 focus:border-indigo-400 focus:outline-none transition-colors" />
-                        <p class="text-[10px] text-gray-400 font-bold">Nhập các tag tùy chỉnh, cách nhau bằng dấu phẩy</p>
-                    </div>
-
-                    @error('selectedTags') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
-                    @error('customTagsInput') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
-                </div>
+    <!-- ===== FORM UPLOAD ===== -->
+    <div class="w-full bg-white rounded-[20px] shadow-[0_20px_40px_rgba(0,0,0,0.06)] px-5 py-6 sm:px-9 sm:py-8 transition-all">
+        <div class="flex items-center gap-3 mb-6 border-b border-gray-100 pb-5">
+            <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             </div>
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">Đăng tài liệu</h1>
+                <p class="text-[13px] text-gray-500 mt-0.5">Chia sẻ kiến thức với cộng đồng IT Learning và tích lũy doanh thu</p>
+            </div>
+        </div>
 
-            <!-- Upload File Card -->
-            <div class="rounded-[2rem] border border-white bg-white/70 p-6 shadow-xl shadow-gray-100/50 backdrop-blur-md space-y-5">
-                <h3 class="text-sm font-extrabold text-gray-800 border-b border-gray-100 pb-3 uppercase tracking-wider">Tệp đính kèm</h3>
-
-                <!-- File Dropzone -->
-                <div class="space-y-3">
-                    <label class="text-xs font-extrabold text-gray-700">Chọn tệp tài liệu <span class="text-rose-500">*</span></label>
-                    <div class="relative group border-2 border-dashed border-gray-200 rounded-3xl p-6 text-center hover:border-indigo-400 transition-colors bg-gray-50/50">
-                        <input type="file" id="originalFile" wire:model="originalFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.doc,.docx,.zip" />
-                        
-                        <div class="space-y-2">
-                            <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-650 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                            </div>
-                            <div class="text-xs font-medium text-gray-500">
-                                <span class="font-extrabold text-indigo-600 hover:text-indigo-500">Nhấn để chọn tệp</span> hoặc kéo thả vào đây
-                            </div>
-                            <p class="text-[10px] text-gray-400 font-bold">PDF, DOC, DOCX, ZIP tối đa 50MB</p>
-                        </div>
+        <form wire:submit.prevent="save" novalidate>
+            <!-- Basic Info Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-5">
+                <!-- Left Column -->
+                <div class="space-y-5">
+                    <!-- Tiêu đề -->
+                    <div>
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tiêu đề tài liệu <span class="text-red-500">*</span></label>
+                        <input type="text" wire:model.blur="title" placeholder="Nhập tiêu đề tài liệu..." required
+                            class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all" />
+                        @error('title') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    <!-- Livewire upload progress -->
-                    <div wire:loading wire:target="originalFile" class="w-full text-center">
-                        <div class="inline-flex items-center gap-2 text-xs text-indigo-650 font-bold bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
-                            <svg class="animate-spin h-3.5 w-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
-                            Đang tải tệp lên máy chủ...
-                        </div>
-                    </div>
-
-                    <!-- Selected file info -->
-                    @if ($originalFile)
-                        <div class="flex items-center justify-between bg-indigo-50/40 border border-indigo-100 rounded-2xl p-3 text-xs text-gray-700">
-                            <div class="flex items-center gap-2 overflow-hidden">
-                                <svg class="w-8 h-8 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                <div class="min-w-0">
-                                    <p class="font-bold text-gray-900 truncate" title="{{ $originalFile->getClientOriginalName() }}">{{ $originalFile->getClientOriginalName() }}</p>
-                                    <p class="text-[9px] text-gray-450 font-bold uppercase mt-0.5">{{ number_format($originalFile->getSize() / 1024 / 1024, 2) }} MB</p>
+                    <!-- Danh mục + Môn học -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div x-data="{ open: false }">
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Danh mục <span class="text-red-500">*</span></label>
+                            <div class="relative w-full" @click.away="open = false">
+                                <div @click="open = !open" 
+                                     class="flex items-center justify-between w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] cursor-pointer hover:border-[#2a7de1] transition-all">
+                                    <span class="truncate">
+                                        @if($category_id)
+                                            {{ collect($categories)->firstWhere('id', $category_id)?->name ?? '-- Chọn danh mục --' }}
+                                        @else
+                                            <span class="text-gray-400">-- Chọn danh mục --</span>
+                                        @endif
+                                    </span>
+                                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                                <div x-show="open" x-cloak
+                                     class="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="transform opacity-0 scale-95"
+                                     x-transition:enter-end="transform opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="transform opacity-100 scale-100"
+                                     x-transition:leave-end="transform opacity-0 scale-95">
+                                    <div class="max-h-48 overflow-y-auto py-1">
+                                        @foreach($categories as $cat)
+                                            <div wire:click="$set('category_id', '{{ $cat->id }}'); open = false"
+                                                 class="px-3.5 py-2 text-sm cursor-pointer hover:bg-[#f0f6ff] transition-colors {{ $category_id == $cat->id ? 'text-[#2a7de1] font-medium bg-[#f0f6ff]' : 'text-[#1a2b4a]' }}">
+                                                {{ $cat->name }}
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
-                            <button type="button" wire:click="removeSelectedFile" class="text-rose-600 hover:text-rose-700 font-extrabold px-3 py-1.5 uppercase text-[9px] tracking-wider bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors shrink-0">Hủy</button>
+                            @error('category_id') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
                         </div>
-                    @endif
+                        <div x-data="{ open: false }">
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Môn học <span class="text-red-500">*</span></label>
+                            <div class="relative w-full" @click.away="open = false">
+                                <div @click="open = !open" 
+                                     class="flex items-center justify-between w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] cursor-pointer hover:border-[#2a7de1] transition-all"
+                                     :class="{ 'opacity-50 pointer-events-none': {{ count($subjects) == 0 ? 'true' : 'false' }} }">
+                                    <span class="truncate">
+                                        @if($subject_id)
+                                            {{ collect($subjects)->firstWhere('id', $subject_id)?->name ?? '-- Chọn môn --' }}
+                                        @else
+                                            <span class="text-gray-400">-- Chọn môn --</span>
+                                        @endif
+                                    </span>
+                                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                                <div x-show="open" x-cloak
+                                     class="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="transform opacity-0 scale-95"
+                                     x-transition:enter-end="transform opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="transform opacity-100 scale-100"
+                                     x-transition:leave-end="transform opacity-0 scale-95">
+                                    <div class="max-h-48 overflow-y-auto py-1">
+                                        @foreach($subjects as $sub)
+                                            <div wire:click="$set('subject_id', '{{ $sub->id }}'); open = false"
+                                                 class="px-3.5 py-2 text-sm cursor-pointer hover:bg-[#f0f6ff] transition-colors {{ $subject_id == $sub->id ? 'text-[#2a7de1] font-medium bg-[#f0f6ff]' : 'text-[#1a2b4a]' }}">
+                                                {{ $sub->name }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            @error('subject_id') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
 
-                    @error('originalFile') <span class="text-xs text-rose-600 font-semibold block">{{ $message }}</span> @enderror
+                    <!-- Mô tả ngắn -->
+                    <div>
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Mô tả ngắn <span class="text-red-500">*</span></label>
+                        <input type="text" wire:model.blur="short_description" placeholder="Tóm tắt nội dung chính (tối đa 200 ký tự)" required maxlength="200"
+                            class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all" />
+                        <div class="flex justify-between mt-1">
+                            @error('short_description') <span class="text-xs text-red-500 font-medium">{{ $message }}</span> @enderror
+                            <span class="text-xs text-gray-400">{{ strlen($short_description ?? '') }}/200</span>
+                        </div>
+                    </div>
+
+                    <!-- Mô tả chi tiết -->
+                    <div>
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Mô tả chi tiết <span class="text-red-500">*</span></label>
+                        <textarea wire:model.blur="description" rows="5" placeholder="Mô tả cụ thể tài liệu gồm những phần nào, kiến thức gì..." required
+                            class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all resize-none"></textarea>
+                        @error('description') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-5">
+                    <!-- Thẻ (Tags) -->
+                    <div x-data="{ showCustom: false }">
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">
+                            Thẻ (Tags) <span class="text-gray-400 font-normal text-[11px]">(chọn hoặc nhập)</span>
+                        </label>
+                        
+                        <div wire:ignore x-init="
+                            $nextTick(() => {
+                                const select = $refs.tagSelect;
+                                if (select.tomselect) select.tomselect.destroy();
+                                const ts = new TomSelect(select, {
+                                    maxItems: null,
+                                    plugins: ['remove_button'],
+                                    placeholder: 'Chọn tags...',
+                                    onChange: (values) => { 
+                                        @this.call('setTags', values);
+                                    },
+                                });
+                            });
+                        ">
+                            <select multiple x-ref="tagSelect" class="w-full text-sm">
+                                @foreach($allTags as $tag)
+                                    <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 mt-2.5">
+                            <input type="checkbox" id="customTagsToggle" x-model="showCustom" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5" />
+                            <label for="customTagsToggle" class="text-[13px] font-medium text-gray-600 cursor-pointer">Thêm tag không có trong danh sách?</label>
+                        </div>
+
+                        <div x-show="showCustom" x-transition class="mt-2">
+                            <input type="text" wire:model="customTagsInput" placeholder="VD: toán, đại số, bài tập (cách nhau bằng dấu phẩy)" 
+                                class="w-full px-3.5 py-2.5 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-[#fafcff] text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all" />
+                        </div>
+                        @error('selectedTags') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
+                        @error('customTagsInput') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- Tệp đính kèm -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tệp đính kèm <span class="text-red-500">*</span></label>
+                        
+                        <div class="relative border-2 border-dashed border-[#dce2ec] rounded-[14px] px-5 py-4 bg-[#f8faff] flex items-center gap-3.5 hover:border-[#2a7de1] hover:bg-[#f0f6ff] transition-all">
+                            <input type="file" wire:model="originalFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept=".pdf,.doc,.docx,.zip" />
+                            <svg class="w-6 h-6 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                            
+                            <div class="flex-1 min-w-0">
+                                @if ($originalFile)
+                                    <span class="font-medium text-gray-700 block truncate">{{ $originalFile->getClientOriginalName() }}</span>
+                                    <small class="block text-gray-400 text-xs">{{ number_format($originalFile->getSize() / 1024 / 1024, 2) }} MB</small>
+                                @else
+                                    <span class="font-medium text-gray-700 block">Chọn file tài liệu</span>
+                                    <small class="block text-gray-400 text-xs">PDF, DOCX, ZIP ... (tối đa {{ \App\Services\SettingService::get('max_document_size_mb', 50) }}MB)</small>
+                                @endif
+                            </div>
+                            
+                            @if ($originalFile)
+                                <button type="button" wire:click="removeSelectedFile" class="relative z-20 text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            @else
+                                <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            @endif
+                        </div>
+
+                        <div wire:loading wire:target="originalFile" class="mt-2 text-sm text-blue-600 font-medium flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                            Đang tải tệp lên...
+                        </div>
+                        @error('originalFile') <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- Thiết lập bán -->
+                    <div class="mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Thiết lập bán <span class="text-red-500">*</span></label>
+                        <div class="flex flex-wrap gap-x-10 gap-y-3 pt-1.5">
+                            <label class="flex items-center gap-2.5 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
+                                <input type="radio" wire:model.live="isPaid" value="0" name="isPaidRadio" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1]" />
+                                Miễn phí
+                            </label>
+                            <label class="flex items-center gap-2.5 font-medium text-[15px] text-[#1a2b4a] cursor-pointer">
+                                <input type="radio" wire:model.live="isPaid" value="1" name="isPaidRadio" class="w-[18px] h-[18px] text-[#2a7de1] focus:ring-[#2a7de1]" />
+                                Bán có phí
+                            </label>
+                        </div>
+                        @if((bool)$isPaid)
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <div class="flex flex-col h-full">
+                                <label class="block text-[12px] font-medium text-gray-500 mb-1">Giá bán (VND) <span class="text-red-500">*</span></label>
+                                <input type="number" wire:model.blur="price" placeholder="10000" x-on:input="$el.value = $el.value.replace(/^0+/, '') || '0'"
+                                    class="mt-auto w-full px-3 py-2 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-white text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                @error('price') <span class="text-[11px] text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="flex flex-col h-full">
+                                <label class="block text-[12px] font-medium text-gray-500 mb-1">Giá khuyến mãi (VND)</label>
+                                <input type="number" wire:model.blur="sale_price" placeholder="Tùy chọn" x-on:input="$el.value = $el.value.replace(/^0+/, '') || ''"
+                                    class="mt-auto w-full px-3 py-2 border-[1.5px] border-[#dce2ec] rounded-lg text-sm bg-white text-[#0b1e3a] focus:outline-none focus:border-[#2a7de1] focus:ring-4 focus:ring-[#2a7de1]/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                @error('sale_price') <span class="text-[11px] text-red-500 font-medium mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        @endif
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Sidebar Options Column -->
-        <div class="space-y-6">
-            <!-- Settings Card -->
-            <div class="rounded-[2rem] border border-white bg-white/70 p-6 shadow-xl shadow-gray-100/50 backdrop-blur-md space-y-5">
-                <h3 class="text-sm font-extrabold text-gray-800 border-b border-gray-100 pb-3 uppercase tracking-wider">Thiết lập bán</h3>
-
-                <!-- Price Option -->
-                <div class="space-y-3" x-data="{ paid: @entangle('isPaid') }">
-                    <label class="text-xs font-extrabold text-gray-700 block">Hình thức xuất bản</label>
-                    <div class="flex items-center gap-4">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" :checked="!paid" @click="paid = false" name="isPaidRadio" class="h-4 w-4 border-gray-200 text-indigo-650 focus:ring-indigo-500" />
-                            <span class="text-xs text-gray-700 font-bold">Miễn phí</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" :checked="paid" @click="paid = true" name="isPaidRadio" class="h-4 w-4 border-gray-200 text-indigo-655 focus:ring-indigo-500" />
-                            <span class="text-xs text-gray-700 font-bold">Bán có phí</span>
-                        </label>
-                    </div>
-
-                    <!-- Price input field -->
-                    <div x-show="paid" x-transition class="space-y-1.5 pt-1.5">
-                        <label for="price" class="text-[10px] font-bold text-gray-500 uppercase">Giá bán (VND) <span class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <input type="number" id="price" wire:model.blur="price" placeholder="10000" 
-                                x-on:input="$el.value = $el.value.replace(/^0+/, '') || '0'"
-                                class="w-full rounded-2xl border border-gray-200 px-4 py-3 pr-16 text-xs font-semibold text-gray-800 placeholder-gray-400 focus:border-indigo-400 focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                            <span class="absolute inset-y-0 right-4 inline-flex items-center text-xs font-bold text-gray-400 pointer-events-none">VND</span>
-                        </div>
-                        @error('price') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
-                    </div>
-
-                    <!-- Sale Price input field -->
-                    <div x-show="paid" x-transition class="space-y-1.5 pt-1.5">
-                        <label for="sale_price" class="text-[10px] font-bold text-gray-500 uppercase">Giá khuyến mãi (VND) <span class="text-gray-400 font-normal lowercase">(tùy chọn)</span></label>
-                        <div class="relative">
-                            <input type="number" id="sale_price" wire:model.blur="sale_price" placeholder="Giảm giá (nhỏ hơn giá gốc)" 
-                                x-on:input="$el.value = $el.value.replace(/^0+/, '') || ''"
-                                class="w-full rounded-2xl border border-gray-200 px-4 py-3 pr-16 text-xs font-semibold text-gray-800 placeholder-gray-400 focus:border-indigo-400 focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                            <span class="absolute inset-y-0 right-4 inline-flex items-center text-xs font-bold text-gray-400 pointer-events-none">VND</span>
-                        </div>
-                        @error('sale_price') <span class="text-xs text-rose-600 font-semibold">{{ $message }}</span> @enderror
-                    </div>
-                </div>
-
-                <!-- Visibility -->
-                <div class="space-y-1.5">
-                    <label for="visibility" class="text-xs font-extrabold text-gray-700">Quyền riêng tư</label>
-                    <select id="visibility" wire:model.live="visibility" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-xs font-semibold text-gray-700 focus:border-indigo-400 focus:outline-none bg-white transition-colors">
-                        <option value="public">Công khai (Mọi học viên đều thấy)</option>
-                        <option value="private">Riêng tư (Chỉ mình bạn xem)</option>
-                    </select>
-                </div>
-
-                <!-- Downloadable -->
-                <div class="flex items-center justify-between pt-2">
-                    <div class="space-y-0.5">
-                        <label class="text-xs font-extrabold text-gray-700 block">Tải về trực tiếp</label>
-                        <span class="text-[10px] text-gray-450 font-bold block">Cho phép học viên lưu trữ file</span>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model.live="is_downloadable" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-250 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-350 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-650"></div>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Images Card (Thumbnail + Gallery) -->
-            <div class="rounded-[2rem] border border-white bg-white/70 p-6 shadow-xl shadow-gray-100/50 backdrop-blur-md space-y-5">
-                <h3 class="text-sm font-extrabold text-gray-800 border-b border-gray-100 pb-3 uppercase tracking-wider">Hình ảnh tài liệu</h3>
-                
-                <div class="space-y-3">
-                    <label class="text-xs font-extrabold text-gray-700">Ảnh bìa <span class="text-rose-500">*</span></label>
-                    <div class="relative group border-2 border-dashed border-gray-200 rounded-3xl p-4 text-center hover:border-indigo-400 transition-colors bg-gray-50/50">
-                        <input type="file" id="thumbnailFile" wire:model="thumbnailFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" />
-                        <div class="space-y-1.5">
-                            <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a1 1 0 011.414 0L15 17m0 0l-3-3m3 3l3-3m0 0l-3-3m3 3V4"/></svg>
-                            <div class="text-xs font-bold text-indigo-600 hover:text-indigo-500">Tải ảnh bìa lên</div>
-                            <p class="text-[9px] text-gray-400 font-bold">JPG, PNG tối đa 2MB</p>
-                        </div>
-                    </div>
-
-                    @if ($thumbnailFile)
-                        <div class="relative rounded-2xl overflow-hidden border border-gray-250">
-                            <img src="{{ $thumbnailFile->temporaryUrl() }}" class="w-full h-32 object-cover" alt="Cover preview" />
-                            <button type="button" wire:click="removeSelectedThumbnail" class="absolute top-2 right-2 rounded-full bg-rose-600 text-white p-1 hover:bg-rose-700 shadow-md transition-colors" title="Xóa ảnh bìa">
+            <!-- Ảnh bìa & Ảnh mô tả -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+                <!-- Ảnh bìa -->
+                <div class="border-[1.5px] border-[#e5ebf3] rounded-[14px] p-3 bg-[#fafcff] flex flex-col gap-1.5">
+                    <div class="text-sm font-semibold text-gray-700">Ảnh bìa <span class="text-red-500">*</span></div>
+                    
+                    <div class="w-full h-[140px] bg-[#eef3fa] rounded-[10px] flex items-center justify-center text-[#6b7f9e] text-[13px] overflow-hidden relative">
+                        @if ($thumbnailFile)
+                            <img src="{{ $thumbnailFile->temporaryUrl() }}" class="w-full h-full object-cover" />
+                            <button type="button" wire:click="removeSelectedThumbnail" class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-md hover:bg-red-600 shadow z-20">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
-                        </div>
-                    @endif
-
-                    @error('thumbnailFile') <span class="text-xs text-rose-600 font-semibold block">{{ $message }}</span> @enderror
+                        @else
+                            <div class="flex flex-col items-center gap-1">
+                                <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a1 1 0 011.414 0L15 17m0 0l-3-3m3 3l3-3m0 0l-3-3m3 3V4"/></svg>
+                                <span>Chưa có ảnh</span>
+                            </div>
+                        @endif
+                    </div>
+                    
+                    <div class="relative border-2 border-dashed border-[#dce2ec] rounded-[14px] px-4 py-2 mt-1 bg-[#f8faff] flex items-center gap-2 cursor-pointer hover:border-[#2a7de1] hover:bg-[#f0f6ff] transition-all justify-center">
+                        <input type="file" wire:model="thumbnailFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" />
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        <span class="text-sm text-gray-600 font-medium">Tải ảnh bìa <span class="font-normal text-xs text-gray-400">(tối đa {{ \App\Services\SettingService::get('max_thumbnail_size_mb', 5) }}MB)</span></span>
+                    </div>
+                    <div wire:loading wire:target="thumbnailFile" class="text-xs text-blue-600 mt-1 text-center">Đang tải...</div>
+                    @error('thumbnailFile') <span class="text-xs text-red-500 font-medium">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="border-t border-gray-100 pt-4 space-y-3">
-                    <label class="text-xs font-extrabold text-gray-700">Ảnh mô tả <span class="text-gray-400 font-medium">(có thể bỏ trống)</span></label>
-                    <div class="relative group border-2 border-dashed border-gray-200 rounded-3xl p-4 text-center hover:border-indigo-400 transition-colors bg-gray-50/50">
-                        <input type="file" id="galleryFiles" wire:model="galleryFiles" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" multiple />
-                        <div class="space-y-1.5">
-                            <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a1 1 0 011.414 0L15 17m0 0l-3-3m3 3l3-3m0 0l-3-3m3 3V4"/></svg>
-                            <div class="text-xs font-bold text-indigo-600 hover:text-indigo-500">Thêm ảnh mô tả</div>
-                            <p class="text-[9px] text-gray-400 font-bold">JPG, PNG - tối đa 10 ảnh, mỗi ảnh 5MB.</p>
-                        </div>
+                <!-- Ảnh mô tả -->
+                <div class="border-[1.5px] border-[#e5ebf3] rounded-[14px] p-3 bg-[#fafcff] flex flex-col gap-1.5">
+                    <div class="text-sm font-semibold text-gray-700">Ảnh mô tả <span class="text-gray-400 font-normal text-xs">(có thể bỏ trống)</span></div>
+                    
+                    <div class="w-full min-h-[140px] max-h-[280px] bg-[#eef3fa] rounded-[10px] flex flex-col text-[#6b7f9e] text-[13px] relative p-2 overflow-y-auto">
+                        @if ($galleryFiles && count($galleryFiles) > 0)
+                            <div class="grid grid-cols-3 gap-1.5 w-full">
+                                @foreach($galleryFiles as $index => $galleryFile)
+                                    @if ($galleryFile && !in_array($index, $excludedGalleryIndices ?? []))
+                                        <div class="relative rounded-md overflow-hidden aspect-square border border-white">
+                                            <img src="{{ $galleryFile->temporaryUrl() }}" class="w-full h-full object-cover" />
+                                            <button type="button" wire:click="removeGalleryImage({{ $index }})" class="absolute top-0.5 right-0.5 bg-red-500/80 text-white p-0.5 rounded shadow z-20 hover:bg-red-600">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            </button>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="flex flex-col items-center justify-center flex-1 w-full min-h-[120px] gap-1">
+                                <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                <span>Chưa có ảnh</span>
+                            </div>
+                        @endif
                     </div>
-
-                    <div wire:loading wire:target="galleryFiles" class="w-full text-center">
-                        <div class="inline-flex items-center gap-2 text-xs text-indigo-650 font-bold bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
-                            <svg class="animate-spin h-3.5 w-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
-                            Đang tải ảnh lên...
-                        </div>
+                    
+                    <div class="relative border-2 border-dashed border-[#dce2ec] rounded-[14px] px-4 py-2 mt-1 bg-[#f8faff] flex items-center gap-2 cursor-pointer hover:border-[#2a7de1] hover:bg-[#f0f6ff] transition-all justify-center">
+                        <input type="file" wire:model="galleryFiles" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" multiple />
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        <span class="text-sm text-gray-600 font-medium">Tải ảnh mô tả <span class="font-normal text-xs text-gray-400">(tối đa {{ \App\Services\SettingService::get('max_gallery_size_mb', 5) }}MB/ảnh)</span></span>
                     </div>
-
-                    @if ($galleryFiles && count($galleryFiles) > 0)
-                        <div class="grid grid-cols-5 gap-2">
-                            @foreach($galleryFiles as $index => $galleryFile)
-                                @if ($galleryFile && !in_array($index, $this->excludedGalleryIndices))
-                                    <div class="relative rounded-xl overflow-hidden border border-gray-250 aspect-square group">
-                                        <img src="{{ $galleryFile->temporaryUrl() }}" class="w-full h-full object-cover" alt="Gallery {{ $index + 1 }}" />
-                                        <button type="button" wire:click="removeGalleryImage({{ $index }})" class="absolute top-1 right-1 rounded-full bg-rose-600 text-white p-0.5 hover:bg-rose-700 shadow-md transition-all opacity-0 group-hover:opacity-100" title="Xóa ảnh này">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        </button>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
-
-                    @error('galleryFiles') <span class="text-xs text-rose-600 font-semibold block">{{ $message }}</span> @enderror
-                    @error('galleryFiles.*') <span class="text-xs text-rose-600 font-semibold block">{{ $message }}</span> @enderror
+                    <div wire:loading wire:target="galleryFiles" class="text-xs text-blue-600 mt-1 text-center">Đang tải...</div>
+                    @error('galleryFiles') <span class="text-xs text-red-500 font-medium">{{ $message }}</span> @enderror
                 </div>
             </div>
 
-            <!-- Submit Button -->
-            <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold py-4 text-xs shadow-lg shadow-indigo-600/15 hover:shadow-indigo-600/30 transition-all duration-200 flex items-center justify-center gap-2">
-                <svg wire:loading class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
-                <span wire:loading.remove>Gửi tài liệu duyệt</span>
-                <span wire:loading>Đang gửi dữ liệu...</span>
-            </button>
-        </div>
-    </form>
-</div>
+            <!-- Quyền riêng tư & Truy cập -->
+            <div class="grid grid-cols-1 gap-5 mt-5">
+                <div class="border-[1.5px] border-[#e5ebf3] rounded-[14px] p-4 bg-white">
+                    <label class="block text-[13px] font-semibold text-gray-700 mb-2.5">Quyền riêng tư</label>
+                    <div class="flex flex-wrap gap-x-6 gap-y-3">
+                        <label class="flex items-center gap-2.5 font-medium text-[14px] text-[#1a2b4a] cursor-pointer">
+                            <input type="radio" wire:model="visibility" value="public" class="w-4 h-4 text-[#2a7de1] focus:ring-[#2a7de1] border-gray-300" />
+                            Công khai
+                        </label>
+                        <label class="flex items-center gap-2.5 font-medium text-[14px] text-[#1a2b4a] cursor-pointer">
+                            <input type="radio" wire:model="visibility" value="private" class="w-4 h-4 text-[#2a7de1] focus:ring-[#2a7de1] border-gray-300" />
+                            Riêng tư
+                        </label>
+                    </div>
+                </div>
 
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
+                <a href="{{ route('contributor.documents.index') }}" wire:navigate class="px-5 py-2.5 text-[14px] font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                    Hủy bỏ
+                </a>
+                <button type="submit" 
+                    class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-semibold rounded-xl transition-all duration-300 flex items-center gap-2 shadow-sm">
+                    <svg wire:loading wire:target="save" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                    <span wire:loading.remove wire:target="save">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    </span>
+                    <span wire:loading.remove wire:target="save">Đăng tài liệu</span>
+                    <span wire:loading wire:target="save">Đang lưu...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

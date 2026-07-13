@@ -38,6 +38,8 @@ class DocumentList extends Component
 
     public bool $showRejectionModal = false;
 
+    public $confirmDeleteId = null;
+
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => 'all'],
@@ -94,6 +96,11 @@ class DocumentList extends Component
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Cập nhật chế độ hiển thị thành công.']);
     }
 
+    public function confirmDelete($id)
+    {
+        $this->confirmDeleteId = $id;
+    }
+
     public function deleteDocument($id)
     {
         $doc = Document::with('author')->find($id);
@@ -110,6 +117,11 @@ class DocumentList extends Component
 
             $author = $doc->author;
             $title = $doc->title;
+            
+            // Deactivate product if it exists
+            \Modules\Payment\Models\Product::where('document_id', $doc->id)->update(['is_active' => false]);
+            
+            $doc->update(['deleted_by' => Auth::id()]);
             $doc->delete(); // Soft delete
 
             // Thông báo cho Contributor

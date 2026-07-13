@@ -78,7 +78,23 @@
     </style>
     <x-dialog z-index="z-50" blur="md" align="center" />
     
-    <div class="flex min-h-screen">
+    <div x-data="{ sidebarHidden: (window.innerWidth < 1024) }" 
+         @resize.window="sidebarHidden = (window.innerWidth < 1024)"
+         class="flex min-h-screen relative">
+         
+        <!-- Backdrop Overlay (Mobile) -->
+        <div x-show="!sidebarHidden" 
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarHidden = true"
+             class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+             x-cloak>
+        </div>
+
         <!-- Sidebar -->
         @if(request()->is('contributor*') || request()->is('contributor'))
             @include('layouts.patials.contributor_sidebar')
@@ -103,28 +119,7 @@
                         </div>
                     @endif
 
-                    <!-- Session Messages -->
-                    @if(session('success'))
-                        <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50/80 backdrop-blur-sm px-4 py-4 text-emerald-800 shadow-sm">
-                            <div class="flex items-center gap-3">
-                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                {{ session('success') }}
-                            </div>
-                        </div>
-                    @endif
-                    
-                    @if(session('error'))
-                        <div class="mb-6 rounded-2xl border border-rose-200 bg-rose-50/80 backdrop-blur-sm px-4 py-4 text-rose-800 shadow-sm">
-                            <div class="flex items-center gap-3">
-                                <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                {{ session('error') }}
-                            </div>
-                        </div>
-                    @endif
+                    <!-- Removed Flash Messages -->
 
                     <!-- Main Content -->
                     @yield('content')
@@ -159,35 +154,32 @@
             });
         });
 
-        // Mobile sidebar toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarToggle = document.querySelector('[aria-label="Open sidebar"]');
-            const sidebar = document.querySelector('aside');
-            
-            if (sidebarToggle && sidebar) {
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('hidden');
-                    sidebar.classList.toggle('fixed');
-                    sidebar.classList.toggle('inset-y-0');
-                    sidebar.classList.toggle('left-0');
-                    sidebar.classList.toggle('z-50');
-                    sidebar.classList.toggle('w-72');
-                    sidebar.classList.toggle('shadow-2xl');
-                    sidebar.classList.toggle('animate-slide-in');
-                });
-            }
+    </script>
+    <script>
+        document.addEventListener('livewire:navigated', () => {
+            @if(session()->has('success'))
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: 'Thành công',
+                        description: '{!! session('success') !!}',
+                        icon: 'success',
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                }
+            @endif
+            @if(session()->has('error'))
+                if (window.$wireui) {
+                    window.$wireui.notify({
+                        title: 'Lỗi',
+                        description: '{!! session('error') !!}',
+                        icon: 'error',
+                        position: 'top-right',
+                        timeout: 5000
+                    });
+                }
+            @endif
         });
     </script>
-    
-    <style>
-        @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        .animate-slide-in {
-            animation: slideIn 0.3s ease-out;
-        }
-    </style>
 </body>
-
 </html>

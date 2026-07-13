@@ -1,4 +1,15 @@
-<div>
+<div id="contributor-payout-request">
+    <style>
+        #contributor-payout-request,
+        #contributor-payout-request.wire-loading,
+        #contributor-payout-request * {
+            transition: none !important;
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            visibility: visible !important;
+        }
+    </style>
     <div class="max-w-7xl mx-auto py-6 space-y-6">
         <!-- Page Header -->
         <div>
@@ -45,9 +56,9 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="space-y-8">
             <!-- Request Form -->
-            <div class="lg:col-span-1">
+            <div class="max-w-3xl w-full mx-auto">
                 <div class="bg-white rounded-2xl border border-gray-200 p-6 sticky top-6">
                     <h2 class="text-lg font-bold text-gray-900 mb-4">Yêu cầu rút tiền</h2>
 
@@ -57,7 +68,7 @@
                                 <svg class="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                                 </svg>
-<div wire:poll.10s>
+<div wire:poll.10s.keep-alive>
                                     <p class="text-sm font-semibold text-yellow-800">Không thể gửi yêu cầu mới</p>
                                     <p class="text-xs text-yellow-700 mt-1">Bạn có yêu cầu rút tiền đang chờ xử lý. Vui lòng đợi Admin xử lý trước khi tạo yêu cầu mới.</p>
                                 </div>
@@ -152,7 +163,7 @@
             </div>
 
             <!-- Payout History -->
-            <div class="lg:col-span-2">
+            <div>
                 <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
                     <div class="p-6 border-b border-gray-200">
                         <h2 class="text-xl font-bold text-gray-900">Lịch sử rút tiền</h2>
@@ -166,15 +177,17 @@
                             <p class="text-gray-500 font-medium">Chưa có yêu cầu rút tiền nào</p>
                         </div>
                     @else
-                        <div class="max-h-[600px] overflow-y-auto">
-                            <table class="w-full">
+                        <div class="max-h-[600px] overflow-x-auto">
+                            <table class="w-full min-w-[1000px]">
                                 <thead class="bg-gray-50 border-b border-gray-200">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Mã</th>
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Ngày tạo</th>
                                         <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Số tiền</th>
+                                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Số dư sau</th>
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Ngân hàng</th>
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Trạng thái</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Thông tin thêm</th>
                                         <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Hành động</th>
                                     </tr>
                                 </thead>
@@ -187,15 +200,25 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                                 {{ $payout->created_at->format('d/m/Y H:i') }}
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
-                                                {{ number_format($payout->amount) }}đ
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                                <div class="font-bold text-gray-900">{{ number_format($payout->amount) }}đ</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                                @php
+                                                    $wt = $payout->walletTransactions->first();
+                                                @endphp
+                                                @if($wt)
+                                                    <span class="font-medium text-gray-700">{{ number_format($wt->balance_after) }}đ</span>
+                                                @else
+                                                    <span class="text-gray-400">-</span>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
-                                                <div class="font-medium">{{ $payout->bank_name }}</div>
-                                                <div class="text-xs text-gray-500">{{ $payout->bank_account_name }}</div>
-                                                <div class="text-xs text-gray-400 font-mono">{{ $payout->bank_account_number }}</div>
+                                                <div class="font-medium text-gray-900"><span class="text-xs text-gray-400 font-normal">NH:</span> {{ $payout->bank_name }}</div>
+                                                <div class="text-xs text-gray-600 mt-0.5"><span class="text-gray-400 font-normal">Tên:</span> {{ $payout->bank_account_name }}</div>
+                                                <div class="text-xs text-gray-600 font-mono mt-0.5"><span class="text-gray-400 font-sans font-normal">STK:</span> {{ $payout->bank_account_number }}</div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
+                                            <td class="px-6 py-4">
                                                 @if($payout->status === 'pending')
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                         Chờ duyệt
@@ -212,13 +235,19 @@
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                         Từ chối
                                                     </span>
+                                                @elseif($payout->status === 'cancelled')
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                                        Đã hủy
+                                                    </span>
                                                 @else
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                                         {{ ucfirst($payout->status) }}
                                                     </span>
                                                 @endif
+                                            </td>
+                                            <td class="px-6 py-4">
                                                 @if($payout->status === 'rejected' && $payout->rejection_reason)
-                                                    <p class="text-xs text-red-600 mt-1" title="{{ $payout->rejection_reason }}">
+                                                    <p class="text-xs text-red-600" title="{{ $payout->rejection_reason }}">
                                                         <span class="font-medium">Lý do từ chối:</span> {{ Str::limit($payout->rejection_reason, 50) }}
                                                     </p>
                                                 @endif
@@ -243,6 +272,9 @@
                                                         </svg>
                                                         Xem chứng từ
                                                     </button>
+                                                @endif
+                                                @if(!$payout->rejection_reason && !$payout->note && !$payout->processed_at && !($payout->receipt_image && $payout->status === 'completed'))
+                                                    <span class="text-gray-400 text-xs">-</span>
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-center">

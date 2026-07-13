@@ -68,21 +68,102 @@
 
         {{-- Bộ lọc --}}
         <div class="flex flex-col sm:flex-row flex-wrap items-center gap-3 mb-6">
-            <select wire:model.live="statusFilter" class="w-full sm:w-auto rounded-xl border-0 py-2.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
-                <option value="all">Tất cả trạng thái</option>
-                <option value="paid">Đã thanh toán</option>
-                <option value="pending">Chờ thanh toán</option>
-                <option value="failed">Thất bại</option>
-            </select>
-            <select wire:model.live="orderTypeFilter" class="w-full sm:w-auto rounded-xl border-0 py-2.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
-                <option value="all">Tất cả loại</option>
-                <option value="document">Mua tài liệu</option>
-                <option value="subscription">Đăng ký VIP</option>
-            </select>
+            <div class="relative w-full sm:w-auto min-w-[200px]" x-data="{ open: false }" @click.away="open = false">
+                <div @click="open = !open" 
+                     class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm h-[42px] ring-1 ring-inset ring-gray-300">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="font-medium">
+                            @if($statusFilter === 'all' || empty($statusFilter)) Tất cả trạng thái
+                            @elseif($statusFilter === 'paid') Đã thanh toán
+                            @elseif($statusFilter === 'pending') Chờ thanh toán
+                            @elseif($statusFilter === 'expired') Hết hạn
+                            @endif
+                        </span>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                
+                <div x-show="open" x-cloak
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                    <div class="py-1 max-h-60 overflow-y-auto">
+                        @foreach([
+                            'all' => 'Tất cả trạng thái',
+                            'paid' => 'Đã thanh toán',
+                            'pending' => 'Chờ thanh toán',
+                            'expired' => 'Hết hạn'
+                        ] as $val => $label)
+                            <div wire:click="$set('statusFilter', '{{ $val }}'); open = false" 
+                                 class="cursor-pointer px-4 py-2.5 text-sm transition-colors hover:bg-blue-50 flex items-center justify-between {{ $statusFilter === $val ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700' }}">
+                                <span>{{ $label }}</span>
+                                @if($statusFilter === $val)
+                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative w-full sm:w-auto min-w-[200px]" x-data="{ open: false }" @click.away="open = false">
+                <div @click="open = !open" 
+                     class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm h-[42px] ring-1 ring-inset ring-gray-300">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <span class="font-medium">
+                            @if($orderTypeFilter === 'all' || empty($orderTypeFilter)) Tất cả loại
+                            @elseif($orderTypeFilter === 'document') Mua tài liệu
+                            @elseif($orderTypeFilter === 'subscription') Đăng ký VIP
+                            @endif
+                        </span>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                
+                <div x-show="open" x-cloak
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                    <div class="py-1 max-h-60 overflow-y-auto">
+                        @foreach([
+                            'all' => 'Tất cả loại',
+                            'document' => 'Mua tài liệu',
+                            'subscription' => 'Đăng ký VIP'
+                        ] as $val => $label)
+                            <div wire:click="$set('orderTypeFilter', '{{ $val }}'); open = false" 
+                                 class="cursor-pointer px-4 py-2.5 text-sm transition-colors hover:bg-blue-50 flex items-center justify-between {{ $orderTypeFilter === $val ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700' }}">
+                                <span>{{ $label }}</span>
+                                @if($orderTypeFilter === $val)
+                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
             <div class="flex items-center gap-2 w-full sm:w-auto">
-                <input type="date" wire:model.live="dateFrom" class="flex-1 sm:flex-none rounded-xl border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
+                <input type="date" wire:model.live="dateFrom" max="{{ date('Y-m-d') }}" class="flex-1 sm:flex-none h-[42px] rounded-xl border border-gray-200 px-3 text-sm text-gray-900 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-0 transition-colors">
                 <span class="text-gray-400">-</span>
-                <input type="date" wire:model.live="dateTo" class="flex-1 sm:flex-none rounded-xl border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all">
+                <input type="date" wire:model.live="dateTo" max="{{ date('Y-m-d') }}" class="flex-1 sm:flex-none h-[42px] rounded-xl border border-gray-200 px-3 text-sm text-gray-900 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-0 transition-colors">
+                <div class="w-8 shrink-0 flex items-center justify-center">
+                    @if($dateFrom || $dateTo)
+                        <button wire:click="resetDateFilter"
+                                class="rounded-lg p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                                title="Xóa bộ lọc ngày">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    @endif
+                </div>
             </div>
             <div class="relative w-full sm:flex-1 sm:min-w-[200px]">
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -178,8 +259,8 @@
                                     <span class="inline-flex rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Đã thanh toán</span>
                                 @elseif($order->payment_status === 'pending')
                                     <span class="inline-flex rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20">Chờ thanh toán</span>
-                                @elseif($order->payment_status === 'failed')
-                                    <span class="inline-flex rounded-md bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-inset ring-rose-600/20">Thất bại</span>
+                                @elseif($order->payment_status === 'expired')
+                                    <span class="inline-flex rounded-md bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-700 ring-1 ring-inset ring-gray-600/20">Hết hạn</span>
                                 @else
                                     <span class="inline-flex rounded-md bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-700 ring-1 ring-inset ring-gray-600/20">{{ $order->payment_status }}</span>
                                 @endif

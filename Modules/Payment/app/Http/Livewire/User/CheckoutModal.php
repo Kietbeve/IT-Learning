@@ -36,7 +36,7 @@ class CheckoutModal extends Component
 
     public array $paymentData = [];
 
-    public int $remainingSeconds = 600;
+    public int $remainingSeconds = 60;
 
     protected function getListeners()
     {
@@ -54,7 +54,7 @@ class CheckoutModal extends Component
         $this->paymentData = [];
 
         // Reset timer default
-        $this->remainingSeconds = 600;
+        $this->remainingSeconds = 60;
 
         if (! empty($this->product)) {
             $this->processPayment();
@@ -73,7 +73,7 @@ class CheckoutModal extends Component
         $this->document = [];
         $this->product = null;
         $this->paymentData = [];
-        $this->remainingSeconds = 600;
+        $this->remainingSeconds = 60;
         $this->loading = false;
     }
 
@@ -178,15 +178,15 @@ class CheckoutModal extends Component
                 $deviceId
             );
 
-            // Dispatch delayed job to expire order after 10 minutes
+            // Dispatch delayed job to expire order after 5 minutes
             ExpireOrderJob::dispatch($order->id)
-                ->delay(now()->addMinutes(10));
+                ->delay(now()->addMinutes(1));
 
             DB::commit();
 
             $payOS = app(PayOSService::class);
 
-            $description = 'Mua: '.Str::limit($this->document['title'], 15);
+            $description = 'ITL ' . $order->order_code;
 
             $paymentResponse = $payOS->createPaymentLink(
                 orderCode: $order->order_code,
@@ -196,7 +196,7 @@ class CheckoutModal extends Component
                 cancelUrl: route('user.purchases'),
                 buyerName: $user ? $user->name : 'Khách',
                 buyerEmail: $user ? $user->email : $this->guestEmail,
-                expiredAt: now()->addMinutes(10)->timestamp,
+                expiredAt: now()->addMinutes(1)->timestamp,
             );
 
             if (isset($paymentResponse['checkoutUrl'])) {
@@ -204,7 +204,7 @@ class CheckoutModal extends Component
                 $mergedData = array_merge($order->checkout_data ?? [], $paymentResponse);
                 $order->update(['checkout_data' => $mergedData]);
                 $this->paymentData = $paymentResponse;
-                $this->remainingSeconds = 600;
+                $this->remainingSeconds = 60;
                 $this->loading = false;
             } else {
                 throw new \Exception('Không nhận được link thanh toán từ PayOS.');

@@ -216,7 +216,7 @@ class PayoutRequest extends Component
 
     public function getPayoutHistoryProperty()
     {
-        return PayoutRequestModel::with('rejectionTransaction')
+        return PayoutRequestModel::with(['rejectionTransaction', 'walletTransactions'])
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);

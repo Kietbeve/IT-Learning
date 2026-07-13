@@ -1,4 +1,13 @@
-<aside class="hidden w-72 shrink-0 border-r border-gray-200 bg-white flex-col h-screen overflow-hidden sticky top-0 lg:flex transition-all">
+<aside x-cloak
+       x-show="!sidebarHidden"
+       x-transition:enter="transition ease-out duration-300 transform"
+       x-transition:enter-start="-translate-x-full"
+       x-transition:enter-end="translate-x-0"
+       x-transition:leave="transition ease-in duration-300 transform"
+       x-transition:leave-start="translate-x-0"
+       x-transition:leave-end="-translate-x-full"
+       @click.away="if (window.innerWidth < 1024) { sidebarHidden = true }"
+       class="w-72 shrink-0 border-r border-gray-200 bg-white flex-col h-screen overflow-hidden fixed lg:sticky top-0 inset-y-0 left-0 z-50 lg:z-20 transition-all flex">
     <!-- Logo -->
     <div class="flex items-center gap-3 px-6 h-16 border-b border-gray-100 flex-shrink-0">
         <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
@@ -11,7 +20,7 @@
         $navItems = [
             ['label' => 'Bảng điều khiển', 'route' => 'admin.dashboard', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6'],
             ['label' => 'Quản lý đơn hàng', 'route' => 'admin.orders.index', 'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
-            ['label' => 'Lịch sử giao dịch', 'route' => 'admin.transactions.index', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
+
             ['label' => 'Quản lý tài liệu', 'route' => 'admin.documents.index', 'icon' => 'M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2', 'badge_type' => 'documents'],
             ['label' => 'Danh mục tài liệu', 'route' => 'admin.categories.documents.index', 'icon' => 'M4 6h16M4 12h16M4 18h16'],
             ['label' => 'Quản lý Môn học', 'route' => 'admin.subjects', 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5A4.5 4.5 0 003 9.5v9A4.5 4.5 0 017.5 14c1.746 0 3.332.477 4.5 1.253m0-9C13.168 5.477 14.754 5 16.5 5A4.5 4.5 0 0121 9.5v9a4.5 4.5 0 00-4.5-4.5c-1.746 0-3.332.477-4.5 1.253'],

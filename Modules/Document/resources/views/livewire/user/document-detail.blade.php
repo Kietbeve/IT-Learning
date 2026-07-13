@@ -13,18 +13,25 @@
         <div class="lg:col-span-2 space-y-6">
             <!-- Document Info Card -->
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow p-6 md:p-8 shadow-sm space-y-6">
-                <div>
+                <div class="flex flex-wrap gap-2">
                     <span class="rounded-xl px-2.5 py-1 text-xs font-semibold bg-gray-100 text-gray-800">
                         {{ $doc->category?->name ?? 'Tài liệu' }}
                     </span>
-                    <h1 class="mt-4 text-4xl lg:text-5xl font-extrabold text-blue-900 leading-tight mb-5">
-                        {{ $doc->title }}
+                    @if($doc->subject)
+                        <span class="rounded-xl px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700">
+                            {{ $doc->subject->name }}
+                        </span>
+                    @endif
+                </div>
+                <div>
+                    <h1 class="mt-4 text-3xl lg:text-4xl font-extrabold text-blue-900 leading-tight mb-5">
+                        {{ strip_tags($doc->title) }}
                     </h1>
 
                     <!-- Tags -->
-                    @if($doc->tags->isNotEmpty())
+                    @if(isset($displayTags) && $displayTags->isNotEmpty())
                         <div class="mt-3 flex flex-wrap gap-1.5">
-                            @foreach($doc->tags as $tag)
+                            @foreach($displayTags as $tag)
                                 <span class="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
                                     #{{ $tag->name }}
                                 </span>
@@ -85,30 +92,44 @@
 
                             <!-- Lightbox -->
                             <template x-if="activeIndex !== null">
-                                <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                                <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md"
                                      @click="activeIndex = null"
-                                     x-transition>
-                                    <div class="relative max-w-[90vw] max-h-[90vh]" @click.stop>
-                                        <button @click="activeIndex = null" 
-                                                class="absolute -top-3 -right-3 z-10 rounded-full bg-white/90 hover:bg-white text-gray-800 p-1.5 shadow-lg transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        </button>
-                                        <div class="flex items-center gap-2">
-                                            <button @click="activeIndex = Math.max(0, activeIndex - 1)" 
-                                                    x-show="activeIndex > 0"
-                                                    class="rounded-full bg-white/90 hover:bg-white text-gray-800 p-2 shadow-lg transition-colors">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                                            </button>
-                                            <img :src="'{{ Storage::disk('r2')->url('') }}' + {{ Js::from($doc->gallery_images) }}[activeIndex].path" 
-                                                 class="max-h-[85vh] max-w-[75vw] rounded-2xl shadow-2xl object-contain" 
-                                                 alt="Gallery image" />
-                                            <button @click="activeIndex = Math.min({{ count($doc->gallery_images) - 1 }}, activeIndex + 1)" 
-                                                    x-show="activeIndex < {{ count($doc->gallery_images) - 1 }}"
-                                                    class="rounded-full bg-white/90 hover:bg-white text-gray-800 p-2 shadow-lg transition-colors">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                            </button>
+                                     @keydown.escape.window="activeIndex = null"
+                                     @keydown.right.window="activeIndex = Math.min({{ count($doc->gallery_images) - 1 }}, activeIndex + 1)"
+                                     @keydown.left.window="activeIndex = Math.max(0, activeIndex - 1)"
+                                     x-transition:enter="transition ease-out duration-300"
+                                     x-transition:enter-start="opacity-0"
+                                     x-transition:enter-end="opacity-100"
+                                     x-transition:leave="transition ease-in duration-200"
+                                     x-transition:leave-start="opacity-100"
+                                     x-transition:leave-end="opacity-0">
+                                     
+                                    <button @click="activeIndex = null" class="fixed top-4 right-4 z-[110] rounded-full bg-white/10 hover:bg-white/20 p-2 text-white backdrop-blur-sm transition-all shadow-lg">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                    
+                                    <button @click.stop="activeIndex = Math.max(0, activeIndex - 1)" 
+                                            x-show="activeIndex > 0"
+                                            class="fixed left-4 top-1/2 -translate-y-1/2 z-[110] rounded-full bg-white/10 hover:bg-white/20 p-3 text-white backdrop-blur-sm transition-all shadow-lg">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                                    </button>
+                                    
+                                    <button @click.stop="activeIndex = Math.min({{ count($doc->gallery_images) - 1 }}, activeIndex + 1)" 
+                                            x-show="activeIndex < {{ count($doc->gallery_images) - 1 }}"
+                                            class="fixed right-4 top-1/2 -translate-y-1/2 z-[110] rounded-full bg-white/10 hover:bg-white/20 p-3 text-white backdrop-blur-sm transition-all shadow-lg">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+
+                                    <div class="relative w-full h-full flex flex-col items-center justify-center p-4 sm:p-12" @click.stop>
+                                        <img :src="'{{ Storage::disk('r2')->url('') }}' + {{ Js::from($doc->gallery_images) }}[activeIndex].path" 
+                                             class="max-h-full max-w-full rounded-lg shadow-2xl object-contain select-none" 
+                                             alt="Gallery image" />
+                                        <div class="absolute bottom-6 inset-x-0 flex flex-col items-center gap-2">
+                                            <template x-if="{{ Js::from($doc->gallery_images) }}[activeIndex].caption">
+                                                <span class="rounded-lg bg-black/60 px-4 py-2 text-sm text-white backdrop-blur-sm max-w-[80vw] text-center" x-text="{{ Js::from($doc->gallery_images) }}[activeIndex].caption"></span>
+                                            </template>
+                                            <p class="rounded-full bg-black/50 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm" x-text="`${activeIndex + 1} / {{ count($doc->gallery_images) }}`"></p>
                                         </div>
-                                        <p class="text-center text-white text-sm mt-2" x-text="`${activeIndex + 1} / {{ count($doc->gallery_images) }}`"></p>
                                     </div>
                                 </div>
                             </template>
@@ -340,7 +361,7 @@
                                 $pdfUrl = $doc->preview_file_url ?? $doc->file_original_url;
                             @endphp
 
-                            @if($pdfUrl)
+                            @if($pdfUrl && $previewFileExists)
                                 <div class="rounded-2xl overflow-hidden border border-gray-100 shadow-inner h-full w-full bg-gray-100">
                                     <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0"></iframe>
                                 </div>
@@ -357,7 +378,7 @@
                                 $pdfUrl = $doc->preview_file_url ?? null;
                             @endphp
 
-                            @if($pdfUrl)
+                            @if($pdfUrl && $previewFileExists)
                                 {{-- Preview PDF từ DOCX đã convert --}}
                                 <div class="rounded-2xl overflow-hidden border border-gray-100 shadow-inner h-full w-full bg-gray-100">
                                     <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0"></iframe>
@@ -421,7 +442,7 @@
                             <div class="h-9 w-9 shrink-0 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-xs uppercase">
                                 {{ substr($rev->user?->name ?? 'U', 0, 1) }}
                             </div>
-                            <div class="flex-1 space-y-1">
+                            <div class="flex-1 space-y-1 min-w-0">
                                 <div class="flex items-center justify-between">
                                     <h4 class="text-base font-bold text-blue-900">{{ $rev->user?->name ?? 'Người dùng' }}</h4>
                                     <span class="text-xs text-gray-400">{{ $rev->created_at->diffForHumans() }}</span>
@@ -448,7 +469,7 @@
                                         </div>
                                     </form>
                                 @else
-                                    <p class="text-sm text-gray-600 leading-relaxed">{{ $rev->review }}</p>
+                                    <p class="text-sm text-gray-600 leading-relaxed break-words">{{ $rev->review }}</p>
                                     @auth
                                         @if(Auth::id() == $rev->user_id || $isAdmin)
                                             <div class="flex items-center gap-3 mt-2 font-medium">
@@ -511,7 +532,7 @@
                                 <div class="h-9 w-9 shrink-0 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-xs uppercase">
                                     {{ substr($comment->user?->name ?? 'U', 0, 1) }}
                                 </div>
-                                <div class="flex-1 space-y-2">
+                                <div class="flex-1 space-y-2 min-w-0">
                                     <div class="flex items-center justify-between">
                                         <h4 class="text-base font-bold text-blue-900 flex items-center gap-2">
                                             {{ $comment->user?->name ?? 'Người dùng' }}
@@ -531,7 +552,7 @@
                                             </div>
                                         </form>
                                     @else
-                                        <p class="text-sm text-gray-700 leading-relaxed">{{ $comment->content }}</p>
+                                        <p class="text-sm text-gray-700 leading-relaxed break-words">{{ $comment->content }}</p>
                                         
                                         <div class="flex items-center gap-4 text-xs font-medium">
                                             @auth
@@ -554,7 +575,7 @@
                                                     <div class="h-7 w-7 shrink-0 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-[10px] uppercase">
                                                         {{ substr($reply->user?->name ?? 'U', 0, 1) }}
                                                     </div>
-                                                    <div class="flex-1 space-y-1">
+                                                    <div class="flex-1 space-y-1 min-w-0">
                                                         <div class="flex items-center justify-between">
                                                             <h4 class="text-base font-bold text-blue-900 flex items-center gap-2">
                                                                 {{ $reply->user?->name ?? 'Người dùng' }}
@@ -574,7 +595,7 @@
                                                                 </div>
                                                             </form>
                                                         @else
-                                        <p class="text-sm text-gray-700 leading-relaxed">{!! preg_replace('/^(@.+?):\s/u', '<strong class="font-bold text-blue-600">$1</strong>: ', e($reply->content)) !!}</p>
+                                        <p class="text-sm text-gray-700 leading-relaxed break-words">{!! preg_replace('/^(@.+?):\s/u', '<strong class="font-bold text-blue-600">$1</strong>: ', e($reply->content)) !!}</p>
                                                             @auth
                                                                 <div class="flex items-center gap-3 text-xs font-medium mt-1">
                                                                     <button wire:click="startReply({{ $comment->id }}, '{{ addslashes($reply->user?->name ?? 'Người dùng') }}', {{ $reply->id }})" class="text-gray-500 hover:text-blue-600 transition-colors">Phản hồi</button>
@@ -648,12 +669,7 @@
                         <span class="text-gray-500 font-medium">Ngày đăng:</span>
                         <span class="text-gray-900 font-semibold">{{ $doc->published_at ? $doc->published_at->format('d/m/Y') : ($doc->created_at ? $doc->created_at->format('d/m/Y') : 'N/A') }}</span>
                     </div>
-                    @if(!$doc->is_downloadable)
-                        <div class="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-700">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            Tài liệu này chỉ hỗ trợ xem online
-                        </div>
-                    @endif
+
                 </div>
 
                 <div class="space-y-3">
@@ -735,9 +751,9 @@
             <!-- Author Card -->
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow p-5 shadow-sm">
                 <div class="flex items-center gap-4">
-                    <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-950 text-white flex items-center justify-center font-bold text-xl uppercase shrink-0 shadow-md">
-                        {{ substr($doc->author?->name ?? 'A', 0, 1) }}
-                    </div>
+                    <img src="{{ $doc->author?->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($doc->author?->name ?? 'A') . '&background=1e293b&color=fff&bold=true' }}" 
+                         alt="{{ $doc->author?->name ?? 'Author' }}" 
+                         class="h-14 w-14 rounded-2xl object-cover shrink-0 shadow-md border border-gray-100">
                     <div class="flex-1 min-w-0">
                         <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block">Tác giả đăng tải</span>
                         <h3 class="text-lg font-bold text-blue-900 truncate">{{ $doc->author?->name ?? 'Giảng viên/CTV' }}</h3>
@@ -770,7 +786,7 @@
                             </div>
                             <!-- Info -->
                             <div class="flex-1 min-w-0 flex flex-col justify-center">
-                                <h4 class="text-xs font-bold text-blue-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">{{ $rel->title }}</h4>
+                                <h4 class="text-xs font-bold text-blue-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug break-all">{{ strip_tags($rel->title) }}</h4>
                                 <div class="flex items-center gap-3 mt-1.5">
                                     <span class="inline-flex items-center gap-1 text-[10px] text-gray-400 font-medium">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>

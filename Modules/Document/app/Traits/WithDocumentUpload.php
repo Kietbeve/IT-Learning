@@ -22,7 +22,7 @@ trait WithDocumentUpload
     public $short_description = '';
     public $description = '';
     public $visibility = 'public';
-    public $disable_download = false;
+
     public $originalFile;
     public $thumbnailFile;
     public $galleryFiles = [];
@@ -36,6 +36,10 @@ trait WithDocumentUpload
 
     protected function rules()
     {
+        $maxDocKB = (int) \App\Services\SettingService::get('max_document_size_mb', 50) * 1024;
+        $maxThumbKB = (int) \App\Services\SettingService::get('max_thumbnail_size_mb', 5) * 1024;
+        $maxGalleryKB = (int) \App\Services\SettingService::get('max_gallery_size_mb', 5) * 1024;
+
         $rules = [
             'title' => 'required|string|min:5|max:255',
             'category_id' => 'required|exists:categories,id',
@@ -43,11 +47,11 @@ trait WithDocumentUpload
             'short_description' => 'nullable|string|min:10|max:500',
             'description' => 'required|string|min:10|max:50000',
             'visibility' => 'required|in:public,private,unlisted',
-            'disable_download' => 'boolean',
-            'originalFile' => 'required|file|max:51200|mimes:pdf,doc,docx,zip',
-            'thumbnailFile' => 'required|image|max:2048',
+
+            'originalFile' => "required|file|max:{$maxDocKB}|mimes:pdf,doc,docx,zip",
+            'thumbnailFile' => "required|image|max:{$maxThumbKB}",
             'galleryFiles' => 'nullable|array|max:10',
-            'galleryFiles.*' => 'image|max:5120',
+            'galleryFiles.*' => "image|max:{$maxGalleryKB}",
             'selectedTags' => 'nullable|array',
             'selectedTags.*' => 'exists:tags,id',
             'customTagsInput' => 'nullable|string|max:500',
@@ -61,41 +65,48 @@ trait WithDocumentUpload
         return $rules;
     }
 
-    protected $messages = [
-        'title.required' => 'Vui lòng nhập tiêu đề tài liệu.',
-        'title.min' => 'Tiêu đề tài liệu phải có ít nhất 5 ký tự.',
-        'title.max' => 'Tiêu đề tài liệu không được vượt quá 255 ký tự.',
-        'category_id.required' => 'Vui lòng chọn danh mục tài liệu.',
-        'category_id.exists' => 'Danh mục đã chọn không hợp lệ.',
-        'subject_id.required' => 'Vui lòng chọn môn học.',
-        'subject_id.exists' => 'Môn học đã chọn không hợp lệ.',
-        'short_description.min' => 'Mô tả ngắn phải có ít nhất 10 ký tự.',
-        'short_description.max' => 'Mô tả ngắn không được vượt quá 500 ký tự.',
-        'description.required' => 'Vui lòng nhập mô tả chi tiết.',
-        'description.min' => 'Mô tả chi tiết phải có ít nhất 10 ký tự.',
-        'description.max' => 'Mô tả chi tiết không được vượt quá 50.000 ký tự.',
-        'visibility.required' => 'Vui lòng chọn chế độ hiển thị.',
-        'visibility.in' => 'Chế độ hiển thị không hợp lệ.',
-        'disable_download.boolean' => 'Giá trị quyền tải xuống không hợp lệ.',
-        'originalFile.required' => 'Vui lòng chọn tệp tài liệu đăng tải.',
-        'originalFile.mimes' => 'Tệp tải lên phải thuộc định dạng: PDF, DOC, DOCX hoặc ZIP.',
-        'originalFile.max' => 'Dung lượng tệp tối đa là 50MB.',
-        'thumbnailFile.required' => 'Vui lòng tải lên ảnh bìa tài liệu.',
-        'thumbnailFile.image' => 'Ảnh bìa tài liệu phải là định dạng hình ảnh.',
-        'thumbnailFile.max' => 'Dung lượng ảnh bìa tối đa là 2MB.',
-        'galleryFiles.max' => 'Tối đa 10 ảnh gallery.',
-        'galleryFiles.*.image' => 'Gallery chỉ chấp nhận file ảnh.',
-        'galleryFiles.*.max' => 'Mỗi ảnh gallery tối đa 5MB.',
-        'price.required' => 'Vui lòng nhập giá bán cho tài liệu.',
-        'price.numeric' => 'Giá bán phải là số.',
-        'price.min' => 'Mức giá bán tối thiểu là 1.000đ.',
-        'price.max' => 'Mức giá bán tối đa là 100.000.000đ.',
-        'sale_price.numeric' => 'Giá khuyến mãi phải là số.',
-        'sale_price.min' => 'Giá khuyến mãi tối thiểu là 1.000đ.',
-        'sale_price.max' => 'Giá khuyến mãi tối đa là 100.000.000đ.',
-        'sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá gốc.',
-        'customTagsInput.max' => 'Tags tùy chỉnh không được vượt quá 500 ký tự.',
-    ];
+    protected function messages()
+    {
+        $maxDocMB = (int) \App\Services\SettingService::get('max_document_size_mb', 50);
+        $maxThumbMB = (int) \App\Services\SettingService::get('max_thumbnail_size_mb', 5);
+        $maxGalleryMB = (int) \App\Services\SettingService::get('max_gallery_size_mb', 5);
+
+        return [
+            'title.required' => 'Vui lòng nhập tiêu đề tài liệu.',
+            'title.min' => 'Tiêu đề tài liệu phải có ít nhất 5 ký tự.',
+            'title.max' => 'Tiêu đề tài liệu không được vượt quá 255 ký tự.',
+            'category_id.required' => 'Vui lòng chọn danh mục tài liệu.',
+            'category_id.exists' => 'Danh mục đã chọn không hợp lệ.',
+            'subject_id.required' => 'Vui lòng chọn môn học.',
+            'subject_id.exists' => 'Môn học đã chọn không hợp lệ.',
+            'short_description.min' => 'Mô tả ngắn phải có ít nhất 10 ký tự.',
+            'short_description.max' => 'Mô tả ngắn không được vượt quá 500 ký tự.',
+            'description.required' => 'Vui lòng nhập mô tả chi tiết.',
+            'description.min' => 'Mô tả chi tiết phải có ít nhất 10 ký tự.',
+            'description.max' => 'Mô tả chi tiết không được vượt quá 50.000 ký tự.',
+            'visibility.required' => 'Vui lòng chọn chế độ hiển thị.',
+            'visibility.in' => 'Chế độ hiển thị không hợp lệ.',
+
+            'originalFile.required' => 'Vui lòng chọn tệp tài liệu đăng tải.',
+            'originalFile.mimes' => 'Tệp tải lên phải thuộc định dạng: PDF, DOC, DOCX hoặc ZIP.',
+            'originalFile.max' => "Dung lượng tệp tối đa là {$maxDocMB}MB.",
+            'thumbnailFile.required' => 'Vui lòng tải lên ảnh bìa tài liệu.',
+            'thumbnailFile.image' => 'Ảnh bìa tài liệu phải là định dạng hình ảnh.',
+            'thumbnailFile.max' => "Dung lượng ảnh bìa tối đa là {$maxThumbMB}MB.",
+            'galleryFiles.max' => 'Tối đa 10 ảnh gallery.',
+            'galleryFiles.*.image' => 'Gallery chỉ chấp nhận file ảnh.',
+            'galleryFiles.*.max' => "Mỗi ảnh gallery tối đa {$maxGalleryMB}MB.",
+            'price.required' => 'Vui lòng nhập giá bán cho tài liệu.',
+            'price.numeric' => 'Giá bán phải là số.',
+            'price.min' => 'Mức giá bán tối thiểu là 1.000đ.',
+            'price.max' => 'Mức giá bán tối đa là 100.000.000đ.',
+            'sale_price.numeric' => 'Giá khuyến mãi phải là số.',
+            'sale_price.min' => 'Giá khuyến mãi tối thiểu là 1.000đ.',
+            'sale_price.max' => 'Giá khuyến mãi tối đa là 100.000.000đ.',
+            'sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá gốc.',
+            'customTagsInput.max' => 'Tags tùy chỉnh không được vượt quá 500 ký tự.',
+        ];
+    }
 
     public function updated($propertyName)
     {
@@ -126,7 +137,11 @@ trait WithDocumentUpload
 
     public function removeGalleryImage($index)
     {
+        if (isset($this->galleryFiles[$index])) {
+            unset($this->galleryFiles[$index]);
+        }
         $this->excludedGalleryIndices[] = $index;
+        $this->resetValidation('galleryFiles');
     }
 
     public function setTags($tags)
@@ -150,7 +165,7 @@ trait WithDocumentUpload
             'short_description' => $this->short_description,
             'description' => $this->description,
             'visibility' => $this->visibility,
-            'is_downloadable' => !$this->disable_download,
+
             'isPaid' => $this->isPaid,
             'price' => $this->price,
             'sale_price' => $this->sale_price,
@@ -169,6 +184,6 @@ trait WithDocumentUpload
 
         session()->flash('success', $successMessage);
 
-        return redirect()->route($redirectRoute);
+        return $this->redirectRoute($redirectRoute, navigate: true);
     }
 }

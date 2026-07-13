@@ -164,4 +164,35 @@ trait WithDocumentReviews
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã hiện đánh giá.']);
         }
     }
+
+    public function deleteReview($reviewId)
+    {
+        if (!Auth::check()) return;
+
+        if ($this->isAdmin()) {
+            $review = DocumentReview::where('id', $reviewId)
+                ->where('document_id', $this->documentId)
+                ->first();
+        } else {
+            $review = $this->getReviewForAuthUser($reviewId);
+        }
+
+        if (!$review) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Không tìm thấy đánh giá.']);
+            return;
+        }
+
+        if (!$this->isAdmin() && !$this->isEditableWithin24Hours($review)) {
+            $this->dispatch('notify', ['type' => 'info', 'message' => 'Đã quá 24 giờ, bạn không thể xóa đánh giá này.']);
+            return;
+        }
+
+        $review->delete();
+        
+        if (Auth::id() == $review->user_id) {
+            $this->hasReviewed = false;
+        }
+
+        $this->dispatch('notify', ['type' => 'success', 'message' => 'Xóa đánh giá thành công!']);
+    }
 }

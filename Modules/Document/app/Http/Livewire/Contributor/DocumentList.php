@@ -14,6 +14,10 @@ class DocumentList extends Component
 {
     use WithPagination;
 
+    public $showHistoryModal = false;
+
+    public $submissionHistory = [];
+
     public $search = '';
 
     public $statusFilter = 'all';
@@ -64,23 +68,38 @@ class DocumentList extends Component
         return $user?->id;
     }
 
-    public function deleteDocument($id)
+    public $confirmDeleteId = null;
+
+    public function confirmDelete($id)
     {
-        $doc = Document::where('author_id', $this->getAuthorId())->find($id);
+        $this->confirmDeleteId = $id;
+    }
+
+    public function delete()
+    {
+        if (!$this->confirmDeleteId) return;
+
+        $doc = Document::where('author_id', $this->getAuthorId())->find($this->confirmDeleteId);
         if ($doc) {
-            $hasPurchases = \Modules\Payment\Models\OrderItem::where('document_id', $id)
+            $hasPurchases = \Modules\Payment\Models\OrderItem::where('document_id', $this->confirmDeleteId)
                 ->whereHas('order', function ($q) {
                     $q->where('payment_status', 'paid');
                 })->exists();
 
             if ($hasPurchases) {
                 $this->dispatch('notify', ['type' => 'error', 'message' => 'Không thể xóa vì tài liệu này đã có người mua.']);
+                $this->confirmDeleteId = null;
                 return;
             }
 
+            // Deactivate product if it exists
+            \Modules\Payment\Models\Product::where('document_id', $doc->id)->update(['is_active' => false]);
+            
+            $doc->update(['deleted_by' => Auth::id()]);
             $doc->delete(); // Soft delete
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa tài liệu thành công.']);
         }
+        $this->confirmDeleteId = null;
     }
 
     /**
@@ -124,6 +143,72 @@ class DocumentList extends Component
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã hủy yêu cầu cập nhật.']);
     }
 
+    public function showHistory($documentId)
+    {
+        $doc = Document::where('author_id', $this->getAuthorId())
+            ->withTrashed()
+            ->with('deletedByUser')
+            ->find($documentId);
+        if (! $doc) {
+            $this->submissionHistory = collect();
+            $this->showHistoryModal = true;
+            return;
+        }
+
+        // Load all versions with their submitter and reviewer
+        $versions = \Modules\Document\Models\DocumentVersion::where('document_id', $doc->id)
+            ->with(['submittedByUser', 'reviewedByUser'])
+            ->orderBy('version_number', 'asc')
+            ->get();
+
+        // Build a timeline from the versions
+        $timeline = collect();
+        foreach ($versions as $ver) {
+            $isAdminDirectEdit = $ver->rejected_reason === 'Quản trị viên đã trực tiếp chỉnh sửa tài liệu';
+
+            $timeline->push((object) [
+                'type' => 'submission',
+                'version_number' => $ver->version_number,
+                'timestamp' => $ver->submitted_at,
+                'user' => $ver->submittedByUser,
+                'status' => $isAdminDirectEdit ? 'approved' : null,
+                'details' => $isAdminDirectEdit ? $ver->rejected_reason : null,
+            ]);
+
+            // Only push a separate review event if it's not a direct admin edit
+            if ($ver->reviewed_at && !$isAdminDirectEdit) {
+                $timeline->push((object) [
+                    'type' => 'review',
+                    'version_number' => $ver->version_number,
+                    'timestamp' => $ver->reviewed_at,
+                    'user' => $ver->reviewedByUser,
+                    'status' => $ver->status,
+                    'details' => $ver->rejected_reason,
+                ]);
+            }
+        }
+
+        if ($doc->trashed()) {
+            $timeline->push((object) [
+                'type' => 'deleted',
+                'version_number' => null,
+                'timestamp' => $doc->deleted_at,
+                'user' => $doc->deletedByUser,
+                'status' => null,
+                'details' => 'Tài liệu đã được chuyển vào thùng rác (xóa mềm).',
+            ]);
+        }
+
+        $this->submissionHistory = $timeline->sortBy('timestamp')->values();
+        $this->showHistoryModal = true;
+    }
+
+    public function closeHistoryModal()
+    {
+        $this->showHistoryModal = false;
+        $this->submissionHistory = [];
+    }
+
     public function render()
     {
         $authorId = $this->getAuthorId();
@@ -134,8 +219,7 @@ class DocumentList extends Component
         if (! empty($this->search)) {
             $query->where(function ($q) {
                 $q->whereHas('versions', function ($vq) {
-                    $vq->where('title', 'like', '%'.$this->search.'%')
-                        ->orWhere('short_description', 'like', '%'.$this->search.'%');
+                    $vq->where('title', 'like', '%'.$this->search.'%');
                 });
             });
         }
@@ -154,18 +238,39 @@ class DocumentList extends Component
             });
         }
 
-        $documents = $query
-            ->with([
-                'product',
-                'pendingVersion.category',
-                'pendingVersion.reviewedByUser',
-                'rejectedVersion.category',
-                'rejectedVersion.reviewedByUser',
-                'currentVersion.category',
-                'currentVersion.reviewedByUser',
-            ])
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(15);
+        if ($this->sortField === 'title') {
+            $documents = $query
+                ->with([
+                    'product',
+                    'pendingVersion.category',
+                    'pendingVersion.reviewedByUser',
+                    'rejectedVersion.category',
+                    'rejectedVersion.reviewedByUser',
+                    'currentVersion.category',
+                    'currentVersion.reviewedByUser',
+                ])
+                ->orderBy(
+                    \Modules\Document\Models\DocumentVersion::select('title')
+                        ->from('document_versions')
+                        ->whereColumn('document_versions.id', 'documents.current_version_id')
+                        ->limit(1),
+                    $this->sortDirection
+                )
+                ->paginate(15);
+        } else {
+            $documents = $query
+                ->with([
+                    'product',
+                    'pendingVersion.category',
+                    'pendingVersion.reviewedByUser',
+                    'rejectedVersion.category',
+                    'rejectedVersion.reviewedByUser',
+                    'currentVersion.category',
+                    'currentVersion.reviewedByUser',
+                ])
+                ->orderBy($this->sortField, $this->sortDirection)
+                ->paginate(15);
+        }
 
         // Stats
         $totalCount = Document::where('author_id', $authorId)->withTrashed()->count();

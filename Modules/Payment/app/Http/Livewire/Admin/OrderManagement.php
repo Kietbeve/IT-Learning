@@ -58,6 +58,39 @@ class OrderManagement extends Component
         $this->resetPage();
     }
 
+    public function updatedDateFrom($value)
+    {
+        $today = date('Y-m-d');
+        if ($value > $today) {
+            $this->dateFrom = $today;
+        }
+        // dateFrom cannot be after dateTo
+        if ($this->dateTo && $this->dateFrom > $this->dateTo) {
+            $this->dateTo = $this->dateFrom;
+        }
+        $this->resetPage();
+    }
+
+    public function updatedDateTo($value)
+    {
+        $today = date('Y-m-d');
+        if ($value > $today) {
+            $this->dateTo = $today;
+        }
+        // dateTo cannot be before dateFrom
+        if ($this->dateFrom && $this->dateTo < $this->dateFrom) {
+            $this->dateFrom = $this->dateTo;
+        }
+        $this->resetPage();
+    }
+
+    public function resetDateFilter()
+    {
+        $this->dateFrom = '';
+        $this->dateTo = '';
+        $this->resetPage();
+    }
+
     public function sortBy($field)
     {
         if ($this->sortField === $field) {
@@ -99,6 +132,8 @@ class OrderManagement extends Component
             $query->whereDate('created_at', '<=', $this->dateTo);
         }
 
+        $query->whereNotIn('payment_status', ['failed', 'cancelled']);
+
         $orders = $query->orderBy($this->sortField, $this->sortDirection)
             ->paginate(20);
 
@@ -108,7 +143,7 @@ class OrderManagement extends Component
         })->sum('contributor_amount');
 
         $stats = [
-            'total_orders' => Order::count(),
+            'total_orders' => Order::whereNotIn('payment_status', ['failed', 'cancelled'])->count(),
             'paid_orders' => Order::where('payment_status', 'paid')->count(),
             'pending_orders' => Order::where('payment_status', 'pending')->count(),
             'subscription_count' => Order::where('order_type', 'subscription')->where('payment_status', 'paid')->count(),

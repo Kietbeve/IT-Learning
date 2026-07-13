@@ -7,6 +7,9 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Facades\Excel;
 use Modules\Payment\Models\OrderItem;
 use Modules\Payment\Models\WalletTransaction;
@@ -14,8 +17,6 @@ use Modules\Payment\Models\WalletTransaction;
 class TransactionHistory extends Component
 {
     use WithPagination;
-
-    public $filterType = 'all';
 
     public $filterDateFrom;
 
@@ -27,12 +28,12 @@ class TransactionHistory extends Component
 
     public $sortDirection = 'desc';
 
-    protected $queryString = ['filterType', 'search', 'sortField', 'sortDirection'];
+    protected $queryString = ['search', 'sortField', 'sortDirection'];
 
     public function mount()
     {
-        $this->filterDateFrom = now()->subDays(30)->format('Y-m-d');
-        $this->filterDateTo = now()->format('Y-m-d');
+        $this->filterDateFrom = null;
+        $this->filterDateTo = null;
     }
 
     public function updatingSearch()
@@ -40,10 +41,6 @@ class TransactionHistory extends Component
         $this->resetPage();
     }
 
-    public function updatingFilterType()
-    {
-        $this->resetPage();
-    }
 
     public function sortBy($field)
     {
@@ -57,12 +54,8 @@ class TransactionHistory extends Component
 
     public function getTransactionsProperty()
     {
-        $query = WalletTransaction::where('user_id', Auth::id());
-
-        // Filter by type
-        if ($this->filterType !== 'all') {
-            $query->where('type', $this->filterType);
-        }
+        $query = WalletTransaction::where('user_id', Auth::id())
+            ->where('type', 'earning');
 
         // Filter by date range
         if ($this->filterDateFrom) {
@@ -85,10 +78,9 @@ class TransactionHistory extends Component
 
     public function exportToExcel()
     {
-        $transactions = WalletTransaction::where('user_id', Auth::id())
-            ->when($this->filterType !== 'all', function ($q) {
-                $q->where('type', $this->filterType);
-            })
+        // Get all items according to filters but without pagination
+        $transactionsExportData = WalletTransaction::where('user_id', Auth::id())
+            ->where('type', 'earning')
             ->when($this->filterDateFrom, function ($q) {
                 $q->whereDate('created_at', '>=', $this->filterDateFrom);
             })
@@ -101,13 +93,13 @@ class TransactionHistory extends Component
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $documentNames = $this->getDocumentNames($transactions);
-        $filename = 'transactions_'.now()->format('YmdHis').'.xlsx';
+        $orderItems = $this->getOrderItemsData($transactionsExportData);
+        $filename = 'Lich_su_thu_nhap_'.now()->format('Ymd_His').'.xlsx';
 
-        return Excel::download(new TransactionsExport($transactions, $documentNames), $filename);
+        return Excel::download(new TransactionsExport($transactionsExportData, $orderItems), $filename);
     }
 
-    private function getDocumentNames($transactions)
+    private function getOrderItemsData($transactions)
     {
         $orderItemIds = $transactions->where('reference_type', 'order_item')
             ->pluck('reference_id')
@@ -116,44 +108,49 @@ class TransactionHistory extends Component
             ->toArray();
 
         if (empty($orderItemIds)) {
-            return [];
+            return collect();
         }
 
-        return OrderItem::whereIn('id', $orderItemIds)
-            ->pluck('document_title_snapshot', 'id')
-            ->toArray();
+        return OrderItem::with('order')->whereIn('id', $orderItemIds)->get()->keyBy('id');
     }
 
     public function render()
     {
         $transactions = $this->transactions;
-        $documentNames = $this->getDocumentNames($transactions);
+        $orderItems = $this->getOrderItemsData($transactions);
 
         return view('payment::livewire.contributor.transaction-history', [
             'transactions' => $transactions,
-            'documentNames' => $documentNames,
-        ])->layout('layouts.contributor');
+            'orderItems' => $orderItems,
+        ])->layout('layouts.contributor', ['title' => 'Lịch sử thu nhập']);
     }
 }
 
-class TransactionsExport implements FromCollection, WithHeadings
+class TransactionsExport implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles
 {
     protected $transactions;
 
-    protected $documentNames;
+    protected $orderItems;
 
-    public function __construct($transactions, $documentNames = [])
+    public function __construct($transactions, $orderItems = null)
     {
         $this->transactions = $transactions;
-        $this->documentNames = $documentNames;
+        $this->orderItems = $orderItems ?: collect();
     }
 
     public function collection()
     {
         return $this->transactions->map(function ($tx) {
             $docName = '-';
-            if ($tx->reference_type === 'order_item' && isset($this->documentNames[$tx->reference_id])) {
-                $docName = $this->documentNames[$tx->reference_id];
+            $hinhThuc = 'Thu nhập';
+            if ($tx->reference_type === 'order_item' && $this->orderItems->has($tx->reference_id)) {
+                $item = $this->orderItems->get($tx->reference_id);
+                $docName = $item->document_title_snapshot;
+                if ($item->order && $item->order->total_amount == 0) {
+                    $hinhThuc = 'VIP';
+                } else {
+                    $hinhThuc = 'Tiền mặt';
+                }
             } elseif (str_contains($tx->note ?? '', 'Doanh thu từ tài liệu: ')) {
                 $docName = trim(str_replace('Doanh thu từ tài liệu: ', '', $tx->note));
             } elseif (in_array($tx->type, ['purchase', 'earning', 'subscription'])) {
@@ -161,7 +158,7 @@ class TransactionsExport implements FromCollection, WithHeadings
             }
 
             return [
-                'Loại' => $this->getTypeLabel($tx->type),
+                'Hình thức' => $hinhThuc,
                 'Tài liệu' => $docName,
                 'Ghi chú' => $tx->note,
                 'Số dư trước' => number_format($tx->balance_before),
@@ -174,7 +171,14 @@ class TransactionsExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ['Loại', 'Tài liệu', 'Ghi chú', 'Số dư trước', 'Số tiền', 'Số dư sau', 'Thời gian'];
+        return ['Hình thức', 'Tài liệu', 'Ghi chú', 'Số dư trước', 'Số tiền', 'Số dư sau', 'Thời gian'];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1    => ['font' => ['bold' => true], 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFE5E7EB']]],
+        ];
     }
 
     private function getTypeLabel($type)

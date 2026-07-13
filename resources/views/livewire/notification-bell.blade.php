@@ -30,7 +30,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+        class="fixed left-4 right-4 top-[70px] sm:absolute sm:top-auto sm:left-auto sm:right-0 sm:mt-2 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-[100]"
         style="display: none;"
     >
         <!-- Dropdown Header -->
@@ -47,12 +47,12 @@
         </div>
 
         <!-- Notifications List -->
-        <div class="max-h-96 overflow-y-auto">
+        <div class="max-h-80 overflow-y-auto custom-scrollbar">
             @forelse($this->notifications as $notification)
             <div 
                 wire:key="notif-{{ $notification['id'] }}-{{ $lastLoadedTime }}"
                 wire:click="markAsRead('{{ $notification['id'] }}')"
-                class="px-4 py-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer border-b border-gray-100 {{ $notification['is_unread'] ? 'bg-blue-50' : '' }}"
+                class="px-3 py-2.5 hover:bg-gray-50 transition-colors duration-200 cursor-pointer border-b border-gray-100 {{ $notification['is_unread'] ? 'bg-blue-50/60' : '' }}"
             >
                 <div class="flex items-start space-x-3">
                     <!-- Icon -->
@@ -65,29 +65,29 @@
                     <!-- Content -->
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between">
-                            <p class="text-sm font-semibold text-gray-900">
+                            <p class="text-sm font-semibold text-gray-900 line-clamp-1 pr-2">
                                 {{ $notification['data']['title'] ?? 'Thông báo' }}
                             </p>
                             @if($notification['is_unread'])
-                            <span class="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full"></span>
+                            <span class="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-1"></span>
                             @endif
                         </div>
                         
-                        <p class="mt-1 text-sm text-gray-600 break-words whitespace-normal">
+                        <p class="mt-1 text-[13px] leading-relaxed text-gray-600 break-words whitespace-normal line-clamp-2">
                             {{ $notification['data']['message'] ?? '' }}
                         </p>
 
                         <!-- Additional Info -->
                         @if(isset($notification['data']['amount']))
-                        <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                        <div class="mt-1.5 flex items-center space-x-4 text-[13px] text-gray-500">
                             <span class="font-medium text-purple-600">
-                                {{ $notification['data']['amount'] }}
+                                Bạn nhận được: +{{ is_numeric($notification['data']['amount']) ? number_format($notification['data']['amount']) : $notification['data']['amount'] }}đ
                             </span>
                         </div>
                         @endif
 
                         <!-- Timestamp -->
-                        <p class="mt-2 text-xs text-gray-400">
+                        <p class="mt-1.5 text-xs text-gray-400 font-medium">
                             {{ $notification['time_ago'] }}
                         </p>
                     </div>
