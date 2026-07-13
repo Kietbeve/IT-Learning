@@ -29,13 +29,11 @@ class DatabaseSeeder extends Seeder
             \Modules\Exam\database\seeders\QuestionSeeder::class,
             \Modules\Exam\database\seeders\ExamTagMapSeeder::class,
             \Modules\Learning\Database\Seeders\LearningDatabaseSeeder::class,
-<<<<<<< HEAD
+
             //seeder orders và dashboard
             // OrderSeeder::class,
             // DashboardSeeder::class,
-            SettingSeeder::class,
-=======
->>>>>>> 9e0f795 (cập nhật dữ liệu)
+            //SettingSeeder::class,
         ]);
     }
 }
