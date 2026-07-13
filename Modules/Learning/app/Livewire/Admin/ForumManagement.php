@@ -4,7 +4,6 @@ namespace Modules\Learning\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Computed;
 use Modules\Learning\Models\ForumThread;
 use Modules\Learning\Models\ForumPost;
@@ -13,7 +12,6 @@ use Modules\Learning\Models\ForumBookmark;
 use Modules\Auth\Models\User;
 use Modules\Learning\Services\ForumService;
 
-#[Layout('layouts.admin')]
 class ForumManagement extends Component
 {
     use WithPagination;
@@ -210,8 +208,11 @@ class ForumManagement extends Component
 
     public function render()
     {
+        // Detect layout based on current route
+        $layout = request()->is('admin/*') ? 'layouts.admin' : 'layouts.contributor';
+        
         return view('learning::livewire.admin.forum-management', [
             'pageTitle' => 'Quản lý Diễn đàn',
-        ]);
+        ])->layout($layout);
     }
 }

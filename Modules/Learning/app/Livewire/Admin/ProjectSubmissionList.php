@@ -64,9 +64,15 @@ class ProjectSubmissionList extends Component
         $submissionService = app(ProjectSubmissionService::class);
         $stats = $submissionService->getSubmissionStats();
 
+        // Detect layout and route prefix based on current route
+        $isAdmin = request()->is('admin/*');
+        $layout = $isAdmin ? 'layouts.admin' : 'layouts.contributor';
+        $routePrefix = $isAdmin ? 'admin.learning' : 'contributor';
+
         return view('learning::livewire.admin.project-submission-list', [
             'submissions' => $submissions,
             'stats' => $stats,
-        ]);
+            'routePrefix' => $routePrefix,
+        ])->layout($layout);
     }
 }

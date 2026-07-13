@@ -104,21 +104,6 @@ class CertificateService
             $scores[] = $assignmentScores->average();
         }
 
-        // Điểm từ quizzes
-        $quizScores = \Modules\Learning\Models\LessonQuizAttempt::where('user_id', $userId)
-            ->whereHas('quiz.lesson', function ($query) use ($roadmapId) {
-                $query->where('roadmap_id', $roadmapId);
-            })
-            ->whereNotNull('score')
-            ->get()
-            ->map(function ($attempt) {
-                return $attempt->score; // Already in percentage
-            });
-
-        if ($quizScores->isNotEmpty()) {
-            $scores[] = $quizScores->average();
-        }
-
         // Điểm từ projects
         $projectScores = \Modules\Learning\Models\ProjectSubmission::where('user_id', $userId)
             ->whereHas('project', function ($query) use ($roadmapId) {

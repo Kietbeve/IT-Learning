@@ -13,8 +13,8 @@ class ProjectSubmissionPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admins and instructors can view all submissions
-        return $user->hasAnyRole(['admin', 'instructor']);
+        // Admins, instructors, and contributors can view all submissions
+        return $user->hasAnyRole(['admin', 'instructor', 'contributor']);
     }
 
     /**
@@ -27,8 +27,8 @@ class ProjectSubmissionPolicy
             return true;
         }
 
-        // Admins and instructors can view any submission
-        return $user->hasAnyRole(['admin', 'instructor']);
+        // Admins, instructors, and contributors can view any submission
+        return $user->hasAnyRole(['admin', 'instructor', 'contributor']);
     }
 
     /**
@@ -70,8 +70,8 @@ class ProjectSubmissionPolicy
      */
     public function review(User $user, ProjectSubmission $submission): bool
     {
-        // Admins and instructors can review submissions
-        return $user->hasAnyRole(['admin', 'instructor']);
+        // Admins, instructors, and contributors can review submissions
+        return $user->hasAnyRole(['admin', 'instructor', 'contributor']);
     }
 
     /**

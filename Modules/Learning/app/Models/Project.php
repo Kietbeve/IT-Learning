@@ -69,4 +69,9 @@ class Project extends Model
             ProjectRubricCriteria::class
         )->orderBy('sort_order');
     }
+
+    public function reviewers(): HasMany
+    {
+        return $this->hasMany(ProjectReviewer::class);
+    }
 }

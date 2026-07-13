@@ -74,7 +74,18 @@ class AssignmentPolicy
             return $submission->assignment->lesson->roadmap->author_id === $user->id;
         }
 
-        return false;
+        // Contributors can view submissions (for grading purposes)
+        if ($user->hasRole('contributor')) {
+            return true;
+        }
+
+        // Check if user is assigned grader
+        $isGrader = $submission->assignment->graders()
+            ->where('user_id', $user->id)
+            ->where('is_active', true)
+            ->exists();
+
+        return $isGrader;
     }
 
     /**
@@ -117,6 +128,11 @@ class AssignmentPolicy
         // Instructor chỉ chấm submission của roadmap mình tạo
         if ($user->type === 'instructor') {
             return $submission->assignment->lesson->roadmap->author_id === $user->id;
+        }
+
+        // Contributors can grade submissions
+        if ($user->hasRole('contributor')) {
+            return true;
         }
 
         // Check if user is assigned grader

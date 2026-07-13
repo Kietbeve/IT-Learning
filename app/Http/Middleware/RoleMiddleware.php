@@ -15,7 +15,17 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!$request->user() || !$request->user()->hasRole($role)) {
+        // Support multiple roles separated by | (OR logic)
+        $roles = array_map('trim', explode('|', $role));
+        
+        if (!$request->user()) {
+            abort(403, 'Unauthorized. Required role: ' . $role);
+        }
+        
+        // Check if user has ANY of the required roles
+        $hasRole = collect($roles)->contains(fn($r) => $request->user()->hasRole($r));
+        
+        if (!$hasRole) {
             abort(403, 'Unauthorized. Required role: ' . $role);
         }
 

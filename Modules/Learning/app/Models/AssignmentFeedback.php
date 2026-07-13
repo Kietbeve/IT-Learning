@@ -12,7 +12,6 @@ class AssignmentFeedback extends Model
 
     protected $fillable = [
         'submission_id',
-        'rubric_item_id',
         'grader_id',
         'comment',
         'score',
@@ -38,14 +37,6 @@ class AssignmentFeedback extends Model
     public function submission(): BelongsTo
     {
         return $this->belongsTo(AssignmentSubmission::class, 'submission_id');
-    }
-
-    /**
-     * Rubric item (tiêu chí) được đánh giá
-     */
-    public function rubricItem(): BelongsTo
-    {
-        return $this->belongsTo(AssignmentRubricItem::class, 'rubric_item_id');
     }
 
     /**

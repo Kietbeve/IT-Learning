@@ -4,184 +4,237 @@ namespace Modules\Learning\Services;
 
 use Modules\Learning\Models\Project;
 use Modules\Learning\Models\ProjectSubmission;
-use Modules\Learning\Models\RoadmapLesson;
-use Modules\Learning\Models\RoadmapSection;
-use Modules\Learning\Models\RoadmapLessonProgress;
-use Modules\Learning\Models\RoadmapEnrollment;
+use Modules\Learning\Models\ProjectSubmissionStep;
+use Modules\Learning\Models\ProjectStepSubmission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 
+/**
+ * Service ProjectSubmissionService
+ * 
+ * Xử lý logic nộp bài từ phía học viên:
+ * - Submit bước mới
+ * - Resubmit khi bị reject
+ * - Upload files
+ * - Validate submissions
+ * - Check completion status
+ */
 class ProjectSubmissionService
 {
     /**
-     * Submit a project for a lesson (file + optional videos)
+     * Tạo submission mới cho project (lần đầu tiên học viên bắt đầu làm)
      */
-    public function submitProject(
-        int $userId,
-        int $lessonId,
-        int $roadmapId,
-        string $note,
-        ?UploadedFile $attachment = null,
-        array $videos = []
-    ): ProjectSubmission {
-        // Find the lesson and verify it has a project
-        $lesson = RoadmapLesson::findOrFail($lessonId);
-        
-        if (!$lesson->project_id) {
-            throw new \Exception('Bài học này không có project để nộp.');
-        }
-
-        $project = Project::findOrFail($lesson->project_id);
-
-        // Verify user is enrolled in the roadmap
-        $enrollment = RoadmapEnrollment::where('user_id', $userId)
-            ->where('roadmap_id', $roadmapId)
-            ->firstOrFail();
-
-        // Check lesson completion prerequisite
-        $prerequisiteCheck = $this->checkLessonCompletionPrerequisite($userId, $project->id);
-        if (!$prerequisiteCheck['passed']) {
-            throw new \Exception(
-                "Bạn cần hoàn thành {$prerequisiteCheck['required']}% bài học trong chương này trước khi nộp project. " .
-                "Hiện tại: {$prerequisiteCheck['current']}% ({$prerequisiteCheck['completed']}/{$prerequisiteCheck['total']} bài)."
-            );
-        }
-
-        // Get existing submission if any
-        $existingSubmission = ProjectSubmission::where('project_id', $project->id)
+    public function createProjectSubmission(int $projectId, int $userId): ProjectSubmission
+    {
+        // Kiểm tra đã có submission chưa
+        $existing = ProjectSubmission::where('project_id', $projectId)
             ->where('user_id', $userId)
             ->first();
 
-        // Check resubmission limit
-        if ($existingSubmission) {
-            $this->validateResubmissionLimit($existingSubmission, $project);
+        if ($existing) {
+            return $existing;
         }
 
-        // Handle file attachment (ZIP/RAR) - REQUIRED
-        $attachmentPath = null;
-        if ($attachment) {
-            $attachmentPath = $attachment->store('project-files', 'public');
-            
-            // Delete old attachment if exists
-            if ($existingSubmission && $existingSubmission->attachment_path) {
-                Storage::disk('public')->delete($existingSubmission->attachment_path);
-            }
-        }
+        // Tạo submission mới
+        return ProjectSubmission::create([
+            'project_id' => $projectId,
+            'user_id' => $userId,
+            'status' => 'submitted', // Đã bắt đầu làm
+            'progress_percent' => 0,
+            'started_at' => now(),
+        ]);
+    }
 
-        // Handle multiple video uploads (OPTIONAL)
-        $videoPaths = [];
-        if (!empty($videos)) {
-            foreach ($videos as $video) {
-                $path = $video->store('project-videos', 'public');
-                $videoPaths[] = $path;
+    /**
+     * Submit một bước cụ thể
+     * 
+     * @param int $stepId ID của bước cần nộp
+     * @param int $userId ID học viên
+     * @param int $projectSubmissionId ID submission tổng
+     * @param array $data ['file' => UploadedFile, 'link_url' => string, 'notes' => string]
+     * @return ProjectStepSubmission
+     * @throws \Exception
+     */
+    public function submitStep(
+        int $stepId,
+        int $userId,
+        int $projectSubmissionId,
+        array $data
+    ): ProjectStepSubmission {
+        DB::beginTransaction();
+        
+        try {
+            $step = ProjectSubmissionStep::findOrFail($stepId);
+            
+            // Validate dữ liệu nộp
+            $this->validateStepSubmission($step, $data);
+            
+            // Kiểm tra bước trước đã approved chưa (nếu không phải bước đầu tiên)
+            if ($step->step_order > 1) {
+                $this->ensurePreviousStepApproved($step, $userId, $projectSubmissionId);
             }
             
-            // Delete old videos if exists
-            if ($existingSubmission && $existingSubmission->video_files) {
-                foreach ($existingSubmission->video_files as $oldPath) {
-                    Storage::disk('public')->delete($oldPath);
+            // Kiểm tra có submission cũ không (để xác định submission_number)
+            $currentSubmission = ProjectStepSubmission::where('step_id', $stepId)
+                ->where('user_id', $userId)
+                ->where('project_submission_id', $projectSubmissionId)
+                ->where('is_current', true)
+                ->first();
+            
+            $submissionNumber = 1;
+            
+            if ($currentSubmission) {
+                // Đánh dấu submission cũ không còn current
+                $currentSubmission->markAsNotCurrent();
+                $submissionNumber = $currentSubmission->submission_number + 1;
+                
+                // Kiểm tra số lần nộp có vượt quá max không
+                if ($submissionNumber > $step->max_resubmissions) {
+                    throw new \Exception("Bạn đã vượt quá số lần nộp lại cho phép ({$step->max_resubmissions} lần)");
+                }
+            }
+            
+            // Tạo submission mới
+            $submission = new ProjectStepSubmission([
+                'project_submission_id' => $projectSubmissionId,
+                'step_id' => $stepId,
+                'user_id' => $userId,
+                'submission_number' => $submissionNumber,
+                'notes' => $data['notes'] ?? null,
+                'status' => 'submitted',
+                'submitted_at' => now(),
+                'is_current' => true,
+            ]);
+            
+            // Xử lý file upload nếu có
+            if (isset($data['file']) && $data['file'] instanceof UploadedFile) {
+                $fileData = $this->handleFileUpload($data['file'], $userId, $stepId);
+                $submission->file_path = $fileData['path'];
+                $submission->file_name = $fileData['name'];
+                $submission->file_size_kb = $fileData['size_kb'];
+            }
+            
+            // Lưu link URL nếu có
+            if (!empty($data['link_url'])) {
+                $submission->link_url = $data['link_url'];
+            }
+            
+            $submission->save();
+            
+            // Update progress của project submission tổng
+            $this->updateProjectProgress($projectSubmissionId);
+            
+            DB::commit();
+            
+            return $submission;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Upload file và trả về thông tin file
+     */
+    protected function handleFileUpload(UploadedFile $file, int $userId, int $stepId): array
+    {
+        // Validate file
+        $extension = $file->getClientOriginalExtension();
+        $step = ProjectSubmissionStep::findOrFail($stepId);
+        
+        if (!$step->isFileTypeAllowed($extension)) {
+            throw new \Exception("Loại file .{$extension} không được phép. Chỉ chấp nhận: " . $step->getAllowedFileTypesString());
+        }
+        
+        // Validate size (MB)
+        $fileSizeMB = $file->getSize() / 1024 / 1024;
+        if ($fileSizeMB > $step->max_file_size_mb) {
+            throw new \Exception("File quá lớn. Tối đa {$step->max_file_size_mb} MB");
+        }
+        
+        // Generate unique filename
+        $filename = time() . '_' . $userId . '_' . uniqid() . '.' . $extension;
+        $path = "submissions/projects/step_{$stepId}/" . $filename;
+        
+        // Store file
+        Storage::disk('public')->putFileAs(
+            "submissions/projects/step_{$stepId}",
+            $file,
+            $filename
+        );
+        
+        return [
+            'path' => $path,
+            'name' => $file->getClientOriginalName(),
+            'size_kb' => round($file->getSize() / 1024, 2),
+        ];
+    }
+
+    /**
+     * Validate dữ liệu nộp bài
+     */
+    protected function validateStepSubmission(ProjectSubmissionStep $step, array $data): void
+    {
+        // Kiểm tra theo submission_type của step
+        if ($step->submission_type === 'file' || $step->submission_type === 'both') {
+            if (!isset($data['file']) || !($data['file'] instanceof UploadedFile)) {
+                if ($step->submission_type === 'file') {
+                    throw new \Exception("Vui lòng upload file");
                 }
             }
         }
-
-        // Determine submission number
-        $submissionNo = $existingSubmission ? $existingSubmission->submission_no + 1 : 1;
-
-        // Determine status
-        $status = $existingSubmission && $existingSubmission->status === 'failed' 
-            ? 'resubmitted' 
-            : 'submitted';
-
-        // Calculate late submission status
-        $isLate = false;
-        $daysLate = 0;
         
-        if ($project->deadline_at && now()->isAfter($project->deadline_at)) {
-            $isLate = true;
-            $daysLate = (int) now()->diffInDays($project->deadline_at, false);
+        if ($step->submission_type === 'link' || $step->submission_type === 'both') {
+            if (empty($data['link_url'])) {
+                if ($step->submission_type === 'link') {
+                    throw new \Exception("Vui lòng nhập link");
+                }
+            } else {
+                // Validate URL format
+                if (!filter_var($data['link_url'], FILTER_VALIDATE_URL)) {
+                    throw new \Exception("Link không hợp lệ. Vui lòng nhập URL đầy đủ (bắt đầu bằng http:// hoặc https://)");
+                }
+            }
         }
-
-        // Create or update submission
-        if ($existingSubmission) {
-            $existingSubmission->update([
-                'attachment_path' => $attachmentPath ?? $existingSubmission->attachment_path,
-                'video_files' => !empty($videoPaths) ? $videoPaths : $existingSubmission->video_files,
-                'note' => $note,
-                'submission_no' => $submissionNo,
-                'status' => $status,
-                'submitted_at' => now(),
-                'is_late' => $isLate,
-                'days_late' => $daysLate,
-                'reviewed_by' => null,
-                'reviewed_at' => null,
-                'feedback' => null,
-                'score' => null,
-                'grading_notes' => null,
-            ]);
+        
+        // Nếu submission_type = 'both', phải có ít nhất 1 trong 2
+        if ($step->submission_type === 'both') {
+            $hasFile = isset($data['file']) && ($data['file'] instanceof UploadedFile);
+            $hasLink = !empty($data['link_url']);
             
-            return $existingSubmission->fresh();
+            if (!$hasFile && !$hasLink) {
+                throw new \Exception("Vui lòng upload file hoặc nhập link");
+            }
         }
-
-        return ProjectSubmission::create([
-            'project_id' => $project->id,
-            'user_id' => $userId,
-            'enrollment_id' => $enrollment->id,
-            'attachment_path' => $attachmentPath,
-            'video_files' => $videoPaths,
-            'note' => $note,
-            'submission_no' => $submissionNo,
-            'status' => $status,
-            'submitted_at' => now(),
-            'is_late' => $isLate,
-            'days_late' => $daysLate,
-        ]);
     }
 
     /**
-     * Review a project submission
+     * Kiểm tra bước trước đã approved chưa
      */
-    public function reviewSubmission(
-        int $submissionId,
-        int $reviewerId,
-        string $status,
-        ?string $feedback = null,
-        ?float $score = null,
-        ?array $gradingNotes = null
-    ): ProjectSubmission {
-        if (!in_array($status, ['passed', 'failed', 'in_review'])) {
-            throw new \Exception('Trạng thái không hợp lệ.');
+    protected function ensurePreviousStepApproved(
+        ProjectSubmissionStep $currentStep,
+        int $userId,
+        int $projectSubmissionId
+    ): void {
+        $previousStep = ProjectSubmissionStep::where('project_id', $currentStep->project_id)
+            ->where('step_order', $currentStep->step_order - 1)
+            ->where('is_active', true)
+            ->first();
+        
+        if (!$previousStep) {
+            return; // Không có bước trước, OK
         }
-
-        $submission = ProjectSubmission::findOrFail($submissionId);
-
-        // Validate score if provided
-        if ($score !== null) {
-            $project = $submission->project;
-            if ($score < 0 || $score > $project->max_score) {
-                throw new \Exception("Điểm số phải nằm trong khoảng 0 - {$project->max_score}.");
-            }
-
-            // Auto-determine status based on score if not explicitly set to in_review
-            if ($status !== 'in_review') {
-                $status = $score >= $project->passing_score ? 'passed' : 'failed';
-            }
+        
+        if (!$previousStep->isApprovedForUser($userId, $projectSubmissionId)) {
+            throw new \Exception("Bạn cần hoàn thành bước \"{$previousStep->step_name}\" trước khi nộp bước này");
         }
-
-        $submission->update([
-            'status' => $status,
-            'reviewed_by' => $reviewerId,
-            'reviewed_at' => now(),
-            'feedback' => $feedback,
-            'score' => $score,
-            'grading_notes' => $gradingNotes,
-        ]);
-
-        return $submission->fresh();
     }
 
     /**
-     * Get user's submission for a project
+     * Lấy project submission của user (nếu có)
+     * Method này chỉ GET, không tạo mới
      */
     public function getUserSubmission(int $userId, int $projectId): ?ProjectSubmission
     {
@@ -191,208 +244,125 @@ class ProjectSubmissionService
     }
 
     /**
-     * Get pending submissions for review
-     */
-    public function getPendingSubmissions()
-    {
-        return ProjectSubmission::with(['project', 'user', 'submitter'])
-            ->whereIn('status', ['submitted', 'resubmitted'])
-            ->orderBy('submitted_at', 'asc')
-            ->paginate(20);
-    }
-
-    /**
-     * Get submissions by status
-     */
-    public function getSubmissionsByStatus(string $status)
-    {
-        return ProjectSubmission::with(['project', 'user', 'submitter'])
-            ->where('status', $status)
-            ->orderBy('submitted_at', 'desc')
-            ->paginate(20);
-    }
-
-    /**
-     * Validate resubmission limit
-     */
-    protected function validateResubmissionLimit(ProjectSubmission $submission, Project $project): void
-    {
-        // Only check if status is failed (user is resubmitting)
-        if ($submission->status !== 'failed') {
-            throw new \Exception('Bạn không thể nộp lại khi project chưa được đánh giá hoặc đã được chấp nhận.');
-        }
-
-        // Check if resubmission limit reached
-        if ($submission->submission_no >= $project->max_resubmissions) {
-            throw new \Exception(
-                "Bạn đã hết lượt nộp lại. Giới hạn: {$project->max_resubmissions} lần."
-            );
-        }
-    }
-
-    /**
-     * Store attachment file
-     */
-    protected function storeAttachment(UploadedFile $file): string
-    {
-        return $file->store('project-submissions', 'public');
-    }
-
-    /**
-     * Get submission statistics
-     */
-    public function getSubmissionStats(): array
-    {
-        return [
-            'total' => ProjectSubmission::count(),
-            'pending' => ProjectSubmission::whereIn('status', ['submitted', 'resubmitted'])->count(),
-            'in_review' => ProjectSubmission::where('status', 'in_review')->count(),
-            'passed' => ProjectSubmission::where('status', 'passed')->count(),
-            'failed' => ProjectSubmission::where('status', 'failed')->count(),
-        ];
-    }
-
-    /**
-     * Get user submission statistics
-     */
-    public function getUserSubmissionStats(int $userId): array
-    {
-        return [
-            'total' => ProjectSubmission::where('user_id', $userId)->count(),
-            'passed' => ProjectSubmission::where('user_id', $userId)->where('status', 'passed')->count(),
-            'pending' => ProjectSubmission::where('user_id', $userId)
-                ->whereIn('status', ['submitted', 'resubmitted', 'in_review'])
-                ->count(),
-            'failed' => ProjectSubmission::where('user_id', $userId)->where('status', 'failed')->count(),
-        ];
-    }
-
-    /**
-     * Check if user can submit for a project
+     * Kiểm tra user có thể submit project này không
+     * Return array với can_submit và reason
      */
     public function canUserSubmit(int $userId, int $projectId): array
     {
+        $project = Project::find($projectId);
+        
+        if (!$project) {
+            return [
+                'can_submit' => false,
+                'reason' => 'Project không tồn tại'
+            ];
+        }
+        
+        // Kiểm tra user đã có submission chưa
         $submission = $this->getUserSubmission($userId, $projectId);
         
+        // Nếu chưa có submission, cho phép tạo mới
         if (!$submission) {
-            // Check prerequisites for first-time submission
-            $prerequisiteCheck = $this->checkLessonCompletionPrerequisite($userId, $projectId);
-            
-            if (!$prerequisiteCheck['passed']) {
-                return [
-                    'can_submit' => false,
-                    'reason' => "Cần hoàn thành {$prerequisiteCheck['required']}% bài học (hiện tại: {$prerequisiteCheck['current']}%)",
-                    'submission_no' => 0,
-                    'prerequisite' => $prerequisiteCheck,
-                ];
-            }
-            
             return [
                 'can_submit' => true,
-                'reason' => null,
-                'submission_no' => 0,
-                'prerequisite' => $prerequisiteCheck,
+                'reason' => 'Bạn có thể bắt đầu nộp project'
             ];
         }
-
-        $project = Project::findOrFail($projectId);
-
-        // If status is passed, can't resubmit
-        if ($submission->status === 'passed') {
+        
+        // Nếu đã có submission và status là passed/failed, không cho submit lại
+        if (in_array($submission->status, ['passed', 'failed'])) {
             return [
                 'can_submit' => false,
-                'reason' => 'Project đã được chấp nhận.',
-                'submission_no' => $submission->submission_no,
+                'reason' => 'Bạn đã hoàn thành project này'
             ];
         }
-
-        // If status is submitted, resubmitted, or in_review, can't submit again
-        if (in_array($submission->status, ['submitted', 'resubmitted', 'in_review'])) {
-            return [
-                'can_submit' => false,
-                'reason' => 'Project đang chờ đánh giá.',
-                'submission_no' => $submission->submission_no,
-            ];
-        }
-
-        // If status is failed, check resubmission limit
-        if ($submission->status === 'failed') {
-            if ($submission->submission_no >= $project->max_resubmissions) {
-                return [
-                    'can_submit' => false,
-                    'reason' => "Đã hết lượt nộp lại (tối đa {$project->max_resubmissions} lần).",
-                    'submission_no' => $submission->submission_no,
-                ];
-            }
-
-            return [
-                'can_submit' => true,
-                'reason' => null,
-                'submission_no' => $submission->submission_no,
-            ];
-        }
-
+        
+        // Các trường hợp khác (pending, in_progress) cho phép tiếp tục submit
         return [
             'can_submit' => true,
-            'reason' => null,
-            'submission_no' => $submission->submission_no,
+            'reason' => 'Bạn có thể tiếp tục nộp project'
         ];
     }
 
     /**
-     * Check if user has completed required % of lessons before submitting project
+     * Update % hoàn thành của project submission
      */
-    public function checkLessonCompletionPrerequisite(int $userId, int $projectId): array
+    public function updateProjectProgress(int $projectSubmissionId): void
     {
-        $project = Project::with('section.lessons')->findOrFail($projectId);
+        $projectSubmission = ProjectSubmission::findOrFail($projectSubmissionId);
         
-        // If project has no section, no prerequisite check needed
-        if (!$project->section) {
-            return [
-                'passed' => true,
-                'current' => 100,
-                'required' => 0,
-                'completed' => 0,
-                'total' => 0,
-            ];
-        }
-        
-        // Count total published lessons in the section (excluding project lessons)
-        $totalLessons = $project->section->lessons()
-            ->where('is_published', true)
-            ->where('lesson_type', '!=', 'project') // Don't count project lessons
+        // Đếm tổng số steps của project
+        $totalSteps = ProjectSubmissionStep::where('project_id', $projectSubmission->project_id)
+            ->where('is_active', true)
+            ->where('is_required', true)
             ->count();
         
-        if ($totalLessons === 0) {
-            return [
-                'passed' => true,
-                'current' => 100,
-                'required' => $project->required_completion_percentage,
-                'completed' => 0,
-                'total' => 0,
-            ];
+        if ($totalSteps === 0) {
+            return;
         }
         
-        // Count completed lessons by user
-        $lessonIds = $project->section->lessons()
-            ->where('is_published', true)
-            ->where('lesson_type', '!=', 'project')
-            ->pluck('id');
-        
-        $completedLessons = RoadmapLessonProgress::where('user_id', $userId)
-            ->whereIn('roadmap_lesson_id', $lessonIds)
-            ->where('status', 'completed')
+        // Đếm số steps đã approved
+        $approvedSteps = ProjectStepSubmission::where('project_submission_id', $projectSubmissionId)
+            ->where('user_id', $projectSubmission->user_id)
+            ->where('status', 'approved')
+            ->where('is_current', true)
             ->count();
         
-        $completionRate = ($completedLessons / $totalLessons) * 100;
-        $required = $project->required_completion_percentage;
+        // Tính %
+        $progressPercent = round(($approvedSteps / $totalSteps) * 100, 2);
         
-        return [
-            'passed' => $completionRate >= $required,
-            'current' => round($completionRate, 2),
-            'required' => $required,
-            'completed' => $completedLessons,
-            'total' => $totalLessons,
-        ];
+        $projectSubmission->update([
+            'progress_percent' => $progressPercent,
+        ]);
+    }
+
+    /**
+     * Kiểm tra học viên đã hoàn thành tất cả các bước chưa
+     */
+    public function isProjectCompleted(int $projectSubmissionId): bool
+    {
+        $projectSubmission = ProjectSubmission::findOrFail($projectSubmissionId);
+        
+        $totalSteps = ProjectSubmissionStep::where('project_id', $projectSubmission->project_id)
+            ->where('is_active', true)
+            ->where('is_required', true)
+            ->count();
+        
+        $approvedSteps = ProjectStepSubmission::where('project_submission_id', $projectSubmissionId)
+            ->where('user_id', $projectSubmission->user_id)
+            ->where('status', 'approved')
+            ->where('is_current', true)
+            ->count();
+        
+        return $totalSteps > 0 && $approvedSteps === $totalSteps;
+    }
+
+    /**
+     * Lấy bước tiếp theo mà học viên cần làm
+     */
+    public function getNextStep(int $projectSubmissionId): ?ProjectSubmissionStep
+    {
+        $projectSubmission = ProjectSubmission::findOrFail($projectSubmissionId);
+        
+        $steps = ProjectSubmissionStep::where('project_id', $projectSubmission->project_id)
+            ->where('is_active', true)
+            ->ordered()
+            ->get();
+        
+        foreach ($steps as $step) {
+            $submission = $step->getCurrentSubmission($projectSubmission->user_id, $projectSubmissionId);
+            
+            // Nếu chưa nộp hoặc đang draft/rejected -> đây là bước cần làm
+            if (!$submission || in_array($submission->status, ['draft', 'rejected'])) {
+                return $step;
+            }
+            
+            // Nếu đang pending review (submitted, under_review), vẫn trả về bước này để UI hiển thị trạng thái đang chờ
+            if ($submission->status !== 'approved') {
+                return $step;
+            }
+        }
+        
+        return null; // Đã hoàn thành tất cả
     }
 }

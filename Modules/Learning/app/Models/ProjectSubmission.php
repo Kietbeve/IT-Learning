@@ -83,6 +83,14 @@ class ProjectSubmission extends Model
         );
     }
 
+    public function enrollment(): BelongsTo
+    {
+        return $this->belongsTo(
+            RoadmapEnrollment::class,
+            'enrollment_id'
+        );
+    }
+
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(

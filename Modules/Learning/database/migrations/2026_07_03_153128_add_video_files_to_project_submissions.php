@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('project_submissions', function (Blueprint $table) {
-            //
+            $table->json('video_files')->nullable()->after('attachment_path');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('project_submissions', function (Blueprint $table) {
-            //
+            $table->dropColumn('video_files');
         });
     }
 };

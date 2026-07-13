@@ -139,51 +139,71 @@
         </div>
     @endif
 
+    {{-- Header --}}
+    <div class="mb-8 relative overflow-hidden rounded-3xl bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 p-8 text-white shadow-xl">
+        <div class="absolute inset-0 bg-white opacity-[0.05]" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 24px 24px;"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <a href="{{ route('admin.dashboard') }}" class="mb-5 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold text-white hover:bg-white/30 backdrop-blur-md border border-white/10 transition-all shadow-sm w-max">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Quay lại Trang chủ
+                </a>
+                <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight drop-shadow-md">Quản Lý Diễn Đàn</h1>
+                <p class="mt-3 text-cyan-100 max-w-2xl leading-relaxed text-base">Quản lý các chủ đề thảo luận, kiểm duyệt bình luận và hỗ trợ học viên.</p>
+            </div>
+        </div>
+    </div>
+
     {{-- Stats --}}
-    <div class="mb-6 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-        <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <p class="text-xs font-medium text-slate-500">Thảo luận</p>
-            <p class="mt-1 text-xl font-bold text-slate-900">{{ number_format($this->stats['threads']) }}</p>
+    <div class="mb-8 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Thảo luận</p>
+            <p class="mt-1 text-2xl font-black text-slate-800">{{ number_format($this->stats['threads']) }}</p>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <p class="text-xs font-medium text-slate-500">Trả lời</p>
-            <p class="mt-1 text-xl font-bold text-slate-900">{{ number_format($this->stats['posts']) }}</p>
+        <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Trả lời</p>
+            <p class="mt-1 text-2xl font-black text-slate-800">{{ number_format($this->stats['posts']) }}</p>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <p class="text-xs font-medium text-slate-500">Thành viên</p>
-            <p class="mt-1 text-xl font-bold text-slate-900">{{ number_format($this->stats['users']) }}</p>
+        <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Thành viên</p>
+            <p class="mt-1 text-2xl font-black text-slate-800">{{ number_format($this->stats['users']) }}</p>
         </div>
-        <div class="rounded-xl border border-yellow-200 bg-yellow-50 p-3 shadow-sm">
-            <p class="text-xs font-medium text-yellow-600">Đã ghim</p>
-            <p class="mt-1 text-xl font-bold text-yellow-800">{{ number_format($this->stats['pinned']) }}</p>
+        <div class="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-amber-100/50 p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-amber-600">Đã ghim</p>
+            <p class="mt-1 text-2xl font-black text-amber-800">{{ number_format($this->stats['pinned']) }}</p>
         </div>
-        <div class="rounded-xl border border-red-200 bg-red-50 p-3 shadow-sm">
-            <p class="text-xs font-medium text-red-600">Đã khóa</p>
-            <p class="mt-1 text-xl font-bold text-red-800">{{ number_format($this->stats['locked']) }}</p>
+        <div class="rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50 to-rose-100/50 p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-rose-600">Đã khóa</p>
+            <p class="mt-1 text-2xl font-black text-rose-800">{{ number_format($this->stats['locked']) }}</p>
         </div>
-        <div class="rounded-xl border border-green-200 bg-green-50 p-3 shadow-sm">
-            <p class="text-xs font-medium text-green-600">Đã giải đáp</p>
-            <p class="mt-1 text-xl font-bold text-green-800">{{ number_format($this->stats['answered']) }}</p>
+        <div class="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Đã giải đáp</p>
+            <p class="mt-1 text-2xl font-black text-emerald-800">{{ number_format($this->stats['answered']) }}</p>
         </div>
-        <div class="rounded-xl border border-blue-200 bg-blue-50 p-3 shadow-sm">
-            <p class="text-xs font-medium text-blue-600">Lượt thích</p>
-            <p class="mt-1 text-xl font-bold text-blue-800">{{ number_format($this->stats['likes']) }}</p>
+        <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-blue-600">Lượt thích</p>
+            <p class="mt-1 text-2xl font-black text-blue-800">{{ number_format($this->stats['likes']) }}</p>
         </div>
-        <div class="rounded-xl border border-purple-200 bg-purple-50 p-3 shadow-sm">
-            <p class="text-xs font-medium text-purple-600">Bookmark</p>
-            <p class="mt-1 text-xl font-bold text-purple-800">{{ number_format($this->stats['bookmarks']) }}</p>
+        <div class="rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-purple-100/50 p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-purple-600">Bookmark</p>
+            <p class="mt-1 text-2xl font-black text-purple-800">{{ number_format($this->stats['bookmarks']) }}</p>
         </div>
     </div>
 
     {{-- Filters --}}
-    <div class="mb-4 flex flex-col sm:flex-row gap-3">
-        <div class="flex-1">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="🔍 Tìm kiếm thảo luận..."
-                   class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+    <div class="mb-6 bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-4">
+        <div class="flex-1 relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm thảo luận..."
+                   class="w-full rounded-2xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 pl-11 pr-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500 transition-colors font-medium">
         </div>
         <select wire:model.live="statusFilter"
-                class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-            <option value="">Tất cả</option>
+                class="rounded-2xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500 transition-colors font-medium text-slate-700 min-w-[200px] cursor-pointer">
+            <option value="">Tất cả trạng thái</option>
             <option value="pinned">Đã ghim</option>
             <option value="locked">Đã khóa</option>
             <option value="answered">Đã giải đáp</option>

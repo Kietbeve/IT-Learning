@@ -5,7 +5,7 @@ namespace Modules\Learning\Services;
 use Modules\Learning\Models\LearningNotification;
 use Modules\Learning\Models\Assignment;
 use Modules\Learning\Models\AssignmentSubmission;
-use Modules\Learning\Models\LessonQuiz;
+
 use Modules\Learning\Models\RoadmapSection;
 use Modules\Learning\Models\RoadmapCertificate;
 use Carbon\Carbon;
@@ -56,25 +56,7 @@ class NotificationService
         ]);
     }
 
-    /**
-     * Thông báo khi quiz mới được mở
-     */
-    public function sendQuizAvailableNotification(int $userId, LessonQuiz $quiz): void
-    {
-        LearningNotification::create([
-            'user_id' => $userId,
-            'type' => 'quiz_available',
-            'notifiable_type' => LessonQuiz::class,
-            'notifiable_id' => $quiz->id,
-            'roadmap_id' => $quiz->lesson->roadmap_id,
-            'title' => 'Quiz mới đã mở',
-            'message' => "Quiz '{$quiz->title}' trong bài học '{$quiz->lesson->title}' đã sẵn sàng.",
-            'action_url' => "/roadmaps/{$quiz->lesson->roadmap_id}/lessons/{$quiz->lesson_id}/quiz/{$quiz->id}",
-            'action_text' => 'Làm quiz',
-            'priority' => 'normal',
-            'sent_at' => now(),
-        ]);
-    }
+
 
     /**
      * Thông báo khi section được unlock
