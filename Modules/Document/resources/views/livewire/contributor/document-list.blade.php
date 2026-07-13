@@ -293,7 +293,7 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-                            <button wire:click="showHistory({{ $doc->id }})" class="inline-flex items-center rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                            <button wire:click="showHistory({{ $doc->id }})" class="inline-flex items-center rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-100 hover:text-blue-600 cursor-pointer transition-colors">
                                 Nhật ký
                             </button>
                             
@@ -465,7 +465,7 @@
                                 </td>
                                 <td class="relative whitespace-nowrap py-4 px-3 text-center text-sm font-medium">
                                     <div class="flex items-center justify-center gap-2">
-                                        <button wire:click="showHistory({{ $doc->id }})" class="inline-flex items-center justify-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                                        <button wire:click="showHistory({{ $doc->id }})" class="inline-flex items-center justify-center rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-100 hover:text-blue-600 cursor-pointer transition-colors">
                                             Nhật ký
                                         </button>
                                         @if(!$doc->trashed())

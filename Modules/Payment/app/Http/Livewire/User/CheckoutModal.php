@@ -187,13 +187,16 @@ class CheckoutModal extends Component
             $payOS = app(PayOSService::class);
 
             $description = 'ITL ' . $order->order_code;
+            
+            $returnUrl = $user ? route('user.purchases') : route('documents.show', $this->documentId);
+            $cancelUrl = $user ? route('user.purchases') : route('documents.show', $this->documentId);
 
             $paymentResponse = $payOS->createPaymentLink(
                 orderCode: $order->order_code,
                 amount: $finalPrice,
                 description: $description,
-                returnUrl: route('user.purchases'),
-                cancelUrl: route('user.purchases'),
+                returnUrl: $returnUrl,
+                cancelUrl: $cancelUrl,
                 buyerName: $user ? $user->name : 'Khách',
                 buyerEmail: $user ? $user->email : $this->guestEmail,
                 expiredAt: now()->addMinutes(10)->timestamp,

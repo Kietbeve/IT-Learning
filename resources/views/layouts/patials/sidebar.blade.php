@@ -18,7 +18,7 @@
 
     @php
         $navItems = [
-            ['label' => 'Bảng điều khiển', 'route' => 'admin.dashboard', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6'],
+            ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6'],
             ['label' => 'Quản lý đơn hàng', 'route' => 'admin.orders.index', 'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
 
             ['label' => 'Quản lý tài liệu', 'route' => 'admin.documents.index', 'icon' => 'M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2', 'badge_type' => 'documents'],
@@ -40,7 +40,7 @@
         @foreach($navItems as $item)
             @php 
                 $active = request()->routeIs($item['route']);
-                if ($item['route'] === 'admin.dashboard' && $item['label'] !== 'Bảng điều khiển') {
+                if ($item['route'] === 'admin.dashboard' && $item['label'] !== 'Dashboard') {
                     $active = false;
                 }
             @endphp

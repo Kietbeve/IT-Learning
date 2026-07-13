@@ -192,7 +192,12 @@ trait WithDocumentDownloads
 
     public function continueGuestPurchase()
     {
-        $this->validate(['guestEmail' => 'required|email|max:255']);
+        $this->validate([
+            'guestEmail' => 'required|email|max:255|unique:users,email'
+        ], [
+            'guestEmail.unique' => 'Email này đã có tài khoản. Vui lòng đăng nhập để mua tài liệu và lưu vào tủ của bạn.'
+        ]);
+        
         $this->showGuestEmailModal = false;
         $this->dispatch('openCheckoutModal', documentId: $this->documentId, guestEmail: $this->guestEmail);
     }

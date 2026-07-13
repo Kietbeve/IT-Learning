@@ -32,11 +32,31 @@ class TagService
             $customTags = array_map('trim', explode(',', $customTagsInput));
             foreach ($customTags as $tagName) {
                 if (!empty($tagName)) {
-                    $tagSlug = Str::slug($tagName);
-                    $tag = Tag::firstOrCreate(
-                        ['slug' => $tagSlug],
-                        ['name' => $tagName]
-                    );
+                    // Find by name including soft-deleted to avoid tags_name_unique constraint error
+                    $tag = Tag::withTrashed()->where('name', $tagName)->first();
+                    
+                    if (!$tag) {
+                        $slug = Str::slug($tagName);
+                        $originalSlug = $slug;
+                        $counter = 1;
+                        
+                        // Ensure slug is truly unique against all records including soft-deleted
+                        while (Tag::withTrashed()->where('slug', $slug)->exists()) {
+                            $slug = $originalSlug . '-' . $counter;
+                            $counter++;
+                        }
+                        
+                        $tag = Tag::create([
+                            'name' => $tagName,
+                            'slug' => $slug
+                        ]);
+                    } else {
+                        // If found but soft-deleted, restore it
+                        if ($tag->trashed()) {
+                            $tag->restore();
+                        }
+                    }
+                    
                     $tagIds[] = $tag->id;
                 }
             }
