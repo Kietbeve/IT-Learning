@@ -37,14 +37,6 @@ class Subject extends Model
         return $this->hasMany(DocumentVersion::class)->where('status', 'approved');
     }
 
-        /**
-     * 1 môn học có nhiều đề thi
-     */
-    public function exams()
-    {
-        return $this->hasMany(Exam::class);
-    }
-
     /**
      * Scope: Chỉ lấy môn học đang active
      */

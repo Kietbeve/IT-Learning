@@ -1,0 +1,2 @@
+<span><?php echo $noDataLabel; ?></span>
+<?php /**PATH D:\IT-Learning\vendor\power-components\livewire-powergrid\src\Providers/../../resources/views/components/table/no-data-label.blade.php ENDPATH**/ ?>

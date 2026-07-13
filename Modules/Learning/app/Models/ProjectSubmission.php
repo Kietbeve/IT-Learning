@@ -13,6 +13,7 @@ class ProjectSubmission extends Model
         'project_id',
         'user_id',
         'enrollment_id',
+        'progress_percent',
         'github_url',
         'live_demo_url',
         'attachment_path',

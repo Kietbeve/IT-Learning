@@ -101,13 +101,28 @@
             </div>
         </aside>
 
-        {{-- NÚT TOGGLE SIDEBAR - FIXED BUTTON --}}
+        {{-- NÚT TOGGLE SIDEBAR (NẰM GIỮA TRÊN DESKTOP) --}}
+        <div class="relative z-50 flex items-center h-full w-0 hidden md:block">
+            <button @click="toggleSidebar" 
+                    class="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 hover:scale-110 transition-all duration-300 text-gray-500 hover:text-cyan-600 focus:outline-none"
+                    :class="sidebarOpen ? '-left-4' : 'left-3'"
+                    title="Đóng/Mở mục lục">
+                <svg x-show="sidebarOpen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <svg x-show="!sidebarOpen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
+
+        {{-- MOBILE TOGGLE BUTTON --}}
         <button @click="toggleSidebar" 
-                class="fixed top-20 left-4 z-50 bg-white border-2 border-gray-300 rounded-xl p-3 shadow-lg hover:bg-gray-50 transition-all">
-            <svg x-show="!sidebarOpen" class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="md:hidden fixed top-20 left-4 z-50 bg-white border border-gray-200 rounded-full p-2.5 shadow-md hover:bg-gray-50 transition-all text-gray-700">
+            <svg x-show="!sidebarOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
-            <svg x-show="sidebarOpen" class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg x-show="sidebarOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
         </button>
@@ -683,6 +698,7 @@
                 </div>
 
                 {{-- NÚT HOÀN THÀNH BÀI HỌC --}}
+                @if(!$currentLesson->project_id)
                 <div class="mt-8 bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-2xl p-6 shadow-sm">
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div class="flex-1">
@@ -702,6 +718,7 @@
                         </form>
                     </div>
                 </div>
+                @endif
             </div>
         </main>
     </div>

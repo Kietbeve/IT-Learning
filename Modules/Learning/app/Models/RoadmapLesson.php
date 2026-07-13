@@ -66,8 +66,4 @@ class RoadmapLesson extends Model
         return $this->belongsTo(Project::class, 'project_id');
     }
 
-    public function quizzes(): HasMany
-    {
-        return $this->hasMany(LessonQuiz::class, 'lesson_id');
-    }
 }
