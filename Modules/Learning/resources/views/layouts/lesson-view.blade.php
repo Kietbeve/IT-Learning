@@ -101,13 +101,28 @@
             </div>
         </aside>
 
-        {{-- NÚT TOGGLE SIDEBAR - FIXED BUTTON --}}
+        {{-- NÚT TOGGLE SIDEBAR (NẰM GIỮA TRÊN DESKTOP) --}}
+        <div class="relative z-50 flex items-center h-full w-0 hidden md:block">
+            <button @click="toggleSidebar" 
+                    class="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 hover:scale-110 transition-all duration-300 text-gray-500 hover:text-cyan-600 focus:outline-none"
+                    :class="sidebarOpen ? '-left-4' : 'left-3'"
+                    title="Đóng/Mở mục lục">
+                <svg x-show="sidebarOpen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <svg x-show="!sidebarOpen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
+
+        {{-- MOBILE TOGGLE BUTTON --}}
         <button @click="toggleSidebar" 
-                class="fixed top-20 left-4 z-50 bg-white border-2 border-gray-300 rounded-xl p-3 shadow-lg hover:bg-gray-50 transition-all">
-            <svg x-show="!sidebarOpen" class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="md:hidden fixed top-20 left-4 z-50 bg-white border border-gray-200 rounded-full p-2.5 shadow-md hover:bg-gray-50 transition-all text-gray-700">
+            <svg x-show="!sidebarOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
-            <svg x-show="sidebarOpen" class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg x-show="sidebarOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
         </button>
@@ -667,137 +682,11 @@
                     </div>
                 @endif
 
-                {{-- PROJECT SUBMISSION SECTION --}}
+                {{-- PROJECT SUBMISSION SECTION - MULTI-STEP (NEW SYSTEM) --}}
                 @if($currentLesson->project_id && isset($currentLesson->project))
-                    @php
-                        $project = $currentLesson->project;
-                        $submissionService = app(\Modules\Learning\Services\ProjectSubmissionService::class);
-                        $projectSubmission = $submissionService->getUserSubmission(Auth::id(), $project->id);
-                        $canSubmit = $submissionService->canUserSubmit(Auth::id(), $project->id);
-                    @endphp
-
-                    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm mb-6">
-                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-200 px-6 py-4">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-black text-lg text-purple-800 flex items-center gap-2">
-                                    🚀 Nộp Project
-                                </h3>
-                                @if($projectSubmission)
-                                    <span class="text-xs font-bold px-3 py-1 rounded-full
-                                        {{ $projectSubmission->status === 'passed' ? 'bg-green-100 text-green-700 border border-green-300' : '' }}
-                                        {{ $projectSubmission->status === 'failed' ? 'bg-red-100 text-red-700 border border-red-300' : '' }}
-                                        {{ in_array($projectSubmission->status, ['submitted', 'resubmitted', 'in_review']) ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' : '' }}">
-                                        @if($projectSubmission->status === 'passed') ✓ Đã đạt
-                                        @elseif($projectSubmission->status === 'failed') ✗ Cần làm lại
-                                        @elseif($projectSubmission->status === 'in_review') 👁 Đang review
-                                        @elseif($projectSubmission->status === 'resubmitted') 🔄 Đã nộp lại
-                                        @else ⏳ Chờ đánh giá
-                                        @endif
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="p-6 space-y-5">
-                            {{-- Project Information --}}
-                            <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
-                                <h4 class="font-bold text-purple-900 text-sm mb-2">📋 Mô tả dự án:</h4>
-                                <p class="text-sm text-gray-700 leading-relaxed mb-3">{{ $project->description }}</p>
-                                @if($project->starter_code_url)
-                                    <a href="{{ $project->starter_code_url }}" target="_blank" 
-                                       class="inline-flex items-center gap-2 text-xs font-semibold text-purple-700 hover:text-purple-900 underline underline-offset-2">
-                                        📦 Starter Code GitHub
-                                    </a>
-                                @endif
-                                @if($project->deadline_at)
-                                    <p class="text-xs text-gray-500 mt-2">⏰ Hạn nộp: {{ \Carbon\Carbon::parse($project->deadline_at)->format('d/m/Y H:i') }}</p>
-                                @endif
-                            </div>
-
-                            {{-- Existing Submission Status --}}
-                            @if($projectSubmission)
-                                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                    <h4 class="font-bold text-gray-900 text-sm mb-3">📊 Trạng thái nộp bài của bạn:</h4>
-                                    <div class="grid grid-cols-2 gap-3 text-xs">
-                                        <div>
-                                            <span class="text-gray-500">Lần nộp:</span>
-                                            <span class="font-bold text-gray-900">{{ $projectSubmission->submission_no }}/{{ $project->max_resubmissions }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="text-gray-500">Thời gian nộp:</span>
-                                            <span class="font-bold text-gray-900">{{ $projectSubmission->submitted_at->format('d/m/Y H:i') }}</span>
-                                        </div>
-                                    </div>
-                                    @if($projectSubmission->reviewed_at)
-                                        <div class="mt-3 pt-3 border-t border-gray-300">
-                                            <p class="text-xs text-gray-500 mb-1">Đánh giá từ giảng viên:</p>
-                                            <p class="text-sm text-gray-700 bg-white rounded p-2 border border-gray-200">{{ $projectSubmission->feedback ?? 'Chưa có phản hồi' }}</p>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endif
-
-                            {{-- Submission Form --}}
-                            @if($canSubmit['can_submit'])
-                                <form action="{{ route('learning.roadmaps.lessons.submit-project', [$roadmap->id, $currentLesson->id]) }}" 
-                                      method="POST" 
-                                      enctype="multipart/form-data"
-                                      class="space-y-4">
-                                    @csrf
-
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-800 mb-2">GitHub Repository URL <span class="text-red-500">*</span></label>
-                                        <input type="url" 
-                                               name="github_url" 
-                                               value="{{ old('github_url', $projectSubmission->github_url ?? '') }}"
-                                               placeholder="https://github.com/username/project-name" 
-                                               class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                                               required>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-800 mb-2">Live Demo URL (không bắt buộc)</label>
-                                        <input type="url" 
-                                               name="live_demo_url" 
-                                               value="{{ old('live_demo_url', $projectSubmission->live_demo_url ?? '') }}"
-                                               placeholder="https://your-project-demo.com" 
-                                               class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-800 mb-2">File đính kèm (ZIP, PDF, PNG, JPG - Max 100MB)</label>
-                                        <input type="file" 
-                                               name="attachment" 
-                                               accept=".zip,.pdf,.png,.jpg,.jpeg"
-                                               class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
-                                        @if($projectSubmission && $projectSubmission->attachment_path)
-                                            <p class="text-xs text-gray-500 mt-1">
-                                                📎 File hiện tại: <a href="{{ asset('storage/' . $projectSubmission->attachment_path) }}" target="_blank" class="text-purple-600 hover:underline">Xem file</a>
-                                            </p>
-                                        @endif
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-800 mb-2">Ghi chú cho giảng viên</label>
-                                        <textarea name="note" 
-                                                  rows="4" 
-                                                  placeholder="Mô tả ngắn về project của bạn, những khó khăn gặp phải, hoặc những điểm bạn muốn giảng viên lưu ý..."
-                                                  class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500">{{ old('note', $projectSubmission->note ?? '') }}</textarea>
-                                    </div>
-
-                                    <div class="flex justify-end">
-                                        <button type="submit" 
-                                                class="bg-purple-600 hover:bg-purple-700 text-white font-black text-sm px-8 py-3 rounded-xl shadow-md transition-colors uppercase tracking-wider">
-                                            {{ $projectSubmission ? '🔄 Nộp lại Project' : '📤 Nộp Project' }}
-                                        </button>
-                                    </div>
-                                </form>
-                            @else
-                                <div class="bg-yellow-50 border border-yellow-300 rounded-xl p-4 text-center">
-                                    <p class="text-sm font-bold text-yellow-800">⚠️ {{ $canSubmit['reason'] }}</p>
-                                </div>
-                            @endif
-                        </div>
+                    <div class="mb-6">
+                        {{-- Render Livewire Multi-Step Project Submission Component --}}
+                        @livewire('modules.learning.http.livewire.student.submit-project', ['projectId' => $currentLesson->project_id], key('project-submit-'.$currentLesson->project_id))
                     </div>
                 @endif
 
@@ -809,6 +698,7 @@
                 </div>
 
                 {{-- NÚT HOÀN THÀNH BÀI HỌC --}}
+                @if(!$currentLesson->project_id)
                 <div class="mt-8 bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-2xl p-6 shadow-sm">
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div class="flex-1">
@@ -828,6 +718,7 @@
                         </form>
                     </div>
                 </div>
+                @endif
             </div>
         </main>
     </div>
@@ -835,10 +726,10 @@
 </div>
 
 <script>
-    function lessonController() {
+    function lessonController(hasContent = false) {
         return {
-            // Logic mới: Check theo tài nguyên có sẵn, không theo lesson_type
-            hasContent: {{ !empty($currentLesson->content) ? 'true' : 'false' }},
+            // Nhận giá trị được truyền từ x-data ngoài HTML vào
+            hasContent: hasContent,
             canComplete: false,
             sidebarOpen: window.innerWidth >= 768,
             

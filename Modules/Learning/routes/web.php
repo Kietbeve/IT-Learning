@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Learning\Http\Controllers\LearningController;
 use Livewire\Livewire;
 use Modules\Learning\Livewire\Manage\RoadmapManagement;
+use Modules\Learning\Livewire\Manage\ManagementDetail;
 use Modules\Learning\Livewire\Admin\Collaborators\Index as CollabIndex;
 use Modules\Learning\Livewire\Admin\Collaborators\Create as CollabCreate;
 use Modules\Learning\Livewire\Admin\Collaborators\Edit as CollabEdit;
@@ -79,6 +80,16 @@ Route::middleware(['auth'])->group(function () {
     // Nộp dự án (project submission)
     Route::post('/roadmaps/{roadmap_id}/lessons/{lesson_id}/submit-project', [LearningController::class, 'submitProject'])
         ->name('learning.roadmaps.lessons.submit-project');
+
+    // Xem chi tiết submission và feedback
+    Route::get('/submissions/{type}/{id}', \Modules\Learning\Livewire\Student\SubmissionDetail::class)
+        ->name('learning.submissions.detail');
+
+    // ==========================================
+    // QUIZ ROUTES - Làm quiz trong lesson
+    // ==========================================
+    
+    // ==========================================
 });
 
 
@@ -125,9 +136,50 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin/learning')->name('admin
     Route::get('/submissions/{submissionId}/review', \Modules\Learning\Livewire\Admin\ProjectSubmissionReview::class)
         ->name('submissions.review');
 
+    // Project Management (CRUD)
+    Route::get('/projects', \Modules\Learning\Livewire\Admin\ProjectCrud::class)
+        ->name('projects.index');
+    Route::get('/projects/create', \Modules\Learning\Livewire\Admin\ProjectForm::class)
+        ->name('projects.create');
+    Route::get('/projects/{projectId}/edit', \Modules\Learning\Livewire\Admin\ProjectForm::class)
+        ->name('projects.edit');
+    
+    // Phân công Reviewers cho Projects
+    Route::get('/projects/reviewers/manage', \Modules\Learning\Http\Livewire\Admin\ManageProjectReviewers::class)
+        ->name('projects.reviewers.manage');
+
+    // Assignment Submissions Management
+    Route::get('/assignment-submissions', \Modules\Learning\Livewire\Admin\AssignmentSubmissionList::class)
+        ->name('assignment-submissions.index');
+    Route::get('/assignment-submissions/{submissionId}/review', \Modules\Learning\Livewire\Admin\AssignmentSubmissionReview::class)
+        ->name('assignment-submissions.review');
+
     // Quản lý diễn đàn
     Route::get('/forum', \Modules\Learning\Livewire\Admin\ForumManagement::class)
         ->name('forum');
+});
+
+
+// ==========================================
+// 5B. NHÓM CONTRIBUTOR (Quản lý diễn đàn + Chấm bài)
+// ==========================================
+Route::middleware(['auth'])->prefix('contributor')->name('contributor.')->group(function () {
+    
+    // Quản lý diễn đàn cho contributor
+    Route::get('/forum', \Modules\Learning\Livewire\Admin\ForumManagement::class)
+        ->name('forum');
+    
+    // Chấm Project Submissions
+    Route::get('/submissions', \Modules\Learning\Livewire\Admin\ProjectSubmissionList::class)
+        ->name('submissions.index');
+    Route::get('/submissions/{submissionId}/review', \Modules\Learning\Livewire\Admin\ProjectSubmissionReview::class)
+        ->name('submissions.review');
+    
+    // Chấm Assignment Submissions
+    Route::get('/assignment-submissions', \Modules\Learning\Livewire\Admin\AssignmentSubmissionList::class)
+        ->name('assignment-submissions.index');
+    Route::get('/assignment-submissions/{submissionId}/review', \Modules\Learning\Livewire\Admin\AssignmentSubmissionReview::class)
+        ->name('assignment-submissions.review');
 });
 
 
@@ -143,12 +195,73 @@ Route::middleware(['auth', 'role:contributor'])->group(function () {
     Route::get('/manage/roadmap', RoadmapManagement::class)->name('manage.roadmap');
 
     // Route cho trang Chi tiết/Danh sách bài học
-    Route::get('/manage/detail', function () {
-        return view('learning::manage.namagement-detail');
-    })->name('manage.detail');
+    Route::get('/manage/detail', ManagementDetail::class)->name('manage.detail');
 
     // Route cho trang Quản lý Chi tiết bài học
     Route::get('/manage/lesson', function () {
         return view('learning::manage.management-lesson');
     })->name('manage.lesson');
+});
+
+
+// ==========================================
+// 8. NHÓM MULTI-STEP PROJECT SUBMISSION
+// ==========================================
+
+// Admin & CTV: Quản lý các bước nộp project
+Route::middleware(['auth', 'role:admin,contributor'])->prefix('admin/learning')->name('admin.learning.')->group(function () {
+    
+    // Quản lý steps của project
+    Route::get('/projects/{projectId}/steps', \Modules\Learning\Http\Livewire\Admin\ManageProjectSteps::class)
+        ->name('projects.steps');
+});
+
+// Admin: Chấm bài submissions - có quyền chấm tất cả projects
+Route::middleware(['auth'])->prefix('admin/reviewer')->name('admin.reviewer.')->group(function () {
+    
+    // Danh sách tất cả projects (admin có thể chấm tất cả)
+    Route::get('/submissions', \Modules\Learning\Http\Livewire\Reviewer\ReviewerSubmissionsList::class)
+        ->name('submissions.index');
+    
+    // Xem submissions của một project cụ thể
+    Route::get('/projects/{projectId}/submissions', \Modules\Learning\Http\Livewire\Reviewer\ProjectSubmissionsList::class)
+        ->name('project.submissions');
+    
+    // Review chi tiết một step submission
+    Route::get('/submissions/{submissionId}/review', \Modules\Learning\Http\Livewire\Reviewer\ReviewSubmission::class)
+        ->name('submissions.review');
+    
+    // Lịch sử submissions của một student cho một step
+    Route::get('/submissions/history', function () {
+        return view('learning::reviewer.submissions-history');
+    })->name('submissions.history');
+});
+
+// Contributor: Chấm bài submissions - chỉ chấm projects được phân công
+Route::middleware(['auth'])->prefix('contributor/reviewer')->name('contributor.reviewer.')->group(function () {
+    
+    // Danh sách projects được phân công
+    Route::get('/submission', \Modules\Learning\Http\Livewire\Reviewer\ReviewerSubmissionsList::class)
+        ->name('submission.index');
+    
+    // Xem submissions của một project cụ thể
+    Route::get('/projects/{projectId}/submissions', \Modules\Learning\Http\Livewire\Reviewer\ProjectSubmissionsList::class)
+        ->name('project.submissions');
+    
+    // Review chi tiết một step submission
+    Route::get('/submissions/{submissionId}/review', \Modules\Learning\Http\Livewire\Reviewer\ReviewSubmission::class)
+        ->name('submissions.review');
+    
+    // Lịch sử submissions của một student cho một step
+    Route::get('/submissions/history', function () {
+        return view('learning::reviewer.submissions-history');
+    })->name('submission.history');
+});
+
+// Student: Nộp project theo từng bước
+Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+    
+    // Trang nộp project với multi-step workflow
+    Route::get('/projects/{projectId}/submit', \Modules\Learning\Http\Livewire\Student\SubmitProject::class)
+        ->name('projects.submit');
 });

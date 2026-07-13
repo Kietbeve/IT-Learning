@@ -19,7 +19,8 @@ class RoadmapService
 
         if ($hasData) {
             $query = Roadmap::query();
-            
+            // THÊM DÒNG NÀY VÀO ĐỂ ÉP BUỘC CHỈ LẤY LỘ TRÌNH ĐANG HIỂN THỊ
+            $query->where('status', 'approved');
             // Search filter
             if (!empty($filters['search'])) {
                 $search = $filters['search'];

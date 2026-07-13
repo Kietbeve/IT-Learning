@@ -3,6 +3,7 @@
 namespace Modules\Learning\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Learning\Rules\NoLocalUrlRule;
 
 class StoreProjectSubmissionRequest extends FormRequest
 {
@@ -20,10 +21,10 @@ class StoreProjectSubmissionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'github_url' => 'required|url|max:500',
-            'live_demo_url' => 'nullable|url|max:500',
-            'note' => 'nullable|string|max:2000',
-            'attachment' => 'nullable|file|mimes:zip,pdf,png,jpg,jpeg|max:102400', // 100MB
+            'note' => 'required|string|min:10|max:2000',
+            'attachment' => 'required|file|mimes:zip,rar|max:102400', // 100MB - BẮT BUỘC
+            'videos' => 'nullable|array|max:5', // Optional
+            'videos.*' => 'nullable|file|mimes:mp4,mov,avi,wmv|max:512000',
         ];
     }
 
@@ -33,15 +34,17 @@ class StoreProjectSubmissionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'github_url.required' => 'Vui lòng nhập đường dẫn GitHub repository.',
-            'github_url.url' => 'Đường dẫn GitHub không hợp lệ.',
-            'github_url.max' => 'Đường dẫn GitHub không được vượt quá 500 ký tự.',
-            'live_demo_url.url' => 'Đường dẫn demo không hợp lệ.',
-            'live_demo_url.max' => 'Đường dẫn demo không được vượt quá 500 ký tự.',
-            'note.max' => 'Ghi chú không được vượt quá 2000 ký tự.',
-            'attachment.file' => 'File đính kèm không hợp lệ.',
-            'attachment.mimes' => 'File đính kèm phải là định dạng: ZIP, PDF, PNG, JPG.',
-            'attachment.max' => 'Kích thước file không được vượt quá 100MB.',
+            'note.required' => 'Vui lòng nhập mô tả về project của bạn.',
+            'note.min' => 'Mô tả phải có ít nhất 10 ký tự.',
+            'note.max' => 'Mô tả không được vượt quá 2000 ký tự.',
+            'attachment.required' => 'Vui lòng upload file project (ZIP hoặc RAR).',
+            'attachment.file' => 'File không hợp lệ.',
+            'attachment.mimes' => 'File phải là định dạng ZIP hoặc RAR.',
+            'attachment.max' => 'File không được vượt quá 100MB.',
+            'videos.max' => 'Tối đa 5 video.',
+            'videos.*.file' => 'File video không hợp lệ.',
+            'videos.*.mimes' => 'Video phải là định dạng: MP4, MOV, AVI, WMV.',
+            'videos.*.max' => 'Mỗi video không được vượt quá 500MB.',
         ];
     }
 
@@ -51,10 +54,10 @@ class StoreProjectSubmissionRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'github_url' => 'đường dẫn GitHub',
-            'live_demo_url' => 'đường dẫn demo',
-            'note' => 'ghi chú',
-            'attachment' => 'file đính kèm',
+            'note' => 'mô tả project',
+            'attachment' => 'file project',
+            'videos' => 'video demo',
+            'videos.*' => 'video',
         ];
     }
 }

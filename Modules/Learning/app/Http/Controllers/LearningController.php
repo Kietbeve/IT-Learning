@@ -26,22 +26,31 @@ class LearningController extends Controller
     /**
      * TRANG 1: Danh sách lộ trình
      */
-    public function index(Request $request): View
+   public function index(Request $request): View
     {
         $roadmaps = $this->roadmapService->getFilteredRoadmaps($request->all(), 6);
         
         /** @var mixed $user */
         $user = Auth::user();
         $registeredRoadmaps = collect();
-        $unregisteredRoadmaps = Roadmap::all();
+        
+        // Chỉ lấy những lộ trình đã được approved (hiển thị)
+        $unregisteredRoadmaps = Roadmap::where('status', 'approved')->get();
 
         if ($user) {
             $registeredIds = \Modules\Learning\Models\RoadmapEnrollment::where('user_id', $user->id)
                 ->pluck('roadmap_id')
                 ->toArray();
 
-            $registeredRoadmaps = Roadmap::whereIn('id', $registeredIds)->get();
-            $unregisteredRoadmaps = Roadmap::whereNotIn('id', $registeredIds)->get();
+            //  Lọc thêm điều kiện approved
+            $registeredRoadmaps = Roadmap::whereIn('id', $registeredIds)
+                ->where('status', 'approved')
+                ->get();
+                
+            // Lọc thêm điều kiện approved
+            $unregisteredRoadmaps = Roadmap::whereNotIn('id', $registeredIds)
+                ->where('status', 'approved')
+                ->get();
         }
 
         return view('learning::layouts.roadmap-list', compact(
@@ -155,12 +164,14 @@ class LearningController extends Controller
             'sections.lessons.exam.questions.options',
             'sections.lessons.document',
             'sections.lessons.project',
+
             'lessons' => function($query) {
                 $query->where('is_published', true)->orderBy('sort_order');
             },
             'lessons.exam.questions.options',
             'lessons.document',
             'lessons.project',
+
         ])->findOrFail($roadmapId);
 
         $lessonsFromSections = $roadmap->sections->flatMap(function($section) {
@@ -431,10 +442,9 @@ class LearningController extends Controller
                 userId: $userId,
                 lessonId: (int) $lessonId,
                 roadmapId: (int) $roadmapId,
-                githubUrl: $request->input('github_url'),
-                liveDemoUrl: $request->input('live_demo_url'),
                 note: $request->input('note'),
-                attachment: $request->file('attachment')
+                attachment: $request->file('attachment'),
+                videos: $request->file('videos', [])
             );
 
             $message = $submission->submission_no > 1 

@@ -127,23 +127,7 @@ class ExamModal extends Component
             'category_id'       => ['required', 'integer', 'exists:categories,id'],
         ]);
 
-<<<<<<< HEAD
         $this->examService->saveExam($validated,$this->editingExamId,auth()->id());
-=======
-        $exam = $this->editingExamId
-            ? Exam::findOrFail($this->editingExamId)
-            : new Exam();
-
-        $exam->fill($validated);
-
-        if (! $exam->exists) {
-            $exam->slug=Exam::generateUniqueSlug($this->title);
-            $exam->author_id = auth()->id();
-            $exam->id = (string) Str::uuid();
-        }
-
-        $exam->save();
->>>>>>> 9e0f795 (cập nhật dữ liệu)
 
         $this->showEditModal = false;
 

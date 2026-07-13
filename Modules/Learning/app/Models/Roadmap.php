@@ -85,6 +85,16 @@ class Roadmap extends Model
         return $this->hasMany(RoadmapLessonProgress::class);
     }
 
+    public function sectionProgress(): HasMany
+    {
+        return $this->hasMany(SectionProgress::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(RoadmapCertificate::class);
+    }
+
     /**
      * Check if a user is enrolled in this roadmap
      */

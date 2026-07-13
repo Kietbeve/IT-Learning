@@ -73,19 +73,10 @@
                 </div>
 
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Chế độ hiển thị (Visibility)</label>
-                    <select wire:model="visibility" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500">
-                        <option value="public">Công khai công chúng</option>
-                        <option value="private">Nội bộ hệ thống</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Trạng thái phê duyệt (Status)</label>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Trạng thái (Status)</label>
                     <select wire:model="status" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500">
-                        <option value="draft">Bản nháp (Draft)</option>
-                        <option value="pending">Chờ xét duyệt (Pending)</option>
-                        <option value="published">Đã xuất bản (Published)</option>
+                        <option value="approved">👁️ Hiển thị công khai</option>
+                        <option value="draft">🔒 Đang ẩn (Bản nháp)</option>
                     </select>
                 </div>
 
@@ -101,17 +92,19 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-100">
-                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24">Public ID</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24">Thứ Tự</th>
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lộ Trình Đào Tạo</th>
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-28">Cấp Độ</th>
-                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-32">Trạng Thái</th>
+                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-36">Trạng Thái</th>
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-36 text-center">Hành Động</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     @forelse($roadmaps as $roadmap)
                     <tr class="hover:bg-slate-50/60 transition-colors group">
-                        <td class="px-6 py-4 text-xs font-mono font-bold text-slate-400">{{ $roadmap->id }}</td>
+                       <td class="px-6 py-4 text-xs font-mono font-bold text-slate-500 text-center">
+            {{ $loop->iteration }}
+        </td>
                         <td class="px-6 py-4">
                             <span class="block text-xs font-black text-slate-800 group-hover:text-blue-600 transition-colors">{{ $roadmap->title }}</span>
                             <span class="block text-[11px] text-slate-400 font-medium mt-0.5 max-w-md truncate">{{ $roadmap->description ?? 'Chưa cấu hình mô tả ngắn.' }}</span>
@@ -121,21 +114,19 @@
                                 {{ $roadmap->level }}
                             </span>
                         </td>
+                        
                         <td class="px-6 py-4">
-                            @if($roadmap->status === 'published')
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">
-                                    <span class="w-1 h-1 rounded-full bg-emerald-500"></span> Published
-                                </span>
-                            @elseif($roadmap->status === 'pending')
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-bold">
-                                    <span class="w-1 h-1 rounded-full bg-amber-500"></span> Pending
+                            @if($roadmap->status === 'approved')
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-bold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Hiển thị
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">
-                                    <span class="w-1 h-1 rounded-full bg-slate-400"></span> Draft
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[11px] font-bold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Đang ẩn
                                 </span>
                             @endif
                         </td>
+
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-center gap-1.5">
                                 <a href="{{ url('/manage/detail?id=' . $roadmap->id) }}" title="Quản lý danh sách bài học" class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all">

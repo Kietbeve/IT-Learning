@@ -164,13 +164,11 @@
                                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                             </a>
                         @else
-                            <button type="button"
-                               class="inline-flex items-center justify-center bg-gray-300 text-gray-600 font-medium text-sm px-4 py-2 rounded-lg shadow-sm cursor-not-allowed"
-                               disabled
-                               title="Vui lòng đăng ký lộ trình để xem bài học">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                Đăng ký để xem
-                            </button>
+                            <a href="{{ route('learning.lessons.show', ['roadmap_id' => $id, 'lesson_id' => $lessonId]) }}" 
+                               class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition duration-150">
+                                Xem chi tiết
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
                         @endif
 
                     </div>

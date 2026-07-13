@@ -125,6 +125,7 @@ class SubjectManagement extends Component
         $subject = Subject::withCount(['documents'])
             ->findOrFail($this->confirmDeleteId);
 
+        // Không cho phép xóa nếu đang có tài liệu
         if ($subject->documents_count > 0) {
             $this->notification()->error(
                 title: 'Không thể xóa môn học',
@@ -182,6 +183,20 @@ class SubjectManagement extends Component
         $this->resetValidation();
     }
 
+    /**
+     * Mở modal xem chi tiết liên kết của môn học
+     * 
+     * @param int $id ID của môn học cần xem chi tiết
+     */
+    public function openDetailModal($id)
+    {
+        // Load môn học với các relationships và đếm số lượng
+        $this->detailSubject = Subject::with(['category', 'documents'])
+            ->withCount(['documents'])
+            ->findOrFail($id);
+        
+        $this->showDetailModal = true;
+    }
 
 
     /**

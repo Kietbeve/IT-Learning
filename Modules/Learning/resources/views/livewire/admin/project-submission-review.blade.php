@@ -131,12 +131,34 @@
                     ✍️ Đánh giá
                 </h3>
 
-                @if($submission->feedback)
+                @if($submission->feedback || $submission->score)
                     <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                        <span class="text-sm font-bold text-blue-900">Feedback hiện tại:</span>
-                        <p class="text-sm text-gray-700 mt-2 leading-relaxed">{{ $submission->feedback }}</p>
+                        @if($submission->score)
+                            <div class="mb-3 pb-3 border-b border-blue-200">
+                                <span class="text-sm font-bold text-blue-900">Điểm số:</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span class="text-2xl font-black {{ $submission->isPassed() ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $submission->score }}
+                                    </span>
+                                    <span class="text-sm text-gray-600">/ {{ $submission->project->max_score ?? 100 }}</span>
+                                    @if($submission->getScorePercentage())
+                                        <span class="text-xs font-semibold px-2 py-1 rounded {{ $submission->isPassed() ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                            {{ number_format($submission->getScorePercentage(), 1) }}%
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                        @if($submission->feedback)
+                            <div>
+                                <span class="text-sm font-bold text-blue-900">Feedback:</span>
+                                <p class="text-sm text-gray-700 mt-2 leading-relaxed">{{ $submission->feedback }}</p>
+                            </div>
+                        @endif
                         @if($submission->reviewer)
-                            <p class="text-xs text-gray-500 mt-2">Reviewer: {{ $submission->reviewer->name }}</p>
+                            <p class="text-xs text-gray-500 mt-3 pt-3 border-t border-blue-200">
+                                Reviewer: {{ $submission->reviewer->name }} • {{ $submission->reviewed_at->format('d/m/Y H:i') }}
+                            </p>
                         @endif
                     </div>
                 @endif
@@ -163,6 +185,22 @@
                                 <option value="failed">Không đạt - Cần làm lại</option>
                             </select>
                             @error('status') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2">Điểm số <span class="text-gray-500 text-xs">(0 - {{ $submission->project->max_score ?? 100 }})</span></label>
+                            <input type="number" 
+                                   wire:model="score" 
+                                   step="0.01" 
+                                   min="0" 
+                                   max="{{ $submission->project->max_score ?? 100 }}"
+                                   placeholder="Nhập điểm (VD: 85.5)"
+                                   class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Điểm đạt: ≥{{ $submission->project->passing_score ?? 60 }} | 
+                                Tự động xác định Đạt/Không đạt dựa trên điểm
+                            </p>
+                            @error('score') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <div>

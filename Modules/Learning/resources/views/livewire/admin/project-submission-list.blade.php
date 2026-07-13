@@ -142,7 +142,7 @@
                                 {{ $submission->submitted_at->format('d/m/Y H:i') }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <a href="{{ route('admin.learning.submissions.review', $submission->id) }}" 
+                                <a href="{{ route($routePrefix . '.submissions.review', $submission->id) }}" 
                                    class="inline-flex items-center gap-1 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
                                     👁 Xem chi tiết
                                 </a>
