@@ -169,9 +169,16 @@ class DocumentList extends Component
         }
 
         if ($this->selectedPrice === 'free') {
-            $query->whereDoesntHave('product');
+            $query->where(function($q) {
+                $q->whereDoesntHave('product')
+                  ->orWhereHas('product', function($pq) {
+                      $pq->where('price', '<=', 0);
+                  });
+            });
         } elseif ($this->selectedPrice === 'paid') {
-            $query->whereHas('product');
+            $query->whereHas('product', function($pq) {
+                $pq->where('price', '>', 0);
+            });
         }
 
         if ($this->sort === 'newest') {

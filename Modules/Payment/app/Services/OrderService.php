@@ -44,7 +44,7 @@ class OrderService
                 'download_token' => Str::random(64),
                 'guest_download_limit' => $user ? 0 : 5,
                 'guest_download_count' => 0,
-                'expires_at' => now()->addMinutes(1),
+                'expires_at' => now()->addMinutes(10),
                 'checkout_data' => empty($checkoutData) ? null : $checkoutData,
             ]);
 
@@ -76,7 +76,7 @@ class OrderService
                 'total_amount' => $finalPrice,
                 'payment_status' => 'pending',
                 'order_status' => 'pending',
-                'expires_at' => now()->addMinutes(1),
+                'expires_at' => now()->addMinutes(10),
             ]);
 
             return $order;

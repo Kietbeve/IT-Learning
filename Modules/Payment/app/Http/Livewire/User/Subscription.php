@@ -35,7 +35,7 @@ class Subscription extends Component
 
     public $currentOrderCode = null;
 
-    public $remainingSeconds = 60;
+    public $remainingSeconds = 600;
 
     public function mount()
     {
@@ -65,7 +65,7 @@ class Subscription extends Component
         $this->showPaymentModal = false;
         $this->currentOrderCode = null;
         $this->paymentData = [];
-        $this->remainingSeconds = 60;
+        $this->remainingSeconds = 600;
     }
 
     public function refreshVipStatus()
@@ -167,7 +167,7 @@ class Subscription extends Component
             );
 
             // Dispatch delayed job to expire order after 5 minutes
-            ExpireOrderJob::dispatch($order->id)->delay(now()->addMinutes(1));
+            ExpireOrderJob::dispatch($order->id)->delay(now()->addMinutes(10));
 
             $payOSClientId = config('payment.payos.client_id');
 
@@ -206,7 +206,7 @@ class Subscription extends Component
                 cancelUrl: route('user.subscription'),
                 buyerName: $user->name,
                 buyerEmail: $user->email,
-                expiredAt: now()->addMinutes(1)->timestamp,
+                expiredAt: now()->addMinutes(10)->timestamp,
             );
 
             if (isset($paymentResponse['checkoutUrl'])) {
@@ -217,7 +217,7 @@ class Subscription extends Component
 
                 $this->paymentData = $paymentResponse;
                 $this->currentOrderCode = (string) $order->order_code;
-                $this->remainingSeconds = 60;
+                $this->remainingSeconds = 600;
                 $this->showPaymentModal = true;
                 $this->loading = false;
 

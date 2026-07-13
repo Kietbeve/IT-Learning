@@ -272,7 +272,7 @@
                                 {{ $doc->visibility === 'public' ? 'Công khai' : 'Riêng tư' }}
                             </span>
                             @if($doc->trashed())
-                                <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-[10px] font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Đã xóa mềm</span>
+                                <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-[10px] font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Đã xóa </span>
                             @elseif($doc->status === 'approved')
                                 <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Đã duyệt</span>
                             @elseif($doc->status === 'pending')
@@ -440,7 +440,7 @@
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                     <div class="flex flex-col gap-1.5 items-start">
                                         @if($doc->trashed())
-                                            <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Đã xóa mềm</span>
+                                            <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Đã xóa</span>
                                         @elseif($doc->status === 'approved')
                                             <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Đã duyệt</span>
                                         @elseif($doc->status === 'pending')
@@ -641,3 +641,4 @@
     @endif
 
 </div>
+

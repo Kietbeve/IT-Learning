@@ -36,25 +36,13 @@
 
                     {{-- Thông tin chính --}}
                     <div>
-                        <div class="mb-4 flex items-center gap-2">
-                            <div class="h-1 w-1 rounded-full bg-blue-500"></div>
-                            <p class="text-xs font-bold uppercase tracking-wider text-slate-700">Thông tin chính</p>
-                        </div>
-                        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <div class="grid grid-cols-2 gap-4">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Thông tin chính</p>
+                        <div class="grid grid-cols-2 gap-x-6 gap-y-3">
 
-                                {{-- Mã đề --}}
-                                <div class="group flex items-start gap-3 rounded-lg bg-slate-50 p-3 transition-all hover:bg-slate-100">
-                                    <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                                        </svg>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-xs font-medium text-slate-500">Mã đề (Public ID)</p>
-                                        <p class="mt-0.5 font-mono text-sm font-semibold text-slate-900">{{ $exam->public_id }}</p>
-                                    </div>
-                                </div>
+                            <div class="flex justify-between border-b border-slate-100 pb-2">
+                                <span class="text-slate-500">Mã đề (Public ID)</span>
+                                <span class="font-mono font-semibold text-slate-800 text-xs">{{ $exam->public_id }}</span>
+                            </div>
 
                                 {{-- Danh mục --}}
                                 <div class="group flex items-start gap-3 rounded-lg bg-slate-50 p-3 transition-all hover:bg-slate-100">

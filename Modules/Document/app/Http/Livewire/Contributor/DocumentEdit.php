@@ -507,3 +507,4 @@ class DocumentEdit extends Component
         ]);
     }
 }
+

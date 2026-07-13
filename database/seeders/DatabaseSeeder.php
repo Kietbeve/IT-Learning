@@ -20,19 +20,22 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            //seeder ngoài module
-            CategorySeeder::class,
-            TagSeeder::class,
-            SettingSeeder::class,
-            //seeder từ module
+            //seeder từ module Auth phải chạy trước để có Admin
             \Modules\Auth\database\seeders\AuthDatabaseSeeder::class,
+            
+            //seeder ngoài module (chứa tài liệu, danh mục)
+            ITLearningDataSeeder::class,
+
             \Modules\Exam\database\seeders\QuestionSeeder::class,
             \Modules\Exam\database\seeders\ExamTagMapSeeder::class,
             \Modules\Learning\Database\Seeders\LearningDatabaseSeeder::class,
+<<<<<<< HEAD
             //seeder orders và dashboard
             // OrderSeeder::class,
             // DashboardSeeder::class,
             SettingSeeder::class,
+=======
+>>>>>>> 9e0f795 (cập nhật dữ liệu)
         ]);
     }
 }

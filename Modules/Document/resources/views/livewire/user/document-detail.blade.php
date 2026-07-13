@@ -340,21 +340,21 @@
                 </div>
             @else
                 <!-- Preview Section for PDF / DOCX (Inline Reader directly on the page layout) -->
-                <div class="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow p-6 shadow-sm space-y-4">
+                <div class="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow p-3 sm:p-6 space-y-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl shrink-0">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                            <div class="p-2 sm:p-3 bg-blue-50 text-blue-600 rounded-2xl shrink-0">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                             </div>
                             <div>
                                 <h3 class="font-bold text-blue-900 text-sm">Đọc thử tài nguyên</h3>
-                                <p class="text-xs text-gray-500 mt-0.5">Hỗ trợ đọc thử một phần tài liệu trước khi tải xuống</p>
+                                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">Hỗ trợ đọc thử một phần tài liệu trước khi tải xuống</p>
                             </div>
                         </div>
-                        <span class="rounded-xl bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600 uppercase">Định dạng {{ $doc->file_type }}</span>
+                        <span class="hidden sm:inline-block rounded-xl bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600 uppercase">Định dạng {{ $doc->file_type }}</span>
                     </div>
 
-                    <div class="h-[750px] w-full mt-4">
+                    <div class="h-[500px] md:h-[750px] w-full mt-4">
                         @if($doc->file_type === 'pdf')
                             @php
                                 // Preview section luôn hiện preview file (giới hạn trang), không hiện full document
@@ -362,11 +362,11 @@
                             @endphp
 
                             @if($pdfUrl && $previewFileExists)
-                                <div class="rounded-2xl overflow-hidden border border-gray-100 shadow-inner h-full w-full bg-gray-100">
-                                    <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0"></iframe>
+                                <div class="rounded-2xl overflow-auto border border-gray-100 shadow-inner h-full w-full bg-gray-100" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
+                                    <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0" style="width:100%; height:100%; min-height: 100%;"></iframe>
                                 </div>
                             @else
-                                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-8 text-center text-gray-500 h-full w-full flex items-center justify-center">
+                                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 sm:p-8 text-center text-gray-500 h-full w-full flex items-center justify-center">
                                     <p>Không thể hiển thị tài liệu.</p>
                                 </div>
                             @endif
@@ -380,13 +380,13 @@
 
                             @if($pdfUrl && $previewFileExists)
                                 {{-- Preview PDF từ DOCX đã convert --}}
-                                <div class="rounded-2xl overflow-hidden border border-gray-100 shadow-inner h-full w-full bg-gray-100">
-                                    <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0"></iframe>
+                                <div class="rounded-2xl overflow-auto border border-gray-100 shadow-inner h-full w-full bg-gray-100" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
+                                    <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0" style="width:100%; height:100%; min-height: 100%;"></iframe>
                                 </div>
                                 
                             @else
                                 {{-- Fallback nếu chưa có preview (đang xử lý conversion) --}}
-                                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-8 text-center text-gray-500 h-full w-full flex items-center justify-center">
+                                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 sm:p-8 text-center text-gray-500 h-full w-full flex items-center justify-center">
                                     <div class="space-y-2">
                                         <p class="text-sm font-medium">Đang xử lý preview tài liệu Word...</p>
                                         <p class="text-xs text-gray-400">Vui lòng tải xuống để xem đầy đủ ngay.</p>
@@ -779,20 +779,20 @@
                         @php
                             $relThumb = $rel->thumbnail_url ?? $relPlaceholders[$rel->id % count($relPlaceholders)];
                         @endphp
-                        <a href="{{ route('documents.show', [$rel->id, Str::slug($rel->title)]) }}" class="flex gap-3 p-2 rounded-2xl hover:bg-gray-50 transition-all duration-200 group">
+                        <a href="{{ route('documents.show', [$rel->id, Str::slug($rel->title)]) }}" class="flex gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-all duration-200 group border border-transparent hover:border-gray-100">
                             <!-- Thumbnail -->
-                            <div class="h-16 w-20 shrink-0 rounded-xl overflow-hidden bg-gray-100 shadow-sm">
-                                <img src="{{ $relThumb }}" alt="{{ $rel->title }}" class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" />
+                            <div class="h-20 w-28 shrink-0 rounded-xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100/50">
+                                <img src="{{ $relThumb }}" alt="{{ $rel->title }}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                             </div>
                             <!-- Info -->
                             <div class="flex-1 min-w-0 flex flex-col justify-center">
-                                <h4 class="text-xs font-bold text-blue-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug break-all">{{ strip_tags($rel->title) }}</h4>
-                                <div class="flex items-center gap-3 mt-1.5">
-                                    <span class="inline-flex items-center gap-1 text-[10px] text-gray-400 font-medium">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                <h4 class="text-sm font-bold text-blue-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">{{ strip_tags($rel->title) }}</h4>
+                                <div class="flex items-center gap-4 mt-2">
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                         {{ number_format($rel->download_count) }}
                                     </span>
-                                    <span class="inline-block rounded px-1.5 py-0.5 text-[9px] font-bold uppercase bg-gray-100 text-gray-500">{{ $rel->file_type }}</span>
+                                    <span class="inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase bg-gray-100 text-gray-500">{{ $rel->file_type }}</span>
                                 </div>
                             </div>
                         </a>
@@ -988,5 +988,6 @@
         </div>
     </div>
 </div>
+
 
 

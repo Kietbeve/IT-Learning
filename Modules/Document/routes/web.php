@@ -49,3 +49,4 @@ Route::group(['prefix' => 'contributor', 'middleware' => ['auth', 'role:contribu
     Route::get('/documents/create', Modules\Document\Http\Livewire\Contributor\DocumentUpload::class)->name('contributor.documents.create');
     Route::get('/documents/{id}/edit', DocumentEdit::class)->name('contributor.documents.edit');
 });
+

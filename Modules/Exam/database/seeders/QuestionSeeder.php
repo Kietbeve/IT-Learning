@@ -24,7 +24,7 @@ class QuestionSeeder extends Seeder
          */
         $singleChoice = Question::create([
             'author_id'       => 1,
-            'category_id'     => 1,
+            'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
             'content'         => 'PHP là gì?',
             'explanation'     => 'PHP là một ngôn ngữ lập trình phía máy chủ (server-side scripting language).',
             'difficulty'      => 'easy',
@@ -80,7 +80,7 @@ class QuestionSeeder extends Seeder
          */
         $multipleChoice = Question::create([
             'author_id'       => 1,
-            'category_id'     => 1,
+            'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
             'content'         => 'Những thành phần nào thuộc Laravel?',
             'explanation'     => 'Eloquent, Blade và Queue đều là thành phần của Laravel.',
             'difficulty'      => 'medium',
@@ -136,7 +136,7 @@ class QuestionSeeder extends Seeder
          */
         Question::create([
             'author_id'       => 1,
-            'category_id'     => 1,
+            'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
             'content'         => 'Giải thích Service Container trong Laravel và lợi ích của nó.',
             'explanation'     => 'Service Container là nơi quản lý dependency và hỗ trợ Dependency Injection trong Laravel.',
             'difficulty'      => 'hard',
@@ -149,7 +149,7 @@ class QuestionSeeder extends Seeder
         $exam = Exam::create([
         'public_id'         => Str::uuid(),
         'author_id'         => 1,
-        'category_id'       => 1,
+        'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
         'title'             => 'Đề thi Laravel cơ bản',
         'slug'              => 'de-thi-laravel-co-ban',
         'short_description' => 'Đề thi demo',
@@ -358,7 +358,7 @@ class QuestionSeeder extends Seeder
         foreach ($easyQuestionsData as $qData) {
             $question = Question::create([
                 'author_id'   => 1,
-                'category_id' => 1,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'content'     => $qData['content'],
                 'explanation' => $qData['explanation'],
                 'difficulty'  => 'easy',
@@ -391,7 +391,7 @@ class QuestionSeeder extends Seeder
         $officialExam = Exam::create([
             'public_id'         => 'exam-002',
             'author_id'         => 1,
-            'category_id'       => 1,
+            'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
             'title'             => 'Đề thi Tin học đại cương (Chính thức)',
             'slug'              => 'de-thi-tin-hoc-dai-cuong-chinh-thuc',
             'short_description' => 'Đề thi Tin học đại cương siêu dễ dành cho mọi người.',
@@ -425,7 +425,7 @@ class QuestionSeeder extends Seeder
         $bulkQuestionsData = [
             // ===== JavaScript (category_id = 4) =====
             [
-                'category_id' => 4,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'easy',
                 'content' => 'Từ khóa nào dùng để khai báo biến có phạm vi block trong JavaScript?',
@@ -438,7 +438,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 4,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'medium',
                 'content' => 'Phương thức nào dùng để chuyển chuỗi JSON thành đối tượng JavaScript?',
@@ -451,7 +451,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 4,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'multiple_choice',
                 'difficulty' => 'medium',
                 'content' => 'Những phương thức nào thuộc Array trong JavaScript?',
@@ -464,7 +464,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 4,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'essay',
                 'difficulty' => 'hard',
                 'content' => 'Giải thích sự khác nhau giữa Promise và async/await trong JavaScript.',
@@ -473,7 +473,7 @@ class QuestionSeeder extends Seeder
 
             // ===== Python (category_id = 5) =====
             [
-                'category_id' => 5,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'easy',
                 'content' => 'Hàm nào dùng để in ra màn hình trong Python?',
@@ -486,7 +486,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 5,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'medium',
                 'content' => 'Kiểu dữ liệu nào trong Python là immutable (không thay đổi được)?',
@@ -499,7 +499,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 5,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'multiple_choice',
                 'difficulty' => 'medium',
                 'content' => 'Những thư viện nào phổ biến trong lĩnh vực Machine Learning với Python?',
@@ -512,7 +512,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 5,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'essay',
                 'difficulty' => 'hard',
                 'content' => 'Giải thích cơ chế Garbage Collection trong Python và ảnh hưởng đến hiệu suất.',
@@ -521,7 +521,7 @@ class QuestionSeeder extends Seeder
 
             // ===== Java (category_id = 6) =====
             [
-                'category_id' => 6,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'easy',
                 'content' => 'Phương thức nào là điểm bắt đầu thực thi của chương trình Java?',
@@ -534,7 +534,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 6,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'medium',
                 'content' => 'Từ khóa nào trong Java ngăn class được kế thừa?',
@@ -547,7 +547,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 6,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'multiple_choice',
                 'difficulty' => 'hard',
                 'content' => 'Những nguyên tắc nào thuộc SOLID trong lập trình hướng đối tượng?',
@@ -560,7 +560,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 6,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'essay',
                 'difficulty' => 'hard',
                 'content' => 'So sánh ArrayList và LinkedList trong Java. Khi nào nên dùng loại nào?',
@@ -569,7 +569,7 @@ class QuestionSeeder extends Seeder
 
             // ===== Mạng máy tính (category_id = 7) =====
             [
-                'category_id' => 7,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'easy',
                 'content' => 'Mô hình OSI có bao nhiêu tầng?',
@@ -582,7 +582,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 7,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'medium',
                 'content' => 'Giao thức nào hoạt động ở tầng Transport trong mô hình TCP/IP?',
@@ -595,7 +595,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 7,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'multiple_choice',
                 'difficulty' => 'medium',
                 'content' => 'Những thiết bị nào hoạt động ở tầng Network (tầng 3) trong mô hình OSI?',
@@ -608,7 +608,7 @@ class QuestionSeeder extends Seeder
                 ],
             ],
             [
-                'category_id' => 7,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'essay',
                 'difficulty' => 'hard',
                 'content' => 'Phân tích sự khác nhau giữa giao thức TCP và UDP. Cho ví dụ ứng dụng thực tế.',
@@ -617,7 +617,7 @@ class QuestionSeeder extends Seeder
 
             // ===== Database bổ sung (category_id = 3) =====
             [
-                'category_id' => 3,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'easy',
                 'content' => 'Câu lệnh SQL nào dùng để lấy dữ liệu từ bảng?',
@@ -632,7 +632,7 @@ class QuestionSeeder extends Seeder
 
             // ===== Laravel bổ sung (category_id = 2) =====
             [
-                'category_id' => 2,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'single_choice',
                 'difficulty' => 'medium',
                 'content' => 'Lệnh artisan nào dùng để tạo Controller mới trong Laravel?',
@@ -647,7 +647,7 @@ class QuestionSeeder extends Seeder
 
             // ===== PHP bổ sung (category_id = 1) =====
             [
-                'category_id' => 1,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'type' => 'multiple_choice',
                 'difficulty' => 'medium',
                 'content' => 'Những kiểu dữ liệu nào là kiểu scalar trong PHP?',
@@ -706,7 +706,7 @@ class QuestionSeeder extends Seeder
         $bulkExamsData = [
             // Exam 1: JavaScript - multiple_choice - practice
             [
-                'category_id'       => 4,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Kiểm tra JavaScript cơ bản',
                 'slug'              => 'kiem-tra-javascript-co-ban',
                 'short_description' => 'Bài kiểm tra kiến thức JavaScript nền tảng cho người mới.',
@@ -717,7 +717,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 2: JavaScript - hybrid - official
             [
-                'category_id'       => 4,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Đề thi JavaScript nâng cao',
                 'slug'              => 'de-thi-javascript-nang-cao',
                 'short_description' => 'Đề thi chuyên sâu về ES6+, Promise và pattern nâng cao.',
@@ -728,7 +728,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 3: Python - multiple_choice - practice
             [
-                'category_id'       => 5,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Kiểm tra Python cho người mới',
                 'slug'              => 'kiem-tra-python-cho-nguoi-moi',
                 'short_description' => 'Bài kiểm tra cú pháp Python cơ bản và cấu trúc dữ liệu.',
@@ -739,7 +739,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 4: Python - hybrid - official
             [
-                'category_id'       => 5,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Đề thi Python - Data Science',
                 'slug'              => 'de-thi-python-data-science',
                 'short_description' => 'Đề thi về ứng dụng Python trong khoa học dữ liệu.',
@@ -750,7 +750,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 5: Java - multiple_choice - practice
             [
-                'category_id'       => 6,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Kiểm tra Java OOP',
                 'slug'              => 'kiem-tra-java-oop',
                 'short_description' => 'Bài kiểm tra về lập trình hướng đối tượng trong Java.',
@@ -761,7 +761,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 6: Java - essay - official
             [
-                'category_id'       => 6,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Đề thi Java - Design Patterns',
                 'slug'              => 'de-thi-java-design-patterns',
                 'short_description' => 'Đề thi về các mẫu thiết kế phổ biến trong Java.',
@@ -772,7 +772,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 7: Mạng máy tính - hybrid - practice
             [
-                'category_id'       => 7,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Kiểm tra Mạng máy tính cơ bản',
                 'slug'              => 'kiem-tra-mang-may-tinh-co-ban',
                 'short_description' => 'Bài kiểm tra kiến thức nền tảng về mạng máy tính.',
@@ -783,7 +783,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 8: Mạng máy tính - essay - official
             [
-                'category_id'       => 7,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Đề thi An ninh mạng',
                 'slug'              => 'de-thi-an-ninh-mang',
                 'short_description' => 'Đề thi về bảo mật mạng và kỹ thuật phòng chống tấn công.',
@@ -794,7 +794,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 9: Database - hybrid - official
             [
-                'category_id'       => 3,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Đề thi SQL nâng cao',
                 'slug'              => 'de-thi-sql-nang-cao',
                 'short_description' => 'Đề thi chuyên sâu về truy vấn SQL phức tạp.',
@@ -805,7 +805,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 10: Laravel - hybrid - practice
             [
-                'category_id'       => 2,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Kiểm tra Laravel Eloquent',
                 'slug'              => 'kiem-tra-laravel-eloquent',
                 'short_description' => 'Bài kiểm tra về ORM Eloquent trong Laravel.',
@@ -816,7 +816,7 @@ class QuestionSeeder extends Seeder
             ],
             // Exam 11: PHP - essay - official
             [
-                'category_id'       => 1,
+                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
                 'title'             => 'Đề thi PHP nâng cao',
                 'slug'              => 'de-thi-php-nang-cao',
                 'short_description' => 'Đề thi chuyên sâu về PHP: OOP, namespace, trait.',
