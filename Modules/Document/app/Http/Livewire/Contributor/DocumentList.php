@@ -117,10 +117,10 @@ class DocumentList extends Component
         $rejectedVersion = $doc->rejectedVersion;
         if ($rejectedVersion) {
             if ($rejectedVersion->version_number === 1) {
-                // First submission rejected – soft-delete the entire document for the contributor
-                $doc->delete();
+                // Keep the version data but clear the reason to dismiss the badge
+                $rejectedVersion->update(['rejected_reason' => null]);
             } else {
-                // Edit version rejected – just delete that rejected version record
+                // Edit version rejected – safe to delete the rejected version record
                 $rejectedVersion->delete();
             }
         }

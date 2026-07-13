@@ -215,7 +215,6 @@ class ITLearningDataSeeder extends Seeder
             if (!$category || !$subject) continue;
 
             $docId = DB::table('documents')->insertGetId([
-                'public_id' => 'doc_' . Str::random(12),
                 'author_id' => $author->id,
                 'slug' => Str::slug($title) . '-' . Str::random(5),
                 'status' => 'approved',

@@ -1,4 +1,4 @@
-<div id="admin-payout-review" class="space-y-6 py-4" wire:poll.10s.keep-alive>
+<div id="admin-payout-review" class="space-y-6 py-4" wire:poll.5s.keep-alive>
 
     <style>
         #admin-payout-review,

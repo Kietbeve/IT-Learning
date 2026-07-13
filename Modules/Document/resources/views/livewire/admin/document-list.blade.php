@@ -1,4 +1,4 @@
-<div id="admin-document-list" wire:poll.10s.keep-alive
+<div id="admin-document-list" wire:poll.5s.keep-alive
      x-data="{ notification: null }" 
      x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      class="space-y-6">
@@ -233,7 +233,7 @@
                     <div class="flex items-center justify-between gap-4 pt-1">
                         <div>
                             @if($doc->trashed())
-                                <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Đã xóa mềm</span>
+                                <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Đã xóa</span>
                             @elseif($activeTab === 'pending' && $doc->pendingVersion)
                                 <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20">Chờ duyệt</span>
                             @elseif($doc->status === 'approved')

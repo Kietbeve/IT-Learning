@@ -32,7 +32,6 @@ class Document extends Model
 
     protected $fillable = [
         'current_version_id',
-        'public_id',
         'author_id',
         'slug',
         'status',

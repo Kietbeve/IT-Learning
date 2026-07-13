@@ -43,57 +43,21 @@ class WatermarkService
 
     protected function watermarkPdf($originalPath, $document)
     {
-        // Tạo đường dẫn ngẫu nhiên cho file PDF tạm (bắt đầu bằng wm_)
         $tempPath = $this->tempDir().'/'.uniqid('wm_').'.pdf';
 
         try {
-            // Lấy chữ dùng làm watermark (ví dụ: IT-Learning - 09-07-2026)
             $watermarkText = $this->getWatermarkText();
-
-            // Khởi tạo thư viện Fpdi chuyên dùng để chỉnh sửa PDF
-            $pdf = new CustomFpdi;
             
-            // Đọc file gốc và lấy ra tổng số trang
-            $pageCount = $pdf->setSourceFile($originalPath);
-
-            // Chạy vòng lặp từ trang 1 đến trang cuối cùng
-            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-                // Đưa cấu trúc của trang hiện tại vào bộ nhớ
-                $templateId = $pdf->importPage($pageNo);
-                
-                // Lấy kích thước thật (chiều rộng, chiều dài) của trang đó
-                $size = $pdf->getTemplateSize($templateId);
-
-                // Tạo 1 trang trắng mới có kích thước y hệt trang gốc
-                $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
-                
-                // Bê y nguyên nội dung trang gốc dán vào trang trắng vừa tạo
-                $pdf->useTemplate($templateId);
-
-                // Set phông chữ Helvetica, in đậm (B), cỡ chữ 12 cho Watermark
-                $pdf->SetFont('helvetica', 'B', 12);
-                
-                // Set màu chữ là xám (RGB: 128, 128, 128)
-                $pdf->SetTextColor(128, 128, 128);
-                
-                // Chỉnh độ mờ của chữ (trong suốt 50%)
-                $pdf->SetAlpha(0.5);
-
-                // Căn toạ độ X sao cho chữ nằm ngay giữa trang
-                $centerX = ($size['width'] / 2) - 30;
-                
-                // In chữ Watermark ra vị trí toạ độ X vừa tính, và toạ độ Y = 15 (cách mép trên 15)
-                $pdf->Text($centerX, 15, $watermarkText);
-
-                // Đưa độ mờ về lại 100% để không làm nhoè các trang sau
-                $pdf->SetAlpha(1);
+            // Call Python script
+            $scriptPath = base_path('scripts/pdf_tool.py');
+            $command = escapeshellcmd("python \"$scriptPath\" watermark \"$originalPath\" \"$tempPath\" \"$watermarkText\"");
+            $output = shell_exec($command);
+            
+            $result = json_decode($output, true);
+            
+            if (!$result || !isset($result['success']) || !$result['success']) {
+                throw new \Exception("Python watermarking failed: " . ($output ?? 'unknown error'));
             }
-
-            // Gắn mật khẩu để khoá tính năng In (Print) của file PDF
-            $pdf->SetProtection(['print'], '', 'owner_password_itlearning_2026');
-            
-            // Xuất file PDF đã hoàn thiện ra ổ cứng
-            $pdf->Output('F', $tempPath);
 
             // Sinh đường dẫn lưu trữ trên Cloudflare R2
             $r2Path = $this->r2Path('watermarked', 'pdf');
@@ -105,10 +69,9 @@ class WatermarkService
             return $r2Path;
 
         } catch (\Exception $e) {
-            // Nếu Fpdi văng lỗi (không đọc được PDF bảo mật), dùng cách thô sơ để chữa cháy
+            \Log::error('Watermark failed: ' . $e->getMessage());
             return $this->mockWatermarkPdf($originalPath, $document);
         } finally {
-            // Xoá file tạm để tránh đầy ổ cứng
             if (file_exists($tempPath)) {
                 @unlink($tempPath);
             }
@@ -415,43 +378,23 @@ class WatermarkService
 
     public function generatePreview($originalPath, $fileType)
     {
-        // Hiện tại chỉ cắt Preview được đối với định dạng PDF
         if (strtolower($fileType) !== 'pdf') {
             return null;
         }
 
-        // Tạo đường dẫn ngẫu nhiên cho file Preview xuất ra
         $tempPath = $this->tempDir().'/'.uniqid('prev_').'.pdf';
 
         try {
-            // Dùng Fpdi để tải file gốc
-            $pdf = new CustomFpdi;
-            $pageCount = $pdf->setSourceFile($originalPath);
-
-            // Bắt đầu tính toán xem file này cho đọc thử bao nhiêu trang là hợp lý
-            if ($pageCount < 4) {
-                // Quá ngắn, chỉ cho đọc trang 1
-                $previewPages = 1;
-            } elseif ($pageCount <= 6) {
-                // Ngắn, cũng chỉ cho đọc trang 1
-                $previewPages = 1;
-            } else {
-                // Khá dài: Cho đọc 20% số lượng trang, nhưng ép vào khoản từ 2 đến 5 trang
-                $previewPages = max(2, min(5, (int) ceil($pageCount * 0.2)));
+            // Call Python script
+            $scriptPath = base_path('scripts/pdf_tool.py');
+            $command = escapeshellcmd("python \"$scriptPath\" preview \"$originalPath\" \"$tempPath\"");
+            $output = shell_exec($command);
+            
+            $result = json_decode($output, true);
+            
+            if (!$result || !isset($result['success']) || !$result['success']) {
+                throw new \Exception("Python preview generation failed: " . ($output ?? 'unknown error'));
             }
-
-            // Chạy vòng lặp bóc tách đúng số lượng trang đã tính toán
-            for ($pageNo = 1; $pageNo <= $previewPages; $pageNo++) {
-                $templateId = $pdf->importPage($pageNo);
-                $size = $pdf->getTemplateSize($templateId);
-
-                // Dán trang gốc lên một trang mới trắng tinh của Fpdi
-                $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
-                $pdf->useTemplate($templateId);
-            }
-
-            // Lưu file Preview thành công
-            $pdf->Output('F', $tempPath);
 
             // Đẩy bản Đọc thử này lên thư mục 'previews' trên Cloudflare R2
             $r2Path = $this->r2Path('previews', 'pdf');
@@ -461,10 +404,8 @@ class WatermarkService
 
         } catch (\Exception $e) {
             \Log::warning('Preview generation failed: '.$e->getMessage());
-
             return null;
         } finally {
-            // Xoá file đọc thử vật lý để dọn dẹp
             if (file_exists($tempPath)) {
                 @unlink($tempPath);
             }

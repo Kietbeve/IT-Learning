@@ -62,7 +62,7 @@ class NotificationBell extends Component
                         $notificationType = $latestNotification->data['type'] ?? '';
                         
                         $msg = \Illuminate\Support\Str::limit($latestNotification->data['message'], 100);
-                        if (isset($latestNotification->data['amount'])) {
+                        if (isset($latestNotification->data['amount']) && isset($latestNotification->data['type']) && $latestNotification->data['type'] === 'document_sold') {
                             $amt = is_numeric($latestNotification->data['amount']) ? number_format($latestNotification->data['amount']) : $latestNotification->data['amount'];
                             $msg .= ' (Bạn nhận được: +' . $amt . 'đ)';
                         }

@@ -46,6 +46,15 @@
             flex-direction: column !important;
             align-items: flex-end !important;
         }
+        /* Ngăn nội dung toast bị cắt bớt (...) */
+        #toast-wrapper p {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: unset !important;
+            -webkit-line-clamp: unset !important;
+            display: block !important;
+            line-height: 1.4 !important;
+        }
         [x-cloak] { display: none !important; }
     </style>
 </head>
@@ -117,30 +126,6 @@
         });
     </script>
     <script>
-        document.addEventListener('livewire:navigated', () => {
-            @if(session()->has('success'))
-                if (window.$wireui) {
-                    window.$wireui.notify({
-                        title: 'Thành công',
-                        description: '{!! session('success') !!}',
-                        icon: 'success',
-                        position: 'top-right',
-                        timeout: 5000
-                    });
-                }
-            @endif
-            @if(session()->has('error'))
-                if (window.$wireui) {
-                    window.$wireui.notify({
-                        title: 'Lỗi',
-                        description: '{!! session('error') !!}',
-                        icon: 'error',
-                        position: 'top-right',
-                        timeout: 5000
-                    });
-                }
-            @endif
-        });
-    </script>
+       
 </body>
 </html>

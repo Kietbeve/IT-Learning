@@ -17,32 +17,35 @@
 
         <!-- Filters -->
         <div class="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-
-                <!-- Date From -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Từ ngày</label>
-                    <input type="date" wire:model.live="filterDateFrom" max="{{ date('Y-m-d') }}"
-                           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
-                </div>
-
-                <!-- Date To -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Đến ngày</label>
-                    <input type="date" wire:model.live="filterDateTo" max="{{ date('Y-m-d') }}"
-                           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
-                </div>
-
+            <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                 <!-- Search -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên tài liệu</label>
-                    <div class="relative">
-                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        </div>
-                        <input type="text" wire:model.live.debounce.300ms="search" 
-                               placeholder="Nhập tên tài liệu..."
-                               class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
+                <div class="relative flex-1 w-full">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input type="search" wire:model.live.debounce.300ms="search" 
+                           placeholder="Nhập tên tài liệu..."
+                           class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
+                </div>
+
+                <!-- Date Filter -->
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="date" wire:model.live="filterDateFrom" max="{{ date('Y-m-d') }}"
+                           class="flex-1 sm:flex-none h-[42px] rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-900 shadow-sm focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors">
+                    <span class="text-gray-400">-</span>
+                    <input type="date" wire:model.live="filterDateTo" max="{{ date('Y-m-d') }}"
+                           class="flex-1 sm:flex-none h-[42px] rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-900 shadow-sm focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors">
+                    
+                    <div class="w-8 shrink-0 flex items-center justify-center">
+                        @if($filterDateFrom || $filterDateTo || $search)
+                            <button wire:click="resetFilters"
+                                    class="rounded-lg p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                                    title="Xóa bộ lọc">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>

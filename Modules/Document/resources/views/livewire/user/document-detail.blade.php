@@ -362,7 +362,7 @@
                             @endphp
 
                             @if($pdfUrl && $previewFileExists)
-                                <div class="rounded-2xl overflow-auto border border-gray-100 shadow-inner h-full w-full bg-gray-100" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
+                                <div wire:ignore class="rounded-2xl overflow-auto border border-gray-100 shadow-inner h-full w-full bg-gray-100" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
                                     <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0" style="width:100%; height:100%; min-height: 100%;"></iframe>
                                 </div>
                             @else
@@ -380,7 +380,7 @@
 
                             @if($pdfUrl && $previewFileExists)
                                 {{-- Preview PDF từ DOCX đã convert --}}
-                                <div class="rounded-2xl overflow-auto border border-gray-100 shadow-inner h-full w-full bg-gray-100" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
+                                <div wire:ignore class="rounded-2xl overflow-auto border border-gray-100 shadow-inner h-full w-full bg-gray-100" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
                                     <iframe src="{{ $pdfUrl }}#toolbar=0" class="w-full h-full border-0" style="width:100%; height:100%; min-height: 100%;"></iframe>
                                 </div>
                                 

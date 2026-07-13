@@ -411,6 +411,15 @@
             flex-direction: column !important;
             align-items: flex-end !important;
         }
+        /* Ngăn nội dung toast bị cắt bớt (...) */
+        #toast-wrapper p {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: unset !important;
+            -webkit-line-clamp: unset !important;
+            display: block !important;
+            line-height: 1.4 !important;
+        }
     </style>
     
     <x-dialog z-index="z-50" blur="md" align="center" />

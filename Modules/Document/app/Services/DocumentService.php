@@ -42,7 +42,6 @@ class DocumentService
 
             // Create Document record (identity fields only)
             $document = Document::create([
-                'public_id' => 'doc_'.Str::random(12),
                 'author_id' => $authorId,
                 'slug' => $slug,
                 'status' => $status,

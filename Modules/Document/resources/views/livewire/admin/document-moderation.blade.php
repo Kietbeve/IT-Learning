@@ -1,4 +1,4 @@
-<div id="admin-document-moderation" wire:poll.10s.keep-alive
+<div id="admin-document-moderation" wire:poll.5s.keep-alive
      x-data="{ notification: null, showRejectModal: false }" 
      x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      @open-modal.window="let d = $event.detail; if (d === 'reject-modal' || d?.[0] === 'reject-modal' || d?.id === 'reject-modal') showRejectModal = true"

@@ -418,6 +418,10 @@ class DocumentEdit extends Component
             } elseif ($originalPath && $fileType === 'zip') {
                 $newVersion->update(['watermark_status' => 'success', 'file_watermarked_path' => $originalPath]);
             }
+            
+            if ($doc->status === 'rejected') {
+                $doc->update(['status' => 'pending']);
+            }
         } else {
             // Update in-place the existing pending version (which is $latestVersion)
             $latestVersion->update([

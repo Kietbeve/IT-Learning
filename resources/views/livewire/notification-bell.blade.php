@@ -73,12 +73,12 @@
                             @endif
                         </div>
                         
-                        <p class="mt-1 text-[13px] leading-relaxed text-gray-600 break-words whitespace-normal line-clamp-2">
+                        <p class="mt-1 text-[13px] leading-relaxed text-gray-600 break-words whitespace-normal">
                             {{ $notification['data']['message'] ?? '' }}
                         </p>
 
                         <!-- Additional Info -->
-                        @if(isset($notification['data']['amount']))
+                        @if(isset($notification['data']['amount']) && isset($notification['data']['type']) && $notification['data']['type'] === 'document_sold')
                         <div class="mt-1.5 flex items-center space-x-4 text-[13px] text-gray-500">
                             <span class="font-medium text-purple-600">
                                 Bạn nhận được: +{{ is_numeric($notification['data']['amount']) ? number_format($notification['data']['amount']) : $notification['data']['amount'] }}đ

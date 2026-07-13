@@ -1,4 +1,4 @@
-<div id="contributor-document-list" wire:poll.10s.keep-alive
+<div id="contributor-document-list" wire:poll.5s.keep-alive
      x-data="{ notification: null }" 
      x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)"
      class="space-y-6">

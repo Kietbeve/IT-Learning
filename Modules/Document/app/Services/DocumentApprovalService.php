@@ -122,8 +122,8 @@ class DocumentApprovalService
                     'reviewed_at' => now(),
                 ]);
 
-                // If this is Version 1 (first submission), also reject the document itself
-                if ($pendingVersion->version_number === 1 && $doc->status === 'pending') {
+                // If the document itself is still pending, also reject the document itself
+                if ($doc->status === 'pending') {
                     $doc->update([
                         'status' => 'rejected',
                     ]);

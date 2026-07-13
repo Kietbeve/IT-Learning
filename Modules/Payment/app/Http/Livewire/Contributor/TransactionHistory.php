@@ -41,7 +41,13 @@ class TransactionHistory extends Component
         $this->resetPage();
     }
 
-
+    public function resetFilters()
+    {
+        $this->filterDateFrom = null;
+        $this->filterDateTo = null;
+        $this->search = '';
+        $this->resetPage();
+    }
     public function sortBy($field)
     {
         if ($this->sortField === $field) {
