@@ -2,10 +2,9 @@
 
 namespace Modules\Payment\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Payment\Database\factories\PaymentFactory;
-use Modules\Payment\Models\Order;
+use Illuminate\Database\Eloquent\Model;
+
 class Payment extends Model
 {
     use HasFactory;
@@ -14,8 +13,8 @@ class Payment extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'order_id', 'provider', 'transaction_code', 'provider_order_code', 
-        'amount', 'status', 'raw_response', 'paid_at'
+        'order_id', 'provider', 'transaction_code', 'provider_order_code',
+        'amount', 'status', 'raw_response', 'paid_at',
     ];
 
     protected $casts = [
@@ -23,5 +22,8 @@ class Payment extends Model
         'paid_at' => 'datetime',
     ];
 
-    public function order() { return $this->belongsTo(Order::class); }
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
 }

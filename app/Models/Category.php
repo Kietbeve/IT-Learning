@@ -14,6 +14,13 @@ class Category extends Model
 {
      use SoftDeletes;
 
+    protected static function booted()
+    {
+        static::addGlobalScope('order', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            $builder->orderBy('sort_order', 'asc')->orderBy('id', 'asc');
+        });
+    }
+
     protected $fillable = [
         'parent_id',
         'name',

@@ -19,14 +19,14 @@ class RoleMiddleware
         $roles = array_map('trim', explode('|', $role));
         
         if (!$request->user()) {
-            abort(403, 'Unauthorized. Required role: ' . $role);
+            abort(403, 'Bạn không có quyền truy cập vào trang này.');
         }
         
         // Check if user has ANY of the required roles
         $hasRole = collect($roles)->contains(fn($r) => $request->user()->hasRole($r));
         
         if (!$hasRole) {
-            abort(403, 'Unauthorized. Required role: ' . $role);
+            abort(403, 'Bạn không có quyền truy cập vào trang này.');
         }
 
         return $next($request);

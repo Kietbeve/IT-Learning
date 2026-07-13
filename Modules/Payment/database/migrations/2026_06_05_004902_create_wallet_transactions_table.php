@@ -23,8 +23,6 @@ return new class extends Migration
             $table->string('reference_type')->nullable(); // order_item | payout_request | manual
             $table->unsignedBigInteger('reference_id')->nullable();
             $table->text('note')->nullable();
-
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('created_at')->useCurrent();
 
             $table->index('user_id');

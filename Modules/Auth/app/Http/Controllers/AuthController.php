@@ -7,7 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use Modules\Auth\Services\AuthService;
 
 class AuthController extends Controller
@@ -102,7 +102,7 @@ class AuthController extends Controller
     {
         $authService = new AuthService();
 
-        $result = $authService->checkAdminLogin(request()->only('name', 'password'));
+        $result = $authService->checkAdminLogin(request()->only('email', 'password'));
 
         if (! $result['success']) {
             return redirect()->back()->withErrors(['login_error' => $result['message']])->withInput();

@@ -4,6 +4,20 @@ namespace Modules\Payment\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Modules\Payment\Console\Commands\SendVipExpiryReminders;
+use Modules\Payment\Http\Livewire\Admin\OrderManagement;
+use Modules\Payment\Http\Livewire\Admin\PayoutReview;
+use Modules\Payment\Http\Livewire\Admin\PlatformRevenue;
+use Modules\Payment\Http\Livewire\Admin\RevenueSettings;
+use Modules\Payment\Http\Livewire\Admin\TransactionList;
+use Modules\Payment\Http\Livewire\Contributor\EarningsReport;
+use Modules\Payment\Http\Livewire\Contributor\PayoutRequest;
+use Modules\Payment\Http\Livewire\Contributor\Wallet;
+use Modules\Payment\Http\Livewire\User\CheckoutModal;
+use Modules\Payment\Http\Livewire\User\Purchases;
+use Modules\Payment\Http\Livewire\User\Subscription;
+use Modules\Payment\Http\Livewire\User\TransactionHistory;
 
 class PaymentServiceProvider extends ServiceProvider
 {
@@ -24,24 +38,24 @@ class PaymentServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(module_path($this->moduleName, 'database/migrations'));
 
         // Dang ky Livewire components
-        if (class_exists(\Livewire\Livewire::class)) {
-            \Livewire\Livewire::component('user-subscription', \Modules\Payment\Http\Livewire\User\Subscription::class);
-            \Livewire\Livewire::component('user-transaction-history', \Modules\Payment\Http\Livewire\User\TransactionHistory::class);
-            \Livewire\Livewire::component('user-purchases', \Modules\Payment\Http\Livewire\User\Purchases::class);
-            \Livewire\Livewire::component('payment-checkout-modal', \Modules\Payment\Http\Livewire\User\CheckoutModal::class);
+        if (class_exists(Livewire::class)) {
+            Livewire::component('user-subscription', Subscription::class);
+            Livewire::component('user-transaction-history', TransactionHistory::class);
+            Livewire::component('user-purchases', Purchases::class);
+            Livewire::component('payment-checkout-modal', CheckoutModal::class);
 
             // Contributor payment components
-            \Livewire\Livewire::component('contributor-wallet', \Modules\Payment\Http\Livewire\Contributor\Wallet::class);
-            \Livewire\Livewire::component('contributor-transaction-history', \Modules\Payment\Http\Livewire\Contributor\TransactionHistory::class);
-            \Livewire\Livewire::component('contributor-payout-request', \Modules\Payment\Http\Livewire\Contributor\PayoutRequest::class);
-            \Livewire\Livewire::component('contributor-earnings-report', \Modules\Payment\Http\Livewire\Contributor\EarningsReport::class);
+            Livewire::component('contributor-wallet', Wallet::class);
+            Livewire::component('contributor-transaction-history', \Modules\Payment\Http\Livewire\Contributor\TransactionHistory::class);
+            Livewire::component('contributor-payout-request', PayoutRequest::class);
+            Livewire::component('contributor-earnings-report', EarningsReport::class);
 
             // Admin payment components
-            \Livewire\Livewire::component('admin-order-management', \Modules\Payment\Http\Livewire\Admin\OrderManagement::class);
-            \Livewire\Livewire::component('admin-transaction-list', \Modules\Payment\Http\Livewire\Admin\TransactionList::class);
-            \Livewire\Livewire::component('admin-payout-review', \Modules\Payment\Http\Livewire\Admin\PayoutReview::class);
-            \Livewire\Livewire::component('admin-platform-revenue', \Modules\Payment\Http\Livewire\Admin\PlatformRevenue::class);
-            \Livewire\Livewire::component('admin-revenue-settings', \Modules\Payment\Http\Livewire\Admin\RevenueSettings::class);
+            Livewire::component('admin-order-management', OrderManagement::class);
+            Livewire::component('admin-transaction-list', TransactionList::class);
+            Livewire::component('admin-payout-review', PayoutReview::class);
+            Livewire::component('admin-platform-revenue', PlatformRevenue::class);
+            Livewire::component('admin-revenue-settings', RevenueSettings::class);
         }
     }
 
@@ -50,7 +64,6 @@ class PaymentServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->register(\Modules\Payment\Providers\RouteServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
     }
 
@@ -59,7 +72,9 @@ class PaymentServiceProvider extends ServiceProvider
      */
     protected function registerCommands(): void
     {
-        // $this->commands([]);
+        $this->commands([
+            SendVipExpiryReminders::class,
+        ]);
     }
 
     /**
@@ -96,6 +111,9 @@ class PaymentServiceProvider extends ServiceProvider
     {
         $this->publishes([module_path($this->moduleName, 'config/config.php') => config_path($this->moduleNameLower.'.php')], 'config');
         $this->mergeConfigFrom(module_path($this->moduleName, 'config/config.php'), $this->moduleNameLower);
+
+        // Cấu hình VIP Subscriptions
+        $this->mergeConfigFrom(module_path($this->moduleName, 'config/subscription.php'), 'subscription');
     }
 
     /**
@@ -110,7 +128,7 @@ class PaymentServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->moduleNameLower);
 
-        $componentNamespace = str_replace('/', '\\', config('modules.namespace').'\\'.$this->moduleName.'\\'.ltrim(config('modules.paths.generator.component-class.path'), config('modules.paths.app_folder','')));
+        $componentNamespace = str_replace('/', '\\', config('modules.namespace').'\\'.$this->moduleName.'\\'.ltrim(config('modules.paths.generator.component-class.path'), config('modules.paths.app_folder', '')));
         Blade::componentNamespace($componentNamespace, $this->moduleNameLower);
     }
 

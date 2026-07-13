@@ -2,8 +2,8 @@
 
 namespace Modules\Payment\Services;
 
-use PayOS\PayOS;
 use PayOS\Models\V2\PaymentRequests\CreatePaymentLinkRequest;
+use PayOS\PayOS;
 
 class PayOSService
 {
@@ -29,8 +29,7 @@ class PayOSService
         ?string $buyerPhone = null,
         ?array $items = null,
         ?int $expiredAt = null,
-    ): array
-    {
+    ): array {
         $request = new CreatePaymentLinkRequest(
             orderCode: $orderCode,
             amount: $amount,
@@ -59,7 +58,7 @@ class PayOSService
         return $this->payos->paymentRequests->cancel($orderCode, $reason, ['asArray' => true]);
     }
 
-    public function verifyWebhookData(array $webhookBody): array
+    public function verifyWebhookData(array $webhookBody)
     {
         return $this->payos->webhooks->verify($webhookBody);
     }

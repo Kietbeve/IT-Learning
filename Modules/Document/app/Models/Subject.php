@@ -2,14 +2,15 @@
 
 namespace Modules\Document\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Modules\Exam\Models\Exam;
 
 class Subject extends Model
 {
-
+    use SoftDeletes;
     protected $fillable = [
         'category_id',
         'name',

@@ -21,9 +21,7 @@ class SubjectManagement extends Component
     public $modalMode = 'create'; // 'create' hoặc 'edit'
     public $confirmDeleteId = null;
     
-    // Properties cho modal xem chi tiết
-    public $showDetailModal = false;
-    public $detailSubject = null;
+
     
     // Properties cho form
     public $subjectId = null;
@@ -124,13 +122,13 @@ class SubjectManagement extends Component
      */
     public function delete()
     {
-        $subject = Subject::withCount(['documents'])->findOrFail($this->confirmDeleteId);
+        $subject = Subject::withCount(['documents'])
+            ->findOrFail($this->confirmDeleteId);
 
         // Không cho phép xóa nếu đang có tài liệu
         if ($subject->documents_count > 0) {
-            $this->dispatch('notify', 
-                type: 'error', 
-                message: 'Không thể xóa môn học này!', 
+            $this->notification()->error(
+                title: 'Không thể xóa môn học',
                 description: 'Có '. $subject->documents_count . ' tài liệu trong môn học này.'
             );
             $this->resetPage();
@@ -200,14 +198,6 @@ class SubjectManagement extends Component
         $this->showDetailModal = true;
     }
 
-    /**
-     * Đóng modal xem chi tiết
-     */
-    public function closeDetailModal()
-    {
-        $this->showDetailModal = false;
-        $this->detailSubject = null;
-    }
 
     /**
      * Render component với danh sách môn học

@@ -4,7 +4,7 @@ namespace Modules\Auth\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -18,7 +18,7 @@ class AuthDatabaseSeeder extends Seeder
         //role seed
         $adminRole = Role::findOrCreate('admin', 'web');
         Role::findOrCreate('contributor', 'web');
-        Role::findOrCreate('student', 'web');
+        Role::findOrCreate('user', 'web');
         //permission seed
         $manageUserPermission = Permission::findOrCreate('manage_user', 'web');
         $manageQuestionPermission = Permission::findOrCreate('manage_question', 'web');
@@ -28,12 +28,31 @@ class AuthDatabaseSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
-                'name' => 'admin',
+                'name' => 'Admin',
                 'password' => Hash::make('admin123'),
                 'status' => 'active',
             ]
         );
-        //gán role admin cho user admin
-        $admin->assignRole($adminRole);
+        $admin->assignRole('admin');
+
+        $contributor = User::firstOrCreate(
+            ['email' => 'contributor@example.com'],
+            [
+                'name' => 'Contributor',
+                'password' => Hash::make('password'),
+                'status' => 'active',
+            ]
+        );
+        $contributor->assignRole('contributor');
+
+        $user = User::firstOrCreate(
+            ['email' => 'user@example.com'],
+            [
+                'name' => 'Normal User',
+                'password' => Hash::make('password'),
+                'status' => 'active',
+            ]
+        );
+        $user->assignRole('user');
     }
 }
