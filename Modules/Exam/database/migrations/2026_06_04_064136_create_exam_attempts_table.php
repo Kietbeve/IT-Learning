@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('session_id')
                 ->unique();
 
-            $table->timestamp('started_at');
+            $table->timestamp('started_at')->nullable();
 
             $table->timestamp('submitted_at')
                 ->nullable();

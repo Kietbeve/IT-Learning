@@ -555,11 +555,11 @@ class ExamService
             'user_id'         => $user?->id,
             'session_id'      => (string) Str::uuid(),
 
-            'started_at'      => now(),
+            // 'started_at'      => now(),
 
-            'expires_at'      => now()->addMinutes(
-                $exam->duration_minutes
-            ),
+            // 'expires_at'      => now()->addMinutes(
+            //     $exam->duration_minutes
+            // ),
 
             'total_questions' => $exam
                 ->questions()
