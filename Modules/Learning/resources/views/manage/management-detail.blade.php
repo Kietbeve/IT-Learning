@@ -57,52 +57,48 @@
                 </div>
 
                 <div>
-                    {{-- <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Thuộc Chương / Mục số *</label>
-                    <input type="number" wire:model="sort_order" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500">
-                    @error('sort_order') <span class="text-[10px] text-rose-500 font-bold mt-1 block">{{ $message }}</span> @enderror --}}
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                            Chương
-                        </label>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Chương
+                    </label>
 
-                        <select
-                            wire:model.live="section_id"
-                            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="">-- Không thuộc chương nào --</option>
+                    <select
+                        wire:model.live="section_id"
+                        class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
+                    >
+                        <option value="">-- Không thuộc chương nào --</option>
 
-                            @foreach($sections as $section)
-                                <option value="{{ $section->id }}">
-                                    Phần {{ $section->sort_order }} - {{ $section->title }}
-                                </option>
-                            @endforeach
-                        </select>
+                        {{-- ✅ Duyệt qua danh sách chương và in ra bằng thẻ <option> hợp lệ --}}
+                        @foreach($sections as $section)
+                            <option value="{{ $section->id }}" wire:key="section-opt-{{ $section->id }}">
+                                Phần {{ $section->sort_order }} - {{ $section->title }}
+                            </option>
+                        @endforeach
+                    </select>
 
-                        @error('section_id')
-                            <span class="text-[10px] text-rose-500 font-bold mt-1 block">
-                                {{ $message }}
-                            </span>
-                        @enderror
-                    </div>
+                    @error('section_id')
+                        <span class="text-[10px] text-rose-500 font-bold mt-1 block">
+                            {{ $message }}
+                        </span>
+                    @enderror
                 </div>
 
-                @if(empty($section_id))
-        <div class="mt-3 animate-fade-in" wire:key="new-section-input">
-            <label class="block text-[11px] font-bold text-blue-600 uppercase mb-1">
-                Tên chương mới (Nếu muốn tạo tự động)
-            </label>
-            <input 
-                type="text" 
-                wire:model="new_section_title" 
-                placeholder="Nhập tên chương mới... (Bỏ trống nếu muốn để mặc định)" 
-                class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500 placeholder-slate-400"
-            >
-            @error('new_section_title') 
-                <span class="text-[10px] text-rose-500 font-bold mt-1 block">{{ $message }}</span> 
-            @enderror
-        </div>
-    @endif
-</div>
+                                @if(empty($section_id))
+                            <div class="mt-3 animate-fade-in" wire:key="new-section-input">
+                                <label class="block text-[11px] font-bold text-blue-600 uppercase mb-1">
+                                    Tên chương mới (Nếu muốn tạo tự động)
+                                </label>
+                            <input 
+                                type="text" 
+                                wire:model="new_section_title" 
+                                placeholder="Nhập tên chương mới... (Bỏ trống nếu muốn để mặc định)" 
+                                class="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500 placeholder-slate-400"
+                            >
+                            @error('new_section_title') 
+                                <span class="text-[10px] text-rose-500 font-bold mt-1 block">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    @endif
+                </div>
 
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Trạng thái hiển thị</label>
@@ -250,72 +246,71 @@
                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-28 text-center">Hành Động</th>
                     </tr>
                 </thead>
-               <tbody class="divide-y divide-slate-100 text-slate-700">
-                    @php $lessonIndex = 1; @endphp
+              <tbody class="divide-y divide-slate-100 text-slate-700">
+    @php $lessonIndex = 1; @endphp
+    
+    {{-- Duyệt trực tiếp qua TẤT CẢ bài học --}}
+    @forelse($lessons as $lesson)
+        <tr wire:key="lesson-row-{{ $lesson->id }}" class="hover:bg-slate-50/60 transition-colors group">
+            
+            <td class="px-6 py-4 text-xs font-mono font-bold text-slate-400 text-center">
+                {{ $lessonIndex++ }}
+            </td>
+            
+            <td class="px-6 py-4">
+                <span class="block text-xs font-black text-slate-800 group-hover:text-blue-600 transition-colors">
+                    {{ $lesson->title }}
+                </span>
+            </td>
+
+            <td class="px-6 py-4 text-center">
+                @if($lesson->section)
+                    <span class="inline-flex px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold whitespace-nowrap group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                        Phần {{ $lesson->section->sort_order }} - {{ $lesson->section->title }}
+                    </span>
+                @else
+                    <span class="inline-flex px-2.5 py-1 rounded-lg bg-rose-50 text-rose-500 text-[10px] font-bold whitespace-nowrap">
+                        Chưa có chương
+                    </span>
+                @endif
+            </td>
+            
+            <td class="px-6 py-4 text-center">
+                @if($lesson->is_published)
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">
+                        <span class="w-1 h-1 rounded-full bg-emerald-500"></span> Hiển thị
+                    </span>
+                @else
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">
+                        <span class="w-1 h-1 rounded-full bg-slate-400"></span> Đang ẩn
+                    </span>
+                @endif
+            </td>
+            
+            <td class="px-6 py-4">
+                <div class="flex items-center justify-center gap-1.5">
+                   
+
+                    {{-- Nút sửa --}}
+                    <button wire:click="openEditForm({{ $lesson->id }})" title="Chỉnh sửa bài học" class="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                    </button>
                     
-                    {{-- Vòng lặp các phần (Chương) --}}
-                    @forelse($sections as $section)
-                        
-                        {{-- ĐÃ SỬA THÀNH @foreach (Không dùng forelse nữa) --}}
-                        @foreach($section->lessons as $lesson)
-                        <tr class="hover:bg-slate-50/60 transition-colors group">
-                            
-                            <td class="px-6 py-4 text-xs font-mono font-bold text-slate-400 text-center">
-                                {{ $lessonIndex++ }}
-                            </td>
-                            
-                            <td class="px-6 py-4">
-                                <span class="block text-xs font-black text-slate-800 group-hover:text-blue-600 transition-colors">{{ $lesson->title }}</span>
-                            </td>
-
-                            <td class="px-6 py-4 text-center">
-                                <span class="inline-flex px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold whitespace-nowrap group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                    Phần {{ $lesson->section->title }}
-                                </span>
-                            </td>
-                            
-                            <td class="px-6 py-4 text-center">
-                                @if($lesson->is_published)
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">
-                                        <span class="w-1 h-1 rounded-full bg-emerald-500"></span> Hiển thị
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">
-                                        <span class="w-1 h-1 rounded-full bg-slate-400"></span> Đang ẩn
-                                    </span>
-                                @endif
-                            </td>
-                            
-                            <td class="px-6 py-4">
-                                <div class="flex items-center justify-center gap-1.5">
-                                    {{-- Nút chuyển trang --}}
-                                    <a href="{{ route('manage.lesson', ['sectionId' => $lesson->id]) }}" title="Quản lý bài học" class="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                                    </a>
-
-                                    {{-- Nút sửa --}}
-                                    <button wire:click="openEditForm({{ $lesson->id }})" title="Chỉnh sửa bài học" class="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
-                                    </button>
-                                    
-                                    {{-- Nút xóa --}}
-                                    <button wire:click="deleteLesson({{ $lesson->id }})" onclick="confirm('Bạn có chắc chắn muốn xóa vĩnh viễn bài học này?') || event.stopImmediatePropagation()" title="Xóa bài học" class="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                        {{-- ĐÃ XÓA TOÀN BỘ KHỐI @empty CỦA BÀI HỌC Ở KHÚC NÀY --}}
-
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-xs font-semibold text-slate-400">
-                                📭 Lộ trình này hiện chưa có bài học nào. Hãy bấm "Thêm Bài Học Mới"!
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
+                    {{-- Nút xóa --}}
+                    <button wire:click="deleteLesson({{ $lesson->id }})" onclick="confirm('Bạn có chắc chắn muốn xóa vĩnh viễn bài học này?') || event.stopImmediatePropagation()" title="Xóa bài học" class="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-xs font-semibold text-slate-400">
+                📭 Lộ trình này hiện chưa có bài học nào. Hãy bấm "Thêm Bài Học Mới"!
+            </td>
+        </tr>
+    @endforelse
+</tbody>
             </table>
         </div>
 

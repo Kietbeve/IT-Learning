@@ -4,6 +4,10 @@ import '../../vendor/power-components/livewire-powergrid/resources/js/powergrid'
 // Tom-Select for better multiselect
 import TomSelect from 'tom-select';
 window.TomSelect = TomSelect;
+// Quill Editor : có tiền lệ gây lỗi 
+import Quill from 'quill';
+import 'quill/dist/quill.snow.css';
+window.Quill = Quill;
 
 // Quill Editor - Commented out due to module error
 // import Quill from 'quill';
@@ -12,4 +16,3 @@ window.TomSelect = TomSelect;
 // Font.whitelist = ['sans-serif', 'serif', 'monospace'];
 // Quill.register(Font, true);
 // window.Quill = Quill;
-
