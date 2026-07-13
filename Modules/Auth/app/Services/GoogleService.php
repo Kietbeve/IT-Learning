@@ -81,29 +81,36 @@ class GoogleService
     {
         $linkedCount = 0;
 
-        // Lấy tất cả cookies
-        $cookies = $request->cookies->all();
+        // Lấy cookie guest_exam_attempts
+        $attempts = json_decode(
+            $request->cookie('guest_exam_attempts', '{}'),
+            true
+        );
 
-        // Duyệt qua từng cookie để tìm pattern exam_{exam_id}
-        foreach ($cookies as $key => $value) {
-            // Kiểm tra cookie có pattern exam_{exam_id} không
-            if (preg_match('/^exam_(\d+)$/', $key, $matches)) {
-                $sessionId = $value;
+        $attempts = is_array($attempts) ? $attempts : [];
 
-                // Tìm attempt với session_id này và chưa có user_id
-                $attempt = ExamAttempt::query()
-                    ->where('session_id', $sessionId)
-                    ->whereNull('user_id')
-                    ->first();
+        // Lấy tất cả session_id từ cookie
+        $sessionIds = collect($attempts)
+            ->flatten()
+            ->unique()
+            ->values()
+            ->all();
 
-                // Nếu tìm thấy attempt chưa có user_id thì gán user_id
-                if ($attempt) {
-                    $attempt->update(['user_id' => $user->id]);
-                    $linkedCount++;
-                }
+        foreach ($sessionIds as $sessionId) {
+            $attempt = ExamAttempt::query()
+                ->where('session_id', $sessionId)
+                ->whereNull('user_id')
+                ->first();
+
+            if ($attempt) {
+                $attempt->update([
+                    'user_id' => $user->id,
+                ]);
+
+                $linkedCount++;
             }
         }
-
+        
         return $linkedCount;
     }
 }

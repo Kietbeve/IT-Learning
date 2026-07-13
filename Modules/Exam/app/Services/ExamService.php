@@ -498,7 +498,8 @@ class ExamService
     public function startExam(
         Exam $exam,
         ?User $user = null,
-        ?string $sessionId = null
+        // ?string $sessionId = null,
+        array $sessionIds = null,
     ): ExamAttempt {
         //validate đề thi hợp lệ để vào thi
         if (! $exam->publish_at) {
@@ -534,14 +535,14 @@ class ExamService
                 ->where('status', 'in_progress')
                 ->first();
 
-        } elseif ($sessionId) {
-
+        } elseif (!empty($sessionIds)) {
+            // Tìm trong nhiều session
             $attempt = $this->exam_attemptModel::query()
                 ->where('exam_id', $exam->id)
-                ->where('session_id', $sessionId)
+                ->whereIn('session_id', $sessionIds)
                 ->where('status', 'in_progress')
+                ->latest('started_at')
                 ->first();
-
         }
 
         if ($attempt) {
@@ -554,11 +555,11 @@ class ExamService
             'user_id'         => $user?->id,
             'session_id'      => (string) Str::uuid(),
 
-            'started_at'      => now(),
+            // 'started_at'      => now(),
 
-            'expires_at'      => now()->addMinutes(
-                $exam->duration_minutes
-            ),
+            // 'expires_at'      => now()->addMinutes(
+            //     $exam->duration_minutes
+            // ),
 
             'total_questions' => $exam
                 ->questions()
@@ -569,9 +570,9 @@ class ExamService
     }
 
     // Hàm chấm điểm bài thi
-    public function finalizeAttemptGrading(int $attemptId): array
+    public function finalizeAttemptGrading(int $attemptId, ?string $teacherComment = null): array
     {
-        return DB::transaction(function () use ($attemptId) {
+        return DB::transaction(function () use ($attemptId, $teacherComment) {
             // Load attempt with relationships
             $attempt = ExamAttempt::with(['answers', 'exam.questions'])->findOrFail($attemptId);
             
@@ -605,7 +606,7 @@ class ExamService
             // Update attempt with calculated values
             $attempt->update([
                 'status' => 'completed',
-                'submitted_at' => now(),
+                // 'submitted_at' => now(),//ko cap nhat lai submitted at
                 'total_questions' => $totalQuestions,
                 'correct_answers' => $correctAnswers,
                 'wrong_answers' => $wrongAnswers,
@@ -613,6 +614,7 @@ class ExamService
                 'score' => $totalScore,
                 'percent_score' => round($percentScore, 2),
                 'is_passed' => $isPassed,
+                'teacher_comment' => $teacherComment ?? null,
             ]);
             
             // Return statistics for notification
@@ -651,5 +653,24 @@ class ExamService
         ]);
 
         SendExamReviewEmailJob::dispatch($exam->id);
+    }
+
+    //Hàm lưu (tạo hoặc cập nhật) Exam
+    public function saveExam(array $validated, ?int $examId=null,int $authorId){
+        $exam = $examId
+            ? Exam::findOrFail($examId)
+            : new Exam();
+
+        $exam->fill($validated);
+
+        if (! $exam->exists) {
+            $exam->slug=Exam::generateUniqueSlug($validated['title']);
+            $exam->author_id = $authorId;
+            $exam->public_id = (string) Str::uuid();
+        }
+
+        $exam->save();
+
+        return $exam;
     }
 }
