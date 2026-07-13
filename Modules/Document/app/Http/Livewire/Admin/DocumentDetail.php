@@ -150,6 +150,7 @@ class DocumentDetail extends Component
         if (! $doc) {
             abort(404);
         }
+        $this->documentId = $doc->id;
 
         // If viewing the live/current version explicitly, skip pendingVersion
         if ($this->viewVersion === 'current') {
@@ -484,6 +485,11 @@ class DocumentDetail extends Component
         $this->editThumbnail = null;
         $this->editGalleryFiles = [];
         $this->editMode = false;
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => 'Đã lưu thay đổi tài liệu thành công!'
+        ]);
     }
 
     public function cancelEdit()

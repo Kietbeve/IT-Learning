@@ -60,7 +60,7 @@
                     <div class="flex-1 p-6 flex flex-col justify-between">
                         <div>
                             <h3 class="text-base font-semibold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
-                                <a href="{{ route('documents.show', [$fav->document_id, Str::slug($fav->document->title)]) }}">{{ $fav->document->title }}</a>
+                                <a href="{{ route('documents.show', [$fav->document->id, Str::slug($fav->document->title)]) }}">{{ $fav->document->title }}</a>
                             </h3>
                             <p class="mt-2 text-sm text-slate-500 line-clamp-2">{{ $fav->document->short_description }}</p>
                         </div>
@@ -108,3 +108,4 @@
         {{ $favorites->links(data: ['scrollTo' => '#bookmarked-documents-list']) }}
     </div>
 </div>
+

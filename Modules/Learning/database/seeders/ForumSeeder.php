@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use Modules\Learning\Models\ForumThread;
 use Modules\Learning\Models\ForumPost;
 use Modules\Learning\Models\RoadmapLesson;
-use Modules\Auth\Models\User;
+use App\Models\User;
 
 class ForumSeeder extends Seeder
 {

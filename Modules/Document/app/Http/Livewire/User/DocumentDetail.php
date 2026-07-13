@@ -33,12 +33,11 @@ class DocumentDetail extends Component
 
     public function mount($id, $slug = null)
     {
-        $this->documentId = $id;
-
         $doc = Document::withTrashed()->with(['currentVersion', 'latestVersion', 'author'])->find($id);
         if (!$doc) {
             abort(404);
         }
+        $this->documentId = $doc->id;
 
         $isAdmin = false;
         if (Auth::check() && Auth::user()->roles()->where('name', 'admin')->exists()) {
@@ -363,3 +362,4 @@ class DocumentDetail extends Component
             ->first();
     }
 }
+

@@ -41,10 +41,10 @@ class DocumentList extends Component
     public $confirmDeleteId = null;
 
     protected $queryString = [
-        'search' => ['except' => ''],
-        'statusFilter' => ['except' => 'all'],
-        'categoryFilter' => ['except' => 'all'],
-        'activeTab' => ['except' => 'pending'],
+        'search' => ['except' => '', 'history' => true],
+        'statusFilter' => ['except' => 'all', 'history' => true],
+        'categoryFilter' => ['except' => 'all', 'history' => true],
+        'activeTab' => ['except' => 'pending', 'history' => true],
     ];
 
     public function updatingSearch()

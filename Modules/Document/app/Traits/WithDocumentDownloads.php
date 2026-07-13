@@ -197,3 +197,4 @@ trait WithDocumentDownloads
         $this->dispatch('openCheckoutModal', documentId: $this->documentId, guestEmail: $this->guestEmail);
     }
 }
+

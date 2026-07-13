@@ -30,8 +30,13 @@ trait WithDocumentReviews
             ->latest('downloaded_at')
             ->first();
 
-        if (!$latestDownload) {
-            $this->dispatch('notify', ['type' => 'info', 'message' => 'Bạn cần tải tài liệu trước khi có thể đánh giá.']);
+        // Kiểm tra xem user có quyền truy cập không (đã mua)
+        $hasAccess = \Modules\Payment\Models\DocumentAccess::where('user_id', $userId)
+            ->where('document_id', $this->documentId)
+            ->exists();
+
+        if (!$latestDownload && !$hasAccess) {
+            $this->dispatch('notify', ['type' => 'info', 'message' => 'Bạn cần mua hoặc tải tài liệu trước khi có thể đánh giá.']);
             return;
         }
 
@@ -56,7 +61,7 @@ trait WithDocumentReviews
         DocumentReview::create([
             'document_id' => $this->documentId,
             'user_id' => $userId,
-            'document_download_id' => $latestDownload->id,
+            'document_download_id' => $latestDownload ? $latestDownload->id : null,
             'rating' => $this->rating,
             'review' => $this->reviewContent,
             'status' => 'visible',
