@@ -6,7 +6,7 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\WithPagination;
 use Modules\Auth\Services\AuthService;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use WireUi\Traits\WireUiActions;
 
 #[Layout('layouts.admin')]

@@ -2,12 +2,15 @@
 
 namespace Modules\Document\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+use Modules\Exam\Models\Exam;
 
 class Subject extends Model
 {
-
+    use SoftDeletes;
     protected $fillable = [
         'category_id',
         'name',
@@ -32,7 +35,7 @@ class Subject extends Model
      */
     public function documents()
     {
-        return $this->hasMany(Document::class);
+        return $this->hasMany(DocumentVersion::class)->where('status', 'approved');
     }
 
     /**
@@ -49,5 +52,25 @@ class Subject extends Model
     public function scopeByCategory($query, $categoryId)
     {
         return $query->where('category_id', $categoryId);
+    }
+
+    /**
+     * Tạo slug duy nhất từ tên môn học
+     * 
+     * @param string $name Tên môn học
+     * @return string Slug duy nhất
+     */
+    public static function generateUniqueSlug(string $name): string
+    {
+        $slug = \Illuminate\Support\Str::slug($name);
+        $originalSlug = $slug;
+        $counter = 1;
+
+        while (static::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }

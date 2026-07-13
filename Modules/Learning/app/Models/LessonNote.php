@@ -4,7 +4,7 @@ namespace Modules\Learning\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Auth\Models\User;
+use App\Models\User;
 
 class LessonNote extends Model
 {

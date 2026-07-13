@@ -80,18 +80,31 @@
                         <h3 class="text-base font-bold text-gray-900 leading-snug line-clamp-2 flex-1">
                             {{ $attempt->exam->title }}
                         </h3>
+                        @if ($attempt->status == 'completed' || $attempt->status == 'submitted')
+                            <span
+                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                TN: {{ number_format($attempt->getMultipleChoiceScore(), 0) }} điểm
+                            </span>
+                        @endif
+
                         @if ($attempt->status == 'completed')
                             <span
                                 class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                {{ number_format($attempt->score, 0) }} điểm
+                                TL: {{ number_format($attempt->getEssayScore(), 0) }} điểm
+                            </span>
+                        @else
+                          <span
+                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                TL: chờ chấm
                             </span>
                         @endif
-                        @if($attempt->is_passed)
+
+                        @if($attempt->is_passed && $attempt->status == 'completed')
                             <span
                                 class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200/50 shrink-0">
                                 Đạt
                             </span>
-                        @else
+                        @elseif ($attempt->status == 'completed')
                             <span
                                 class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200/50 shrink-0">
                                 Không đạt
@@ -137,26 +150,64 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
+                            Bắt đầu: 
+                            <span class="truncate"><strong
+                                    class="text-gray-900 font-semibold text-xs">{{ $attempt->started_at?->format('d/m/Y H:i') }}</strong></span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Nộp: 
                             <span class="truncate"><strong
                                     class="text-gray-900 font-semibold text-xs">{{ $attempt->submitted_at?->format('d/m/Y H:i') }}</strong></span>
+                        </div>
+
+                        
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Chế độ:
+                            <span class="truncate">
+                                <strong class="text-gray-900 font-semibold text-xs">
+                                    {{ match($attempt->exam->mode) {
+                                        'practice' => 'Luyện tập',
+                                        'official' => 'Chính thức',
+                                        default => $attempt->exam->mode,
+                                    } }}
+                                </strong>
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end">
-                    @if($attempt->status == 'completed')
-                        <a href="{{ route('exam.attempt.result', $attempt) }}"
-                            class="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
-                            <span>Chi tiết bài làm</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                    @else
-                        <span class="text-sm font-medium text-amber-600">
-                            Đang được chấm...
-                        </span>
-                    @endif
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                    {{-- @if($attempt->status == 'completed' || $attempt->exam->mode == 'practice') --}}
+                    <div>
+                        @if($attempt->status === 'completed')
+                            <span
+                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                                Đã chấm
+                            </span>
+                        @else
+                            <span
+                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                Đang chờ chấm
+                            </span>
+                        @endif
+                    </div>
+
+                    <a href="{{ route('exam.attempt.result', $attempt) }}"
+                        class="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+                        <span>Chi tiết bài làm</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
                 </div>
             </div>
         @empty

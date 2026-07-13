@@ -2,7 +2,7 @@
 namespace Modules\Auth\Services;
 
 use Laravel\Socialite\Facades\Socialite;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Modules\Exam\Models\ExamAttempt;
@@ -26,22 +26,37 @@ class GoogleService
         $existingUser = User::where('email', $googleUser->email)->first();
 
         if ($existingUser) {
+            // Kiểm tra trạng thái bị khóa
+            if ($existingUser->status === 'blocked') {
+                return redirect('/login')->withErrors(['error' => 'Tài khoản của bạn đã bị khóa. ' . $existingUser->blocked_reason]);
+            }
+            
             // Tài khoản đã tồn tại: chỉ cập nhật thông tin Google
             $existingUser->update([
                 'google_id' => $googleUser->id,
                 'avatar'    => $googleUser->avatar,
             ]);
             $user = $existingUser;
+
+            if ($user->roles()->count() === 0) {
+                $user->assignRole('user');
+            }
         } else {
-            // Tài khoản chưa tồn tại: tạo mới và gán role student
+            // Tài khoản chưa tồn tại: tạo mới và gán role user
             $user = User::create([
                 'name'      => $googleUser->name,
                 'email'     => $googleUser->email,
                 'google_id' => $googleUser->id,
                 'avatar'    => $googleUser->avatar,
             ]);
-            $user->assignRole('student');
+            $user->assignRole('user');
         }
+
+        // Cập nhật lịch sử đăng nhập
+        $user->update([
+            'last_login_at' => now(),
+            'last_login_IP' => request()->ip(),
+        ]);
 
         Auth::login($user);
 
@@ -66,29 +81,36 @@ class GoogleService
     {
         $linkedCount = 0;
 
-        // Lấy tất cả cookies
-        $cookies = $request->cookies->all();
+        // Lấy cookie guest_exam_attempts
+        $attempts = json_decode(
+            $request->cookie('guest_exam_attempts', '{}'),
+            true
+        );
 
-        // Duyệt qua từng cookie để tìm pattern exam_{exam_id}
-        foreach ($cookies as $key => $value) {
-            // Kiểm tra cookie có pattern exam_{exam_id} không
-            if (preg_match('/^exam_(\d+)$/', $key, $matches)) {
-                $sessionId = $value;
+        $attempts = is_array($attempts) ? $attempts : [];
 
-                // Tìm attempt với session_id này và chưa có user_id
-                $attempt = ExamAttempt::query()
-                    ->where('session_id', $sessionId)
-                    ->whereNull('user_id')
-                    ->first();
+        // Lấy tất cả session_id từ cookie
+        $sessionIds = collect($attempts)
+            ->flatten()
+            ->unique()
+            ->values()
+            ->all();
 
-                // Nếu tìm thấy attempt chưa có user_id thì gán user_id
-                if ($attempt) {
-                    $attempt->update(['user_id' => $user->id]);
-                    $linkedCount++;
-                }
+        foreach ($sessionIds as $sessionId) {
+            $attempt = ExamAttempt::query()
+                ->where('session_id', $sessionId)
+                ->whereNull('user_id')
+                ->first();
+
+            if ($attempt) {
+                $attempt->update([
+                    'user_id' => $user->id,
+                ]);
+
+                $linkedCount++;
             }
         }
-
+        
         return $linkedCount;
     }
 }

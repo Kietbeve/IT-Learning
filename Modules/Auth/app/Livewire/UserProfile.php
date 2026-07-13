@@ -4,7 +4,7 @@ namespace Modules\Auth\Livewire;
 
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use Modules\Auth\Services\AuthService;
 use WireUi\Traits\WireUiActions;
 

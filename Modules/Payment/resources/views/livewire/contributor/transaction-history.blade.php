@@ -3,8 +3,8 @@
         <!-- Page Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Lịch sử giao dịch</h1>
-                <p class="text-gray-500 mt-1">Theo dõi tất cả các giao dịch trong ví của bạn</p>
+                <h1 class="text-3xl font-bold text-gray-900">Lịch sử thu nhập</h1>
+                <p class="text-gray-500 mt-1">Theo dõi tất cả các khoản thu nhập và biến động trong ví của bạn</p>
             </div>
             <button wire:click="exportToExcel" 
                     class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-colors">
@@ -16,41 +16,34 @@
         </div>
 
         <!-- Filters -->
-        <div class="bg-white rounded-2xl border border-gray-200 p-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- Type Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Loại giao dịch</label>
-                    <select wire:model.live="filterType" 
-                            class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                        <option value="all">Tất cả</option>
-                        <option value="earning">Thu nhập</option>
-                        <option value="payout">Rút tiền</option>
-                        <option value="payout_pending">Yêu cầu rút</option>
-                        <option value="refund">Hoàn tiền</option>
-                    </select>
-                </div>
+        <div class="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
 
                 <!-- Date From -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Từ ngày</label>
-                    <input type="date" wire:model.live="filterDateFrom" 
-                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Từ ngày</label>
+                    <input type="date" wire:model.live="filterDateFrom" max="{{ date('Y-m-d') }}"
+                           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
                 </div>
 
                 <!-- Date To -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Đến ngày</label>
-                    <input type="date" wire:model.live="filterDateTo" 
-                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Đến ngày</label>
+                    <input type="date" wire:model.live="filterDateTo" max="{{ date('Y-m-d') }}"
+                           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
                 </div>
 
                 <!-- Search -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
-                    <input type="text" wire:model.live.debounce.300ms="search" 
-                           placeholder="Tìm trong ghi chú..."
-                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tên tài liệu</label>
+                    <div class="relative">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                        <input type="text" wire:model.live.debounce.300ms="search" 
+                               placeholder="Nhập tên tài liệu..."
+                               class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 focus:border-indigo-400 focus:bg-white focus:outline-none transition-colors shadow-sm h-[42px]">
+                    </div>
                 </div>
             </div>
         </div>
@@ -66,8 +59,8 @@
                     <p class="text-gray-400 text-sm mt-1">Thử thay đổi bộ lọc để xem kết quả khác</p>
                 </div>
             @else
-                <div class="overflow-hidden">
-                    <table class="w-full table-fixed">
+                <div class="overflow-x-auto">
+                    <table class="w-full table-fixed min-w-[800px]">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
@@ -124,47 +117,39 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach($transactions as $transaction)
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($transaction->type === 'earning')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                Thu nhập
-                                            </span>
-                                        @elseif($transaction->type === 'payout')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                Rút tiền
-                                            </span>
-                                        @elseif($transaction->type === 'payout_pending')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                Yêu cầu rút
-                                            </span>
-                                        @elseif($transaction->type === 'purchase')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                Mua tài liệu
-                                            </span>
-                                        @elseif($transaction->type === 'subscription')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                VIP
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                {{ ucfirst($transaction->type) }}
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-700 max-w-[150px] truncate">
+                                    <td class="px-6 py-4 text-sm text-gray-700">
                                         @php
                                             $docName = '-';
-                                            if ($transaction->reference_type === 'order_item' && isset($documentNames[$transaction->reference_id])) {
-                                                $docName = $documentNames[$transaction->reference_id];
+                                            $isVip = false;
+                                            
+                                            if ($transaction->reference_type === 'order_item' && isset($orderItems[$transaction->reference_id])) {
+                                                $item = $orderItems[$transaction->reference_id];
+                                                $docName = $item->document_title_snapshot;
+                                                if ($item->order && $item->order->total_amount == 0) {
+                                                    $isVip = true;
+                                                }
                                             } elseif (str_contains($transaction->note ?? '', 'Doanh thu từ tài liệu: ')) {
                                                 $docName = trim(str_replace('Doanh thu từ tài liệu: ', '', $transaction->note));
                                             } elseif (in_array($transaction->type, ['purchase', 'earning', 'subscription'])) {
                                                 $docName = 'Tài liệu lập trình Python cơ bản';
                                             }
                                         @endphp
-                                        {{ $docName }}
+                                        @if($isVip)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200" title="Khách hàng sử dụng lượt tải VIP">
+                                                VIP
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Khách hàng mua bằng tiền mặt">
+                                                Tiền mặt
+                                            </span>
+                                        @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-[150px] truncate" title="{{ $transaction->note }}">
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        <div class="flex items-center gap-2 break-all max-w-[200px]">
+                                            <span>{{ \Illuminate\Support\Str::limit($docName, 40) }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 break-words max-w-[250px]" title="{{ $transaction->note }}">
                                         {{ $transaction->note }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
@@ -194,3 +179,4 @@
         </div>
     </div>
 </div>
+

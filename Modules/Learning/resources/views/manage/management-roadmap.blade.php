@@ -111,7 +111,7 @@
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     @forelse($roadmaps as $roadmap)
                     <tr class="hover:bg-slate-50/60 transition-colors group">
-                        <td class="px-6 py-4 text-xs font-mono font-bold text-slate-400">{{ $roadmap->public_id }}</td>
+                        <td class="px-6 py-4 text-xs font-mono font-bold text-slate-400">{{ $roadmap->id }}</td>
                         <td class="px-6 py-4">
                             <span class="block text-xs font-black text-slate-800 group-hover:text-blue-600 transition-colors">{{ $roadmap->title }}</span>
                             <span class="block text-[11px] text-slate-400 font-medium mt-0.5 max-w-md truncate">{{ $roadmap->description ?? 'Chưa cấu hình mô tả ngắn.' }}</span>

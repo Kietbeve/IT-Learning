@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use App\Models\Category;
-use Modules\Auth\Models\User;
+use App\Models\User;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 

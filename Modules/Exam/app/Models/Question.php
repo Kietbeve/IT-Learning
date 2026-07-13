@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-use Modules\Auth\Models\User;
+use App\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
 
@@ -21,6 +21,7 @@ class Question extends Model
     protected $fillable = [
         'author_id',
         'category_id',
+        'subject_id',
         'content',
         'answer_text',
         'explanation',

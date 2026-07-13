@@ -177,6 +177,31 @@ final class AttemptAnswerTable extends PowerGridComponent
                     ? 'bg-red-600 text-white border-red-600'
                     : 'bg-white text-gray-700 border-gray-300';
 
+                if ($model->question->type === 'essay') {
+
+                    return '
+                        <button
+                            wire:click="$dispatch(\'attempt-answer-grade\', {
+                                attemptAnswerId: '.$model->id.',
+                                status: \'correct\'
+                            })"
+                            class="rounded-md border px-3 py-1 text-xs font-medium '.$correctClass.'"
+                        >
+                            ✓ Correct
+                        </button>
+
+                        <button
+                            wire:click="$dispatch(\'attempt-answer-grade\', {
+                                attemptAnswerId: '.$model->id.',
+                                status: \'incorrect\'
+                            })"
+                            class="rounded-md border px-3 py-1 text-xs font-medium '.$incorrectClass.'"
+                        >
+                            ✗ Incorrect
+                        </button>
+                    ';
+                }
+
                 return '
                     <div class="flex items-center gap-2">
                         <button

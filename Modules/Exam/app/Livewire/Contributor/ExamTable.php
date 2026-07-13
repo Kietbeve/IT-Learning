@@ -41,6 +41,10 @@ final class ExamTable extends PowerGridComponent
             PowerGrid::footer()
                 ->showPerPage(perPage: 10, perPageValues: [10, 25, 50, 100, 200, 500])
                 ->showRecordCount(),
+
+            PowerGrid::detail()
+                ->view('exam::contributor.partials.exam-check')
+                ->showCollapseIcon(),
         ];
     }
 
@@ -49,17 +53,9 @@ final class ExamTable extends PowerGridComponent
         return [
             Button::add('create')
                 ->slot('➕ Thêm mới')
-                ->class(
-                    'inline-flex items-center gap-2
-                    px-4 py-2
-                    rounded-lg
-                    bg-blue-600 text-white font-medium
-                    shadow-sm
-                    transition-all duration-200
-                    hover:bg-blue-700 hover:shadow-md
-                    active:scale-95
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-                )
+                ->class($this->buttonClass(
+                    'from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 focus:ring-blue-500'
+                ))
                 ->dispatch('open-create-modal', []),
         ];
     }
@@ -193,39 +189,89 @@ final class ExamTable extends PowerGridComponent
     {
         return [
             Button::add('view')
-                ->slot('Xem')
-                ->class('inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700')
+                // ->slot('Xem')
+                // ->class('inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700')
+                ->slot('👁 Xem')
+                ->class($this->buttonClass(
+                    'from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 focus:ring-blue-500'
+                ))
                 ->dispatch('open-view-modal', ['examId' => $row->id]),
 
             Button::add('edit')
-                ->slot('Chỉnh sửa')
-                ->class('inline-flex items-center rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-600')
+                // ->slot('Chỉnh sửa')
+                // ->class('inline-flex items-center rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-600')
+                ->slot('✍ Cập nhật')
+                ->class($this->buttonClass(
+                    'from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 focus:ring-orange-500'
+                ))
                 ->dispatch('open-edit-modal', ['examId' => $row->id]),
 
             Button::add('show')
-                ->slot('Chi tiết')
-                ->class('text-blue-600 hover:text-blue-800')
+                // ->slot('Chi tiết')
+                // ->class('text-blue-600 hover:text-blue-800')
+                ->slot('Quản lí')
+                 ->class($this->buttonClass(
+                    'from-violet-500 to-indigo-600 hover:from-violet-400 hover:to-indigo-500 focus:ring-violet-500'
+                ))
                 ->route('contributor.exams.detail', ['examId' => $row->id]),
 
             Button::add('delete')
-                ->slot('Xóa')
-                ->class('inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700')
+                // ->slot('Xóa')
+                // ->class('inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700')
+                ->slot('🗑 Xóa')
+                ->class($this->buttonClass(
+                    'from-red-500 to-rose-600 hover:from-red-400 hover:to-rose-500 focus:ring-red-500'
+                ))
                 ->dispatch('open-delete-confirm', ['examId' => $row->id]),
         ];
     }
+    private function buttonClass(string $gradient): string
+    {
+         return "inline-flex items-center justify-center rounded-md
+            px-2 py-1.5
+            text-xs font-medium text-white
+            whitespace-nowrap
 
+            bg-gradient-to-r {$gradient}
 
+            shadow-sm
+            transition-all duration-200
 
+            hover:-translate-y-0.5
+            hover:shadow-md
+
+            active:scale-95
+
+            focus:outline-none
+            focus:ring-2
+            focus:ring-offset-2";
+    }
     public function actionRules($row): array
     {
         return [
+             // Chưa publish hoac chua co cau hoi
             Rule::rows()
-                ->when(fn (Exam $exam) => $exam->questions_count === 0)
+                ->when(fn (Exam $exam) => $exam->questions_count === 0 || is_null($exam->publish_at) || $exam->status === 'rejected')
                 ->setAttribute(
                     'class',
-                    '!bg-red-50 border-l-4 border-red-500'
+                    '!bg-red-100'
                 ),
-        ];
+            // Chờ duyệt
+            Rule::rows()
+                ->when(fn (Exam $exam) => $exam->status === 'pending')
+        
+                ->setAttribute(
+                    'class',
+                    '!bg-yellow-100'
+                ),
+            // Đã duyệt
+            Rule::rows()
+                ->when(fn (Exam $exam) => $exam->status === 'approved')
+                ->setAttribute(
+                    'class',
+                    '!bg-green-100'
+                ),
+            ];
     }
 
     /*

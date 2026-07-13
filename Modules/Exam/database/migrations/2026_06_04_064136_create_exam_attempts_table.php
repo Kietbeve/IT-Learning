@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('session_id')
                 ->unique();
 
-            $table->timestamp('started_at');
+            $table->timestamp('started_at')->nullable();
 
             $table->timestamp('submitted_at')
                 ->nullable();
@@ -54,6 +54,9 @@ return new class extends Migration
 
             $table->boolean('is_passed')
                 ->nullable();
+
+            // Ghi chú/nhận xét của giáo viên (tùy chọn)
+            $table->text('teacher_comment')->nullable();
 
             $table->enum('status', [
                 'in_progress',

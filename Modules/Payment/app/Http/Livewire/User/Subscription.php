@@ -3,44 +3,79 @@
 namespace Modules\Payment\Http\Livewire\User;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Modules\Payment\Jobs\ExpireOrderJob;
 use Modules\Payment\Models\Order;
-use Modules\Payment\Models\Payment;
+use Modules\Payment\Services\OrderService;
 use Modules\Payment\Services\PayOSService;
 use Modules\Payment\Services\SubscriptionService;
+use Modules\Payment\Traits\WithPayOSPolling;
 use WireUi\Traits\WireUiActions;
 
 class Subscription extends Component
 {
     use WireUiActions;
+    use WithPayOSPolling;
 
     public $packages = [];
+
     public $vipStatus = [];
+
     public $loading = false;
-    public $showSuccessModal = false;
-    public $successData = [];
+
     public $errorMessage = '';
+
+    public $showPaymentModal = false;
+
+    public $paymentData = [];
+
+    public $currentOrderCode = null;
+
+    public $remainingSeconds = 600;
 
     public function mount()
     {
         $subscriptionService = app(SubscriptionService::class);
-        
+
         $this->packages = $subscriptionService->getPackages();
         $this->vipStatus = $subscriptionService->getVipStatus(Auth::user());
 
-        if (session()->has('vip_success')) {
-            $this->successData = session('vip_success');
-            $this->showSuccessModal = true;
-            session()->forget('vip_success');
-        }
     }
 
-    public function closeSuccessModal()
+    public function checkPaymentStatus()
     {
-        $this->showSuccessModal = false;
-        $this->successData = [];
+        $this->pollPayOSStatus($this->currentOrderCode, function () {
+            $this->closePaymentModal();
+            $subscriptionService = app(SubscriptionService::class);
+            $this->vipStatus = $subscriptionService->getVipStatus(Auth::user());
+
+            $this->dispatch('payment-success');
+            $this->dispatch('new-notification');
+
+            Log::info('checkPaymentStatus: Payment completed', ['order_code' => $this->currentOrderCode]);
+        });
+    }
+
+    public function closePaymentModal()
+    {
+        $this->showPaymentModal = false;
+        $this->currentOrderCode = null;
+        $this->paymentData = [];
+        $this->remainingSeconds = 600;
+    }
+
+    public function refreshVipStatus()
+    {
+        if (! Auth::check()) {
+            return;
+        }
+
+        $subscriptionService = app(SubscriptionService::class);
+        $this->vipStatus = $subscriptionService->getVipStatus(Auth::user());
     }
 
     public function getIsVipActiveProperty()
@@ -72,58 +107,79 @@ class Subscription extends Component
             $subscriptionService = app(SubscriptionService::class);
             $package = $subscriptionService->getPackage($packageKey);
 
-            if (!$package) {
+            if (! $package) {
                 throw new \Exception('Gói VIP không hợp lệ.');
             }
 
             $user = Auth::user();
             $finalPrice = $subscriptionService->getFinalPrice($packageKey);
 
-            if (!$finalPrice || $finalPrice <= 0) {
+            if (! $finalPrice || $finalPrice <= 0) {
                 throw new \Exception('Số tiền gói VIP không hợp lệ.');
             }
 
-            $orderCode = (int) (now()->timestamp . rand(1000, 9999));
+            // Database là Source of Truth - Query 1 lần duy nhất
+            $validOrder = Order::where('user_id', $user->id)
+                ->where('subscription_package_key', $packageKey)
+                ->where('payment_status', 'pending')
+                ->where('order_status', 'pending')
+                ->where('expires_at', '>', now())
+                ->first();
+
+            if ($validOrder) {
+                // Tìm checkout data: DB trước, Cache sau
+                $checkoutData = $validOrder->checkout_data
+                    ?? Cache::get('payos_data_'.$validOrder->order_code);
+
+                if ($checkoutData) {
+                    $this->paymentData = $checkoutData;
+                    $this->currentOrderCode = (string) $validOrder->order_code;
+                    $this->remainingSeconds = max(1, $validOrder->expires_at->timestamp - time());
+                    $this->showPaymentModal = true;
+                    $this->loading = false;
+
+                    return;
+                }
+
+                // Không có checkout data → hủy đơn cũ, tạo mới
+                $validOrder->update([
+                    'payment_status' => 'expired',
+                    'order_status' => 'expired',
+                    'canceled_at' => now(),
+                ]);
+            }
+
+            // Không có đơn cũ hợp lệ hoặc đơn cũ bị lỗi → Reset state và tạo mới
+            $this->currentOrderCode = null;
+            $this->paymentData = [];
+
+            // Step 2: Lazy cleanup expired pending orders of this user
+            Order::expirePendingOrders($user->id);
 
             DB::beginTransaction();
 
-            $order = Order::create([
-                'order_code' => (string) $orderCode,
-                'order_type' => 'subscription',
-                'subscription_package_key' => $packageKey,
-                'user_id' => $user->id,
-                'total_amount' => $finalPrice,
-                'payment_status' => 'pending',
-                'order_status' => 'pending',
-                'download_token' => Str::random(64),
-                'guest_download_limit' => 0,
-                'guest_download_count' => 0,
-            ]);
+            $orderService = app(\Modules\Payment\Services\OrderService::class);
+            $order = $orderService->createSubscriptionOrder(
+                $user, 
+                $packageKey, 
+                $package, 
+                $finalPrice
+            );
+
+            // Dispatch delayed job to expire order after 5 minutes
+            ExpireOrderJob::dispatch($order->id)->delay(now()->addMinutes(10));
 
             $payOSClientId = config('payment.payos.client_id');
 
-            if (!$payOSClientId) {
-                // Test mode: activate VIP directly without PayOS
-                $order->update([
-                    'payment_status' => 'paid',
-                    'order_status' => 'completed',
-                    'paid_at' => now(),
-                ]);
-
-                $subscriptionService->activateVip($user, $packageKey);
-
-                Payment::create([
-                    'order_id' => $order->id,
-                    'provider' => 'payos',
-                    'transaction_code' => 'TEST_' . $orderCode,
-                    'provider_order_code' => (string) $orderCode,
-                    'amount' => $finalPrice,
-                    'status' => 'success',
-                    'raw_response' => ['mode' => 'test'],
-                    'paid_at' => now(),
-                ]);
-
+            if (! $payOSClientId) {
+                // Test mode: delegate to OrderService
                 DB::commit();
+
+                app(\Modules\Payment\Services\OrderService::class)->processSuccessfulPayment($order->order_code, [
+                    'amount' => $finalPrice,
+                    'transactionDateTime' => 'TEST_' . $order->order_code,
+                    'mode' => 'test'
+                ]);
 
                 session()->flash('vip_success', [
                     'orderCode' => $order->order_code,
@@ -131,7 +187,8 @@ class Subscription extends Component
                     'packageKey' => $packageKey,
                 ]);
 
-                $this->redirect(route('student.subscription'));
+                $this->redirect(route('user.subscription'));
+
                 return;
             }
 
@@ -139,25 +196,35 @@ class Subscription extends Component
 
             $payOS = app(PayOSService::class);
 
-            $description = 'Mua gói VIP: ' . $package['name'];
+            $description = 'ITL ' . $order->order_code;
 
             $paymentResponse = $payOS->createPaymentLink(
-                orderCode: $orderCode,
+                orderCode: $order->order_code,
                 amount: $finalPrice,
                 description: $description,
-                returnUrl: route('payment.return', ['order_code' => $orderCode]),
-                cancelUrl: route('payment.cancel', ['order_code' => $orderCode]),
+                returnUrl: route('user.subscription'),
+                cancelUrl: route('user.subscription'),
                 buyerName: $user->name,
                 buyerEmail: $user->email,
+                expiredAt: now()->addMinutes(10)->timestamp,
             );
 
             if (isset($paymentResponse['checkoutUrl'])) {
-                $this->redirect($paymentResponse['checkoutUrl']);
+                Cache::put('payos_data_'.$order->order_code, $paymentResponse, now()->addMinutes(10));
+
+                // Lưu vào database để dùng lâu dài (không phụ thuộc cache)
+                $order->update(['checkout_data' => $paymentResponse]);
+
+                $this->paymentData = $paymentResponse;
+                $this->currentOrderCode = (string) $order->order_code;
+                $this->remainingSeconds = 600;
+                $this->showPaymentModal = true;
+                $this->loading = false;
+
                 return;
             }
 
             throw new \Exception('Không nhận được link thanh toán từ PayOS.');
-
         } catch (\Exception $e) {
             DB::rollBack();
 

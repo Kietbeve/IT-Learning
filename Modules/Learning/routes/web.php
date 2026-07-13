@@ -17,9 +17,11 @@ Livewire::component('modules.learning.livewire.forum.create-thread', \Modules\Le
 Livewire::component('modules.learning.livewire.forum.thread-detail', \Modules\Learning\Livewire\Forum\ThreadDetail::class);
 Livewire::component('modules.learning.livewire.forum.forum-index', \Modules\Learning\Livewire\Forum\ForumIndex::class);
 
-Route::get('/admin/collaborators', CollabIndex::class);
-Route::get('/admin/collaborators/create', CollabCreate::class);
-Route::get('/admin/collaborators/edit/{id}', CollabEdit::class);
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/collaborators', CollabIndex::class);
+    Route::get('/admin/collaborators/create', CollabCreate::class);
+    Route::get('/admin/collaborators/edit/{id}', CollabEdit::class);
+});
 
 
 /*
@@ -113,7 +115,7 @@ Route::prefix('forum')->name('learning.forum.')->group(function () {
 // ==========================================
 // 5. NHÓM ADMIN (Quản lý submissions + forum)
 // ==========================================
-Route::middleware(['auth'])->prefix('admin/learning')->name('admin.learning.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin/learning')->name('admin.learning.')->group(function () {
     
     // Danh sách tất cả submissions
     Route::get('/submissions', \Modules\Learning\Livewire\Admin\ProjectSubmissionList::class)
@@ -132,19 +134,21 @@ Route::middleware(['auth'])->prefix('admin/learning')->name('admin.learning.')->
 // ==========================================
 // 6. NHÓM MANAGE (Quản lý nội dung lộ trình)
 // ==========================================
-Route::get('/manage', function () {
-    return view('learning::manage.management-dashboard');
+Route::middleware(['auth', 'role:contributor'])->group(function () {
+    Route::get('/manage', function () {
+        return view('learning::manage.management-dashboard');
+    });
+
+    // ĐÃ SỬA: Chỉ giữ lại duy nhất route này cho Roadmap để chạy qua Livewire Component thực tế
+    Route::get('/manage/roadmap', RoadmapManagement::class)->name('manage.roadmap');
+
+    // Route cho trang Chi tiết/Danh sách bài học
+    Route::get('/manage/detail', function () {
+        return view('learning::manage.namagement-detail');
+    })->name('manage.detail');
+
+    // Route cho trang Quản lý Chi tiết bài học
+    Route::get('/manage/lesson', function () {
+        return view('learning::manage.management-lesson');
+    })->name('manage.lesson');
 });
-
-// ĐÃ SỬA: Chỉ giữ lại duy nhất route này cho Roadmap để chạy qua Livewire Component thực tế
-Route::get('/manage/roadmap', RoadmapManagement::class)->name('manage.roadmap');
-
-// Route cho trang Chi tiết/Danh sách bài học
-Route::get('/manage/detail', function () {
-    return view('learning::manage.namagement-detail');
-})->name('manage.detail');
-
-// Route cho trang Quản lý Chi tiết bài học
-Route::get('/manage/lesson', function () {
-    return view('learning::manage.management-lesson');
-})->name('manage.lesson');

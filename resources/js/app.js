@@ -4,7 +4,7 @@ import '../../vendor/power-components/livewire-powergrid/resources/js/powergrid'
 // Tom-Select for better multiselect
 import TomSelect from 'tom-select';
 window.TomSelect = TomSelect;
-// Quill Editor
+// Quill Editor : có tiền lệ gây lỗi 
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 

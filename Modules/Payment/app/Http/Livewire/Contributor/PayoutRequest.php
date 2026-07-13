@@ -3,36 +3,45 @@
 namespace Modules\Payment\Http\Livewire\Contributor;
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Payment\Models\PayoutRequest as PayoutRequestModel;
 use Modules\Payment\Models\WalletTransaction;
 use WireUi\Traits\WireUiActions;
+use App\Services\SettingService;
 
 class PayoutRequest extends Component
 {
-    use WithPagination, WireUiActions;
+    use WireUiActions, WithPagination;
 
     // Form
     public $amount;
+
     public $bank_name;
+
     public $bank_account_number;
+
     public $bank_account_name;
+
     public $note;
 
     // Validation
     public $availableBalance;
+
     public $minimumAmount;
+
     public $hasPendingRequest = false;
 
     // Stats
     public $totalEarnings;
+
     public $totalWithdrawn;
+
     public $pendingPayouts;
 
     // Receipt modal
     public $selectedReceiptUrl = null;
+
     public $showReceiptModal = false;
 
     protected function rules()
@@ -41,8 +50,8 @@ class PayoutRequest extends Component
             'amount' => [
                 'required',
                 'integer',
-                'min:' . $this->minimumAmount,
-                'max:' . $this->availableBalance,
+                'min:'.$this->minimumAmount,
+                'max:'.$this->availableBalance,
             ],
             'bank_name' => [
                 'required',
@@ -74,8 +83,8 @@ class PayoutRequest extends Component
         return [
             'amount.required' => 'Vui lòng nhập số tiền muốn rút',
             'amount.integer' => 'Số tiền phải là số nguyên',
-            'amount.min' => 'Số tiền tối thiểu là ' . number_format($this->minimumAmount) . 'đ',
-            'amount.max' => 'Số tiền không được vượt quá số dư khả dụng (' . number_format($this->availableBalance) . 'đ)',
+            'amount.min' => 'Số tiền tối thiểu là '.number_format($this->minimumAmount).'đ',
+            'amount.max' => 'Số tiền không được vượt quá số dư khả dụng ('.number_format($this->availableBalance).'đ)',
             'bank_name.required' => 'Vui lòng chọn ngân hàng',
             'bank_name.min' => 'Tên ngân hàng phải có ít nhất 3 ký tự',
             'bank_name.regex' => 'Tên ngân hàng chỉ được chứa chữ, số, dấu cách, và dấu gạch ngang',
@@ -102,20 +111,20 @@ class PayoutRequest extends Component
     {
         $user = Auth::user();
         $this->availableBalance = $user->contributor_balance ?? 0;
-        $this->minimumAmount = config('payment.contributor.payout.minimum_amount', 50000);
-        
+        $this->minimumAmount = SettingService::get('min_payout_amount', config('payment.contributor.payout.minimum_amount', 50000));
+
         $this->totalEarnings = WalletTransaction::where('user_id', $user->id)
             ->where('type', 'earning')
             ->sum('amount');
-        
+
         $this->totalWithdrawn = PayoutRequestModel::where('user_id', $user->id)
             ->where('status', 'completed')
             ->sum('amount');
-        
+
         $this->pendingPayouts = PayoutRequestModel::where('user_id', $user->id)
             ->where('status', 'pending')
             ->sum('amount');
-        
+
         $this->hasPendingRequest = PayoutRequestModel::where('user_id', $user->id)
             ->where('status', 'pending')
             ->exists();
@@ -128,6 +137,7 @@ class PayoutRequest extends Component
                 'Không thể gửi yêu cầu',
                 'Bạn có yêu cầu rút tiền đang chờ xử lý. Vui lòng đợi Admin xử lý trước khi tạo yêu cầu mới.'
             );
+
             return;
         }
 
@@ -135,7 +145,7 @@ class PayoutRequest extends Component
 
         try {
             $user = Auth::user();
-            
+
             PayoutRequestModel::create([
                 'user_id' => $user->id,
                 'amount' => $this->amount,
@@ -148,7 +158,7 @@ class PayoutRequest extends Component
 
             // Reset form
             $this->reset(['amount', 'bank_name', 'bank_account_number', 'bank_account_name', 'note']);
-            
+
             // Reload data
             $this->loadData();
             $this->resetPage();
@@ -161,7 +171,7 @@ class PayoutRequest extends Component
         } catch (\Exception $e) {
             $this->notification()->error(
                 'Lỗi',
-                'Có lỗi xảy ra: ' . $e->getMessage()
+                'Có lỗi xảy ra: '.$e->getMessage()
             );
         }
     }
@@ -173,8 +183,9 @@ class PayoutRequest extends Component
             ->where('status', 'pending')
             ->first();
 
-        if (!$payout) {
+        if (! $payout) {
             $this->notification()->error('Không thể hủy', 'Yêu cầu không tồn tại hoặc đã được xử lý');
+
             return;
         }
 
@@ -205,7 +216,7 @@ class PayoutRequest extends Component
 
     public function getPayoutHistoryProperty()
     {
-        return PayoutRequestModel::with('rejectionTransaction')
+        return PayoutRequestModel::with(['rejectionTransaction', 'walletTransactions'])
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);

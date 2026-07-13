@@ -279,4 +279,24 @@ return [
         'max_calls' => 50,           // Maximum method calls per request
         'max_components' => 200,     // Maximum components per batch request
     ],
+
+    /*
+    |---------------------------------------------------------------------------
+    | Temporary File Uploads
+    |---------------------------------------------------------------------------
+    |
+    */
+
+    'temporary_file_upload' => [
+        'disk' => null,
+        'rules' => ['required', 'file', 'max:512000'], // 500MB max limit to allow component validation to handle specifics
+        'directory' => null,
+        'middleware' => null,
+        'preview_mimes' => [
+            'png', 'gif', 'bmp', 'svg', 'wav', 'mp4',
+            'mov', 'avi', 'wmv', 'mp3', 'm4a',
+            'jpg', 'jpeg', 'mpga', 'webp', 'wma',
+        ],
+        'max_upload_time' => 5,
+    ],
 ];

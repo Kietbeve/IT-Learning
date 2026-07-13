@@ -2,12 +2,11 @@
 
 namespace Modules\Document\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Document\Database\factories\DocumentDownloadFactory;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Modules\Payment\Models\OrderItem;
-use Modules\Document\Models\Document;
+
 class DocumentDownload extends Model
 {
     use HasFactory;
@@ -23,8 +22,19 @@ class DocumentDownload extends Model
         'downloaded_at' => 'datetime',
     ];
 
-    public function document() { return $this->belongsTo(Document::class); }
-    public function user() { return $this->belongsTo(\App\Models\User::class); }
+    public function document()
+    {
+        return $this->belongsTo(Document::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     // Cross-Module
-    public function orderItem() { return $this->belongsTo(\Modules\Payment\Models\OrderItem::class); }
+    public function orderItem()
+    {
+        return $this->belongsTo(OrderItem::class);
+    }
 }

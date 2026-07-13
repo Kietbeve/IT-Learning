@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto py-6" x-data="{ notification: null }" x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
+<div class="bg-slate-50 antialiased min-h-screen" x-data="{ notification: null }" x-on:notify.window="notification = $event.detail; setTimeout(() => notification = null, 3000)">
     @php
         $placeholders = [
             'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
@@ -11,520 +11,348 @@
             'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80',
         ];
     @endphp
-    <!-- Notification Toast -->
-    <div x-show="notification" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform translate-y-2"
-         class="fixed bottom-5 right-5 z-50 rounded-2xl border bg-white p-4 shadow-xl border-slate-200"
-         style="display: none;">
-        <div class="flex items-center gap-3">
-            <template x-if="notification && notification.type === 'success'">
-                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                </div>
-            </template>
-            <template x-if="notification && notification.type === 'info'">
-                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-            </template>
-            <div>
-                <p class="text-sm font-semibold text-slate-900" x-text="notification ? notification.message : ''"></p>
-            </div>
+
+    <!-- ===== HERO SEARCH ===== -->
+    <section class="relative bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white">
+        <div class="absolute inset-0 opacity-10 overflow-hidden pointer-events-none">
+            <div class="absolute top-10 left-10 w-72 h-72 bg-blue-500 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-10 right-10 w-96 h-96 bg-purple-600 rounded-full blur-3xl"></div>
         </div>
-    </div>
-
-    <!-- Hero / Search Section -->
-    <div class="mb-8 rounded-3xl bg-slate-900 text-white p-6 md:p-8 shadow-xl relative">
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-purple-600/30 opacity-50 rounded-3xl"></div>
-        <div class="relative z-10 max-w-3xl">
-            <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">Tìm kiếm tài liệu & Đồ án mẫu</h1>
-            <div class="mt-5 flex flex-col sm:flex-row gap-3">
-                <div class="relative flex-1" x-data="{ isOpen: false }" @click.away="isOpen = false">
-                    <input type="text" 
-                           id="search-documents"
-                           aria-label="Tìm kiếm tài liệu"
-                           wire:model.live.debounce.300ms="search" 
-                           @focus="isOpen = true"
-                           @input="isOpen = true"
-                           @keydown.enter="isOpen = false; document.getElementById('document-list-container').scrollIntoView({behavior: 'smooth'})"
-                           placeholder="Nhập tiêu đề, mô tả tài liệu hoặc từ khóa..." 
-                           autocomplete="off"
-                           class="peer w-full rounded-2xl border-0 bg-white/10 px-5 py-4 pl-12 pr-28 text-white placeholder-slate-400 backdrop-blur-md focus:bg-white focus:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300" />
-                    
-                    <!-- Search Icon (hidden when loading search) -->
-                    <span wire:loading.remove wire:target="search" class="absolute inset-y-0 left-4 inline-flex items-center text-slate-400 pointer-events-none">
-                        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
-                    </span>
-                    
-                    <!-- Loading Spinner (shown when loading search) -->
-                    <span wire:loading wire:target="search" class="absolute inset-y-0 left-4 inline-flex items-center text-blue-500 pointer-events-none">
-                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </span>
-
-                    <!-- Search count badge -->
-                    @if(!empty($search))
-                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/20 text-slate-200 peer-focus:bg-blue-100 peer-focus:text-blue-700 transition-all duration-200 pointer-events-none"
-                              wire:loading.class="hidden" wire:target="search">
-                            {{ $documents->total() }} kết quả
-                        </span>
-                    @endif
-
-                    <!-- Autocomplete Dropdown -->
-                    <div x-show="isOpen && $wire.search && $wire.search.trim() !== ''"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 translate-y-1"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 translate-y-1"
-                         class="absolute left-0 right-0 mt-2 z-50 rounded-2xl border border-slate-200 bg-white shadow-xl max-h-[380px] overflow-y-auto overflow-hidden text-slate-800"
-                         style="display: none;">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center relative z-30">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+                Kho tài liệu <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">chất lượng</span>
+            </h1>
+            <p class="text-lg text-gray-300 mt-3 mb-8 max-w-2xl mx-auto">Khám phá hàng ngàn tài liệu học tập, luận văn và mã nguồn được chọn lọc kỹ càng</p>
+            <div class="relative max-w-2xl mx-auto" x-data="{ isOpen: false }" @click.away="isOpen = false">
+                <div class="flex items-center bg-white rounded-2xl shadow-2xl overflow-hidden p-1.5 ring-1 ring-white/20 relative z-20">
+                    <div class="flex-1 flex items-center pl-3 sm:pl-5 min-w-0">
+                        <i class="fas fa-search text-gray-400 mr-2 sm:mr-3 shrink-0"></i>
+                        <input type="text" 
+                               wire:model.live.debounce.300ms="search"
+                               @focus="isOpen = true"
+                               @input="isOpen = true"
+                               placeholder="Tìm kiếm tài liệu, môn học..." 
+                               class="w-full py-2.5 sm:py-3.5 pr-2 text-gray-800 placeholder-gray-400 bg-transparent outline-none text-sm sm:text-base min-w-0">
                         
-                        <div class="px-4 py-2.5 bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-400 flex justify-between items-center border-b border-slate-100">
-                            <span>Gợi ý tài liệu</span>
-                            <span class="text-blue-600 font-semibold">{{ $documents->total() }} kết quả</span>
-                        </div>
-
-                        <div class="divide-y divide-slate-100">
-                            @forelse($documents->take(5) as $doc)
-                                @php
-                                    $docThumbnailUrl = $doc->thumbnail_url ?? $placeholders[$doc->id % count($placeholders)];
-                                @endphp
-                                <a href="{{ route('documents.show', [$doc->id, Str::slug($doc->title)]) }}" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors duration-200 border-b border-slate-100">
-                                    <img src="{{ $docThumbnailUrl }}" class="w-12 h-12 rounded-lg object-cover bg-slate-100 border border-slate-100 shrink-0" alt="" />
-                                    <div class="min-w-0 flex-1">
-                                        <h4 class="text-sm font-semibold text-slate-800 truncate">{{ $doc->title }}</h4>
-                                        <div class="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
-                                            <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-medium">{{ $doc->category?->name ?? 'Tài liệu' }}</span>
-                                            <span>•</span>
-                                            <span class="uppercase font-bold text-[10px] text-slate-600">{{ $doc->file_type }}</span>
-                                            <span>•</span>
-                                            <span>{{ $doc->download_count }} tải</span>
-                                        </div>
-                                    </div>
-                                    <div class="text-right shrink-0">
-                                        @if($doc->product && $doc->product->is_active)
-                                            <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">{{ number_format($doc->product->price) }}đ</span>
-                                        @else
-                                            <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">Miễn phí</span>
-                                        @endif
-                                    </div>
-                                </a>
-                            @empty
-                                <div class="px-4 py-6 text-center text-sm text-slate-500">
-                                    Không tìm thấy tài liệu phù hợp
-                                </div>
-                            @endforelse
-                        </div>
-
-                        @if($documents->total() > 0)
-                            <div class="p-2 bg-slate-50 text-center border-t border-slate-100">
-                                <button type="button" 
-                                        @click="isOpen = false; document.getElementById('document-list-container').scrollIntoView({behavior: 'smooth'})"
-                                        class="w-full text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline py-1.5 transition-colors duration-150">
-                                    Xem tất cả {{ $documents->total() }} kết quả bên dưới &darr;
-                                </button>
-                            </div>
-                        @endif
+                        <!-- Loading spinner -->
+                        <span wire:loading wire:target="search" class="absolute inset-y-0 right-32 sm:right-40 flex items-center pointer-events-none text-blue-500">
+                            <svg class="animate-spin h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </span>
                     </div>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-8 py-2.5 sm:py-3.5 rounded-xl font-semibold flex items-center gap-1 sm:gap-2 transition shrink-0">
+                        <span class="hidden sm:inline">Tìm kiếm</span>
+                        <span class="sm:hidden">Tìm</span>
+                        <i class="fas fa-arrow-right text-xs sm:text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Autocomplete Dropdown -->
+                <div x-show="isOpen && $wire.search && $wire.search.trim() !== ''"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-1"
+                     class="absolute left-0 right-0 mt-2 z-50 rounded-xl border border-gray-200 bg-white shadow-xl max-h-[380px] overflow-y-auto overflow-hidden text-gray-800 text-left"
+                     style="display: none;">
+                    
+                    <div class="px-4 py-2.5 bg-gray-50 text-[11px] font-bold uppercase tracking-wider text-gray-500 flex justify-between items-center border-b border-gray-100">
+                        <span>Gợi ý tài liệu</span>
+                        <span class="text-blue-600 font-semibold">{{ $documents->total() }} kết quả</span>
+                    </div>
+
+                    <div class="divide-y divide-gray-100">
+                        @forelse($documents->take(5) as $doc)
+                            @php
+                                $docThumbnailUrl = $doc->thumbnail_url ?? $placeholders[$doc->id % count($placeholders)];
+                            @endphp
+                            <a href="{{ route('documents.show', [$doc->id, Str::slug($doc->title)]) }}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100">
+                                <img src="{{ $docThumbnailUrl }}" class="w-12 h-12 rounded-lg object-cover bg-gray-100 border border-gray-200 shrink-0" alt="" />
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="text-base font-semibold text-blue-900 truncate">{{ strip_tags($doc->title) }}</h4>
+                                    <div class="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
+                                        <span class="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-medium">{{ $doc->category?->name ?? 'Tài liệu' }}</span>
+                                        <span>•</span>
+                                        <span class="uppercase font-bold text-[10px] text-gray-600">{{ $doc->file_type }}</span>
+                                        <span>•</span>
+                                        <span>{{ $doc->download_count }} tải</span>
+                                    </div>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    @if($doc->product && $doc->product->price > 0)
+                                        @if($doc->product->sale_price)
+                                            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{{ number_format($doc->product->sale_price) }}đ</span>
+                                        @else
+                                            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{{ number_format($doc->product->price) }}đ</span>
+                                        @endif
+                                    @else
+                                        <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">Miễn phí</span>
+                                    @endif
+                                </div>
+                            </a>
+                        @empty
+                            <div class="px-4 py-6 text-center text-sm text-gray-500">
+                                Không tìm thấy tài liệu phù hợp
+                            </div>
+                        @endforelse
+                    </div>
+
+                    @if($documents->total() > 0)
+                        <div class="p-2 bg-gray-50 text-center border-t border-gray-100">
+                            <button type="button" 
+                                    @click="isOpen = false"
+                                    class="w-full text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline py-1.5 transition-colors duration-150">
+                                Xem tất cả {{ $documents->total() }} kết quả bên dưới &darr;
+                            </button>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Main Content Layout -->
-    <div id="document-list-container" class="grid grid-cols-1 lg:grid-cols-4 gap-8 scroll-mt-24">
-        <!-- Sidebar Filters -->
-        <div class="space-y-6 lg:col-span-1">
-            <!-- Filter Category Card -->
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-500 mb-4">Danh mục</h3>
-                <div class="space-y-2">
-                    <button wire:click="$set('category', null)" 
-                            class="w-full text-left flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 {{ is_null($category) ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900' }}">
-                        <span>Tất cả danh mục</span>
-                    </button>
+    <!-- ===== FILTER BAR ===== -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100/80 p-4 md:p-5 flex flex-wrap items-center gap-3 md:gap-4">
+            <span class="text-sm font-semibold text-gray-500 hidden sm:flex items-center">
+                <i class="fas fa-sliders-h mr-2 text-gray-400"></i>Bộ lọc:
+            </span>
+
+            <!-- Danh mục -->
+            @php
+                $catName = 'Danh mục';
+                if(!empty($category)) {
+                    $found = collect($categories)->firstWhere('slug', $category);
+                    if($found) $catName = $found->name;
+                }
+            @endphp
+            <div class="filter-item relative min-w-[150px]" x-data="{ open: false }" @click.away="open = false">
+                <div @click="open = !open" class="flex items-center w-full cursor-pointer select-none">
+                    <i class="fas fa-folder-open text-slate-400 mr-2"></i>
+                    <span class="flex-1 whitespace-nowrap overflow-hidden text-ellipsis mr-3 text-slate-700 font-medium">{{ $catName }}</span>
+                    <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                </div>
+                <div x-show="open" x-transition.opacity.duration.200ms style="display: none;"
+                     class="absolute top-full left-0 mt-2 w-56 bg-white border border-slate-100 rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] py-1.5 z-[60] max-h-64 overflow-y-auto">
+                    <div wire:click="$set('category', '')" @click="open = false" 
+                         class="px-4 py-2.5 text-[14px] cursor-pointer transition-colors {{ empty($category) ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">
+                        Tất cả danh mục
+                    </div>
                     @foreach($categories as $cat)
-                        <button wire:click="$set('category', '{{ $cat->slug }}')" 
-                                class="w-full text-left flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 {{ $category == $cat->slug ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900' }}">
-                            <span class="truncate pr-2">{{ $cat->name }}</span>
-                        </button>
+                        <div wire:click="$set('category', '{{ $cat->slug }}')" @click="open = false" 
+                             class="px-4 py-2.5 text-[14px] cursor-pointer transition-colors {{ $category == $cat->slug ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">
+                            {{ $cat->name }}
+                        </div>
                     @endforeach
                 </div>
             </div>
 
-            <!-- Filter Attributes Card -->
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-semibold uppercase tracking-[0.15em] text-slate-500">Bộ lọc nâng cao</h3>
-                    @if(!empty($search) || !is_null($category) || !empty($selectedFileType) || !empty($selectedPrice) || !empty($selectedYear) || !empty($selectedResourceType) || !empty($selectedCustomCategory) || !empty($selectedSubject) || !empty($selectedLanguage))
-                        <button wire:click="resetFilters" class="text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors duration-150">
-                            Xóa lọc
-                        </button>
-                    @endif
+            <!-- Định dạng -->
+            @php
+                $typeMap = ['pdf' => 'PDF', 'docx' => 'Word (DOCX)', 'source_code' => 'Source code'];
+                $typeName = $typeMap[$selectedResourceType] ?? 'Định dạng';
+            @endphp
+            <div class="filter-item relative min-w-[140px]" x-data="{ open: false }" @click.away="open = false">
+                <div @click="open = !open" class="flex items-center w-full cursor-pointer select-none">
+                    <i class="fas fa-file-alt text-slate-400 mr-2"></i>
+                    <span class="flex-1 whitespace-nowrap overflow-hidden text-ellipsis mr-3 text-slate-700 font-medium">{{ $typeName }}</span>
+                    <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
                 </div>
-
-                <!-- Loại tài nguyên -->
-                <div>
-                    <label for="filter-resource-type" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Loại tài nguyên</label>
-                    <select id="filter-resource-type" wire:model.live="selectedResourceType" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả tài nguyên</option>
-                        <option value="pdf">Tài liệu PDF</option>
-                        <option value="docx">Văn bản DOCX</option>
-                        <option value="source_code">Source Code</option>
-                        <option value="do_an">Đồ án</option>
-                        <option value="ebook">Ebook / Sách</option>
-                    </select>
-                </div>
-
-                <!-- Danh mục -->
-                <div>
-                    <label for="filter-custom-category" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Chủ đề / Lĩnh vực</label>
-                    <select id="filter-custom-category" wire:model.live="selectedCustomCategory" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả chủ đề</option>
-                        <option value="web">Web Development</option>
-                        <option value="mobile">Mobile App</option>
-                        <option value="ai_ml">Trí tuệ nhân tạo (AI/ML)</option>
-                        <option value="devops">DevOps & Cloud</option>
-                        <option value="database">Cơ sở dữ liệu (Database)</option>
-                    </select>
-                </div>
-
-                <!-- Môn học -->
-                <div>
-                    <label for="filter-subject" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Môn học</label>
-                    <select id="filter-subject" wire:model.live="selectedSubject" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả môn học</option>
-                        <option value="lap_trinh_web">Lập trình Web</option>
-                        <option value="csdl">Cơ sở dữ liệu</option>
-                        <option value="mang_may_tinh">Mạng máy tính</option>
-                    </select>
-                </div>
-
-                <!-- Ngôn ngữ lập trình -->
-                <div>
-                    <label for="filter-language" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Ngôn ngữ lập trình</label>
-                    <select id="filter-language" wire:model.live="selectedLanguage" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả ngôn ngữ</option>
-                        <option value="php">PHP</option>
-                        <option value="python">Python</option>
-                        <option value="javascript">JavaScript</option>
-                        <option value="java">Java</option>
-                    </select>
-                </div>
-
-                <!-- Định dạng tệp -->
-                <div>
-                    <label for="filter-file-type" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Định dạng tệp</label>
-                    <select id="filter-file-type" wire:model.live="selectedFileType" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả định dạng</option>
-                        <option value="pdf">Tài liệu (PDF)</option>
-                        <option value="docx">Văn bản (DOCX)</option>
-                        <option value="zip">Nén (ZIP)</option>
-                    </select>
-                </div>
-
-                <!-- Giá thành -->
-                <div>
-                    <label for="filter-price" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Giá tài liệu</label>
-                    <select id="filter-price" wire:model.live="selectedPrice" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả giá</option>
-                        <option value="free">Miễn phí</option>
-                        <option value="paid">Có phí</option>
-                    </select>
-                </div>
-
-                <!-- Năm đăng tải -->
-                <div>
-                    <label for="filter-year" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Năm đăng tải</label>
-                    <select id="filter-year" wire:model.live="selectedYear" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus:outline-none transition-all duration-200">
-                        <option value="">Tất cả các năm</option>
-                        <option value="2026">2026</option>
-                        <option value="2025">2025</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                    </select>
-                </div>
-
-                <!-- Reset Filters Big Button -->
-                @if(!empty($search) || !is_null($category) || !empty($selectedFileType) || !empty($selectedPrice) || !empty($selectedYear) || !empty($selectedResourceType) || !empty($selectedCustomCategory) || !empty($selectedSubject) || !empty($selectedLanguage))
-                    <button wire:click="resetFilters" class="w-full mt-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 text-sm transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        Xóa tất cả bộ lọc
-                    </button>
-                @endif
-            </div>
-        </div>
-
-        <!-- Documents Section -->
-        <div class="lg:col-span-3 space-y-6">
-            <!-- Toolbar -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm">
-                <div class="text-sm text-slate-500 font-medium">
-                    Tìm thấy <span class="text-slate-900 font-semibold">{{ $documents->total() }}</span> tài liệu
-                </div>
-                <div class="flex items-center gap-3 self-end sm:self-auto">
-                    <span class="text-sm text-slate-500 font-medium whitespace-nowrap">Sắp xếp:</span>
-                    <select wire:model.live="sort" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none">
-                        <option value="newest">Mới nhất</option>
-                        <option value="popular">Tải nhiều nhất</option>
-                        <option value="highest_rated">Đánh giá cao nhất</option>
-                    </select>
+                <div x-show="open" x-transition.opacity.duration.200ms style="display: none;"
+                     class="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] py-1.5 z-[60]">
+                    <div wire:click="$set('selectedResourceType', '')" @click="open = false" 
+                         class="px-4 py-2.5 text-[14px] cursor-pointer transition-colors {{ empty($selectedResourceType) ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">Tất cả định dạng</div>
+                    @foreach($typeMap as $key => $label)
+                        <div wire:click="$set('selectedResourceType', '{{ $key }}')" @click="open = false" 
+                             class="px-4 py-2.5 text-[14px] cursor-pointer transition-colors {{ $selectedResourceType == $key ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">{{ $label }}</div>
+                    @endforeach
                 </div>
             </div>
 
-            <!-- Documents Grid -->
-            <div wire:loading.class="opacity-60 transition-opacity duration-200" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @forelse($documents as $doc)
-                    @php
-                        $thumbnailUrl = $doc->thumbnail_url ?? $placeholders[$doc->id % count($placeholders)];
-                    @endphp
-
-                    <a href="{{ route('documents.show', [$doc->id, Str::slug($doc->title)]) }}" class="group flex flex-col rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-                        <!-- Thumbnail -->
-                        <div class="aspect-[16/10] w-full overflow-hidden relative bg-slate-100">
-                            <img src="{{ $thumbnailUrl }}" 
-                                 alt="{{ $doc->title }}" 
-                                 class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                                 loading="lazy" />
-                            <!-- File type badge top-left -->
-                            <div class="absolute top-3 left-3">
-                                <span class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-white/90 text-slate-700 shadow-sm backdrop-blur-sm border border-white/50">
-                                    @if($doc->file_type === 'pdf')
-                                        <svg class="w-3 h-3 text-rose-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
-                                    @elseif($doc->file_type === 'zip')
-                                        <svg class="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
-                                    @endif
-                                    {{ strtoupper($doc->file_type) }}
-                                </span>
-                            </div>
-
-                            <!-- Price badge top-right -->
-                            <div class="absolute top-3 right-3">
-                                @if($doc->product && $doc->product->is_active)
-                                    <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold bg-white/90 text-amber-600 shadow-sm backdrop-blur-sm border border-white/50">
-                                        {{ number_format($doc->product->price) }}đ
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold bg-white/90 text-emerald-600 shadow-sm backdrop-blur-sm border border-white/50">
-                                        Miễn phí
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Card Body -->
-                        <div class="flex-1 px-5 pt-4 pb-4 flex flex-col">
-                            <!-- Category + Subject badges row -->
-                            <div class="flex flex-wrap items-center gap-1.5 mb-2.5">
-                                <span class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700">
-                                    <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                                    {{ $doc->category?->name ?? 'Tài liệu' }}
-                                </span>
-                                @if($doc->subject)
-                                    <span class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-700">
-                                        <svg class="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                                        {{ $doc->subject->name }}
-                                    </span>
-                                @endif
-                            </div>
-
-                            <!-- Title -->
-                            <h3 class="text-base font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
-                                {{ $doc->title }}
-                            </h3>
-
-                            <!-- Short Description -->
-                            @if($doc->short_description)
-                                <p class="mt-1.5 text-xs text-slate-500 leading-relaxed line-clamp-2">
-                                    {{ $doc->short_description }}
-                                </p>
-                            @endif
-
-                            <!-- Tags -->
-                            @if($doc->tags->isNotEmpty())
-                                <div class="mt-2 flex flex-wrap gap-1">
-                                    @foreach($doc->tags->take(3) as $tag)
-                                        <span class="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
-                                            #{{ $tag->name }}
-                                        </span>
-                                    @endforeach
-                                    @if($doc->tags->count() > 3)
-                                        <span class="inline-flex items-center text-[10px] text-slate-400 font-medium">+{{ $doc->tags->count() - 3 }}</span>
-                                    @endif
-                                </div>
-                            @endif
-
-                            <!-- Footer: meta + bookmark -->
-                            <div class="mt-auto pt-4 flex items-center justify-between border-t border-slate-100">
-                                <div class="flex items-center gap-3 text-xs text-slate-500 font-medium">
-                                    <!-- Download count -->
-                                    <span class="inline-flex items-center gap-1">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                        {{ $doc->download_count >= 1000 ? number_format($doc->download_count / 1000, 1) . 'k' : number_format($doc->download_count) }}
-                                    </span>
-                                    <!-- Favorite count -->
-                                    <span class="inline-flex items-center gap-1">
-                                        <svg class="w-3.5 h-3.5 text-rose-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                        {{ $doc->favorite_count }}
-                                    </span>
-                                    <!-- Published date -->
-                                    <span class="inline-flex items-center gap-1 text-slate-400">
-                                        {{ $doc->published_at ? $doc->published_at->format('d/m/Y') : ($doc->created_at ? $doc->created_at->format('d/m/Y') : '') }}
-                                    </span>
-                                </div>
-
-                                <!-- Favorite button -->
-                                <button wire:click.prevent="toggleFavorite({{ $doc->id }})" 
-                                        class="shrink-0 h-9 w-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
-                                        title="Lưu vào yêu thích">
-                                    @if(Auth::check() && $doc->favorites->isNotEmpty())
-                                        <svg class="w-5 h-5 fill-red-500 text-red-500" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                    @else
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                                    @endif
-                                </button>
-                            </div>
-                        </div>
-                    </a>
-                @empty
-                    <!-- Empty State -->
-                    <div class="col-span-full py-16 text-center">
-                        <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <h4 class="text-lg font-semibold text-slate-900">Không tìm thấy tài liệu</h4>
-                        <p class="mt-1 text-sm text-slate-500">Thử thay đổi từ khóa hoặc bộ lọc tìm kiếm xem sao nhé.</p>
-                    </div>
-                @endforelse
+            <!-- Môn học -->
+            @php
+                $subName = 'Môn học';
+                if(!empty($selectedSubject)) {
+                    $foundSub = collect($subjects)->firstWhere('id', $selectedSubject);
+                    if($foundSub) $subName = $foundSub->name;
+                }
+            @endphp
+            <div class="filter-item relative min-w-[140px]" x-data="{ open: false }" @click.away="open = false">
+                <div @click="open = !open" class="flex items-center w-full cursor-pointer select-none">
+                    <i class="fas fa-book-open text-slate-400 mr-2"></i>
+                    <span class="flex-1 whitespace-nowrap overflow-hidden text-ellipsis mr-3 text-slate-700 font-medium">{{ $subName }}</span>
+                    <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                </div>
+                <div x-show="open" x-transition.opacity.duration.200ms style="display: none;"
+                     class="absolute top-full left-0 mt-2 w-56 bg-white border border-slate-100 rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] py-1.5 z-[60] max-h-64 overflow-y-auto">
+                    <div wire:click="$set('selectedSubject', '')" @click="open = false" 
+                         class="px-4 py-2.5 text-[14px] cursor-pointer transition-colors {{ empty($selectedSubject) ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">Tất cả môn học</div>
+                    @foreach($subjects as $sub)
+                        <div wire:click="$set('selectedSubject', '{{ $sub->id }}')" @click="open = false" 
+                             class="px-4 py-2.5 text-[14px] cursor-pointer transition-colors {{ $selectedSubject == $sub->id ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">{{ $sub->name }}</div>
+                    @endforeach
+                </div>
             </div>
 
-            <!-- Pagination -->
-            <div class="mt-12">
-                @if ($documents->hasPages())
-                    <div class="flex items-center justify-between border-t border-slate-100 pt-6">
-                        <!-- Mobile pagination -->
-                        <div class="flex flex-1 justify-between sm:hidden">
-                            @if ($documents->onFirstPage())
-                                <span class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-400 bg-white border border-slate-200 rounded-xl cursor-not-allowed select-none">
-                                    Trước
-                                </span>
-                            @else
-                                <button wire:click="previousPage('page')" 
-                                        x-on:click="document.getElementById('document-list-container').scrollIntoView({behavior: 'smooth'})"
-                                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150">
-                                    Trước
-                                </button>
-                            @endif
+            <!-- Giá -->
+            @php
+                $priceMap = ['free' => 'Miễn phí', 'paid' => 'Có phí'];
+                $priceName = $priceMap[$selectedPrice] ?? 'Khoảng giá';
+            @endphp
+            <div class="filter-item relative min-w-[140px]" x-data="{ open: false }" @click.away="open = false">
+                <div @click="open = !open" class="flex items-center w-full cursor-pointer select-none">
+                    <i class="fas fa-tag text-slate-400 mr-2"></i>
+                    <span class="flex-1 whitespace-nowrap overflow-hidden text-ellipsis mr-3 text-slate-700 font-medium">{{ $priceName }}</span>
+                    <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                </div>
+                <div x-show="open" x-transition.opacity.duration.200ms style="display: none;"
+                     class="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] py-1.5 z-[60]">
+                    <div wire:click="$set('selectedPrice', '')" @click="open = false" 
+                         class="px-4 py-2.5 text-[14px] cursor-pointer transition-colors {{ empty($selectedPrice) ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">Tất cả mức giá</div>
+                    @foreach($priceMap as $key => $label)
+                        <div wire:click="$set('selectedPrice', '{{ $key }}')" @click="open = false" 
+                             class="px-4 py-2.5 text-[14px] cursor-pointer transition-colors {{ $selectedPrice == $key ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">{{ $label }}</div>
+                    @endforeach
+                </div>
+            </div>
 
-                            @if ($documents->hasMorePages())
-                                <button wire:click="nextPage('page')" 
-                                        x-on:click="document.getElementById('document-list-container').scrollIntoView({behavior: 'smooth'})"
-                                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150">
-                                    Sau
-                                </button>
-                            @else
-                                <span class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-400 bg-white border border-slate-200 rounded-xl cursor-not-allowed select-none">
-                                    Sau
-                                </span>
-                            @endif
+            @if(!empty($category) || !empty($selectedPrice) || !empty($selectedResourceType) || !empty($selectedSubject))
+                <button wire:click="resetFilters" class="btn-reset shrink-0">
+                    <i class="fas fa-undo-alt"></i> Đặt lại
+                </button>
+            @endif
+
+            <!-- Sắp xếp -->
+            @php
+                $sortMap = ['newest' => 'Mới nhất', 'popular' => 'Tải nhiều nhất', 'highest_rated' => 'Đánh giá cao nhất'];
+                $sortName = $sortMap[$sort] ?? 'Mới nhất';
+            @endphp
+            <div class="filter-sort ml-auto relative min-w-[180px]" x-data="{ open: false }" @click.away="open = false">
+                <div @click="open = !open" class="flex items-center w-full cursor-pointer select-none">
+                    <i class="fas fa-sort-amount-down-alt text-blue-500 mr-2"></i>
+                    <span class="flex-1 whitespace-nowrap overflow-hidden text-ellipsis mr-3 text-blue-700 font-semibold">{{ $sortName }}</span>
+                    <i class="fas fa-chevron-down text-[10px] text-blue-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                </div>
+                <div x-show="open" x-transition.opacity.duration.200ms style="display: none;"
+                     class="absolute top-full right-0 mt-2 w-56 bg-white border border-slate-100 rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] py-1.5 z-[60]">
+                    @foreach($sortMap as $key => $label)
+                        <div wire:click="$set('sort', '{{ $key }}')" @click="open = false" 
+                             class="px-4 py-2.5 text-[14px] cursor-pointer transition-colors flex items-center justify-between {{ $sort == $key ? 'bg-blue-50/60 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">
+                            {{ $label }}
+                            @if($sort == $key) <i class="fas fa-check text-blue-500 text-xs"></i> @endif
                         </div>
-
-                        <!-- Desktop pagination -->
-                        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                            <div>
-                                <p class="text-sm text-slate-500 font-medium">
-                                    Hiển thị từ <span class="font-semibold text-slate-900">{{ $documents->firstItem() }}</span> đến <span class="font-semibold text-slate-900">{{ $documents->lastItem() }}</span> trong tổng số <span class="font-semibold text-slate-900">{{ $documents->total() }}</span> tài liệu
-                                </p>
-                            </div>
-
-                            <div>
-                                <nav class="isolate inline-flex -space-x-px rounded-xl gap-1" aria-label="Pagination">
-                                    {{-- Previous Page Link --}}
-                                    @if ($documents->onFirstPage())
-                                        <span class="relative inline-flex items-center justify-center w-10 h-10 text-slate-300 bg-white border border-slate-200 rounded-xl cursor-not-allowed select-none">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                                        </span>
-                                    @else
-                                        <button wire:click="previousPage('page')" 
-                                                x-on:click="document.getElementById('document-list-container').scrollIntoView({behavior: 'smooth'})"
-                                                class="relative inline-flex items-center justify-center w-10 h-10 text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                                        </button>
-                                    @endif
-
-                                    {{-- Page Links --}}
-                                    @php
-                                        $start = max($documents->currentPage() - 2, 1);
-                                        $end = min($start + 4, $documents->lastPage());
-                                        if ($end - $start < 4) {
-                                            $start = max($end - 4, 1);
-                                        }
-                                    @endphp
-
-                                    @if ($start > 1)
-                                        <button wire:click="gotoPage(1, 'page')" 
-                                                x-on:click="document.getElementById('document-list-container').scrollIntoView({behavior: 'smooth'})"
-                                                class="relative inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150">
-                                            1
-                                        </button>
-                                        @if ($start > 2)
-                                            <span class="relative inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-slate-400 select-none">...</span>
-                                        @endif
-                                    @endif
-
-                                    @for ($page = $start; $page <= $end; $page++)
-                                        @if ($page == $documents->currentPage())
-                                            <span class="relative inline-flex items-center justify-center w-10 h-10 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-md shadow-blue-500/20 select-none">
-                                                {{ $page }}
-                                            </span>
-                                        @else
-                                            <button wire:click="gotoPage({{ $page }}, 'page')" 
-                                                    x-on:click="document.getElementById('document-list-container').scrollIntoView({behavior: 'smooth'})"
-                                                    class="relative inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150">
-                                                {{ $page }}
-                                            </button>
-                                        @endif
-                                    @endfor
-
-                                    @if ($end < $documents->lastPage())
-                                        @if ($end < $documents->lastPage() - 1)
-                                            <span class="relative inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-slate-400 select-none">...</span>
-                                        @endif
-                                        <button wire:click="gotoPage({{ $documents->lastPage() }}, 'page')" 
-                                                x-on:click="document.getElementById('document-list-container').scrollIntoView({behavior: 'smooth'})"
-                                                class="relative inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150">
-                                            {{ $documents->lastPage() }}
-                                        </button>
-                                    @endif
-
-                                    {{-- Next Page Link --}}
-                                    @if ($documents->hasMorePages())
-                                        <button wire:click="nextPage('page')" 
-                                                x-on:click="document.getElementById('document-list-container').scrollIntoView({behavior: 'smooth'})"
-                                                class="relative inline-flex items-center justify-center w-10 h-10 text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                                        </button>
-                                    @else
-                                        <span class="relative inline-flex items-center justify-center w-10 h-10 text-slate-300 bg-white border border-slate-200 rounded-xl cursor-not-allowed select-none">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                                        </span>
-                                    @endif
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                @endif
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="document-list-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Tài liệu nổi bật</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Hiển thị <span class="font-semibold text-gray-700">{{ $documents->firstItem() ?? 0 }}-{{ $documents->lastItem() ?? 0 }}</span> / <span class="font-semibold text-gray-700">{{ $documents->total() }}</span> tài liệu</p>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div wire:loading.class="opacity-60 transition-opacity duration-200" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            @forelse($documents as $doc)
+                @php
+                    $thumbnailUrl = $doc->thumbnail_url ?? $placeholders[$doc->id % count($placeholders)];
+                @endphp
+                
+                <div class="doc-card flex flex-col h-full group relative">
+                    <!-- Overlay link covering the entire card -->
+                    <a href="{{ route('documents.show', [$doc->id, Str::slug($doc->title)]) }}" class="absolute inset-0 z-0"></a>
+
+                    <div class="card-img-wrap block">
+                        <img src="{{ $thumbnailUrl }}" alt="{{ $doc->title }}" loading="lazy">
+                        <div class="card-img-overlay"></div>
+                        
+                        <span class="card-badge">{{ strtoupper($doc->file_type) }}</span>
+                        
+                        @auth
+                            @php
+                                $isFavorite = $doc->favorites()->where('user_id', auth()->id())->exists();
+                            @endphp
+                            <button wire:click.prevent="toggleFavorite({{ $doc->id }})" class="card-wishlist relative z-10 {{ $isFavorite ? 'active' : '' }}">
+                                <i class="{{ $isFavorite ? 'fas' : 'far' }} fa-heart"></i>
+                            </button>
+                        @else
+                            <button onclick="window.location.href='{{ route('login') }}'" class="card-wishlist relative z-10">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        @endauth
+                    </div>
+
+                    <div class="card-body flex flex-col flex-1 relative z-10 pointer-events-none">
+                        <h3 class="card-title">
+                            <span class="group-hover:text-blue-600 transition-colors">{{ strip_tags($doc->title) }}</span>
+                        </h3>
+                        <p class="card-desc">{{ Str::limit(strip_tags($doc->description), 80) }}</p>
+
+                        <div class="mt-4 mb-auto pb-4 border-b border-dashed border-gray-200">
+                            <div class="flex flex-wrap items-center gap-2 mb-3">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50/80 text-blue-700 text-[13px] font-semibold border border-blue-100/50">
+                                    <i class="fas fa-folder-open text-blue-500"></i> {{ $doc->category?->name ?? 'Tài liệu' }}
+                                </span>
+                                @if($doc->subject)
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50/80 text-indigo-700 text-[13px] font-semibold border border-indigo-100/50">
+                                        <i class="fas fa-book text-indigo-500"></i> {{ $doc->subject->name }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="flex items-center gap-5 text-[13px] text-gray-500 px-1">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fas fa-cloud-download-alt text-emerald-500 text-sm"></i>
+                                    <span class="font-bold text-gray-700">{{ number_format($doc->download_count) }}</span> lượt tải
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fas fa-star text-amber-400 text-sm"></i>
+                                    <span class="font-bold text-gray-700">{{ number_format($doc->reviews_avg_rating ?? 0, 1) }}</span>
+                                    <span class="text-gray-400">({{ $doc->reviews_count ?? 0 }})</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer mt-auto pt-4">
+                            <span class="card-price">
+                                @if($doc->product && $doc->product->price > 0)
+                                    @if($doc->product->sale_price)
+                                        {{ number_format($doc->product->sale_price) }}<small>đ</small>
+                                        <span class="original">{{ number_format($doc->product->price) }}đ</span>
+                                    @else
+                                        {{ number_format($doc->product->price) }}<small>đ</small>
+                                    @endif
+                                @else
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 font-bold text-sm border border-emerald-100">
+                                        <i class="fas fa-gift text-emerald-500"></i> Miễn phí
+                                    </span>
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <!-- Empty State -->
+                <div class="col-span-full py-16 text-center">
+                    <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <h4 class="text-xl font-bold text-blue-900">Không tìm thấy tài liệu</h4>
+                    <p class="mt-1 text-sm text-slate-500">Thử thay đổi từ khóa hoặc bộ lọc tìm kiếm xem sao nhé.</p>
+                </div>
+            @endforelse
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-12 flex justify-center custom-pagination">
+            @if ($documents->hasPages())
+                {{ $documents->links() }}
+            @endif
+        </div>
+    </main>
 </div>
+

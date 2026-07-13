@@ -1,15 +1,13 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Migrate existing documents with parent_document_id to document_relationships table
      */
     public function up(): void
@@ -18,16 +16,16 @@ return new class extends Migration
         $drafts = DB::table('documents')
             ->whereNotNull('parent_document_id')
             ->get();
-        
+
         foreach ($drafts as $draft) {
             // Determine relationship status based on document status
-            $relationshipStatus = match($draft->status) {
+            $relationshipStatus = match ($draft->status) {
                 'approved' => 'approved',
                 'pending' => 'pending',
                 'rejected' => 'rejected',
                 default => 'pending'
             };
-            
+
             // Create relationship record
             DB::table('document_relationships')->insert([
                 'parent_document_id' => $draft->parent_document_id,
@@ -43,7 +41,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ]);
         }
-        
+
         // Log migration result
         $count = $drafts->count();
         if ($count > 0) {
@@ -55,7 +53,7 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     * 
+     *
      * Delete migrated relationship records (only those from this migration)
      */
     public function down(): void
@@ -64,13 +62,13 @@ return new class extends Migration
         $draftIds = DB::table('documents')
             ->whereNotNull('parent_document_id')
             ->pluck('id');
-        
+
         if ($draftIds->isNotEmpty()) {
             // Delete relationship records for these drafts
             $deleted = DB::table('document_relationships')
                 ->whereIn('draft_document_id', $draftIds)
                 ->delete();
-            
+
             echo "✓ Deleted {$deleted} relationship records\n";
         } else {
             echo "✓ No relationship records to delete\n";

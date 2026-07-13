@@ -11,16 +11,21 @@ class RevenueSettings extends Component
 {
     use WireUiActions;
 
-    public $siteName = 'IT Learning';
-    public $commissionRate = 70;
-    public $minPayoutAmount = 200000;
-    public $themePrimaryColor = '#6366f1';
-    public $smtpFromEmail = 'no-reply@myapp.com';
-
     public $platformFeePercent = 20;
-    public $payoutMinimum = 50000;
-    public $vipMonthlyPrice = 100000;
-    public $vipYearlyPrice = 1000000;
+
+    public $minPayoutAmount = 200000;
+
+    public $vipPrice = 100000;
+    
+    public $vipSalePrice = 100000;
+
+    public $vipQuota = 5;
+
+    public $allowContributorUpload = true;
+
+    public $maxDocumentSizeMB = 50;
+    public $maxThumbnailSizeMB = 5;
+    public $maxGallerySizeMB = 5;
 
     public function mount()
     {
@@ -28,54 +33,55 @@ class RevenueSettings extends Component
             ->pluck('value', 'key')
             ->toArray();
 
-        $this->siteName = $settings['site_name'] ?? 'IT Learning';
-        $this->commissionRate = (int) ($settings['commission_rate'] ?? 70);
+        $this->platformFeePercent = (int) ($settings['platform_fee_percent'] ?? 20);
         $this->minPayoutAmount = (int) ($settings['min_payout_amount'] ?? 200000);
-        $this->themePrimaryColor = $settings['theme_primary_color'] ?? '#6366f1';
-        $this->smtpFromEmail = $settings['smtp_from_email'] ?? 'no-reply@myapp.com';
-
-        $this->platformFeePercent = (int) ($settings['platform_fee_percent'] ?? (100 - $this->commissionRate));
-        $this->payoutMinimum = (int) ($settings['payout_minimum'] ?? $this->minPayoutAmount);
-        $this->vipMonthlyPrice = (int) ($settings['vip_monthly_price'] ?? 100000);
-        $this->vipYearlyPrice = (int) ($settings['vip_yearly_price'] ?? 1000000);
+        $this->vipPrice = (int) ($settings['vip_price'] ?? 100000);
+        $this->vipSalePrice = (int) ($settings['vip_sale_price'] ?? 100000);
+        $this->vipQuota = (int) ($settings['vip_quota'] ?? 5);
+        $this->allowContributorUpload = (bool) ($settings['allow_contributor_upload'] ?? 1);
+        $this->maxDocumentSizeMB = (int) ($settings['max_document_size_mb'] ?? 50);
+        $this->maxThumbnailSizeMB = (int) ($settings['max_thumbnail_size_mb'] ?? 5);
+        $this->maxGallerySizeMB = (int) ($settings['max_gallery_size_mb'] ?? 5);
     }
 
     public function save()
     {
         $this->validate([
-            'siteName' => 'required|string|max:255',
-            'commissionRate' => 'required|integer|min:0|max:100',
-            'minPayoutAmount' => 'required|integer|min:10000|max:10000000',
-            'themePrimaryColor' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'smtpFromEmail' => 'required|email|max:255',
             'platformFeePercent' => 'required|integer|min:0|max:100',
-            'payoutMinimum' => 'required|integer|min:10000|max:10000000',
-            'vipMonthlyPrice' => 'required|integer|min:0|max:10000000',
-            'vipYearlyPrice' => 'required|integer|min:0|max:100000000',
+            'minPayoutAmount' => 'required|integer|min:10000|max:10000000',
+            'vipPrice' => 'required|integer|min:0|max:100000000',
+            'vipSalePrice' => 'required|integer|min:0|max:100000000',
+            'vipQuota' => 'required|integer|min:1|max:1000',
+            'allowContributorUpload' => 'boolean',
+            'maxDocumentSizeMB' => 'required|integer|min:1|max:500',
+            'maxThumbnailSizeMB' => 'required|integer|min:1|max:50',
+            'maxGallerySizeMB' => 'required|integer|min:1|max:50',
         ], [
-            'siteName.required' => 'Vui lòng nhập tên website.',
-            'commissionRate.required' => 'Vui lòng nhập tỷ lệ chia doanh thu.',
-            'commissionRate.max' => 'Tỷ lệ chia doanh thu tối đa 100%.',
-            'minPayoutAmount.required' => 'Vui lòng nhập số tiền rút tối thiểu.',
-            'minPayoutAmount.min' => 'Số tiền rút tối thiểu từ 10.000đ.',
-            'themePrimaryColor.regex' => 'Màu chủ đạo phải đúng định dạng HEX, ví dụ #6366f1.',
-            'smtpFromEmail.email' => 'Email gửi hệ thống không hợp lệ.',
             'platformFeePercent.required' => 'Vui lòng nhập phí nền tảng.',
             'platformFeePercent.max' => 'Phí nền tảng tối đa 100%.',
-            'payoutMinimum.required' => 'Vui lòng nhập số tiền rút tối thiểu.',
-            'payoutMinimum.min' => 'Số tiền rút tối thiểu từ 10.000đ.',
+            'minPayoutAmount.required' => 'Vui lòng nhập số tiền rút tối thiểu.',
+            'minPayoutAmount.min' => 'Số tiền rút tối thiểu từ 10.000đ.',
+            'vipPrice.required' => 'Vui lòng nhập giá gốc.',
+            'vipSalePrice.required' => 'Vui lòng nhập giá khuyến mãi.',
+            'vipQuota.required' => 'Vui lòng nhập số lượt tải VIP.',
+            'maxDocumentSizeMB.required' => 'Vui lòng nhập dung lượng tối đa tài liệu.',
+            'maxThumbnailSizeMB.required' => 'Vui lòng nhập dung lượng tối đa ảnh bìa.',
+            'maxGallerySizeMB.required' => 'Vui lòng nhập dung lượng tối đa ảnh mô tả.',
         ]);
 
-        SettingService::set('site_name', $this->siteName, 'general');
-        SettingService::set('commission_rate', $this->commissionRate, 'payment');
-        SettingService::set('min_payout_amount', $this->minPayoutAmount, 'payment');
-        SettingService::set('theme_primary_color', $this->themePrimaryColor, 'theme');
-        SettingService::set('smtp_from_email', $this->smtpFromEmail, 'email');
+        $commissionRate = 100 - $this->platformFeePercent;
 
         SettingService::set('platform_fee_percent', $this->platformFeePercent, 'payment');
-        SettingService::set('payout_minimum', $this->payoutMinimum, 'payment');
-        SettingService::set('vip_monthly_price', $this->vipMonthlyPrice, 'payment');
-        SettingService::set('vip_yearly_price', $this->vipYearlyPrice, 'payment');
+        SettingService::set('commission_rate', $commissionRate, 'payment');
+        SettingService::set('min_payout_amount', $this->minPayoutAmount, 'payment');
+        SettingService::set('payout_minimum', $this->minPayoutAmount, 'payment');
+        SettingService::set('vip_price', $this->vipPrice, 'payment');
+        SettingService::set('vip_sale_price', $this->vipSalePrice, 'payment');
+        SettingService::set('vip_quota', $this->vipQuota, 'payment');
+        SettingService::set('allow_contributor_upload', $this->allowContributorUpload ? '1' : '0', 'general');
+        SettingService::set('max_document_size_mb', $this->maxDocumentSizeMB, 'document');
+        SettingService::set('max_thumbnail_size_mb', $this->maxThumbnailSizeMB, 'document');
+        SettingService::set('max_gallery_size_mb', $this->maxGallerySizeMB, 'document');
 
         $this->notification()->success(
             title: 'Thành công',

@@ -2,8 +2,7 @@
 
 namespace Modules\Payment\Services;
 
-use Modules\Auth\Models\User;
-use Carbon\Carbon;
+use App\Models\User;
 
 class SubscriptionService
 {
@@ -12,9 +11,9 @@ class SubscriptionService
      */
     public function activateVip(User $user, string $packageKey): void
     {
-        $package = config("subscription.packages.{$packageKey}");
-        
-        if (!$package) {
+        $package = $this->getPackage($packageKey);
+
+        if (! $package) {
             throw new \InvalidArgumentException("Invalid package key: {$packageKey}");
         }
 
@@ -33,7 +32,7 @@ class SubscriptionService
      */
     public function isVipActive(User $user): bool
     {
-        return $user->vip_expires_at && $user->vip_expires_at->isFuture();
+        return $user->checkAndExpireVip();
     }
 
     /**
@@ -41,7 +40,7 @@ class SubscriptionService
      */
     public function getVipStatus(User $user): array
     {
-        $isActive = $this->isVipActive($user);
+        $isActive = $user->checkAndExpireVip();
         
         return [
             'is_active' => $isActive,
@@ -56,7 +55,7 @@ class SubscriptionService
      */
     public function decreaseQuota(User $user): bool
     {
-        if (!$this->isVipActive($user)) {
+        if (! $this->isVipActive($user)) {
             return false;
         }
 
@@ -65,7 +64,7 @@ class SubscriptionService
         }
 
         $user->decrement('vip_download_quota');
-        
+
         return true;
     }
 
@@ -74,7 +73,7 @@ class SubscriptionService
      */
     public function canDownloadPremium(User $user): bool
     {
-        if (!$this->isVipActive($user)) {
+        if (! $this->isVipActive($user)) {
             return false;
         }
 
@@ -86,7 +85,22 @@ class SubscriptionService
      */
     public function getPackages(): array
     {
-        return config('subscription.packages', []);
+        $packages = config('subscription.packages', []);
+        
+        // Merge dynamic settings into the 'vip' package
+        if (isset($packages['vip'])) {
+            $vipPrice = (int) \App\Services\SettingService::get('vip_price', $packages['vip']['price']);
+            $vipSalePrice = (int) \App\Services\SettingService::get('vip_sale_price', $packages['vip']['sale_price']);
+            $vipQuota = (int) \App\Services\SettingService::get('vip_quota', $packages['vip']['download_quota']);
+            
+            $packages['vip']['price'] = $vipPrice;
+            $packages['vip']['sale_price'] = $vipSalePrice;
+            $packages['vip']['download_quota'] = $vipQuota;
+            $packages['vip']['description'] = "Tải {$vipQuota} tài liệu Premium trong 1 tháng";
+            $packages['vip']['features'][0] = "Tải {$vipQuota} tài liệu Premium";
+        }
+        
+        return $packages;
     }
 
     /**
@@ -94,7 +108,8 @@ class SubscriptionService
      */
     public function getPackage(string $packageKey): ?array
     {
-        return config("subscription.packages.{$packageKey}");
+        $packages = $this->getPackages();
+        return $packages[$packageKey] ?? null;
     }
 
     /**
@@ -103,8 +118,8 @@ class SubscriptionService
     public function getFinalPrice(string $packageKey): int
     {
         $package = $this->getPackage($packageKey);
-        
-        if (!$package) {
+
+        if (! $package) {
             throw new \InvalidArgumentException("Invalid package key: {$packageKey}");
         }
 

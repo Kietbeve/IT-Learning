@@ -2,37 +2,51 @@
 
 namespace Modules\Payment\Http\Livewire\Admin;
 
-use Livewire\Component;
-use Livewire\WithPagination;
-use Livewire\WithFileUploads;
-use Modules\Payment\Models\PayoutRequest;
-use Modules\Payment\Models\WalletTransaction;
-use Modules\Auth\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Livewire\WithPagination;
+use Modules\Payment\Models\PayoutRequest;
+use Modules\Payment\Models\WalletTransaction;
 use WireUi\Traits\WireUiActions;
 
 class PayoutReview extends Component
 {
-    use WithPagination, WithFileUploads, WireUiActions;
+    use WireUiActions, WithFileUploads, WithPagination;
 
     public $search = '';
+
     public $statusFilter = 'pending';
+
+    public $dateFrom = '';
+
+    public $dateTo = '';
+
     public $sortField = 'created_at';
+
     public $sortDirection = 'asc';
 
     public $selectedPayoutId = null;
+
     public $rejectionReason = '';
+
     public $receiptImage = null;
+
     public $showApproveModal = false;
+
     public $showRejectModal = false;
+
     public $showDetailModal = false;
+
     public $detailPayout = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => 'pending'],
+        'dateFrom' => ['except' => ''],
+        'dateTo' => ['except' => ''],
     ];
 
     public function updatingSearch()
@@ -42,6 +56,29 @@ class PayoutReview extends Component
 
     public function updatingStatusFilter()
     {
+        $this->resetPage();
+    }
+
+    public function updatedDateFrom($value)
+    {
+        $today = date('Y-m-d');
+        if ($value > $today) $this->dateFrom = $today;
+        if ($this->dateTo && $this->dateFrom > $this->dateTo) $this->dateTo = $this->dateFrom;
+        $this->resetPage();
+    }
+
+    public function updatedDateTo($value)
+    {
+        $today = date('Y-m-d');
+        if ($value > $today) $this->dateTo = $today;
+        if ($this->dateFrom && $this->dateTo < $this->dateFrom) $this->dateFrom = $this->dateTo;
+        $this->resetPage();
+    }
+
+    public function resetDateFilter()
+    {
+        $this->dateFrom = '';
+        $this->dateTo = '';
         $this->resetPage();
     }
 
@@ -93,14 +130,17 @@ class PayoutReview extends Component
         try {
             DB::beginTransaction();
 
-            $payout = PayoutRequest::with('user')->find($this->selectedPayoutId);
-            
-            if (!$payout || $payout->status !== 'pending') {
+            $payout = PayoutRequest::with('user')
+                ->lockForUpdate()
+                ->find($this->selectedPayoutId);
+
+            if (! $payout || $payout->status !== 'pending') {
                 $this->showApproveModal = false;
                 $this->notification()->error(
                     title: 'Lỗi',
                     description: 'Yêu cầu không hợp lệ hoặc đã được xử lý.'
                 );
+
                 return;
             }
 
@@ -113,13 +153,14 @@ class PayoutReview extends Component
                     description: 'Số dư contributor không đủ.'
                 );
                 DB::rollBack();
+
                 return;
             }
 
             $receiptPath = null;
             if ($this->receiptImage) {
-                $receiptName = 'receipt_' . $payout->id . '_' . time() . '.' . $this->receiptImage->extension();
-                $receiptPath = 'payout_receipts/' . $receiptName;
+                $receiptName = 'receipt_'.$payout->id.'_'.time().'.'.$this->receiptImage->extension();
+                $receiptPath = 'payout_receipts/'.$receiptName;
                 Storage::disk('r2')->put($receiptPath, file_get_contents($this->receiptImage->getRealPath()));
             }
 
@@ -143,19 +184,22 @@ class PayoutReview extends Component
                 'balance_after' => $balanceAfter,
                 'reference_type' => 'payout_request',
                 'reference_id' => $payout->id,
-                'note' => 'Rút tiền đã được duyệt #' . $payout->id,
+                'note' => 'Rút tiền đã được duyệt #'.$payout->id,
                 'created_by' => Auth::id(),
                 'created_at' => now(),
             ]);
 
             DB::commit();
 
+            // Send Notification
+            $user->notify(new \Modules\Payment\Notifications\PayoutApprovedNotification($payout));
+
             $this->showApproveModal = false;
             $this->notification()->success(
                 title: 'Thành công',
                 description: 'Đã duyệt yêu cầu rút tiền thành công.'
             );
-            
+
             $this->selectedPayoutId = null;
             $this->receiptImage = null;
 
@@ -164,7 +208,7 @@ class PayoutReview extends Component
             $this->showApproveModal = false;
             $this->notification()->error(
                 title: 'Lỗi',
-                description: 'Lỗi: ' . $e->getMessage()
+                description: 'Lỗi: '.$e->getMessage()
             );
         }
     }
@@ -172,7 +216,7 @@ class PayoutReview extends Component
     public function rejectPayout()
     {
         $this->validate([
-            'rejectionReason' => 'required|string|min:10|max:500'
+            'rejectionReason' => 'required|string|min:10|max:500',
         ], [
             'rejectionReason.required' => 'Vui lòng nhập lý do từ chối.',
             'rejectionReason.min' => 'Lý do phải có ít nhất 10 ký tự.',
@@ -181,14 +225,17 @@ class PayoutReview extends Component
         try {
             DB::beginTransaction();
 
-            $payout = PayoutRequest::with('user')->find($this->selectedPayoutId);
-            
-            if (!$payout || $payout->status !== 'pending') {
+            $payout = PayoutRequest::with('user')
+                ->lockForUpdate()
+                ->find($this->selectedPayoutId);
+
+            if (! $payout || $payout->status !== 'pending') {
                 $this->showRejectModal = false;
                 $this->notification()->error(
                     title: 'Lỗi',
                     description: 'Yêu cầu không hợp lệ hoặc đã được xử lý.'
                 );
+
                 return;
             }
 
@@ -215,12 +262,15 @@ class PayoutReview extends Component
 
             DB::commit();
 
+            // Send Notification
+            $user->notify(new \Modules\Payment\Notifications\PayoutRejectedNotification($payout));
+
             $this->showRejectModal = false;
             $this->notification()->success(
                 title: 'Thành công',
                 description: 'Đã từ chối yêu cầu rút tiền.'
             );
-            
+
             $this->selectedPayoutId = null;
             $this->rejectionReason = '';
 
@@ -229,7 +279,7 @@ class PayoutReview extends Component
             $this->showRejectModal = false;
             $this->notification()->error(
                 title: 'Lỗi',
-                description: 'Lỗi: ' . $e->getMessage()
+                description: 'Lỗi: '.$e->getMessage()
             );
         }
     }
@@ -238,15 +288,23 @@ class PayoutReview extends Component
     {
         $query = PayoutRequest::with('user', 'rejectionTransaction');
 
-        if (!empty($this->search)) {
-            $query->whereHas('user', function($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('email', 'like', '%' . $this->search . '%');
+        if (! empty($this->search)) {
+            $query->whereHas('user', function ($q) {
+                $q->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('email', 'like', '%'.$this->search.'%');
             });
         }
 
         if ($this->statusFilter !== 'all') {
             $query->where('status', $this->statusFilter);
+        }
+
+        if (!empty($this->dateFrom)) {
+            $query->whereDate('created_at', '>=', $this->dateFrom);
+        }
+
+        if (!empty($this->dateTo)) {
+            $query->whereDate('created_at', '<=', $this->dateTo);
         }
 
         $payouts = $query->orderBy($this->sortField, $this->sortDirection)

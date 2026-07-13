@@ -2,53 +2,33 @@
 
 namespace Modules\Auth\Models;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Learning\Models\Roadmap;
 use Modules\Exam\Models\Question;
 use Modules\Exam\Models\Exam;
 use Modules\Exam\Models\ExamAttempt;
-use Modules\Learning\Models\Roadmap;
 use Modules\Learning\Models\ProjectSubmission;
 use Modules\Payment\Models\WalletTransaction;
-/**
- * Bảng users: quản lý toàn bộ tài khoản trong hệ thống.
- *
- * Cấu trúc chính:
- * - id: khóa chính.
- * - name: họ tên người dùng.
- * - email: email đăng nhập (Google/Admin), duy nhất.
- * - password: mật khẩu nội bộ, có thể null nếu đăng nhập Google.
- * - avatar: ảnh đại diện.
- * - phone: số điện thoại.
- * - bio: mô tả cá nhân.
- * - google_id: ID Google OAuth, duy nhất.
- *
- * Trạng thái tài khoản:
- * - status: active / blocked.
- * - blocked_reason: lý do khóa.
- * - blocked_at: thời điểm khóa.
- * - blocked_by: admin thực hiện khóa (FK -> users.id).
- *
- * Cộng tác viên:
- * - contributor_balance: số dư hiện có.
- *
- * Hệ thống:
- * - created_at, updated_at.
- * - deleted_at: soft delete.
- */
+
 class User extends Authenticatable
 {
-    use Notifiable;
-    use HasRoles;
-    use SoftDeletes;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes;
 
     protected $guard_name = 'web';
     protected $table = 'users';
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'name',
         'email',
@@ -66,59 +46,69 @@ class User extends Authenticatable
         'vip_download_quota',
     ];
 
+    /**
+     * Check if VIP is active, and expire it if it has passed.
+     *
+     * @return bool True if VIP is active, false otherwise
+     */
+    public function checkAndExpireVip(): bool
+    {
+        if ($this->vip_expires_at) {
+            if ($this->vip_expires_at->isPast()) {
+                $this->update([
+                    'vip_expires_at' => null,
+                    'vip_download_quota' => 0
+                ]);
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
             'vip_expires_at' => 'datetime',
             'blocked_at' => 'datetime',
         ];
     }
 
-    public function questions()
+    // --- Learning Module Relations ---
+
+    public function roadmaps(): BelongsToMany
     {
-        return $this->hasMany(
-            Question::class,
-            'author_id'
-        );
+        return $this->belongsToMany(
+            Roadmap::class,
+            'roadmap_enrollments',
+            'user_id',
+            'roadmap_id'
+        )
+        ->withPivot([
+            'status',
+            'progress_percent',
+            'started_at'
+        ]);
     }
 
-    public function reviewedQuestions()
-    {
-        return $this->hasMany(
-            Question::class,
-            'reviewed_by'
-        );
-    }
-        public function exams()
-    {
-        return $this->hasMany(
-            Exam::class,
-            'author_id'
-        );
-    }
-
-    public function reviewedExams()
-    {
-        return $this->hasMany(
-            Exam::class,
-            'reviewed_by'
-        );
-    }
-
-    public function examAttempts()
-    {
-        return $this->hasMany(
-            ExamAttempt::class,
-            'user_id'
-        );
-    }
-
-    public function roadmaps(): HasMany
+    public function authoredRoadmaps(): HasMany
     {
         return $this->hasMany(
             Roadmap::class,
@@ -150,6 +140,50 @@ class User extends Authenticatable
         );
     }
 
+    // --- Exam Module Relations ---
+
+    public function questions()
+    {
+        return $this->hasMany(
+            Question::class,
+            'author_id'
+        );
+    }
+
+    public function reviewedQuestions()
+    {
+        return $this->hasMany(
+            Question::class,
+            'reviewed_by'
+        );
+    }
+
+    public function exams()
+    {
+        return $this->hasMany(
+            Exam::class,
+            'author_id'
+        );
+    }
+
+    public function reviewedExams()
+    {
+        return $this->hasMany(
+            Exam::class,
+            'reviewed_by'
+        );
+    }
+
+    public function examAttempts()
+    {
+        return $this->hasMany(
+            ExamAttempt::class,
+            'user_id'
+        );
+    }
+
+    // --- Payment Module Relations ---
+
     public function walletTransactions(): HasMany
     {
         return $this->hasMany(
@@ -157,6 +191,8 @@ class User extends Authenticatable
             'user_id'
         );
     }
+
+    // --- Auth Module Relations ---
 
     /**
      * Người dùng đã thực hiện khóa tài khoản này

@@ -61,7 +61,7 @@ return new class extends Migration
             foreach ($foreignsToDrop as $col) {
                 try {
                     $table->dropForeign([$col]);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // FK may already be gone — safe to ignore
                 }
             }
@@ -69,10 +69,10 @@ return new class extends Migration
             // 2. Drop the content columns
             $columnsToDrop = array_filter(
                 $this->contentColumns,
-                fn($col) => Schema::hasColumn('documents', $col)
+                fn ($col) => Schema::hasColumn('documents', $col)
             );
 
-            if (!empty($columnsToDrop)) {
+            if (! empty($columnsToDrop)) {
                 $table->dropColumn(array_values($columnsToDrop));
             }
         });

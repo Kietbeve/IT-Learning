@@ -5,7 +5,7 @@ namespace Modules\Auth\Livewire\Admin;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Modules\Auth\Models\ContributorApplication;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use WireUi\Traits\WireUiActions;
 
 #[Layout('layouts.admin')]

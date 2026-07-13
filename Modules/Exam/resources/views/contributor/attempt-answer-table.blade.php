@@ -77,15 +77,15 @@
                     Attempt #{{ $examAttempt->id }}
                     • Trạng thái: <span class="font-semibold">
                         {{
-                            match ($examAttempt->status) {
-                                'in_progress' => 'Đang làm bài',
-                                'submitted' => 'Đã nộp bài',
-                                // 'graded' => 'Đã chấm',
-                                'canceled' => 'Đã hủy',
-                                'completed' => 'Đã chấm',
-                                default => $examAttempt->status,
-                            }
-                        }}
+        match ($examAttempt->status) {
+            'in_progress' => 'Đang làm bài',
+            'submitted' => 'Đã nộp bài',
+            // 'graded' => 'Đã chấm',
+            'canceled' => 'Đã hủy',
+            'completed' => 'Đã chấm',
+            default => $examAttempt->status,
+        }
+                            }}
                     </span>
                 </p>
             </div>
@@ -145,15 +145,15 @@
             <div class="p-3 bg-gray-50 rounded-lg">
                 <span class="text-gray-500">Trạng thái:</span>
                 <span class="font-semibold">
-                     {{
-                        match ($examAttempt->status) {
-                            'in_progress' => 'Đang làm bài',
-                            'submitted' => 'Đã nộp bài',
-                            'canceled' => 'Đã hủy',
-                            'completed' => 'Đã chấm',
-                            default => $examAttempt->status,
-                        }
-                    }}
+                    {{
+        match ($examAttempt->status) {
+            'in_progress' => 'Đang làm bài',
+            'submitted' => 'Đã nộp bài',
+            'canceled' => 'Đã hủy',
+            'completed' => 'Đã chấm',
+            default => $examAttempt->status,
+        }
+                        }}
                 </span>
             </div>
 
@@ -168,21 +168,95 @@
                         Tính toán lại điểm số và chuyển trạng thái thành "Đã nộp"
                     </p>
                 </div>
-                <form action="{{ route('contributor.exams.attempts.finalize', ['attemptId' => $examAttempt->id]) }}"
-                    method="POST">
+                {{-- Form modal nhận xét chung --}}
+                <form x-ref="finalizeForm" method="POST"
+                    action="{{ route('contributor.exams.attempts.finalize', ['attemptId' => $examAttempt->id]) }}"
+                    x-data="{ confirmModal: false, submitting: false }">
                     @csrf
-                    <button type="submit"
-                        class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                        {{--
-                        onclick="return confirm('Bạn có chắc chắn muốn chốt kết quả? Hệ thống sẽ tính toán lại tất cả điểm số.')">
-                        --}}
-                        >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Chốt kết quả
-                    </button>
+
+                    <x-button type="button" purple label="Chốt kết quả" @click="
+                        confirmModal = true;
+                        $nextTick(() => $refs.teacherComment.focus())
+                        " />
+
+                    <div x-show="confirmModal" x-cloak class="fixed inset-0 z-50" style="display:none;">
+                        <div class="fixed inset-0 bg-black/50" @click="confirmModal = false"></div>
+
+                        <div class="relative flex min-h-screen items-center justify-center p-4">
+                            <div @click.stop class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+                                {{-- Header --}}
+                                <div class="flex items-start gap-4 p-6 border-b">
+
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100">
+                                        <x-icon name="check-badge" class="w-6 h-6 text-purple-600" />
+                                    </div>
+
+                                    <div>
+                                        <h3 class="text-xl font-semibold text-gray-900">
+                                            Chốt kết quả bài thi
+                                        </h3>
+
+                                        <p class="mt-1 text-sm text-gray-500">
+                                            Hệ thống sẽ tính điểm, cập nhật trạng thái và gửi email kết quả
+                                            cho thí sinh.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                {{-- Body --}}
+                                <div class="p-6 space-y-5">
+
+                                    <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                        <p class="text-sm text-amber-700">
+                                            Sau khi xác nhận, thao tác này không thể hoàn tác.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label for="teacher_comment" class="mb-2 block text-sm font-medium text-gray-700">
+                                            Nhận xét của giáo viên
+                                            <span class="text-gray-400 font-normal">(không bắt buộc)</span>
+                                        </label>
+
+                                        <textarea x-ref="teacherComment" id="teacher_comment" name="teacher_comment"
+                                            rows="5" maxlength="1000"
+                                            class="w-full rounded-lg border-gray-300 p-3 text-sm focus:border-purple-500 focus:ring-purple-500"
+                                            placeholder="Ví dụ: Em làm bài khá tốt, tuy nhiên cần ôn tập thêm phần Cấu trúc dữ liệu và Giải thuật...">{{ old('teacher_comment', $examAttempt->teacher_comment) }}</textarea>
+
+                                        <p class="mt-2 text-xs text-gray-500">
+                                            Nhận xét sẽ hiển thị trong kết quả và email gửi đến thí sinh.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                {{-- Button --}}
+                                <div class="flex justify-end gap-3 border-t bg-gray-50 px-6 py-4">
+
+                                    <x-button flat gray type="button" label="Hủy" @click="confirmModal = false" />
+
+                                    <button type="button"
+                                        class="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-5 py-2.5 text-white transition hover:bg-purple-700 disabled:opacity-50"
+                                        :disabled="submitting" @click="submitting = true; $refs.finalizeForm.submit()">
+                                        <svg x-show="submitting" class="h-4 w-4 animate-spin"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0A12 12 0 000 12h4z"></path>
+                                        </svg>
+
+                                        <x-icon x-show="!submitting" name="check" class="w-4 h-4" />
+
+                                        <span x-text="submitting ? 'Đang xử lý...' : 'Xác nhận chốt kết quả'"></span>
+                                    </button>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
