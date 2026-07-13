@@ -198,7 +198,7 @@
                 </div>
 
                 {{-- Final Grade Results if Project is Completed and Graded --}}
-                @if($projectSubmission->score !== null)
+                @if($projectSubmission->score !== null && in_array($projectSubmission->status, ['passed', 'failed']))
                 <div class="rounded-3xl bg-white p-8 shadow-sm relative overflow-hidden border border-slate-200 group">
                     <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div class="absolute -right-12 -top-12 opacity-5 text-indigo-600">

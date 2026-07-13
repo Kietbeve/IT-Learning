@@ -7,7 +7,7 @@ use Livewire\WithPagination;
 use Modules\Learning\Models\Project;
 use Modules\Learning\Models\ProjectReviewer;
 use Modules\Learning\Services\ProjectReviewService;
-use Modules\Auth\Models\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -99,9 +99,9 @@ class ManageProjectReviewers extends Component
             return collect();
         }
 
-        // Lấy tất cả users có role Admin hoặc Contributor
+        // Lấy tất cả users có role admin hoặc contributor
         $allReviewers = User::whereHas('roles', function($q) {
-            $q->whereIn('name', ['Admin', 'Contributor']);
+            $q->whereIn('name', ['admin', 'contributor']);
         })->get();
 
         // Lọc ra những người chưa được assign cho project này

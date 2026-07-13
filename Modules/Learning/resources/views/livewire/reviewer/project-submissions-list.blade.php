@@ -36,7 +36,7 @@
                     @endif
                 </div>
                 <div class="flex flex-col sm:flex-row items-center gap-3 shrink-0">
-                    @if(auth()->user()->hasRole('admin'))
+                    @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('contributor'))
                         <a href="{{ route('admin.learning.projects.steps', $project->id) }}" 
                            class="group inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-indigo-600 shadow-lg hover:bg-indigo-50 hover:scale-105 hover:shadow-xl transition-all duration-300">
                             <svg class="h-5 w-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">

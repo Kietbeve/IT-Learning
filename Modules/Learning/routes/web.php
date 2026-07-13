@@ -208,8 +208,8 @@ Route::middleware(['auth', 'role:contributor'])->group(function () {
 // 8. NHÓM MULTI-STEP PROJECT SUBMISSION
 // ==========================================
 
-// Admin: Quản lý các bước nộp project
-Route::middleware(['auth', 'role:admin'])->prefix('admin/learning')->name('admin.learning.')->group(function () {
+// Admin & CTV: Quản lý các bước nộp project
+Route::middleware(['auth', 'role:admin,contributor'])->prefix('admin/learning')->name('admin.learning.')->group(function () {
     
     // Quản lý steps của project
     Route::get('/projects/{projectId}/steps', \Modules\Learning\Http\Livewire\Admin\ManageProjectSteps::class)

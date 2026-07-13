@@ -52,6 +52,14 @@
                                 @if($step->instructions)
                                     <div class="mt-1 text-xs text-gray-500">{{ Str::limit($step->instructions, 80) }}</div>
                                 @endif
+                                @if($step->resource_file_path)
+                                    <div class="mt-2 flex items-center gap-1 text-xs text-blue-600 bg-blue-50 w-max px-2 py-1 rounded">
+                                        <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                                        <a href="{{ Storage::disk('public')->url($step->resource_file_path) }}" target="_blank" class="hover:underline font-medium" title="Tải xuống tài liệu đính kèm">
+                                            {{ $step->resource_file_name ?? 'Tài liệu đính kèm' }}
+                                        </a>
+                                    </div>
+                                @endif
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm">
                                 <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {{ $step->submission_type === 'file' ? 'bg-blue-100 text-blue-800' : ($step->submission_type === 'link' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800') }}">
@@ -135,9 +143,13 @@
                     </div>
                 @endif
 
-                <div class="grid grid-cols-3 gap-4">
-                    <x-checkbox label="Bước bắt buộc" wire:model.defer="is_required" />
-                    <x-checkbox label="Kích hoạt" wire:model.defer="is_active" />
+                <div class="grid grid-cols-3 gap-4 items-start">
+                    <div class="pt-7">
+                        <x-checkbox label="Bước bắt buộc" wire:model.defer="is_required" />
+                    </div>
+                    <div class="pt-7">
+                        <x-checkbox label="Kích hoạt" wire:model.defer="is_active" />
+                    </div>
                     <x-input label="Số lần nộp lại tối đa" wire:model.defer="max_resubmissions" type="number" min="1" />
                 </div>
             </div>

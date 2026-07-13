@@ -99,6 +99,17 @@ class ReviewerSubmissionsList extends Component
             $query->whereNotIn('id', $assignedProjectIds);
         }
 
+        if ($this->filterPending) {
+            $query->whereExists(function ($subquery) {
+                $subquery->select(\Illuminate\Support\Facades\DB::raw(1))
+                      ->from('project_step_submissions')
+                      ->join('project_submissions', 'project_submissions.id', '=', 'project_step_submissions.project_submission_id')
+                      ->whereColumn('project_submissions.project_id', 'projects.id')
+                      ->whereIn('project_step_submissions.status', ['submitted', 'under_review'])
+                      ->where('project_step_submissions.is_current', true);
+            });
+        }
+
         $projects = $query->paginate(12);
 
         // Transform data với access info

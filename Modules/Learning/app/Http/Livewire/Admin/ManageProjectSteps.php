@@ -24,7 +24,7 @@ class ManageProjectSteps extends Component
     public $existing_resource_file_name;
     public $requirements;
     public $allowed_file_types = [];
-    public $max_file_size_mb = 50;
+    public $max_file_size_mb = 100;
     public $link_placeholder;
     public $is_required = true;
     public $is_active = true;
@@ -180,7 +180,7 @@ class ManageProjectSteps extends Component
                     'submission_type' => 'file',
                     'instructions' => 'Phân tích yêu cầu của project và đưa ra giải pháp',
                     'allowed_file_types' => ['doc', 'docx', 'txt', 'pdf'],
-                    'max_file_size_mb' => 10,
+                    'max_file_size_mb' => 100,
                 ],
                 [
                     'step_name' => 'Thiết kế Database',
@@ -188,7 +188,7 @@ class ManageProjectSteps extends Component
                     'submission_type' => 'file',
                     'instructions' => 'Thiết kế cơ sở dữ liệu cho project',
                     'allowed_file_types' => ['sql', 'png', 'jpg', 'pdf'],
-                    'max_file_size_mb' => 10,
+                    'max_file_size_mb' => 100,
                 ],
                 [
                     'step_name' => 'Thiết kế giao diện',
@@ -196,7 +196,7 @@ class ManageProjectSteps extends Component
                     'submission_type' => 'link',
                     'instructions' => 'Thiết kế giao diện trên Figma',
                     'link_placeholder' => 'Nhập link Figma...',
-                    'max_file_size_mb' => 50,
+                    'max_file_size_mb' => 100,
                 ],
                 [
                     'step_name' => 'Code',
@@ -204,7 +204,7 @@ class ManageProjectSteps extends Component
                     'submission_type' => 'link',
                     'instructions' => 'Nộp source code qua GitHub',
                     'link_placeholder' => 'Nhập link GitHub repository...',
-                    'max_file_size_mb' => 50,
+                    'max_file_size_mb' => 100,
                 ],
                 [
                     'step_name' => 'Demo Video',
@@ -248,7 +248,7 @@ class ManageProjectSteps extends Component
         $this->instructions = '';
         $this->requirements = '';
         $this->allowed_file_types = [];
-        $this->max_file_size_mb = 50;
+        $this->max_file_size_mb = 100;
         $this->link_placeholder = '';
         $this->is_required = true;
         $this->is_active = true;
