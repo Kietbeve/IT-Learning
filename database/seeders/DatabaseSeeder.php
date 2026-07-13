@@ -30,8 +30,8 @@ class DatabaseSeeder extends Seeder
             \Modules\Exam\database\seeders\ExamTagMapSeeder::class,
             \Modules\Learning\Database\Seeders\LearningDatabaseSeeder::class,
             //seeder orders và dashboard
-            OrderSeeder::class,
-            DashboardSeeder::class,
+            // OrderSeeder::class,
+            // DashboardSeeder::class,
             SettingSeeder::class,
         ]);
     }

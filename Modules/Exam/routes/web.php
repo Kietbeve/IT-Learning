@@ -56,7 +56,8 @@ Route::get('/questions/import-template', [ExamController::class, 'template'])
 |
 */
 
-Route::group(['prefix' => 'exam', 'middleware' => 'auth'], function () {
+// Route::group(['prefix' => 'exam', 'middleware' => 'auth'], function () {
+Route::group(['prefix' => 'exam'], function () {
     // Xem danh sách kết quả các bài thi đã làm
     Route::get('results', Modules\Exam\Livewire\ResultList::class)->name('exam.results');
 });
@@ -79,6 +80,7 @@ Route::group(['prefix' => 'contributor', 'middleware' => ['auth', 'role:contribu
     Route::get('exams', [ExamController::class, 'examManager'])->name('contributor.exams');
     Route::get('exams/{examId}/detail', [ExamController::class, 'examDetail'])->name('contributor.exams.detail');
     Route::get('exams/{examId}/questions', [ExamController::class, 'examQuestionManager'])->name('contributor.exams.questions');
+    Route::get('exams/{examId}/questions/v2', \Modules\Exam\Livewire\Contributor\ExamQuestionPageV2::class)->name('contributor.exams.questions.v2');
 
     // Quản lý bài làm của học viên
     Route::get('exams/{examId}/attempts', [ExamController::class, 'examAttemptManager'])->name('contributor.exams.attempts');

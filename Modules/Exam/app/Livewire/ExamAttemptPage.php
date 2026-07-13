@@ -332,6 +332,18 @@ class ExamAttemptPage extends Component
             );
         }
     }
+    //Hàm bắt đầu tính giờ
+    public function startExam(): void
+    {
+        $this->attempt->update([
+            'started_at' => now(),
+            'expires_at' => now()->addMinutes(
+                $this->attempt->exam->duration_minutes
+            ),
+        ]);
+
+        $this->attempt->refresh();
+    }
 
     /*
     |--------------------------------------------------------------------------

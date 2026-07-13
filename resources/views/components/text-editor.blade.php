@@ -45,6 +45,18 @@
                     });
 
                     this.editor.root.innerHTML = $wire.get('{{ $model }}') ?? '';
+                    {{--// Đồng bộ lại nội dung Quill khi giá trị Livewire thay đổi (do editor dùng wire:ignore)--}}
+                    this.$watch(() => $wire.get('{{ $model }}'), (value) => {
+
+                        if (this.editor.root.innerHTML !== (value ?? '')) {
+
+                            const delta = this.editor.clipboard.convert({
+                                html: value ?? ''
+                            });
+
+                            this.editor.setContents(delta, 'silent');
+                        }
+                    });
 
                     this.editor.on('text-change', () => {
                         $wire.set('{{ $model }}', this.editor.root.innerHTML);

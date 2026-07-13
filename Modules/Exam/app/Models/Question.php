@@ -21,6 +21,7 @@ class Question extends Model
     protected $fillable = [
         'author_id',
         'category_id',
+        'subject_id',
         'content',
         'answer_text',
         'explanation',

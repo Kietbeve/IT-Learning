@@ -9,10 +9,18 @@ use App\Models\Category;
 use WireUi\Traits\WireUiActions;
 use Illuminate\Support\Str;
 
+use Modules\Exam\Services\ExamService;
+
 class ExamModal extends Component
 {
     use WireUiActions;
 
+    //inject ExamService
+    protected ExamService $examService;
+    public function boot(ExamService $examService){
+        $this->examService = $examService;
+    }
+    //Trạng thái mở modal
     public bool $showViewModal = false;
     public bool $showEditModal = false;
     public bool $showDeleteModal = false;
@@ -119,19 +127,7 @@ class ExamModal extends Component
             'category_id'       => ['required', 'integer', 'exists:categories,id'],
         ]);
 
-        $exam = $this->editingExamId
-            ? Exam::findOrFail($this->editingExamId)
-            : new Exam();
-
-        $exam->fill($validated);
-
-        if (! $exam->exists) {
-            $exam->slug=Exam::generateUniqueSlug($this->title);
-            $exam->author_id = auth()->id();
-            $exam->public_id = (string) Str::uuid();
-        }
-
-        $exam->save();
+        $this->examService->saveExam($validated,$this->editingExamId,auth()->id());
 
         $this->showEditModal = false;
 

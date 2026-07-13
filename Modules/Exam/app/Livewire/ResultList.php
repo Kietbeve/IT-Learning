@@ -67,15 +67,35 @@ class ResultList extends Component
         ];
     }
 
+    //lấy danh sách bài thi: $this->attempts
     public function getAttemptsProperty()
     {
-        return ExamAttempt::query()
-            ->with([
-                'exam',
-            ])
-            ->where('user_id', auth()->id())
-            // ->where('status', 'completed')
+        $query = ExamAttempt::query()
+        ->with('exam');
 
+        //xử lý khi đã đăng nhập
+        if (auth()->check()) {
+            $query->where('user_id', auth()->id());
+        //xử lý khi chưa đăng nhập
+        } else {
+            $attempts = json_decode(
+                request()->cookie('guest_exam_attempts', '{}'),
+                true
+            );
+
+            $attempts = is_array($attempts) ? $attempts : [];
+
+            $sessionIds = collect($attempts)
+                ->flatten()
+                ->unique()
+                ->values()
+                ->all();
+
+            $query->whereIn('session_id', $sessionIds);
+        }
+
+        return $query
+            // ->where('status', 'completed')
             ->when(
                 $this->search,
                 fn ($query) => $query->whereHas(
