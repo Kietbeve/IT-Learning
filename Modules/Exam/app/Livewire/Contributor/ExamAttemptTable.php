@@ -16,7 +16,7 @@ class ExamAttemptTable extends PowerGridComponent
 {
     public string $tableName = 'exam-attempt-table';
     public string $primaryKey = 'id';
-
+    public int $examId;//chỉ lấy những bài làm thuộc đề thi
     public string $sortField = 'id';
 
     public function setUp(): array
@@ -34,6 +34,7 @@ class ExamAttemptTable extends PowerGridComponent
     public function datasource(): Builder
     {
         return ExamAttempt::query()
+            ->where('exam_id', $this->examId)//chỉ lấy những bài làm thuộc đề thi
             ->with([
                 'exam:id,title',
                 'user:id,name',
