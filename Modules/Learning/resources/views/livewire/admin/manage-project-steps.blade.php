@@ -21,6 +21,49 @@
         </div>
     </div>
 
+    {{-- Quản lý File Yêu cầu Project --}}
+    <div class="mb-6 bg-[#f8fafc] p-6 rounded-2xl border border-dashed border-gray-300 inline-block min-w-[450px]">
+        <h2 class="text-[15px] font-bold text-[#1e293b] mb-4">Tài liệu đính kèm chung cho Project <span class="text-red-500">*</span></h2>
+        
+        @if($project->resource_file_path)
+            <div class="flex items-center gap-4">
+                <div class="bg-[#e0e7ff] text-[#4338ca] font-semibold py-2 px-5 rounded-xl shadow-sm text-sm">
+                    Đã chọn file
+                </div>
+                <span class="text-sm text-gray-500 truncate max-w-[200px]" title="{{ $project->resource_file_name }}">
+                    {{ $project->resource_file_name }}
+                </span>
+                <div class="ml-auto flex items-center gap-3 pl-3 border-l border-gray-200">
+                    <a href="{{ Storage::disk('public')->url($project->resource_file_path) }}" download class="text-[#4338ca] hover:underline text-sm font-semibold">Tải về</a>
+                    <button wire:click="deleteProjectResource" class="text-red-500 hover:text-red-700 text-sm font-semibold" title="Xóa file">Xóa</button>
+                </div>
+            </div>
+        @else
+            <div class="relative flex items-center gap-4">
+                <input type="file" wire:model="project_resource_file" id="project_resource_file" class="hidden" accept=".doc,.docx,.txt,.pdf" />
+                <label for="project_resource_file" class="bg-[#e0e7ff] text-[#4338ca] hover:bg-[#c7d2fe] cursor-pointer transition-colors font-semibold py-2 px-5 rounded-xl text-sm shadow-sm inline-block">
+                    Choose File
+                </label>
+                <span class="text-sm text-gray-500" wire:loading.remove wire:target="project_resource_file">
+                    No file chosen
+                </span>
+                <span class="text-sm text-[#4338ca] font-medium" wire:loading wire:target="project_resource_file">Đang tải lên...</span>
+            </div>
+        @endif
+        
+        <div class="mt-4 text-[13px] text-gray-500 font-medium">
+            Loại file: doc, docx, txt, pdf &bull; Tối đa: 100 MB
+        </div>
+
+        @error('project_resource_file') <span class="text-red-500 text-xs mt-2 block">{{ $message }}</span> @enderror
+        @if(session()->has('success_resource'))
+            <div class="mt-2 text-xs font-medium text-green-600">{{ session('success_resource') }}</div>
+        @endif
+        @if(session()->has('error_resource'))
+            <div class="mt-2 text-xs font-medium text-red-600">{{ session('error_resource') }}</div>
+        @endif
+    </div>
+
     @if($steps->isEmpty())
         <div class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,27 +153,12 @@
 
                 <x-textarea label="Hướng dẫn" wire:model.defer="instructions" rows="3" placeholder="Hướng dẫn chi tiết cho học viên..." />
 
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">File yêu cầu đính kèm (Tài liệu, đề bài...)</label>
-                    @if($existing_resource_file_path)
-                        <div class="mb-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-200">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                            </svg>
-                            <span class="truncate max-w-xs">{{ $existing_resource_file_name }}</span>
-                            <a href="{{ Storage::disk('public')->url($existing_resource_file_path) }}" target="_blank" class="ml-auto text-blue-600 hover:underline">Xem file</a>
-                        </div>
-                    @endif
-                    <input type="file" wire:model="resource_file" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                    <div wire:loading wire:target="resource_file" class="text-sm text-gray-500 mt-1">Đang tải lên...</div>
-                    @error('resource_file') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                </div>
 
                 @if(in_array($submission_type, ['file', 'both']))
                     <div class="rounded-lg bg-blue-50 p-4">
                         <h4 class="mb-3 text-sm font-medium text-blue-900">Cài đặt File Upload</h4>
                         <div class="grid grid-cols-2 gap-4">
-                            <x-input label="Loại file cho phép (cách nhau bằng dấu phẩy)" wire:model.defer="allowed_file_types" placeholder="doc,docx,pdf,txt" />
+                            <x-input label="Loại file cho phép" wire:model.defer="allowed_file_types" placeholder="doc,docx,pdf,txt" />
                             <x-input label="Kích thước tối đa (MB)" wire:model.defer="max_file_size_mb" type="number" min="1" />
                         </div>
                     </div>

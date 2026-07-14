@@ -3,6 +3,7 @@
 namespace Modules\Learning\Livewire\Admin;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Modules\Learning\Models\Project;
 use Modules\Learning\Models\Roadmap;
 use Modules\Learning\Models\RoadmapSection;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 class ProjectForm extends Component
 {
     use AuthorizesRequests;
+    use WithFileUploads;
 
     public $projectId = null;
     public $project = null;

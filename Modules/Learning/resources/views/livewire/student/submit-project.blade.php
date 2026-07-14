@@ -70,6 +70,28 @@
                                 <p class="text-sm text-indigo-900 leading-relaxed">{{ $currentStep->instructions }}</p>
                             </div>
                         @endif
+
+                        @if($project->resource_file_path)
+                            <div class="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow group">
+                                <div class="flex items-center gap-4">
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+                                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-slate-800">Tài liệu yêu cầu dự án (Project Requirement)</h3>
+                                        <p class="text-xs font-medium text-slate-500 mt-1">{{ $project->resource_file_name }}</p>
+                                    </div>
+                                </div>
+                                <a href="{{ Storage::disk('public')->url($project->resource_file_path) }}" target="_blank" class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-indigo-700 shadow-sm ring-1 ring-inset ring-indigo-300 hover:bg-indigo-100 transition-colors">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                    Tải về
+                                </a>
+                            </div>
+                        @endif
                         
                         @if($currentStep->resource_file_path)
                             <div class="mt-6 rounded-2xl border border-slate-200 bg-white p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow group">

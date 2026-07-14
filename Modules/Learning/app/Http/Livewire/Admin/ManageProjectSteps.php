@@ -19,9 +19,7 @@ class ManageProjectSteps extends Component
     public $step_order;
     public $submission_type = 'file';
     public $instructions;
-    public $resource_file;
-    public $existing_resource_file_path;
-    public $existing_resource_file_name;
+    public $project_resource_file;
     public $requirements;
     public $allowed_file_types = [];
     public $max_file_size_mb = 100;
@@ -38,7 +36,6 @@ class ManageProjectSteps extends Component
         'step_order' => 'required|integer|min:1',
         'submission_type' => 'required|in:file,link,both',
         'instructions' => 'nullable|string',
-        'resource_file' => 'nullable|file|max:10240', // 10MB max for requirements file
         'requirements' => 'nullable|string',
         'allowed_file_types' => 'nullable|array',
         'max_file_size_mb' => 'required|integer|min:1|max:500',
@@ -61,13 +58,51 @@ class ManageProjectSteps extends Component
             ->get();
     }
 
+    public function updatedProjectResourceFile()
+    {
+        $this->validate([
+            'project_resource_file' => 'required|file|max:102400', // 100MB max
+        ]);
+
+        try {
+            $path = $this->project_resource_file->store('projects/resources', 'public');
+            
+            $this->project->update([
+                'resource_file_path' => $path,
+                'resource_file_name' => $this->project_resource_file->getClientOriginalName(),
+            ]);
+            $this->project->refresh();
+
+            $this->project_resource_file = null;
+            session()->flash('success_resource', 'Đã tải lên file yêu cầu project thành công');
+        } catch (\Exception $e) {
+            session()->flash('error_resource', 'Lỗi: ' . $e->getMessage());
+        }
+    }
+
+    public function deleteProjectResource()
+    {
+        try {
+            if ($this->project->resource_file_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($this->project->resource_file_path);
+            }
+            
+            $this->project->update([
+                'resource_file_path' => null,
+                'resource_file_name' => null,
+            ]);
+            $this->project->refresh();
+
+            session()->flash('success_resource', 'Đã xóa file yêu cầu project');
+        } catch (\Exception $e) {
+            session()->flash('error_resource', 'Lỗi: ' . $e->getMessage());
+        }
+    }
+
     public function openCreateModal()
     {
         $this->resetForm();
         $this->editingStepId = null;
-        $this->existing_resource_file_path = null;
-        $this->existing_resource_file_name = null;
-        $this->resource_file = null;
         $this->showModal = true;
         
         // Auto-set next step order
@@ -84,9 +119,6 @@ class ManageProjectSteps extends Component
         $this->step_order = $step->step_order;
         $this->submission_type = $step->submission_type;
         $this->instructions = $step->instructions;
-        $this->existing_resource_file_path = $step->resource_file_path;
-        $this->existing_resource_file_name = $step->resource_file_name;
-        $this->resource_file = null;
         $this->requirements = $step->requirements;
         $this->allowed_file_types = $step->allowed_file_types ?? [];
         $this->max_file_size_mb = $step->max_file_size_mb;
@@ -117,12 +149,6 @@ class ManageProjectSteps extends Component
                 'is_active' => $this->is_active,
                 'max_resubmissions' => $this->max_resubmissions,
             ];
-
-            if ($this->resource_file) {
-                $path = $this->resource_file->store('projects/steps/resources', 'public');
-                $data['resource_file_path'] = $path;
-                $data['resource_file_name'] = $this->resource_file->getClientOriginalName();
-            }
 
             if ($this->editingStepId) {
                 $step = ProjectSubmissionStep::findOrFail($this->editingStepId);

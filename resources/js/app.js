@@ -1,5 +1,5 @@
 import './bootstrap';
-import '../../vendor/power-components/livewire-powergrid/resources/js/powergrid';
+//import '../../vendor/power-components/livewire-powergrid/resources/js/powergrid';
 
 // Tom-Select for better multiselect
 import TomSelect from 'tom-select';

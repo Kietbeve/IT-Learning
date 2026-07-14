@@ -22,6 +22,8 @@ class Project extends Model
         'passing_score',
         'required_completion_percentage',
         'sort_order',
+        'resource_file_path',
+        'resource_file_name',
     ];
 
     protected function casts(): array
