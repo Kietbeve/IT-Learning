@@ -446,6 +446,7 @@ class ExamService
             'author_id',
             'category_id',
             'publish_at',
+            'mode',
         ])
         ->with([
             'author:id,name',
@@ -560,6 +561,14 @@ class ExamService
             // 'expires_at'      => now()->addMinutes(
             //     $exam->duration_minutes
             // ),
+            //Bắt đầu tính giờ đối với đề luyện tập
+             'started_at'      => $exam->mode === 'practice'
+                ? now()
+                : null,
+
+            'expires_at'      => $exam->mode === 'practice'
+                ? now()->addMinutes($exam->duration_minutes)
+                : null,
 
             'total_questions' => $exam
                 ->questions()

@@ -376,10 +376,24 @@
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-3">
                                         <x-badge flat primary label="Câu {{ $currentQuestionIndex + 1 }}" />
-                                        @if($question->difficulty)
+                                        {{-- @if($question->difficulty)
                                             <x-badge flat gray>
                                                 <span class="capitalize">{{ $question->difficulty }}</span>
                                             </x-badge>
+                                        @endif --}}
+                                        {{-- Difficulty Badge with color coding --}}
+                                        @if($question->difficulty)
+                                            @php
+                                                $difficultyColors = [
+                                                    'easy' => 'bg-green-100 text-green-700 border-green-300',
+                                                    'medium' => 'bg-yellow-100 text-yellow-700 border-yellow-300',
+                                                    'hard' => 'bg-red-100 text-red-700 border-red-300',
+                                                ];
+                                                $colorClass = $difficultyColors[strtolower($question->difficulty)] ?? 'bg-gray-100 text-gray-700 border-gray-300';
+                                            @endphp
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md border {{ $colorClass }} text-xs font-semibold capitalize">
+                                                {{ $question->difficulty }}
+                                            </span>
                                         @endif
                                     </div>
                                     <h2 class="text-lg md:text-xl font-semibold text-gray-900 leading-relaxed">
@@ -418,6 +432,13 @@
 
                                 @elseif($question->type === 'multiple_choice')
                                     {{-- Multiple Choice: Checkboxes --}}
+                                    {{-- Note: Thông báo cho người dùng có thể chọn nhiều đáp án --}}
+                                    <div class="mb-3 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        <span class="font-medium">Bạn có thể chọn nhiều đáp án cho câu hỏi này</span>
+                                    </div>
                                     <div class="space-y-3">
                                         @foreach($question->options as $option)
                                             <label 
@@ -734,6 +755,9 @@
                                     
                                     init() {
                                         this.calculateTime();
+                                        // FIX: Thêm setInterval để đồng hồ đếm ngược cập nhật mỗi giây, 
+                                        // giống như timer ở header (line 190) để thời gian hiển thị khớp nhau
+                                        setInterval(() => this.calculateTime(), 1000);
                                     },
                                     
                                     calculateTime() {

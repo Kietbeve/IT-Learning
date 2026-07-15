@@ -92,7 +92,7 @@
     {{-- Table --}}
     <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
 
-        <livewire:modules.exam.livewire.contributor.exam-attempt-table />
+        <livewire:modules.exam.livewire.contributor.exam-attempt-table :examId="$exam->id" />
 
     </div>
 
