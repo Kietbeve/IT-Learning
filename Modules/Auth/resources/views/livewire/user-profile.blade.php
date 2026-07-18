@@ -227,6 +227,7 @@
                     <p class="text-xs text-gray-600 mt-1">Số dư hiện tại của bạn</p>
                 </div>
 
+                @if($role=='user'){{-- chỉ hiện khi là user --}}
                 {{-- ── CTV Registration Card ── --}}
                 <div class="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500
                             rounded-2xl shadow-md shadow-green-500/20 p-5 text-white">
@@ -262,6 +263,7 @@
                         Đăng kí CTV
                     </a>
                 </div>
+                @endif
 
             </div>
             {{-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ END LEFT SIDEBAR ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ --}}

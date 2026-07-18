@@ -15,5 +15,5 @@ use Modules\Exam\Http\Controllers\ExamController;
 */
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('exam', ExamController::class)->names('exam');
+    // Route::apiResource('exam', ExamController::class)->names('exam');
 });

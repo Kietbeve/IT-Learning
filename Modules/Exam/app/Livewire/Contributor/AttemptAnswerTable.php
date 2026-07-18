@@ -291,7 +291,10 @@ final class AttemptAnswerTable extends PowerGridComponent
                     ['id' => 'essay', 'name' => 'Tự luận'],
                 ])
                 ->optionLabel('name')
-                ->optionValue('id'),
+                ->optionValue('id')
+                ->builder(function (Builder $query, $value) {//fix lỗi filter
+                    return $query->whereHas('question', fn($q) => $q->where('type', $value));
+                }),
         ];
     }
     public function actionRules($row): array

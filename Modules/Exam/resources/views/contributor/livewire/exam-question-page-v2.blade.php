@@ -83,16 +83,15 @@
                                 />
 
                                 {{-- Type Filter --}}
+                                @if($this->exam->type!='essay')
                                 <x-multi-filter
                                     title="Loại"
                                     wire:model.live="filterType"
                                     :selected="$filterType"
-                                    :options="[
-                                        'single_choice' => 'Một đáp án',
-                                        'multiple_choice' => 'Nhiều đáp án',
-                                        'essay' => 'Tự luận',
-                                    ]"
+                                    :options="$this->exam->type=='multiple_choice'?['single_choice' => 'Một đáp án','multiple_choice' => 'Nhiều đáp án']
+                                                            :['single_choice' => 'Một đáp án','multiple_choice' => 'Nhiều đáp án','essay' => 'Tự luận']"
                                 />
+                                @endif
 
                                 {{-- Category Filter --}}
                                 <x-multi-filter
@@ -173,6 +172,7 @@
                                         @if($randomMode === 'by_difficulty')
                                             <div class="grid grid-cols-3 gap-3">
                                                 {{-- Easy --}}
+                                                @if($this->availableCountsByDifficulty['easy'] > 0)
                                                 <div class="bg-white rounded-lg p-3 border border-green-200">
                                                     <label class="block text-sm font-medium text-green-700 mb-2">😊 Dễ</label>
                                                     <input type="number" 
@@ -185,8 +185,11 @@
                                                         Có <strong class="text-green-600">{{ $this->availableCountsByDifficulty['easy'] }}</strong> câu
                                                     </p>
                                                 </div>
+                                                @endif
+                                                
 
                                                 {{-- Medium --}}
+                                                @if($this->availableCountsByDifficulty['medium'] > 0)
                                                 <div class="bg-white rounded-lg p-3 border border-yellow-200">
                                                     <label class="block text-sm font-medium text-yellow-700 mb-2">😐 Trung bình</label>
                                                     <input type="number" 
@@ -199,8 +202,10 @@
                                                         Có <strong class="text-yellow-600">{{ $this->availableCountsByDifficulty['medium'] }}</strong> câu
                                                     </p>
                                                 </div>
+                                                @endif
 
                                                 {{-- Hard --}}
+                                                @if($this->availableCountsByDifficulty['hard'] > 0)
                                                 <div class="bg-white rounded-lg p-3 border border-red-200">
                                                     <label class="block text-sm font-medium text-red-700 mb-2">😰 Khó</label>
                                                     <input type="number" 
@@ -213,6 +218,7 @@
                                                         Có <strong class="text-red-600">{{ $this->availableCountsByDifficulty['hard'] }}</strong> câu
                                                     </p>
                                                 </div>
+                                                @endif
                                             </div>
                                         @endif
 

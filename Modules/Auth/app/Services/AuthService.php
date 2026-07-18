@@ -5,6 +5,8 @@ namespace Modules\Auth\Services;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Modules\Auth\Mail\ContributorApplicationProcessed;
 
 class AuthService
 {
@@ -432,17 +434,166 @@ class AuthService
             // Sync roles (wrap single role string in array)
             $user->syncRoles([$data['roles']]);
 
+        return [
+            'success' => true,
+            'message' => 'Cập nhật người dùng thành công',
+            'user' => $user->fresh(['roles']),
+        ];
+    } catch (\Exception $e) {
+        return [
+            'success' => false,
+            'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
+            'user' => null,
+        ];
+    }
+}
+
+    /**
+     * Xử lý duyệt/từ chối đơn đăng ký CTV
+     * 
+     * @param int $applicationId - ID đơn đăng ký
+     * @param string $action - 'approve' hoặc 'reject'
+     * @param int $reviewerId - ID admin thực hiện duyệt
+     * @param string|null $reason - Lý do từ chối (bắt buộc nếu action = 'reject')
+     * @return array ['success' => bool, 'message' => string, 'application' => ContributorApplication|null]
+     */
+    public function processContributorApplication(int $applicationId, string $action, int $reviewerId, ?string $reason = null): array
+    {
+        $application = \Modules\Auth\Models\ContributorApplication::with(['user'])->find($applicationId);
+
+        if (!$application) {
             return [
-                'success' => true,
-                'message' => 'Cập nhật người dùng thành công',
-                'user' => $user->fresh(['roles']),
+                'success' => false,
+                'message' => 'Không tìm thấy đơn đăng ký',
+                'application' => null,
             ];
+        }
+
+        // Validate: chỉ xử lý đơn đang pending
+        if ($application->status !== 'pending') {
+            return [
+                'success' => false,
+                'message' => 'Chỉ có thể xử lý các đơn đang chờ duyệt',
+                'application' => null,
+            ];
+        }
+
+        // Validate action
+        if (!in_array($action, ['approve', 'reject'])) {
+            return [
+                'success' => false,
+                'message' => 'Hành động không hợp lệ',
+                'application' => null,
+            ];
+        }
+
+        // Validate: lý do từ chối bắt buộc nếu reject
+        if ($action === 'reject' && empty(trim($reason))) {
+            return [
+                'success' => false,
+                'message' => 'Vui lòng nhập lý do từ chối',
+                'application' => null,
+            ];
+        }
+
+        try {
+            if ($action === 'approve') {
+                return $this->approveContributorApplication($application, $reviewerId);
+            } else {
+                return $this->rejectContributorApplication($application, $reviewerId, $reason);
+            }
         } catch (\Exception $e) {
             return [
                 'success' => false,
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
-                'user' => null,
+                'application' => null,
             ];
         }
+    }
+
+    /**
+     * Duyệt đơn đăng ký CTV
+     * 
+     * @param \Modules\Auth\Models\ContributorApplication $application
+     * @param int $reviewerId
+     * @return array
+     */
+    private function approveContributorApplication($application, int $reviewerId): array
+    {
+        // Cập nhật trạng thái đơn
+        $application->update([
+            'status' => 'approved',
+            'reviewed_by' => $reviewerId,
+            'reviewed_at' => now(),
+            'rejected_reason' => null
+        ]);
+
+        // Cập nhật role contributor cho user (sử dụng Spatie)
+        $user = $application->user;
+        $user->syncRoles('contributor');
+
+        // Log activity
+        activity()
+            ->performedOn($application)
+            ->causedBy($reviewerId)
+            ->withProperties([
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'action' => 'approved'
+            ])
+            ->log('Duyệt đơn đăng ký CTV');
+
+        // Gửi email thông báo (chạy queue/background job)
+        Mail::to($user->email)->queue(
+            new ContributorApplicationProcessed($application, 'approved')
+        );
+
+        return [
+            'success' => true,
+            'message' => 'Đã duyệt đơn đăng ký CTV thành công',
+            'application' => $application->fresh(['user', 'reviewer']),
+        ];
+    }
+
+    /**
+     * Từ chối đơn đăng ký CTV
+     * 
+     * @param \Modules\Auth\Models\ContributorApplication $application
+     * @param int $reviewerId
+     * @param string $reason
+     * @return array
+     */
+    private function rejectContributorApplication($application, int $reviewerId, string $reason): array
+    {
+        // Cập nhật trạng thái đơn
+        $application->update([
+            'status' => 'rejected',
+            'reviewed_by' => $reviewerId,
+            'reviewed_at' => now(),
+            'rejected_reason' => $reason
+        ]);
+
+        // Log activity
+        activity()
+            ->performedOn($application)
+            ->causedBy($reviewerId)
+            ->withProperties([
+                'user_id' => $application->user->id,
+                'user_name' => $application->user->name,
+                'action' => 'rejected',
+                'reason' => $reason
+            ])
+            ->log('Từ chối đơn đăng ký CTV');
+
+        // Gửi email thông báo (chạy queue/background job)
+        Mail::to($application->user->email)->queue(
+            new ContributorApplicationProcessed($application, 'rejected', $reason)
+        );
+
+        return [
+            'success' => true,
+            'message' => 'Đã từ chối đơn đăng ký CTV',
+            'application' => $application->fresh(['user', 'reviewer']),
+        ];
     }
 }

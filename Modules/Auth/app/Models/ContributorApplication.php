@@ -3,6 +3,7 @@
 namespace Modules\Auth\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;// laays theo model nay
 
 
 class ContributorApplication extends Model

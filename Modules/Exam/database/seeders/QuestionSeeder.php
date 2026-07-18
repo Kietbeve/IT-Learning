@@ -252,15 +252,32 @@ class QuestionSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | 10 Easy Questions (Various Types)
+        | 100 IT Questions (5 Categories × 20 Questions Each)
+        | Categories: Lập trình Web, Lập trình Mobile, Trí tuệ nhân tạo (AI), 
+        |             Cơ sở dữ liệu, Mạng & Bảo mật
+        | Distribution per category: 8 easy, 6 medium, 6 hard
+        |                           8 single_choice, 8 multiple_choice, 4 essay
         |--------------------------------------------------------------------------
         */
-        $easyQuestionsData = [
-            // Single Choice (4 câu)
+        
+        // Get category IDs
+        $categories = [
+            'web' => \DB::table('categories')->where('name', 'LIKE', '%Lập trình Web%')->value('id') ?? 1,
+            'mobile' => \DB::table('categories')->where('name', 'LIKE', '%Mobile%')->value('id') ?? 1,
+            'ai' => \DB::table('categories')->where('name', 'LIKE', '%trí tuệ%')->orWhere('name', 'LIKE', '%AI%')->value('id') ?? 1,
+            'database' => \DB::table('categories')->where('name', 'LIKE', '%Cơ sở dữ liệu%')->value('id') ?? 1,
+            'network' => \DB::table('categories')->where('name', 'LIKE', '%Mạng%')->orWhere('name', 'LIKE', '%Bảo mật%')->value('id') ?? 1,
+        ];
+
+        $allQuestionsData = [
+            // ===== Lập trình Web (20 câu) =====
+            // Single choice - Easy (4 câu)
             [
+                'category_id' => $categories['web'],
                 'type' => 'single_choice',
+                'difficulty' => 'easy',
                 'content' => 'HTML là viết tắt của từ gì?',
-                'explanation' => 'HTML là viết tắt của HyperText Markup Language.',
+                'explanation' => 'HTML là viết tắt của HyperText Markup Language, ngôn ngữ đánh dấu siêu văn bản.',
                 'options' => [
                     ['key' => 'A', 'content' => 'HyperText Markup Language', 'is_correct' => true],
                     ['key' => 'B', 'content' => 'HighText Machine Language', 'is_correct' => false],
@@ -269,160 +286,295 @@ class QuestionSeeder extends Seeder
                 ]
             ],
             [
+                'category_id' => $categories['web'],
                 'type' => 'single_choice',
-                'content' => 'Ký hiệu nào dùng để khai báo biến trong PHP?',
-                'explanation' => 'Trong PHP, tất cả các biến đều bắt đầu bằng ký hiệu đô la ($).',
+                'difficulty' => 'easy',
+                'content' => 'Thẻ HTML nào dùng để tạo liên kết?',
+                'explanation' => 'Thẻ <a> (anchor) dùng để tạo hyperlink trong HTML.',
                 'options' => [
-                    ['key' => 'A', 'content' => '$', 'is_correct' => true],
-                    ['key' => 'B', 'content' => '#', 'is_correct' => false],
-                    ['key' => 'C', 'content' => '@', 'is_correct' => false],
-                    ['key' => 'D', 'content' => '%', 'is_correct' => false],
-                ]
-            ],
-            [
-                'type' => 'single_choice',
-                'content' => 'Thẻ HTML nào dùng để tạo liên kết (hyperlink)?',
-                'explanation' => 'Thẻ <a> dùng để tạo liên kết trong HTML.',
-                'options' => [
-                    ['key' => 'A', 'content' => '<a>', 'is_correct' => true],
-                    ['key' => 'B', 'content' => '<link>', 'is_correct' => false],
+                    ['key' => 'A', 'content' => '<link>', 'is_correct' => false],
+                    ['key' => 'B', 'content' => '<a>', 'is_correct' => true],
                     ['key' => 'C', 'content' => '<href>', 'is_correct' => false],
-                    ['key' => 'D', 'content' => '<a> liên kết', 'is_correct' => false],
+                    ['key' => 'D', 'content' => '<url>', 'is_correct' => false],
                 ]
             ],
             [
+                'category_id' => $categories['web'],
                 'type' => 'single_choice',
-                'content' => 'Đâu là một trình duyệt web phổ biến?',
-                'explanation' => 'Google Chrome là một trình duyệt web phổ biến.',
+                'difficulty' => 'easy',
+                'content' => 'CSS là viết tắt của gì?',
+                'explanation' => 'CSS là Cascading Style Sheets, dùng để tạo kiểu cho HTML.',
                 'options' => [
-                    ['key' => 'A', 'content' => 'Google Chrome', 'is_correct' => true],
-                    ['key' => 'B', 'content' => 'Microsoft Word', 'is_correct' => false],
-                    ['key' => 'C', 'content' => 'MySQL', 'is_correct' => false],
-                    ['key' => 'D', 'content' => 'Photoshop', 'is_correct' => false],
+                    ['key' => 'A', 'content' => 'Computer Style Sheets', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Cascading Style Sheets', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Creative Style System', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Colorful Style Sheets', 'is_correct' => false],
                 ]
             ],
-            // Multiple Choice (3 câu)
             [
+                'category_id' => $categories['web'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Phương thức HTTP nào dùng để lấy dữ liệu từ server?',
+                'explanation' => 'GET là phương thức HTTP dùng để yêu cầu dữ liệu từ server.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'POST', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'GET', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'PUT', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'DELETE', 'is_correct' => false],
+                ]
+            ],
+            // Single choice - Medium (2 câu)
+            [
+                'category_id' => $categories['web'],
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Trong JavaScript, phương thức nào dùng để thêm phần tử vào cuối mảng?',
+                'explanation' => 'push() thêm phần tử vào cuối mảng và trả về độ dài mới.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'append()', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'push()', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'add()', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'insert()', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['web'],
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Framework nào sau đây KHÔNG phải là JavaScript framework?',
+                'explanation' => 'Laravel là PHP framework, còn React, Vue và Angular là JavaScript frameworks.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'React', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Vue', 'is_correct' => false],
+                    ['key' => 'C', 'content' => 'Laravel', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Angular', 'is_correct' => false],
+                ]
+            ],
+            // Single choice - Hard (2 câu)
+            [
+                'category_id' => $categories['web'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'CORS (Cross-Origin Resource Sharing) được triển khai để giải quyết vấn đề gì?',
+                'explanation' => 'CORS cho phép server kiểm soát việc chia sẻ tài nguyên với các domain khác, giải quyết Same-Origin Policy.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Tăng tốc độ tải trang', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Bảo mật cross-origin requests', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Cache dữ liệu', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Nén file CSS', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['web'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'Trong HTTP/2, tính năng nào giúp gửi nhiều request đồng thời trên một connection?',
+                'explanation' => 'Multiplexing cho phép gửi và nhận nhiều request/response đồng thời trên cùng một TCP connection.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Server Push', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Multiplexing', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Header Compression', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Binary Framing', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Easy (3 câu)
+            [
+                'category_id' => $categories['web'],
                 'type' => 'multiple_choice',
-                'content' => 'Những ngôn ngữ nào thường được dùng để phát triển Front-end của trang web?',
-                'explanation' => 'HTML, CSS và JavaScript là 3 ngôn ngữ cốt lõi tạo nên giao diện và tương tác Front-end.',
+                'difficulty' => 'easy',
+                'content' => 'Những ngôn ngữ nào được sử dụng trong phát triển Front-end?',
+                'explanation' => 'HTML, CSS và JavaScript là ba ngôn ngữ cốt lõi của Front-end development.',
                 'options' => [
                     ['key' => 'A', 'content' => 'HTML', 'is_correct' => true],
                     ['key' => 'B', 'content' => 'CSS', 'is_correct' => true],
                     ['key' => 'C', 'content' => 'JavaScript', 'is_correct' => true],
-                    ['key' => 'D', 'content' => 'SQL', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Python', 'is_correct' => false],
                 ]
             ],
             [
+                'category_id' => $categories['web'],
                 'type' => 'multiple_choice',
-                'content' => 'Những hệ điều hành nào sau đây dành cho thiết bị di động?',
-                'explanation' => 'Android và iOS là hai hệ điều hành di động phổ biến nhất hiện nay.',
+                'difficulty' => 'easy',
+                'content' => 'Thẻ HTML nào được dùng để tạo danh sách?',
+                'explanation' => '<ul> tạo danh sách không thứ tự, <ol> tạo danh sách có thứ tự, <li> là phần tử danh sách.',
                 'options' => [
-                    ['key' => 'A', 'content' => 'Android', 'is_correct' => true],
-                    ['key' => 'B', 'content' => 'iOS', 'is_correct' => true],
-                    ['key' => 'C', 'content' => 'Windows Server', 'is_correct' => false],
-                    ['key' => 'D', 'content' => 'Ubuntu Desktop', 'is_correct' => false],
+                    ['key' => 'A', 'content' => '<ul>', 'is_correct' => true],
+                    ['key' => 'B', 'content' => '<ol>', 'is_correct' => true],
+                    ['key' => 'C', 'content' => '<li>', 'is_correct' => true],
+                    ['key' => 'D', 'content' => '<list>', 'is_correct' => false],
                 ]
             ],
             [
+                'category_id' => $categories['web'],
                 'type' => 'multiple_choice',
-                'content' => 'Những giao thức nào thuộc tầng ứng dụng trong mô hình TCP/IP?',
-                'explanation' => 'HTTP và FTP là các giao thức thuộc tầng ứng dụng. TCP thuộc tầng giao vận (Transport), IP thuộc tầng mạng (Internet).',
+                'difficulty' => 'easy',
+                'content' => 'Thuộc tính CSS nào dùng để điều chỉnh khoảng cách?',
+                'explanation' => 'margin điều chỉnh khoảng cách bên ngoài, padding điều chỉnh khoảng cách bên trong element.',
                 'options' => [
-                    ['key' => 'A', 'content' => 'HTTP', 'is_correct' => true],
-                    ['key' => 'B', 'content' => 'FTP', 'is_correct' => true],
-                    ['key' => 'C', 'content' => 'TCP', 'is_correct' => false],
-                    ['key' => 'D', 'content' => 'IP', 'is_correct' => false],
+                    ['key' => 'A', 'content' => 'margin', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'padding', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'color', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'font-size', 'is_correct' => false],
                 ]
             ],
-            // Essay (3 câu)
+            // Multiple choice - Medium (3 câu)
             [
-                'type' => 'essay',
-                'content' => 'Hãy mô tả ngắn gọn vai trò của mạng Internet trong cuộc sống hàng ngày.',
-                'explanation' => 'Internet giúp kết nối mọi người, tìm kiếm thông tin, học tập, làm việc giải trí trực tuyến nhanh chóng.',
+                'category_id' => $categories['web'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Những HTTP status code nào cho biết lỗi phía client?',
+                'explanation' => '4xx status codes biểu thị lỗi phía client. 400: Bad Request, 401: Unauthorized, 404: Not Found.',
+                'options' => [
+                    ['key' => 'A', 'content' => '400 Bad Request', 'is_correct' => true],
+                    ['key' => 'B', 'content' => '401 Unauthorized', 'is_correct' => true],
+                    ['key' => 'C', 'content' => '404 Not Found', 'is_correct' => true],
+                    ['key' => 'D', 'content' => '500 Internal Server Error', 'is_correct' => false],
+                ]
             ],
             [
-                'type' => 'essay',
-                'content' => 'Tại sao lập trình viên cần học cách sử dụng hệ thống quản lý phiên bản Git?',
-                'explanation' => 'Git giúp theo dõi lịch sử thay đổi mã nguồn, làm việc nhóm hiệu quả, quản lý các nhánh phát triển và khôi phục mã nguồn dễ dàng.',
+                'category_id' => $categories['web'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'CSS Flexbox có những thuộc tính nào?',
+                'explanation' => 'justify-content, align-items và flex-direction đều là thuộc tính của Flexbox.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'justify-content', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'align-items', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'flex-direction', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'table-layout', 'is_correct' => false],
+                ]
             ],
             [
-                'type' => 'essay',
-                'content' => 'Hãy nêu sự khác nhau cơ bản giữa Client-side và Server-side trong phát triển web.',
-                'explanation' => 'Client-side chạy trên trình duyệt người dùng (HTML, CSS, JS), còn Server-side chạy trên máy chủ (PHP, Node.js, Python) xử lý logic và cơ sở dữ liệu.',
+                'category_id' => $categories['web'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Những công cụ nào dùng để quản lý package trong JavaScript?',
+                'explanation' => 'npm và yarn là các package manager phổ biến, pnpm là alternative hiệu suất cao.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'npm', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'yarn', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'pnpm', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'composer', 'is_correct' => false],
+                ]
             ],
-        ];
+            // Multiple choice - Hard (2 câu)
+            [
+                'category_id' => $categories['web'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Những kỹ thuật nào giúp tối ưu hiệu suất web?',
+                'explanation' => 'Code splitting, lazy loading và tree shaking đều là kỹ thuật tối ưu hiệu suất.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Code splitting', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Lazy loading', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Tree shaking', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Inline all CSS', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['web'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Web API nào cho phép lưu trữ dữ liệu ở phía client?',
+                'explanation' => 'localStorage, sessionStorage và IndexedDB đều là storage APIs ở phía client.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'localStorage', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'sessionStorage', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'IndexedDB', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'MySQL', 'is_correct' => false],
+                ]
+            ],
+            // Essay - Easy (2 câu)
+            [
+                'category_id' => $categories['web'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'Giải thích vai trò của JavaScript trong phát triển web.',
+                'explanation' => 'JavaScript tạo tính tương tác, xử lý sự kiện, thao tác DOM, và giao tiếp với server qua AJAX/Fetch.',
+                'answer_text' => 'Tương tác động',
+            ],
+            [
+                'category_id' => $categories['web'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'Sự khác biệt giữa class và id trong HTML/CSS là gì?',
+                'explanation' => 'ID là duy nhất cho một element, class có thể dùng cho nhiều elements. ID có độ ưu tiên CSS cao hơn.',
+                'answer_text' => 'ID duy nhất',
+            ],
+            // Essay - Medium (1 câu)
+            [
+                'category_id' => $categories['web'],
+                'type' => 'essay',
+                'difficulty' => 'medium',
+                'content' => 'So sánh REST API và GraphQL.',
+                'explanation' => 'REST dùng nhiều endpoints, GraphQL dùng một endpoint với query linh hoạt. GraphQL tránh over-fetching nhưng phức tạp hơn.',
+                'answer_text' => 'Endpoints vs query',
+            ],
+            // Essay - Hard (1 câu)
+            [
+                'category_id' => $categories['web'],
+                'type' => 'essay',
+                'difficulty' => 'hard',
+                'content' => 'Giải thích cơ chế hoạt động của Virtual DOM trong React.',
+                'explanation' => 'Virtual DOM là bản sao của DOM, React so sánh (diffing) và chỉ cập nhật những thay đổi cần thiết lên Real DOM.',
+                'answer_text' => 'Diffing và reconciliation',
+            ],
 
-        $easyQuestionIds = [];
-
-        foreach ($easyQuestionsData as $qData) {
-            $question = Question::create([
-                'author_id'   => 1,
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-                'content'     => $qData['content'],
-                'explanation' => $qData['explanation'],
-                'difficulty'  => 'easy',
-                'status'      => 'approved',
-                'type'        => $qData['type'],
-                'reviewed_by' => 1,
-                'reviewed_at' => now(),
-            ]);
-
-            $easyQuestionIds[] = $question->id;
-
-            if (isset($qData['options']) && !empty($qData['options'])) {
-                $options = [];
-                foreach ($qData['options'] as $index => $opt) {
-                    $options[] = [
-                        'question_id' => $question->id,
-                        'option_key'  => $opt['key'],
-                        'content'     => $opt['content'],
-                        'is_correct'  => $opt['is_correct'],
-                        'sort_order'  => $index + 1,
-                        'created_at'  => now(),
-                        'updated_at'  => now(),
-                    ];
-                }
-                QuestionOption::insert($options);
-            }
-        }
-
-        // Tạo 1 đề thi chính thức (mode = official, type = hybrid) chứa 10 câu hỏi đó
-        $officialExam = Exam::create([
-            'public_id'         => 'exam-002',
-            'author_id'         => 1,
-            'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-            'title'             => 'Đề thi Tin học đại cương (Chính thức)',
-            'slug'              => 'de-thi-tin-hoc-dai-cuong-chinh-thuc',
-            'short_description' => 'Đề thi Tin học đại cương siêu dễ dành cho mọi người.',
-            'description'       => 'Đề thi chính thức với thời gian làm bài ngắn và độ khó cực kỳ thấp.',
-            'type'              => 'hybrid',
-            'mode'              => 'official',
-            'duration_minutes'  => 10,
-            'pass_percent'      => 50,
-            'visibility'        => 'public',
-            'status'            => 'approved',
-            'reviewed_by'       => 1,
-            'reviewed_at'       => now(),
-            'publish_at'        => now(),
-        ]);
-
-        $syncData = [];
-        foreach ($easyQuestionIds as $index => $qId) {
-            $syncData[$qId] = [
-                'sort_order' => $index + 1,
-                'score'      => 1,
-            ];
-        }
-        $officialExam->questions()->sync($syncData);
-
-        /*
-        |--------------------------------------------------------------------------
-        | 20 câu hỏi bổ sung (đa dạng danh mục và loại)
-        | category_id: 1=PHP, 2=Laravel, 3=Database, 4=JavaScript, 5=Python, 6=Java, 7=Mạng máy tính
-        |--------------------------------------------------------------------------
-        */
-        $bulkQuestionsData = [
+            // ===== Lập trình Mobile (20 câu) =====
+            // Single choice - Easy (4 câu)
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Hệ điều hành nào được phát triển bởi Google?',
+                'explanation' => 'Android là hệ điều hành mobile được Google phát triển và duy trì.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'iOS', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Android', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Windows Phone', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'BlackBerry OS', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Ngôn ngữ nào được Apple khuyến nghị để phát triển ứng dụng iOS?',
+                'explanation' => 'Swift là ngôn ngữ chính thức được Apple phát triển cho iOS/macOS development.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Java', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Swift', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Python', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'PHP', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Framework nào cho phép viết code một lần chạy trên cả iOS và Android?',
+                'explanation' => 'Flutter là cross-platform framework của Google cho phép phát triển ứng dụng iOS và Android.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Android Studio', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Flutter', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Xcode', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Visual Studio', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'IDE chính thức để phát triển ứng dụng Android là gì?',
+                'explanation' => 'Android Studio là IDE chính thức từ Google cho Android development.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Eclipse', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Visual Studio Code', 'is_correct' => false],
+                    ['key' => 'C', 'content' => 'Android Studio', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'NetBeans', 'is_correct' => false],
+                ]
+            ],
             // ===== JavaScript (category_id = 4) =====
             [
                 'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
@@ -463,223 +615,972 @@ class QuestionSeeder extends Seeder
                     ['key' => 'D', 'content' => 'query()',  'is_correct' => false],
                 ],
             ],
+            // Single choice - Medium (2 câu)
             [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-                'type' => 'essay',
-                'difficulty' => 'hard',
-                'content' => 'Giải thích sự khác nhau giữa Promise và async/await trong JavaScript.',
-                'explanation' => 'Promise là đối tượng đại diện cho giá trị bất đồng bộ. async/await là cú pháp giúp viết code bất đồng bộ dễ đọc hơn, thực chất vẫn dùng Promise bên dưới.',
-            ],
-
-            // ===== Python (category_id = 5) =====
-            [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-                'type' => 'single_choice',
-                'difficulty' => 'easy',
-                'content' => 'Hàm nào dùng để in ra màn hình trong Python?',
-                'explanation' => 'print() là hàm dùng để xuất dữ liệu ra màn hình trong Python.',
-                'options' => [
-                    ['key' => 'A', 'content' => 'echo()',    'is_correct' => false],
-                    ['key' => 'B', 'content' => 'print()',   'is_correct' => true],
-                    ['key' => 'C', 'content' => 'console()', 'is_correct' => false],
-                    ['key' => 'D', 'content' => 'write()',   'is_correct' => false],
-                ],
-            ],
-            [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
+                'category_id' => $categories['mobile'],
                 'type' => 'single_choice',
                 'difficulty' => 'medium',
-                'content' => 'Kiểu dữ liệu nào trong Python là immutable (không thay đổi được)?',
-                'explanation' => 'Tuple là kiểu dữ liệu immutable, không thể thay đổi sau khi tạo.',
+                'content' => 'Trong Android, component nào dùng để hiển thị giao diện người dùng?',
+                'explanation' => 'Activity là component chính dùng để hiển thị UI trong Android.',
                 'options' => [
-                    ['key' => 'A', 'content' => 'list',  'is_correct' => false],
-                    ['key' => 'B', 'content' => 'dict',  'is_correct' => false],
-                    ['key' => 'C', 'content' => 'tuple', 'is_correct' => true],
-                    ['key' => 'D', 'content' => 'set',   'is_correct' => false],
-                ],
+                    ['key' => 'A', 'content' => 'Service', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Activity', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Broadcast Receiver', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Content Provider', 'is_correct' => false],
+                ]
             ],
             [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
+                'category_id' => $categories['mobile'],
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Ngôn ngữ nào Flutter sử dụng để phát triển?',
+                'explanation' => 'Flutter sử dụng Dart programming language.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'JavaScript', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Dart', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Kotlin', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Swift', 'is_correct' => false],
+                ]
+            ],
+            // Single choice - Hard (2 câu)
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'Trong iOS, pattern nào được khuyến nghị cho việc quản lý state?',
+                'explanation' => 'MVVM (Model-View-ViewModel) là pattern phổ biến trong iOS development với SwiftUI.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Singleton', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'MVVM', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Factory', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Observer', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'Jetpack Compose trong Android sử dụng paradigm nào?',
+                'explanation' => 'Jetpack Compose sử dụng declarative UI paradigm, tương tự SwiftUI và React.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Imperative UI', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Declarative UI', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Procedural UI', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Object-oriented UI', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Easy (3 câu)
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Những nền tảng nào có thể phát triển ứng dụng mobile?',
+                'explanation' => 'iOS, Android và Windows Phone đều là nền tảng mobile (dù Windows Phone đã ngừng).',
+                'options' => [
+                    ['key' => 'A', 'content' => 'iOS', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Android', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Windows Phone', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Linux Desktop', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Framework nào cho phép phát triển cross-platform mobile?',
+                'explanation' => 'Flutter, React Native và Xamarin đều là cross-platform frameworks.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Flutter', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'React Native', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Xamarin', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Django', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Ngôn ngữ nào được dùng để phát triển Android native?',
+                'explanation' => 'Java và Kotlin là ngôn ngữ chính thức cho Android development.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Java', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Kotlin', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Swift', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Ruby', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Medium (3 câu)
+            [
+                'category_id' => $categories['mobile'],
                 'type' => 'multiple_choice',
                 'difficulty' => 'medium',
-                'content' => 'Những thư viện nào phổ biến trong lĩnh vực Machine Learning với Python?',
-                'explanation' => 'TensorFlow, PyTorch và Scikit-learn là các thư viện ML phổ biến. Laravel là framework PHP.',
+                'content' => 'Android cung cấp những loại storage nào?',
+                'explanation' => 'Android có SharedPreferences (key-value), SQLite (database), và Internal/External Storage (files).',
                 'options' => [
-                    ['key' => 'A', 'content' => 'TensorFlow',   'is_correct' => true],
-                    ['key' => 'B', 'content' => 'PyTorch',      'is_correct' => true],
-                    ['key' => 'C', 'content' => 'Scikit-learn', 'is_correct' => true],
-                    ['key' => 'D', 'content' => 'Laravel',      'is_correct' => false],
-                ],
+                    ['key' => 'A', 'content' => 'SharedPreferences', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'SQLite Database', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Internal Storage', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Redis', 'is_correct' => false],
+                ]
             ],
             [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-                'type' => 'essay',
-                'difficulty' => 'hard',
-                'content' => 'Giải thích cơ chế Garbage Collection trong Python và ảnh hưởng đến hiệu suất.',
-                'explanation' => 'Python sử dụng reference counting kết hợp cyclic garbage collector để tự động thu hồi bộ nhớ.',
-            ],
-
-            // ===== Java (category_id = 6) =====
-            [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-                'type' => 'single_choice',
-                'difficulty' => 'easy',
-                'content' => 'Phương thức nào là điểm bắt đầu thực thi của chương trình Java?',
-                'explanation' => 'Phương thức main() với signature public static void main(String[] args) là điểm bắt đầu.',
-                'options' => [
-                    ['key' => 'A', 'content' => 'start()',  'is_correct' => false],
-                    ['key' => 'B', 'content' => 'main()',   'is_correct' => true],
-                    ['key' => 'C', 'content' => 'run()',    'is_correct' => false],
-                    ['key' => 'D', 'content' => 'init()',   'is_correct' => false],
-                ],
-            ],
-            [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-                'type' => 'single_choice',
+                'category_id' => $categories['mobile'],
+                'type' => 'multiple_choice',
                 'difficulty' => 'medium',
-                'content' => 'Từ khóa nào trong Java ngăn class được kế thừa?',
-                'explanation' => 'Từ khóa final khi đặt trước class sẽ ngăn class đó bị kế thừa.',
+                'content' => 'iOS lifecycle methods nào được gọi khi app vào foreground?',
+                'explanation' => 'applicationWillEnterForeground và applicationDidBecomeActive được gọi khi app active.',
                 'options' => [
-                    ['key' => 'A', 'content' => 'static',   'is_correct' => false],
-                    ['key' => 'B', 'content' => 'abstract', 'is_correct' => false],
-                    ['key' => 'C', 'content' => 'final',    'is_correct' => true],
-                    ['key' => 'D', 'content' => 'private',  'is_correct' => false],
-                ],
+                    ['key' => 'A', 'content' => 'applicationWillEnterForeground', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'applicationDidBecomeActive', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'applicationDidEnterBackground', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'applicationWillTerminate', 'is_correct' => false],
+                ]
             ],
             [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
+                'category_id' => $categories['mobile'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Công cụ nào dùng để test mobile apps?',
+                'explanation' => 'Espresso (Android), XCTest (iOS) và Appium (cross-platform) là các testing frameworks.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Espresso', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'XCTest', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Appium', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'JUnit', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Hard (2 câu)
+            [
+                'category_id' => $categories['mobile'],
                 'type' => 'multiple_choice',
                 'difficulty' => 'hard',
-                'content' => 'Những nguyên tắc nào thuộc SOLID trong lập trình hướng đối tượng?',
-                'explanation' => 'SOLID gồm: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.',
+                'content' => 'Kỹ thuật nào giúp tối ưu hiệu suất mobile app?',
+                'explanation' => 'Lazy loading, image caching và code splitting đều giúp tối ưu hiệu suất mobile.',
                 'options' => [
-                    ['key' => 'A', 'content' => 'Single Responsibility',    'is_correct' => true],
-                    ['key' => 'B', 'content' => 'Open/Closed',             'is_correct' => true],
-                    ['key' => 'C', 'content' => 'Don\'t Repeat Yourself',  'is_correct' => false],
-                    ['key' => 'D', 'content' => 'Dependency Inversion',    'is_correct' => true],
-                ],
+                    ['key' => 'A', 'content' => 'Lazy loading', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Image caching', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Code splitting', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Inline all resources', 'is_correct' => false],
+                ]
             ],
             [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
+                'category_id' => $categories['mobile'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Architecture patterns nào phù hợp cho mobile apps?',
+                'explanation' => 'MVC, MVP và MVVM đều là các architecture patterns phổ biến trong mobile development.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'MVC', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'MVP', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'MVVM', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Microservices', 'is_correct' => false],
+                ]
+            ],
+            // Essay - Easy (2 câu)
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'So sánh native app và hybrid app.',
+                'explanation' => 'Native app được viết bằng ngôn ngữ gốc của platform (Swift/Kotlin), hiệu suất cao. Hybrid app dùng web technologies, phát triển nhanh hơn.',
+                'answer_text' => 'Native nhanh hơn',
+            ],
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'Giải thích khái niệm responsive design trong mobile.',
+                'explanation' => 'Responsive design làm cho giao diện tự động điều chỉnh phù hợp với nhiều kích thước màn hình khác nhau.',
+                'answer_text' => 'Tự động điều chỉnh',
+            ],
+            // Essay - Medium (1 câu)
+            [
+                'category_id' => $categories['mobile'],
+                'type' => 'essay',
+                'difficulty' => 'medium',
+                'content' => 'Giải thích vòng đời (lifecycle) của một Activity trong Android.',
+                'explanation' => 'Activity lifecycle bao gồm: onCreate() → onStart() → onResume() → onPause() → onStop() → onDestroy().',
+                'answer_text' => 'Create Start Resume',
+            ],
+            // Essay - Hard (1 câu)
+            [
+                'category_id' => $categories['mobile'],
                 'type' => 'essay',
                 'difficulty' => 'hard',
-                'content' => 'So sánh ArrayList và LinkedList trong Java. Khi nào nên dùng loại nào?',
-                'explanation' => 'ArrayList truy cập nhanh O(1), thêm/xóa chậm O(n). LinkedList ngược lại.',
+                'content' => 'Phân tích ưu nhược điểm của Flutter so với React Native.',
+                'explanation' => 'Flutter: hiệu suất tốt hơn, UI nhất quán, nhưng ecosystem nhỏ hơn. React Native: ecosystem lớn, dễ tìm developer, nhưng performance bridge có overhead.',
+                'answer_text' => 'Flutter nhanh hơn',
             ],
 
-            // ===== Mạng máy tính (category_id = 7) =====
+            // ===== Trí tuệ nhân tạo - AI (20 câu) =====
+            // Single choice - Easy (4 câu)
             [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
+                'category_id' => $categories['ai'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'AI là viết tắt của từ gì?',
+                'explanation' => 'AI là Artificial Intelligence - Trí tuệ nhân tạo.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Automated Intelligence', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Artificial Intelligence', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Advanced Integration', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Algorithmic Information', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Machine Learning thuộc lĩnh vực nào?',
+                'explanation' => 'Machine Learning là một nhánh của Artificial Intelligence.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Web Development', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Artificial Intelligence', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Network Security', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Database Management', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Thuật toán nào được dùng cho classification problems?',
+                'explanation' => 'Decision Tree là thuật toán classification phổ biến trong ML.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Bubble Sort', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Decision Tree', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Binary Search', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Quick Sort', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Neural Network được lấy cảm hứng từ đâu?',
+                'explanation' => 'Neural Network mô phỏng cách hoạt động của não bộ con người.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Hệ thống máy tính', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Não bộ con người', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Mạng internet', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Cơ sở dữ liệu', 'is_correct' => false],
+                ]
+            ],
+            // Single choice - Medium (2 câu)
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Trong supervised learning, model học từ dữ liệu nào?',
+                'explanation' => 'Supervised learning sử dụng labeled data (dữ liệu có nhãn) để training.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Unlabeled data', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Labeled data', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Random data', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Synthetic data', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Overfitting xảy ra khi nào?',
+                'explanation' => 'Overfitting xảy ra khi model học quá tốt trên training data nhưng kém trên test data.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Model quá đơn giản', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Model học thuộc training data', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Thiếu dữ liệu', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Learning rate quá thấp', 'is_correct' => false],
+                ]
+            ],
+            // Single choice - Hard (2 câu)
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'Gradient Descent được dùng để làm gì?',
+                'explanation' => 'Gradient Descent là thuật toán tối ưu hóa để minimize loss function.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Tăng accuracy', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Minimize loss function', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Tạo dữ liệu mới', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Split dataset', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'Backpropagation được dùng trong training phase nào của neural network?',
+                'explanation' => 'Backpropagation được dùng để tính gradients và update weights trong training.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Data preprocessing', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Weight initialization', 'is_correct' => false],
+                    ['key' => 'C', 'content' => 'Gradient computation', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Model evaluation', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Easy (3 câu)
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Những loại Machine Learning nào sau đây?',
+                'explanation' => 'Supervised, Unsupervised và Reinforcement Learning là 3 loại ML chính.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Supervised Learning', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Unsupervised Learning', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Reinforcement Learning', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Manual Learning', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Thư viện Python nào phổ biến cho Deep Learning?',
+                'explanation' => 'TensorFlow, PyTorch và Keras là các thư viện Deep Learning phổ biến.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'TensorFlow', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'PyTorch', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Keras', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Django', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Ứng dụng nào của AI trong đời sống?',
+                'explanation' => 'Face recognition, voice assistant và recommendation systems là ứng dụng AI phổ biến.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Face Recognition', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Voice Assistants', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Recommendation Systems', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'File Compression', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Medium (3 câu)
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Metrics nào dùng để đánh giá classification model?',
+                'explanation' => 'Accuracy, Precision, Recall và F1-score là các metrics đánh giá classification.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Accuracy', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Precision', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Recall', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Bandwidth', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Kỹ thuật nào giúp tránh overfitting?',
+                'explanation' => 'Regularization, Dropout và Cross-validation đều giúp giảm overfitting.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Regularization', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Dropout', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Cross-validation', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Increase model complexity', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Loại Neural Network nào được dùng cho image processing?',
+                'explanation' => 'CNN (Convolutional Neural Network) được thiết kế đặc biệt cho xử lý ảnh.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'CNN', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'ResNet', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'VGG', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'LSTM', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Hard (2 câu)
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Activation functions nào được dùng trong neural networks?',
+                'explanation' => 'ReLU, Sigmoid và Tanh là các activation functions phổ biến.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'ReLU', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Sigmoid', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Tanh', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Binary Search', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Optimizer nào được sử dụng để training deep learning models?',
+                'explanation' => 'Adam, SGD và RMSprop là các optimization algorithms phổ biến.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Adam', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'SGD', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'RMSprop', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Bubble Sort', 'is_correct' => false],
+                ]
+            ],
+            // Essay - Easy (2 câu)
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'Phân biệt giữa AI, Machine Learning và Deep Learning.',
+                'explanation' => 'AI là khái niệm rộng nhất. ML là subset của AI. Deep Learning là subset của ML sử dụng neural networks.',
+                'answer_text' => 'AI chứa ML',
+            ],
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'Giải thích khái niệm Training và Testing trong Machine Learning.',
+                'explanation' => 'Training là quá trình model học từ dữ liệu. Testing là đánh giá model trên dữ liệu chưa thấy.',
+                'answer_text' => 'Học và kiểm tra',
+            ],
+            // Essay - Medium (1 câu)
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'essay',
+                'difficulty' => 'medium',
+                'content' => 'So sánh Supervised Learning và Unsupervised Learning.',
+                'explanation' => 'Supervised learning cần labeled data, dùng cho classification/regression. Unsupervised learning dùng unlabeled data, dùng cho clustering/dimensionality reduction.',
+                'answer_text' => 'Label vs unlabel',
+            ],
+            // Essay - Hard (1 câu)
+            [
+                'category_id' => $categories['ai'],
+                'type' => 'essay',
+                'difficulty' => 'hard',
+                'content' => 'Giải thích cơ chế hoạt động của Convolutional Neural Network (CNN).',
+                'explanation' => 'CNN sử dụng convolutional layers để extract features từ ảnh, pooling layers giảm dimensions, fully connected layers để classification.',
+                'answer_text' => 'Convolution và pooling',
+            ],
+
+            // ===== Cơ sở dữ liệu (20 câu) =====
+            // Single choice - Easy (4 câu)
+            [
+                'category_id' => $categories['database'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'SQL là viết tắt của gì?',
+                'explanation' => 'SQL là Structured Query Language - ngôn ngữ truy vấn có cấu trúc.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Simple Query Language', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Structured Query Language', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Standard Query Language', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Sequential Query Language', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Lệnh SQL nào dùng để lấy dữ liệu từ bảng?',
+                'explanation' => 'SELECT là lệnh dùng để truy vấn và lấy dữ liệu từ bảng.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'GET', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'SELECT', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'FETCH', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'RETRIEVE', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Primary Key được dùng để làm gì?',
+                'explanation' => 'Primary Key xác định duy nhất mỗi bản ghi trong bảng.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Xác định duy nhất bản ghi', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Sắp xếp dữ liệu', 'is_correct' => false],
+                    ['key' => 'C', 'content' => 'Mã hóa dữ liệu', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Backup dữ liệu', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'NoSQL database nào sau đây?',
+                'explanation' => 'MongoDB là NoSQL database dạng document store.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'MySQL', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'MongoDB', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'PostgreSQL', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Oracle', 'is_correct' => false],
+                ]
+            ],
+            // Single choice - Medium (2 câu)
+            [
+                'category_id' => $categories['database'],
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'Normalization trong database design để làm gì?',
+                'explanation' => 'Normalization giúp giảm redundancy và đảm bảo data integrity.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Tăng tốc độ query', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Giảm redundancy', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Tăng storage', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Encrypt data', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'ACID properties trong database transaction là gì?',
+                'explanation' => 'ACID là Atomicity, Consistency, Isolation, Durability - đảm bảo tính toàn vẹn transaction.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Advanced Computing Integration Design', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Atomicity Consistency Isolation Durability', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Automated Cloud Integration Database', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Asynchronous Communication Interface Driver', 'is_correct' => false],
+                ]
+            ],
+            // Single choice - Hard (2 câu)
+            [
+                'category_id' => $categories['database'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'Index trong database ảnh hưởng như thế nào đến performance?',
+                'explanation' => 'Index tăng tốc SELECT nhưng làm chậm INSERT/UPDATE/DELETE do phải maintain index.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Tăng tốc tất cả operations', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Tăng tốc SELECT, chậm INSERT/UPDATE', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Không ảnh hưởng', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Giảm storage', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'CAP theorem trong distributed database là gì?',
+                'explanation' => 'CAP theorem: không thể đồng thời đạt được Consistency, Availability và Partition tolerance.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Consistency, Availability, Performance', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Consistency, Availability, Partition tolerance', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Caching, Authorization, Performance', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Clustering, Authentication, Privacy', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Easy (3 câu)
+            [
+                'category_id' => $categories['database'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'SQL commands nào thuộc loại DML (Data Manipulation Language)?',
+                'explanation' => 'SELECT, INSERT, UPDATE, DELETE là DML commands dùng để thao tác dữ liệu.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'SELECT', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'INSERT', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'UPDATE', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'CREATE', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Relational database nào phổ biến?',
+                'explanation' => 'MySQL, PostgreSQL và Oracle là các relational database phổ biến.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'MySQL', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'PostgreSQL', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Oracle', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Redis', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Loại relationship nào có trong relational database?',
+                'explanation' => 'One-to-One, One-to-Many và Many-to-Many là các loại relationship cơ bản.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'One-to-One', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'One-to-Many', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Many-to-Many', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'None-to-None', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Medium (3 câu)
+            [
+                'category_id' => $categories['database'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Loại JOIN nào có trong SQL?',
+                'explanation' => 'INNER JOIN, LEFT JOIN, RIGHT JOIN và FULL JOIN là các loại JOIN.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'INNER JOIN', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'LEFT JOIN', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'RIGHT JOIN', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'MIDDLE JOIN', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'NoSQL database types nào?',
+                'explanation' => 'Document, Key-Value và Graph là các loại NoSQL database.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Document Store', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Key-Value Store', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Graph Database', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Relational Database', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Database isolation levels nào sau đây?',
+                'explanation' => 'Read Uncommitted, Read Committed và Serializable là isolation levels.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Read Uncommitted', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Read Committed', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Serializable', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Read Forbidden', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Hard (2 câu)
+            [
+                'category_id' => $categories['database'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Database optimization techniques nào?',
+                'explanation' => 'Indexing, Query optimization và Partitioning đều là kỹ thuật tối ưu database.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Indexing', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Query optimization', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Partitioning', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Deleting all data', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Database replication strategies nào?',
+                'explanation' => 'Master-Slave, Master-Master và Multi-Master là các replication strategies.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Master-Slave', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Master-Master', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Multi-Master', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'No-Master', 'is_correct' => false],
+                ]
+            ],
+            // Essay - Easy (2 câu)
+            [
+                'category_id' => $categories['database'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'Sự khác biệt giữa SQL và NoSQL database.',
+                'explanation' => 'SQL có schema cố định, dùng cho structured data. NoSQL flexible schema, dùng cho unstructured/semi-structured data.',
+                'answer_text' => 'Schema fixed vs flexible',
+            ],
+            [
+                'category_id' => $categories['database'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'Giải thích khái niệm Foreign Key trong database.',
+                'explanation' => 'Foreign Key là trường tham chiếu đến Primary Key của bảng khác, tạo relationship giữa các bảng.',
+                'answer_text' => 'Tham chiếu bảng khác',
+            ],
+            // Essay - Medium (1 câu)
+            [
+                'category_id' => $categories['database'],
+                'type' => 'essay',
+                'difficulty' => 'medium',
+                'content' => 'Phân tích ưu nhược điểm của Database Normalization.',
+                'explanation' => 'Ưu: giảm redundancy, data integrity. Nhược: phức tạp, nhiều JOIN làm chậm queries.',
+                'answer_text' => 'Giảm redundancy nhiều JOIN',
+            ],
+            // Essay - Hard (1 câu)
+            [
+                'category_id' => $categories['database'],
+                'type' => 'essay',
+                'difficulty' => 'hard',
+                'content' => 'Giải thích cơ chế hoạt động của Database Transaction và ACID properties.',
+                'explanation' => 'Transaction là nhóm operations thực thi như một đơn vị. ACID đảm bảo: Atomicity (all or nothing), Consistency (valid state), Isolation (concurrent), Durability (persistent).',
+                'answer_text' => 'All or nothing',
+            ],
+
+            // ===== Mạng & Bảo mật (20 câu) =====
+            // Single choice - Easy (4 câu)
+            [
+                'category_id' => $categories['network'],
                 'type' => 'single_choice',
                 'difficulty' => 'easy',
                 'content' => 'Mô hình OSI có bao nhiêu tầng?',
                 'explanation' => 'Mô hình OSI (Open Systems Interconnection) có 7 tầng.',
                 'options' => [
-                    ['key' => 'A', 'content' => '4 tầng', 'is_correct' => false],
-                    ['key' => 'B', 'content' => '5 tầng', 'is_correct' => false],
-                    ['key' => 'C', 'content' => '7 tầng', 'is_correct' => true],
+                    ['key' => 'A', 'content' => '5 tầng', 'is_correct' => false],
+                    ['key' => 'B', 'content' => '7 tầng', 'is_correct' => true],
+                    ['key' => 'C', 'content' => '4 tầng', 'is_correct' => false],
                     ['key' => 'D', 'content' => '6 tầng', 'is_correct' => false],
-                ],
+                ]
             ],
             [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-                'type' => 'single_choice',
-                'difficulty' => 'medium',
-                'content' => 'Giao thức nào hoạt động ở tầng Transport trong mô hình TCP/IP?',
-                'explanation' => 'TCP (Transmission Control Protocol) hoạt động ở tầng Transport.',
-                'options' => [
-                    ['key' => 'A', 'content' => 'HTTP', 'is_correct' => false],
-                    ['key' => 'B', 'content' => 'TCP',  'is_correct' => true],
-                    ['key' => 'C', 'content' => 'IP',   'is_correct' => false],
-                    ['key' => 'D', 'content' => 'ARP',  'is_correct' => false],
-                ],
-            ],
-            [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-                'type' => 'multiple_choice',
-                'difficulty' => 'medium',
-                'content' => 'Những thiết bị nào hoạt động ở tầng Network (tầng 3) trong mô hình OSI?',
-                'explanation' => 'Router và Switch Layer 3 hoạt động ở tầng Network.',
-                'options' => [
-                    ['key' => 'A', 'content' => 'Router',          'is_correct' => true],
-                    ['key' => 'B', 'content' => 'Switch Layer 3',  'is_correct' => true],
-                    ['key' => 'C', 'content' => 'Hub',             'is_correct' => false],
-                    ['key' => 'D', 'content' => 'Repeater',        'is_correct' => false],
-                ],
-            ],
-            [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
-                'type' => 'essay',
-                'difficulty' => 'hard',
-                'content' => 'Phân tích sự khác nhau giữa giao thức TCP và UDP. Cho ví dụ ứng dụng thực tế.',
-                'explanation' => 'TCP đảm bảo truyền tin cậy (web, email). UDP nhanh hơn nhưng không đảm bảo (video call, game online).',
-            ],
-
-            // ===== Database bổ sung (category_id = 3) =====
-            [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
+                'category_id' => $categories['network'],
                 'type' => 'single_choice',
                 'difficulty' => 'easy',
-                'content' => 'Câu lệnh SQL nào dùng để lấy dữ liệu từ bảng?',
-                'explanation' => 'SELECT là câu lệnh dùng để truy vấn và lấy dữ liệu từ bảng.',
+                'content' => 'Giao thức nào hoạt động ở tầng Application?',
+                'explanation' => 'HTTP là giao thức tầng Application trong mô hình OSI/TCP-IP.',
                 'options' => [
-                    ['key' => 'A', 'content' => 'GET',    'is_correct' => false],
-                    ['key' => 'B', 'content' => 'SELECT', 'is_correct' => true],
-                    ['key' => 'C', 'content' => 'FETCH',  'is_correct' => false],
-                    ['key' => 'D', 'content' => 'FIND',   'is_correct' => false],
-                ],
+                    ['key' => 'A', 'content' => 'HTTP', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'TCP', 'is_correct' => false],
+                    ['key' => 'C', 'content' => 'IP', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Ethernet', 'is_correct' => false],
+                ]
             ],
-
-            // ===== Laravel bổ sung (category_id = 2) =====
             [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
+                'category_id' => $categories['network'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'IP address 192.168.1.1 thuộc class nào?',
+                'explanation' => 'IP address bắt đầu với 192 thuộc Class C (192.0.0.0 - 223.255.255.255).',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Class A', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Class B', 'is_correct' => false],
+                    ['key' => 'C', 'content' => 'Class C', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Class D', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['network'],
+                'type' => 'single_choice',
+                'difficulty' => 'easy',
+                'content' => 'Port mặc định của HTTPS là gì?',
+                'explanation' => 'HTTPS (HTTP Secure) sử dụng port 443 mặc định.',
+                'options' => [
+                    ['key' => 'A', 'content' => '80', 'is_correct' => false],
+                    ['key' => 'B', 'content' => '443', 'is_correct' => true],
+                    ['key' => 'C', 'content' => '8080', 'is_correct' => false],
+                    ['key' => 'D', 'content' => '22', 'is_correct' => false],
+                ]
+            ],
+            // Single choice - Medium (2 câu)
+            [
+                'category_id' => $categories['network'],
                 'type' => 'single_choice',
                 'difficulty' => 'medium',
-                'content' => 'Lệnh artisan nào dùng để tạo Controller mới trong Laravel?',
-                'explanation' => 'php artisan make:controller là lệnh tạo controller mới.',
+                'content' => 'Subnet mask 255.255.255.0 có bao nhiêu host addresses?',
+                'explanation' => 'Subnet mask /24 (255.255.255.0) có 254 host addresses khả dụng (256 - 2 cho network và broadcast).',
                 'options' => [
-                    ['key' => 'A', 'content' => 'php artisan make:controller',   'is_correct' => true],
-                    ['key' => 'B', 'content' => 'php artisan create:controller', 'is_correct' => false],
-                    ['key' => 'C', 'content' => 'php artisan new:controller',    'is_correct' => false],
-                    ['key' => 'D', 'content' => 'php artisan add:controller',    'is_correct' => false],
-                ],
+                    ['key' => 'A', 'content' => '256', 'is_correct' => false],
+                    ['key' => 'B', 'content' => '254', 'is_correct' => true],
+                    ['key' => 'C', 'content' => '255', 'is_correct' => false],
+                    ['key' => 'D', 'content' => '128', 'is_correct' => false],
+                ]
             ],
-
-            // ===== PHP bổ sung (category_id = 1) =====
             [
-                'category_id' => \DB::table('categories')->inRandomOrder()->value('id') ?? 1,
+                'category_id' => $categories['network'],
+                'type' => 'single_choice',
+                'difficulty' => 'medium',
+                'content' => 'VPN được dùng để làm gì?',
+                'explanation' => 'VPN (Virtual Private Network) tạo kết nối mã hóa an toàn qua internet công cộng.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Tăng tốc độ internet', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Tạo kết nối mã hóa an toàn', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Lưu trữ dữ liệu', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Quét virus', 'is_correct' => false],
+                ]
+            ],
+            // Single choice - Hard (2 câu)
+            [
+                'category_id' => $categories['network'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'Trong three-way handshake của TCP, bước nào xảy ra đầu tiên?',
+                'explanation' => 'Three-way handshake: SYN từ client, SYN-ACK từ server, ACK từ client.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'ACK', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'SYN', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'FIN', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'RST', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['network'],
+                'type' => 'single_choice',
+                'difficulty' => 'hard',
+                'content' => 'DDoS attack hoạt động như thế nào?',
+                'explanation' => 'DDoS (Distributed Denial of Service) dùng nhiều máy để gửi traffic tấn công làm quá tải server.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Đánh cắp password', 'is_correct' => false],
+                    ['key' => 'B', 'content' => 'Làm quá tải server với traffic', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Mã hóa dữ liệu', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'Xóa database', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Easy (3 câu)
+            [
+                'category_id' => $categories['network'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Thiết bị mạng nào sau đây?',
+                'explanation' => 'Router, Switch và Hub đều là các thiết bị mạng cơ bản.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Router', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Switch', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Hub', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Monitor', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['network'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Protocol nào thuộc Transport Layer?',
+                'explanation' => 'TCP và UDP là hai giao thức chính ở Transport Layer.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'TCP', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'UDP', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'HTTP', 'is_correct' => false],
+                    ['key' => 'D', 'content' => 'FTP', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['network'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'easy',
+                'content' => 'Loại tấn công mạng nào phổ biến?',
+                'explanation' => 'Phishing, Malware và DDoS là các dạng tấn công mạng phổ biến.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Phishing', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Malware', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'DDoS', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Antivirus', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Medium (3 câu)
+            [
+                'category_id' => $categories['network'],
                 'type' => 'multiple_choice',
                 'difficulty' => 'medium',
-                'content' => 'Những kiểu dữ liệu nào là kiểu scalar trong PHP?',
-                'explanation' => 'PHP có 4 kiểu scalar: int, float, string, bool.',
+                'content' => 'Firewall có những loại nào?',
+                'explanation' => 'Packet filtering, Stateful inspection và Application firewall là các loại firewall.',
                 'options' => [
-                    ['key' => 'A', 'content' => 'int',    'is_correct' => true],
-                    ['key' => 'B', 'content' => 'float',  'is_correct' => true],
-                    ['key' => 'C', 'content' => 'string', 'is_correct' => true],
-                    ['key' => 'D', 'content' => 'array',  'is_correct' => false],
-                ],
+                    ['key' => 'A', 'content' => 'Packet filtering', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Stateful inspection', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Application firewall', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Database firewall', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['network'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'Encryption algorithms nào được dùng phổ biến?',
+                'explanation' => 'AES, RSA và SHA là các thuật toán mã hóa phổ biến.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'AES', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'RSA', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'SHA', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'HTML', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['network'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'medium',
+                'content' => 'DNS records nào sau đây?',
+                'explanation' => 'A, CNAME và MX là các loại DNS records thông dụng.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'A Record', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'CNAME', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'MX Record', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'HTTP Record', 'is_correct' => false],
+                ]
+            ],
+            // Multiple choice - Hard (2 câu)
+            [
+                'category_id' => $categories['network'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Security best practices nào cho web applications?',
+                'explanation' => 'HTTPS, Input validation và SQL injection prevention là security best practices quan trọng.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Use HTTPS', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Input validation', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'Prevent SQL injection', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Disable all authentication', 'is_correct' => false],
+                ]
+            ],
+            [
+                'category_id' => $categories['network'],
+                'type' => 'multiple_choice',
+                'difficulty' => 'hard',
+                'content' => 'Load balancing algorithms nào?',
+                'explanation' => 'Round Robin, Least Connections và IP Hash là các load balancing algorithms.',
+                'options' => [
+                    ['key' => 'A', 'content' => 'Round Robin', 'is_correct' => true],
+                    ['key' => 'B', 'content' => 'Least Connections', 'is_correct' => true],
+                    ['key' => 'C', 'content' => 'IP Hash', 'is_correct' => true],
+                    ['key' => 'D', 'content' => 'Random Delete', 'is_correct' => false],
+                ]
+            ],
+            // Essay - Easy (2 câu)
+            [
+                'category_id' => $categories['network'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'Phân biệt giữa TCP và UDP.',
+                'explanation' => 'TCP là connection-oriented, đảm bảo delivery. UDP là connectionless, nhanh hơn nhưng không đảm bảo.',
+                'answer_text' => 'Tin cậy vs nhanh',
+            ],
+            [
+                'category_id' => $categories['network'],
+                'type' => 'essay',
+                'difficulty' => 'easy',
+                'content' => 'Giải thích vai trò của Firewall trong bảo mật mạng.',
+                'explanation' => 'Firewall giám sát và kiểm soát traffic ra vào mạng dựa trên security rules, ngăn chặn truy cập trái phép.',
+                'answer_text' => 'Kiểm soát traffic',
+            ],
+            // Essay - Medium (1 câu)
+            [
+                'category_id' => $categories['network'],
+                'type' => 'essay',
+                'difficulty' => 'medium',
+                'content' => 'Giải thích cơ chế hoạt động của SSL/TLS.',
+                'explanation' => 'SSL/TLS mã hóa dữ liệu giữa client và server thông qua handshake protocol, sử dụng public/private key encryption.',
+                'answer_text' => 'Mã hóa kết nối',
+            ],
+            // Essay - Hard (1 câu)
+            [
+                'category_id' => $categories['network'],
+                'type' => 'essay',
+                'difficulty' => 'hard',
+                'content' => 'Phân tích các lớp bảo vệ trong Defense in Depth security strategy.',
+                'explanation' => 'Defense in Depth dùng nhiều lớp bảo vệ: perimeter (firewall), network (IDS/IPS), host (antivirus), application (input validation), data (encryption).',
+                'answer_text' => 'Nhiều lớp bảo vệ',
             ],
         ];
 
-        $bulkQuestionIds = [];
-
-        foreach ($bulkQuestionsData as $qData) {
+        // Process all 100 questions
+        foreach ($allQuestionsData as $qData) {
             $question = Question::create([
                 'author_id'   => 1,
                 'category_id' => $qData['category_id'],
                 'content'     => $qData['content'],
                 'explanation' => $qData['explanation'],
+                'answer_text' => $qData['answer_text'] ?? null,
                 'difficulty'  => $qData['difficulty'],
                 'status'      => 'approved',
                 'type'        => $qData['type'],
+                'is_shared'   => true,
                 'reviewed_by' => 1,
                 'reviewed_at' => now(),
             ]);
-
-            $bulkQuestionIds[] = [
-                'id'          => $question->id,
-                'category_id' => $qData['category_id'],
-            ];
 
             if (isset($qData['options']) && !empty($qData['options'])) {
                 $options = [];
@@ -697,6 +1598,7 @@ class QuestionSeeder extends Seeder
                 QuestionOption::insert($options);
             }
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -847,20 +1749,7 @@ class QuestionSeeder extends Seeder
                 'publish_at'        => now(),
             ]);
 
-            // Gắn câu hỏi cùng danh mục vào bài kiểm tra
-            $matchingQuestions = collect($bulkQuestionIds)
-                ->where('category_id', $examData['category_id'])
-                ->values();
-
-            $examSyncData = [];
-            foreach ($matchingQuestions as $sortIndex => $q) {
-                $examSyncData[$q['id']] = [
-                    'sort_order' => $sortIndex + 1,
-                    'score'      => 1,
-                ];
-            }
-
-            $bulkExam->questions()->sync($examSyncData);
+            // Note: Questions can be manually attached to exams as needed
         }
     }
 }

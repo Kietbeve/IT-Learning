@@ -109,8 +109,8 @@
             <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-slate-600">Student</p>
-                        <p class="mt-1 text-2xl font-bold text-cyan-600">{{ number_format($statistics['student']) }}</p>
+                        <p class="text-sm font-medium text-slate-600">Người học</p>
+                        <p class="mt-1 text-2xl font-bold text-cyan-600">{{ number_format($statistics['user']) }}</p>
                     </div>
                     <div class="rounded-lg bg-cyan-100 p-3">
                         <svg class="h-6 w-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +125,7 @@
             <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-slate-600">Contributor</p>
+                        <p class="text-sm font-medium text-slate-600">Cộng tác viên</p>
                         <p class="mt-1 text-2xl font-bold text-amber-600">
                             {{ number_format($statistics['contributor']) }}
                         </p>
