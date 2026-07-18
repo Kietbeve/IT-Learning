@@ -90,7 +90,9 @@ class GradeExamAttemptJob implements ShouldQueue
                 'score' => $statistics['score'],
                 'percent_score' => $statistics['percent'],
                 'is_passed' => $statistics['is_passed'],
-                'status' => $attempt->exam->type=='multiple_choice'?'completed':$attempt->status,
+                // 'status' => $attempt->exam->type=='multiple_choice'?'completed':$attempt->status,
+                //đổi logic hoàn thành chấm: pratice->completed, official->submitted
+                'status' => $attempt->exam->mode == 'practice' ? 'completed' : 'submitted',
             ]);
 
             Log::info("Exam grading completed", [
@@ -110,26 +112,37 @@ class GradeExamAttemptJob implements ShouldQueue
         foreach ($attempt->answers as $answer) {
             $question = $answer->question;
 
+            // Get question score from pivot table
+            $questionScore = $attempt->exam->questions()
+                ->where('questions.id', $question->id)
+                ->first()
+                ->pivot
+                ->score ?? 1;
+
             // Skip essay questions (require manual grading)
             if ($question->type === 'essay') {
+                // $answer->update([
+                //     'status' => 'pending',
+                //     'is_correct' => null,
+                //     'score' => 0,
+                // ]);
+                // continue;
+                $result = $this->gradeEssay($answer);
+
                 $answer->update([
-                    'status' => 'pending',
-                    'is_correct' => null,
-                    'score' => 0,
+                    'status' => $result['status'],
+                    'is_correct' => $result['is_correct'],
+                    'score' => $result['status'] === 'correct'
+                        ? $questionScore
+                        : 0,
                 ]);
+
                 continue;
             }
 
             // Grade multiple choice questions (single_choice and multiple_choice)
             if (in_array($question->type, ['single_choice', 'multiple_choice'])) {
                 $isCorrect = $this->gradeAnswer($answer);
-
-                // Get question score from pivot table
-                $questionScore = $attempt->exam->questions()
-                    ->where('questions.id', $question->id)
-                    ->first()
-                    ->pivot
-                    ->score ?? 1;
 
                 $answer->update([
                     'is_correct' => $isCorrect,
@@ -143,6 +156,7 @@ class GradeExamAttemptJob implements ShouldQueue
     /**
      * Grade a single answer by comparing with correct options
      * All-or-nothing grading: must select exactly all correct options
+     * Hàm chấm trắc nghiệm
      */
     private function gradeAnswer(AttemptAnswer $answer): bool
     {
@@ -221,5 +235,62 @@ class GradeExamAttemptJob implements ShouldQueue
         ]);
 
         // Optionally: You can add logic here to notify admins or update attempt status
+    }
+
+    private function gradeEssay(AttemptAnswer $answer): array
+    {
+        $correct = $this->normalize($answer->question->answer_text);
+        $student = $this->normalize($answer->answer_text);
+
+        if ($student === '') {
+            return [
+                'is_correct' => false,
+                'status' => 'incorrect',
+                'score_percent' => 0,
+            ];
+        }
+
+        similar_text($student, $correct, $percent);// ham so sanh muc do giong nhau co san cua php
+
+        if ($percent >= 95) {
+            return [
+                'is_correct' => true,
+                'status' => 'correct',
+                'score_percent' => 100,
+            ];
+        }
+
+        if ($percent >= 80) {
+            return [
+                'is_correct' => null,
+                'status' => 'pending',
+                'score_percent' => $percent,
+            ];
+        }
+
+        return [
+            'is_correct' => false,
+            'status' => 'incorrect',
+            'score_percent' => $percent,
+        ];
+    }
+
+    //hàm chuan hoa chuoi tẽ
+    private function normalize(string $text): string
+    {
+        // bỏ toàn bộ html trong chuoi
+        $text = strip_tags($text);
+        //chuyển về dạng không có html entity
+        $text = html_entity_decode($text);
+        //chuyển về dạng chữ thường
+        $text = mb_strtolower($text);
+        // bỏ dấu
+        $text = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
+        // bỏ ký tự đặc biệt
+        $text = preg_replace('/[^a-z0-9\s]/', '', $text);
+        // gom khoảng trắng
+        $text = preg_replace('/\s+/', ' ', trim($text));
+
+        return $text;
     }
 }
