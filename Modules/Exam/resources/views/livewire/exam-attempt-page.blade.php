@@ -812,7 +812,7 @@
             </div>
             {{-- Script chặn mở devtool, chặn copy --}}
             @if ($attempt->exam->mode=='official')
-                @vite('modules/exam/resources/assets/js/exam-security.js')
+                @vite('Modules/Exam/resources/assets/js/exam-security.js')
             @endif
         </div>
     @endif
