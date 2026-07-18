@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Modules\Auth\Models\ContributorApplication;
 use App\Models\User;
+use Livewire\Attributes\On;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Facades\Filter;
@@ -138,14 +139,14 @@ final class AdminCtvApplications extends PowerGridComponent
                 ->slot('Duyệt')
                 ->id()
                 ->class('btn btn-sm btn-success')
-                ->when(fn($row) => $row->status === 'pending')
+                // ->when(fn($row) => $row->status === 'pending')
                 ->dispatch('approve-application', ['applicationId' => $row->id]),
 
             Button::add('reject')
                 ->slot('Từ chối')
                 ->id()
                 ->class('btn btn-sm btn-danger')
-                ->when(fn($row) => $row->status === 'pending')
+                // ->when(fn($row) => $row->status === 'pending')
                 ->dispatch('reject-application', ['applicationId' => $row->id]),
         ];
     }
@@ -153,13 +154,13 @@ final class AdminCtvApplications extends PowerGridComponent
     public function actionRules($row): array
     {
         return [
-            Rule::button('approve')
-                ->when(fn($row) => $row->status !== 'pending')
-                ->hide(),
+            Rule::button('approve'),
+                // ->when(fn($row) => $row->status !== 'pending')
+                // ->hide(),
             
-            Rule::button('reject')
-                ->when(fn($row) => $row->status !== 'pending')
-                ->hide(),
+            Rule::button('reject'),
+                // ->when(fn($row) => $row->status !== 'pending')
+                // ->hide(),
         ];
     }
 
@@ -181,20 +182,21 @@ final class AdminCtvApplications extends PowerGridComponent
     }
 
     // Event listeners
-    protected function getListeners()
-    {
-        return [
-            'view-application' => 'viewApplication',
-            'approve-application' => 'approveApplication', 
-            'reject-application' => 'rejectApplication',
-        ];
-    }
+    // protected function getListeners()
+    // {
+    //     return [
+    //         'view-application' => 'viewApplication',
+    //         'approve-application' => 'approveApplication', 
+    //         'reject-application' => 'rejectApplication',
+    //     ];
+    // }
 
     public function viewApplication($applicationId)
     {
         $this->redirect(route('admin.ctv.detail', ['id' => $applicationId]));
     }
-
+    //ham duyet apply CTV
+    #[On('approve-application')]
     public function approveApplication($applicationId)
     {
         try {
@@ -207,8 +209,8 @@ final class AdminCtvApplications extends PowerGridComponent
                 'rejected_reason' => null
             ]);
 
-            // Assign contributor role to user
-            $application->user->assignRole('contributor');
+            // update role contributor 
+            $application->user->syncRoles('contributor');
 
             $this->dispatch('swal:success', [
                 'title' => 'Thành công!',

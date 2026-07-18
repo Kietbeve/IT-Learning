@@ -30,8 +30,7 @@
 
                 {{-- Breakdown Score --}}
                 <div class="flex flex-wrap justify-center gap-3 mb-6">
-                    <div
-                        class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+                    <div class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
                         <x-icon name="academic-cap" class="w-5 h-5 text-blue-600" />
                         <div class="text-left">
                             <p class="text-xs text-blue-700">Trắc nghiệm</p>
@@ -159,6 +158,18 @@
                 </div>
             </div>
         </x-card>
+        {{-- Nhận xét chung của giáo viên --}}
+        @if($attempt->teacher_comment)
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-4">
+                <div class="flex gap-3">
+                    <x-icon name="information-circle" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                    <div>
+                        <h4 class="font-semibold text-blue-900 text-sm mb-1">Nhận xét chung:</h4>
+                        <div class="text-sm text-blue-800 ql-editor">{!! $attempt->teacher_comment !!}</div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         {{-- Filter Buttons --}}
         <x-card padding="p-4 sm:p-5">
@@ -195,18 +206,16 @@
 
         {{-- Question Review Cards --}}
         @if($attempt->exam->mode === 'official' && $attempt->status !== 'completed')
-             <x-card padding="p-8" class="text-center">
-                <x-icon
-                    name="exclamation-triangle"
-                    class="w-14 h-14 text-amber-500 mx-auto mb-4"
-                />
+            <x-card padding="p-8" class="text-center">
+                <x-icon name="exclamation-triangle" class="w-14 h-14 text-amber-500 mx-auto mb-4" />
 
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">
                     Chưa thể xem kết quả
                 </h3>
 
                 <p class="text-gray-600">
-                    Đây là <strong>đề thi chính thức</strong>. Kết quả và đáp án chỉ được hiển thị sau khi bài thi đã được chấm hoàn tất.
+                    Đây là <strong>đề thi chính thức</strong>. Kết quả và đáp án chỉ được hiển thị sau khi bài thi đã được
+                    chấm hoàn tất.
                     Vui lòng chờ giảng viên chấm bài.
                 </p>
             </x-card>
@@ -235,10 +244,15 @@
                                     <x-icon name="check-circle" class="w-4 h-4 mr-1 inline" />
                                     Đúng
                                 </x-badge>
-                            @else
+                            @elseif($answer->status === 'incorrect')
                                 <x-badge flat negative>
                                     <x-icon name="x-circle" class="w-4 h-4 mr-1 inline" />
                                     Sai
+                                </x-badge>
+                            @else
+                                <x-badge flat gray>
+                                    <x-icon name="minus-circle" class="w-4 h-4 mr-1 inline" />
+                                    Chưa chấm
                                 </x-badge>
                             @endif
                         </div>
@@ -368,6 +382,18 @@
                                     <div>
                                         <h4 class="font-semibold text-blue-900 text-sm mb-1">Giải thích đáp án:</h4>
                                         <div class="text-sm text-blue-800 ql-editor">{!! $question->explanation !!}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                        {{-- Nhan xet cua giao vien --}}
+                        @if($answer->teacher_comment)
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-4">
+                                <div class="flex gap-3">
+                                    <x-icon name="information-circle" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                                    <div>
+                                        <h4 class="font-semibold text-blue-900 text-sm mb-1">Nhận xét:</h4>
+                                        <div class="text-sm text-blue-800 ql-editor">{!! $answer->teacher_comment !!}</div>
                                     </div>
                                 </div>
                             </div>

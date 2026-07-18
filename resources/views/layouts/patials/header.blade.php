@@ -23,7 +23,7 @@
 
         <!-- Notification Bell -->
         <div class="flex items-center">
-            @livewire('notification-bell')
+            {{-- @livewire('notification-bell') --}}
         </div>
 
         <!-- User Dropdown -->

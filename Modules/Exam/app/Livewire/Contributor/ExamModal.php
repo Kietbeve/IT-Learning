@@ -41,7 +41,7 @@ class ExamModal extends Component
     public int $duration_minutes = 30;
     public string $pass_percent = '50';
     public string $visibility = 'public';
-    public string $status = 'pending';
+    public string $status = 'draft';// mặt định đề thi dược tạo sẽ là nháp
     public ?string $publish_at = null;
     public ?int $category_id = null;
 

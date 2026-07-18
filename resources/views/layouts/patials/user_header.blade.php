@@ -67,7 +67,7 @@ Thiết kế theo phong cách exam_detail.blade.php
           @endif
 
           <div class="flex items-center">
-              @livewire('notification-bell')
+              {{-- @livewire('notification-bell') --}}
           </div>
 
           <div x-data="{ dropdownOpen: false }" class="relative">

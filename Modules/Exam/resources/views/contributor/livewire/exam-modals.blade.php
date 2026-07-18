@@ -39,10 +39,36 @@
                         <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Thông tin chính</p>
                         <div class="grid grid-cols-2 gap-x-6 gap-y-3">
 
-                            <div class="flex justify-between border-b border-slate-100 pb-2">
+                            {{-- <div class="flex justify-between border-b border-slate-100 pb-2">
                                 <span class="text-slate-500">Mã đề (Public ID)</span>
                                 <span class="font-mono font-semibold text-slate-800 text-xs">{{ $exam->public_id }}</span>
-                            </div>
+                            </div> --}}
+                            {{-- Sao chép link truy cập đề thi --}}
+                            <button
+                                x-data="{ copied: false }"
+                                @click="
+                                    navigator.clipboard.writeText('{{ route('exam.examDetail', ['examSlug' => $exam->slug]) }}');
+                                    copied = true;
+                                    setTimeout(() => copied = false, 2000);
+                                "
+                                type="button"
+                                class="cursor-pointer active:scale-95 inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:border-blue-200 hover:bg-slate-50"
+                            >
+                                <div
+                                    class="flex h-10 w-10 items-center justify-center rounded-lg transition"
+                                    :class="copied ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'"
+                                >
+                                    <span x-text="copied ? '✓' : '📋'"></span>
+                                </div>
+
+                                <div class="text-left">
+                                    <p class="text-xs text-slate-500">Liên kết</p>
+                                    <p
+                                        class="text-sm font-semibold"
+                                        x-text="copied ? 'Đã copy' : 'Click để copy'"
+                                    ></p>
+                                </div>
+                            </button>
 
                                 {{-- Danh mục --}}
                                 <div class="group flex items-start gap-3 rounded-lg bg-slate-50 p-3 transition-all hover:bg-slate-100">

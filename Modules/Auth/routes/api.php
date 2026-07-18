@@ -22,6 +22,6 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     // GET    /api/v1/auth/{id}   -> show
     // PUT    /api/v1/auth/{id}   -> update
     // DELETE /api/v1/auth/{id}   -> destroy
-    Route::apiResource('auth', AuthController::class)->names('auth');
+    // Route::apiResource('auth', AuthController::class)->names('api.auth');
 });
 Route::get('/', [AuthController::class, 'connect'])->name('auth.connect');

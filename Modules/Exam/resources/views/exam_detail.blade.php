@@ -339,7 +339,7 @@
                                 </form>
 
                                 {{-- Nút phụ: Lưu bài thi (chức năng bookmark) --}}
-                                <div class="mt-3">
+                                {{-- <div class="mt-3">
                                     <x-button
                                         outline
                                         gray
@@ -348,7 +348,7 @@
                                         class="w-full justify-center"
                                         label="Lưu bài thi"
                                     />
-                                </div>
+                                </div> --}}
 
                             </div>
 

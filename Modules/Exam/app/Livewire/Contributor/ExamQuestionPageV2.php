@@ -109,6 +109,14 @@ class ExamQuestionPageV2 extends Component
             ->with(['category', 'options'])
             ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds));
 
+        //chỉ lấy đúng loại câu hỏi của đề
+        if($this->exam->type=='essay'){
+                $query->where('type', 'essay');
+        }
+        elseif($this->exam->type=='multiple_choice'){
+                $query->where('type', '!=', 'essay');
+        }
+
         // Filter theo tab nguồn câu hỏi (cá nhân / dùng chung)
         if ($this->questionSourceTab === 'personal') {
             // Tab "Câu hỏi cá nhân": chỉ lấy câu hỏi do chính user hiện tại tạo
@@ -196,6 +204,14 @@ class ExamQuestionPageV2 extends Component
         
         $query = Question::query()
             ->when(!empty($excludeIds), fn($q) => $q->whereNotIn('id', $excludeIds));
+
+        //loc cau hoi theo loai de
+        if($this->exam->type=='essay'){
+                $query->where('type', 'essay');
+        }
+        elseif($this->exam->type=='multiple_choice'){
+                $query->where('type', '!=', 'essay');
+        }
         
         // Filter theo tab nguồn câu hỏi (cá nhân / dùng chung)
         if ($this->questionSourceTab === 'personal') {
@@ -317,6 +333,14 @@ class ExamQuestionPageV2 extends Component
             $query = Question::query()
                 ->whereNotIn('id', $excludeIds);
             
+            //loc cau hoi theo loai de
+            if($this->exam->type=='essay'){
+                    $query->where('type', 'essay');
+            }
+            elseif($this->exam->type=='multiple_choice'){
+                    $query->where('type', '!=', 'essay');
+            }
+            
             // Filter theo tab nguồn câu hỏi (QUAN TRỌNG: phải tôn trọng tab hiện tại)
             if ($this->questionSourceTab === 'personal') {
                 // Chỉ random từ câu hỏi của chính user
@@ -400,6 +424,14 @@ class ExamQuestionPageV2 extends Component
             // Query base (loại trừ câu đã có và đã chọn)
             $excludeIds = array_merge($this->existingQuestionIds, $this->selectedQuestionIds);
             $baseQuery = Question::query()->whereNotIn('id', $excludeIds);
+            
+            //loc cau hoi theo loai de
+            if($this->exam->type=='essay'){
+                    $baseQuery->where('type', 'essay');
+            }
+            elseif($this->exam->type=='multiple_choice'){
+                    $baseQuery->where('type', '!=', 'essay');
+            }
             
             // Filter theo tab nguồn câu hỏi (QUAN TRỌNG: phải tôn trọng tab hiện tại)
             if ($this->questionSourceTab === 'personal') {
@@ -599,6 +631,13 @@ class ExamQuestionPageV2 extends Component
                         'updated_at' => now(),
                     ]);
                 }
+                
+                // Nếu đề đang là nháp thì chuyển sang chờ duyệt, tránh duyệt lại khi update
+                Exam::whereKey($this->examId)
+                    ->where('status', 'draft')
+                    ->update([
+                        'status' => 'pending',
+                    ]);
                 
                 // Recalculate sort_order nếu có xóa câu hỏi
                 if (!empty($this->questionsToDelete)) {

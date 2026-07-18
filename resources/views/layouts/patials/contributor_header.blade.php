@@ -22,7 +22,7 @@
 
             <!-- notification -->
             <div class="relative flex items-center justify-center">
-                @livewire('notification-bell')
+                {{-- @livewire('notification-bell') --}}
             </div>
 
             <!-- Profile Dropdown (Simplified for just admin panel link if applicable) -->

@@ -34,13 +34,16 @@ class ExamService
     {
         return DB::transaction(function () use ($data, $authorId) {
 
+            $author = User::findOrFail($authorId);
+
             $question = $this->questionModel->create([
                 'author_id' => $authorId,
                 'category_id' => $data['category_id'],
                 'content' => $data['content'],
                 'explanation' => $data['explanation'] ?? null,
                 'difficulty' => $data['difficulty'],
-                'status' => 'pending',
+                // 'status' => 'pending',
+                'status'      => $author->hasRole('admin') ? 'approved' : 'pending',// nếu là admin thì auto approved, còn lại thì pending
                 'is_shared' => $data['is_shared'] ?? false,
                 'type' => $data['type'],
                 'answer_text' => $data['answer_text'] ?? null,
