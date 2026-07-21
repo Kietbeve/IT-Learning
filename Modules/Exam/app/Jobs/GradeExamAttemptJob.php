@@ -242,6 +242,15 @@ class GradeExamAttemptJob implements ShouldQueue
         $correct = $this->normalize($answer->question->answer_text);
         $student = $this->normalize($answer->answer_text);
 
+        // Debug logging
+        Log::info("Essay grading debug", [
+            'question_id' => $answer->question_id,
+            'original_correct' => $answer->question->answer_text,
+            'normalized_correct' => $correct,
+            'original_student' => $answer->answer_text,
+            'normalized_student' => $student,
+        ]);
+
         if ($student === '') {
             return [
                 'is_correct' => false,
@@ -252,7 +261,14 @@ class GradeExamAttemptJob implements ShouldQueue
 
         similar_text($student, $correct, $percent);// ham so sanh muc do giong nhau co san cua php
 
-        if ($percent >= 95) {
+        Log::info("Essay similarity result", [
+            'question_id' => $answer->question_id,
+            'percent' => $percent,
+            'student' => $student,
+            'correct' => $correct,
+        ]);
+
+        if ($percent >= 85) {
             return [
                 'is_correct' => true,
                 'status' => 'correct',
@@ -260,7 +276,7 @@ class GradeExamAttemptJob implements ShouldQueue
             ];
         }
 
-        if ($percent >= 80) {
+        if ($percent >= 75) {
             return [
                 'is_correct' => null,
                 'status' => 'pending',
@@ -275,22 +291,53 @@ class GradeExamAttemptJob implements ShouldQueue
         ];
     }
 
-    //hàm chuan hoa chuoi tẽ
+    //hàm chuan hoa chuoi
     private function normalize(string $text): string
     {
-        // bỏ toàn bộ html trong chuoi
+        // Bỏ HTML tags
         $text = strip_tags($text);
-        //chuyển về dạng không có html entity
-        $text = html_entity_decode($text);
-        //chuyển về dạng chữ thường
-        $text = mb_strtolower($text);
-        // bỏ dấu
-        $text = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
-        // bỏ ký tự đặc biệt
+        // Decode HTML entities
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // Chuyển về chữ thường
+        $text = mb_strtolower($text, 'UTF-8');
+        
+        // Bỏ dấu tiếng Việt (không dùng iconv vì không stable trên Windows)
+        $text = $this->removeVietnameseTones($text);
+        
+        // Bỏ ký tự đặc biệt, chỉ giữ chữ cái và số
         $text = preg_replace('/[^a-z0-9\s]/', '', $text);
-        // gom khoảng trắng
+        // Gom khoảng trắng
         $text = preg_replace('/\s+/', ' ', trim($text));
 
         return $text;
+    }
+
+    /**
+     * Remove Vietnamese tones/diacritics from string
+     * More reliable than iconv for Vietnamese text
+     */
+    private function removeVietnameseTones(string $str): string
+    {
+        $vietnameseTones = [
+            'à', 'á', 'ả', 'ã', 'ạ', 'ă', 'ằ', 'ắ', 'ẳ', 'ẵ', 'ặ', 'â', 'ầ', 'ấ', 'ẩ', 'ẫ', 'ậ',
+            'è', 'é', 'ẻ', 'ẽ', 'ẹ', 'ê', 'ề', 'ế', 'ể', 'ễ', 'ệ',
+            'ì', 'í', 'ỉ', 'ĩ', 'ị',
+            'ò', 'ó', 'ỏ', 'õ', 'ọ', 'ô', 'ồ', 'ố', 'ổ', 'ỗ', 'ộ', 'ơ', 'ờ', 'ớ', 'ở', 'ỡ', 'ợ',
+            'ù', 'ú', 'ủ', 'ũ', 'ụ', 'ư', 'ừ', 'ứ', 'ử', 'ữ', 'ự',
+            'ỳ', 'ý', 'ỷ', 'ỹ', 'ỵ',
+            'đ'
+        ];
+        
+        $replacements = [
+            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+            'i', 'i', 'i', 'i', 'i',
+            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
+            'y', 'y', 'y', 'y', 'y',
+            'd'
+        ];
+        
+        return str_replace($vietnameseTones, $replacements, $str);
     }
 }
