@@ -121,6 +121,7 @@ RUN php artisan storage:link || true
 EXPOSE 80
 
 COPY docker/entrypoint.sh /entrypoint.sh
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/99-opcache.ini
 
 RUN chmod +x /entrypoint.sh
 
