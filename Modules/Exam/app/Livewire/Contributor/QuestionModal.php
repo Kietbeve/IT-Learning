@@ -404,6 +404,7 @@ class QuestionModal extends Component
             'showCreateModal',
             'question',
             'content',
+            'explanation',
             'difficulty',
             'type',
             'category_id',

@@ -22,6 +22,7 @@
             wire:ignore
             x-data="{
                 editor: null,
+                currentValue: '',
 
                 init() {
                     this.editor = new Quill(this.$refs.editor, {
@@ -44,22 +45,30 @@
                         }
                     });
 
-                    this.editor.root.innerHTML = $wire.get('{{ $model }}') ?? '';
-                    {{--// Đồng bộ lại nội dung Quill khi giá trị Livewire thay đổi (do editor dùng wire:ignore)--}}
-                    this.$watch(() => $wire.get('{{ $model }}'), (value) => {
-
-                        if (this.editor.root.innerHTML !== (value ?? '')) {
-
-                            const delta = this.editor.clipboard.convert({
-                                html: value ?? ''
-                            });
-
-                            this.editor.setContents(delta, 'silent');
+                    // Hàm cập nhật editor với giá trị mới
+                    const updateEditor = (value) => {
+                        const htmlValue = value || '';
+                        if (this.editor.root.innerHTML !== htmlValue) {
+                            this.editor.root.innerHTML = htmlValue;
+                            this.currentValue = htmlValue;
                         }
+                    };
+
+                    // Load giá trị ban đầu
+                    updateEditor($wire.get('{{ $model }}'));
+
+                    // Watch thay đổi từ Livewire (khi mở modal edit)
+                    $wire.$watch('{{ $model }}', (value) => {
+                        updateEditor(value);
                     });
 
+                    // Đồng bộ về Livewire khi người dùng nhập
                     this.editor.on('text-change', () => {
-                        $wire.set('{{ $model }}', this.editor.root.innerHTML);
+                        const newValue = this.editor.root.innerHTML;
+                        if (this.currentValue !== newValue) {
+                            this.currentValue = newValue;
+                            $wire.set('{{ $model }}', newValue);
+                        }
                     });
                 }
             }"
