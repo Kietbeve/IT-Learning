@@ -236,10 +236,13 @@
                     @endforeach
                 </x-native-select>
 
-                <x-text-editor label="Nội dung" wire:model="content" />
+                <x-text-editor 
+                {{-- label="Nội dung"  --}}
+                wire:model="content"  
+                placeholder="Nhập nội dung câu hỏi"/>
 
                 <x-text-editor
-                    label="Giải thích"
+                    {{-- label="Giải thích" --}}
                     wire:model="explanation"
                     placeholder="Giải thích đáp án hoặc kiến thức liên quan (không bắt buộc)"
                 />
