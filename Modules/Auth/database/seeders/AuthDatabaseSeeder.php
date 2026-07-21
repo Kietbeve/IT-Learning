@@ -36,7 +36,7 @@ class AuthDatabaseSeeder extends Seeder
         $admin->assignRole('admin');
 
         $contributor = User::firstOrCreate(
-            ['email' => 'contributor@example.com'],
+            ['email' => '0306231216@caothang.edu.vn'],
             [
                 'name' => 'Contributor',
                 'password' => Hash::make('password'),
